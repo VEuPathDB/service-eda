@@ -1,4 +1,4 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.FunctionWithException;

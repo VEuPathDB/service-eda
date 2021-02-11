@@ -1,4 +1,4 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import java.sql.ResultSet;
 
@@ -13,10 +13,10 @@ import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.edass.Resources;
+import org.veupathdb.service.eda.ss.Resources;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.*;
 
 /**
  * utilities for creating Entities from result sets

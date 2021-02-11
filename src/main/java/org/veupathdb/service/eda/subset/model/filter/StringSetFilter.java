@@ -1,9 +1,10 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model.filter;
 
 import java.util.List;
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.RdbmsColumnNames;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 
 public class StringSetFilter extends Filter {
@@ -17,7 +18,7 @@ public class StringSetFilter extends Filter {
 
   @Override
   public String getAndClausesSql() {
-    return "  AND " + STRING_VALUE_COL_NAME + " IN ('" + String.join("', '", stringSet) + "')" + NL;
+    return "  AND " + RdbmsColumnNames.STRING_VALUE_COL_NAME + " IN ('" + String.join("', '", stringSet) + "')" + NL;
   }
 
 }

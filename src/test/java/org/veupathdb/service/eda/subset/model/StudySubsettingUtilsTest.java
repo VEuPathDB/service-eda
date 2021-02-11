@@ -1,4 +1,4 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
@@ -7,7 +7,8 @@ import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.service.edass.stubdb.StubDb;
+import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import javax.sql.DataSource;
 import java.io.ByteArrayOutputStream;
@@ -16,7 +17,7 @@ import java.util.stream.Stream;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.*;
 
 public class StudySubsettingUtilsTest {
 

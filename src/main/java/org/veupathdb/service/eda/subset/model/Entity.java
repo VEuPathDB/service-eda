@@ -1,5 +1,5 @@
 
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;

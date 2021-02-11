@@ -1,9 +1,10 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model.filter;
 
-import org.veupathdb.service.edass.Resources;
+import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.Entity;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.*;
 
 public abstract class Filter {
   protected Entity entity;

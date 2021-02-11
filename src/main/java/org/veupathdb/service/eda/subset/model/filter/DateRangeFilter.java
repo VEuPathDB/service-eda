@@ -1,11 +1,11 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model.filter;
 
 import java.time.LocalDateTime;
-import java.sql.Timestamp;
 import java.time.format.DateTimeFormatter;
+import org.veupathdb.service.eda.ss.model.Entity;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.DATE_VALUE_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.DATE_VALUE_COL_NAME;
 
 public class DateRangeFilter extends Filter {
 

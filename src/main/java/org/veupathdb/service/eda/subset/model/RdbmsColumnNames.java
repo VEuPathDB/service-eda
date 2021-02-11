@@ -1,9 +1,9 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class RdbmsColumnNames {
+public class RdbmsColumnNames {
 
   static final String VARIABLE_VALUE_COL_NAME = "value";
   
@@ -37,10 +37,10 @@ class RdbmsColumnNames {
   static final String VARIABLE_PARENT_ID_COL_NAME = "parent_stable_id";
   
   // Tall table
-  static final String TT_VARIABLE_ID_COL_NAME = "attribute_stable_id";
-  static final String STRING_VALUE_COL_NAME = "string_value";
-  static final String DATE_VALUE_COL_NAME = "date_value";
-  static final String NUMBER_VALUE_COL_NAME = "number_value";
+  public static final String TT_VARIABLE_ID_COL_NAME = "attribute_stable_id";
+  public static final String STRING_VALUE_COL_NAME = "string_value";
+  public static final String DATE_VALUE_COL_NAME = "date_value";
+  public static final String NUMBER_VALUE_COL_NAME = "number_value";
   
   static String getRsStringNotNull(ResultSet rs, String colName) throws SQLException {
     if (rs.getString(colName) == null) 

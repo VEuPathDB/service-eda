@@ -1,20 +1,8 @@
-package org.veupathdb.service.edass.service;
+package org.veupathdb.service.eda.ss.service;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import java.util.Optional;
-import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.edass.Resources;
-import org.veupathdb.service.edass.generated.model.*;
-import org.veupathdb.service.edass.model.*;
-import org.veupathdb.service.edass.model.Variable.VariableType;
-
-import javax.sql.DataSource;
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -24,12 +12,70 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import javax.sql.DataSource;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.functional.TreeNode;
+import org.veupathdb.service.eda.generated.model.APIDateRangeFilter;
+import org.veupathdb.service.eda.generated.model.APIDateSetFilter;
+import org.veupathdb.service.eda.generated.model.APIDateVariable;
+import org.veupathdb.service.eda.generated.model.APIDateVariableImpl;
+import org.veupathdb.service.eda.generated.model.APIEntity;
+import org.veupathdb.service.eda.generated.model.APIEntityImpl;
+import org.veupathdb.service.eda.generated.model.APIFilter;
+import org.veupathdb.service.eda.generated.model.APILongitudeRangeFilter;
+import org.veupathdb.service.eda.generated.model.APILongitudeVariable;
+import org.veupathdb.service.eda.generated.model.APILongitudeVariableImpl;
+import org.veupathdb.service.eda.generated.model.APINumberRangeFilter;
+import org.veupathdb.service.eda.generated.model.APINumberSetFilter;
+import org.veupathdb.service.eda.generated.model.APINumberVariable;
+import org.veupathdb.service.eda.generated.model.APINumberVariableImpl;
+import org.veupathdb.service.eda.generated.model.APIStringSetFilter;
+import org.veupathdb.service.eda.generated.model.APIStringVariable;
+import org.veupathdb.service.eda.generated.model.APIStringVariableImpl;
+import org.veupathdb.service.eda.generated.model.APIStudyDetail;
+import org.veupathdb.service.eda.generated.model.APIStudyDetailImpl;
+import org.veupathdb.service.eda.generated.model.APIStudyOverview;
+import org.veupathdb.service.eda.generated.model.APIStudyOverviewImpl;
+import org.veupathdb.service.eda.generated.model.APIVariable;
+import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
+import org.veupathdb.service.eda.generated.model.APIVariableDisplayType;
+import org.veupathdb.service.eda.generated.model.APIVariablesCategory;
+import org.veupathdb.service.eda.generated.model.APIVariablesCategoryImpl;
+import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
+import org.veupathdb.service.eda.generated.model.EntityCountPostResponse;
+import org.veupathdb.service.eda.generated.model.EntityCountPostResponseImpl;
+import org.veupathdb.service.eda.generated.model.EntityIdGetResponse;
+import org.veupathdb.service.eda.generated.model.EntityIdGetResponseImpl;
+import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
+import org.veupathdb.service.eda.generated.model.EntityTabularPostResponseStream;
+import org.veupathdb.service.eda.generated.model.StudiesGetResponseImpl;
+import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
+import org.veupathdb.service.eda.generated.model.StudyIdGetResponseImpl;
+import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
+import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponseStream;
+import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
+import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.filter.LongitudeRangeFilter;
+import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
+import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
+import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
+import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.StudySubsettingUtils;
+import org.veupathdb.service.eda.ss.model.Variable;
+import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
-public class Studies implements org.veupathdb.service.edass.generated.resources.Studies {
+public class Studies implements org.veupathdb.service.eda.generated.resources.Studies {
   Map<String, APIStudyOverview> apiStudyOverviews;  // cache the overviews
 
   @Override
@@ -112,7 +158,7 @@ public class Studies implements org.veupathdb.service.edass.generated.resources.
       apiEntity.setChildren(mappedChildren);
       
       List<APIVariable> apiVariables = new ArrayList<>();
-      for (Variable var : entity.getVariables()) 
+      for (Variable var : entity.getVariables())
         apiVariables.add(variableToAPIVariable(var));
       apiEntity.setVariables(apiVariables);
 

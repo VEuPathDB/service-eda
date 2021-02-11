@@ -1,13 +1,18 @@
-package org.veupathdb.service.edass.service;
+package org.veupathdb.service.eda.ss.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.service.edass.Resources;
-import org.veupathdb.service.edass.generated.model.*;
-import org.veupathdb.service.edass.model.*;
-import org.veupathdb.service.edass.stubdb.StubDb;
+import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.FiltersForTesting;
+import org.veupathdb.service.eda.ss.model.Study;
+import org.veupathdb.service.eda.ss.model.TestModel;
+import org.veupathdb.service.eda.ss.model.Variable;
+import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.ss.stubdb.StubDb;
 
 import javax.sql.DataSource;
 import javax.ws.rs.InternalServerErrorException;

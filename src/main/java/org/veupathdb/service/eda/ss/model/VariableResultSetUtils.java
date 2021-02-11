@@ -1,4 +1,4 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import org.gusdb.fgputil.db.runner.SQLRunner;
 
@@ -7,10 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import org.veupathdb.service.edass.Resources;
+import org.veupathdb.service.eda.ss.Resources;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
+import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.*;
 
 class VariableResultSetUtils {
 

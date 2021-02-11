@@ -1,4 +1,4 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,8 +12,8 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.service.edass.Resources;
-import org.veupathdb.service.edass.model.Variable.VariableType;
+import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.Variable.VariableType;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -25,7 +25,7 @@ public class LoadStudyTest {
   
   @BeforeAll
   public static void setUp() {
-    datasource = Resources.getApplicationDataSource();    
+    datasource = Resources.getApplicationDataSource();
   }
   
   @Test

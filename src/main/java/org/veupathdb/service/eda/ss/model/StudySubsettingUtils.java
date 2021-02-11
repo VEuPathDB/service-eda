@@ -1,4 +1,4 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -22,12 +22,11 @@ import org.gusdb.fgputil.db.stream.ResultSets;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.iterator.GroupingIterator;
 import org.gusdb.fgputil.iterator.IteratorUtil;
-import org.veupathdb.service.edass.Resources;
-import org.veupathdb.service.edass.model.Variable.VariableType;
+import org.veupathdb.service.eda.ss.Resources;
+import org.veupathdb.service.eda.ss.model.Variable.VariableType;
+import org.veupathdb.service.eda.ss.model.filter.Filter;
 
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.TT_VARIABLE_ID_COL_NAME;
-
-import org.apache.logging.log4j.Logger;
+import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.TT_VARIABLE_ID_COL_NAME;
 
 /**
  * A class to perform subsetting operations on a study entity
@@ -52,7 +51,7 @@ public class StudySubsettingUtils {
    * @param filters filters to apply to create a subset of records
    */
   public static void produceTabularSubset(DataSource datasource, Study study, Entity outputEntity,
-      List<Variable> outputVariables, List<Filter> filters, OutputStream outputStream) {
+                                          List<Variable> outputVariables, List<Filter> filters, OutputStream outputStream) {
 
     TreeNode<Entity> prunedEntityTree = pruneTree(study.getEntityTree(), filters, outputEntity);
 

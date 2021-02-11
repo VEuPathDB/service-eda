@@ -1,4 +1,4 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -6,6 +6,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
+import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
+import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
+import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
+import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
 
 public class FiltersForTesting {
 

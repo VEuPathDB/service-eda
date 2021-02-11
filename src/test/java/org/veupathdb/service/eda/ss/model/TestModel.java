@@ -1,4 +1,4 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -9,8 +9,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.edass.model.Variable.VariableDataShape;
-import org.veupathdb.service.edass.model.Variable.VariableType;
+import org.veupathdb.service.eda.ss.model.Variable.VariableDataShape;
+import org.veupathdb.service.eda.ss.model.Variable.VariableType;
+import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
+import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
+import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
+import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
+import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
 
 /**
  * A class that holds a test model of a study and supporting objects
@@ -152,7 +158,7 @@ public class TestModel {
     obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
 
     List<Number> favNums = Arrays.asList(new Number[]{5,7,9});
-    obsFavNumberFilter = new NumberSetFilter(observation, favNumber.getId(), favNums); 
+    obsFavNumberFilter = new NumberSetFilter(observation, favNumber.getId(), favNums);
 
     obsBirthDateFilter = new DateRangeFilter(observation, birthDate.getId(),
         LocalDateTime.of(2019, Month.MARCH, 21, 0, 0),
@@ -165,7 +171,7 @@ public class TestModel {
     obsFavNewYearsFilter = new DateSetFilter(observation, favNewYears.getId(), dates);
 
     List<String> moods = Arrays.asList("happy", "jolly", "giddy");
-    obsMoodFilter = new StringSetFilter(observation, mood.getId(), moods); 
+    obsMoodFilter = new StringSetFilter(observation, mood.getId(), moods);
 
     obsWeightFilter = new NumberRangeFilter(observation, weight.getId(), 10, 20);
 

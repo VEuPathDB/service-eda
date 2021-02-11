@@ -1,7 +1,9 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model.filter;
+
+import org.veupathdb.service.eda.ss.model.Entity;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.NUMBER_VALUE_COL_NAME;
+import static org.veupathdb.service.eda.ss.model.RdbmsColumnNames.NUMBER_VALUE_COL_NAME;
 
 public class LongitudeRangeFilter extends Filter {
     private Number left;

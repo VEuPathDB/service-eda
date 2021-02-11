@@ -1,10 +1,11 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model.filter;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.veupathdb.service.eda.ss.model.Entity;
+import org.veupathdb.service.eda.ss.model.RdbmsColumnNames;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.veupathdb.service.edass.model.RdbmsColumnNames.*;
 
 public class NumberSetFilter extends Filter {
 
@@ -18,7 +19,7 @@ public class NumberSetFilter extends Filter {
   @Override
   public String getAndClausesSql() {
     List<String> vals = numberSet.stream().map(String::valueOf).collect(Collectors.toList());
-    return "  AND " + NUMBER_VALUE_COL_NAME + " IN (" + String.join(", ", vals) + " )" + NL;
+    return "  AND " + RdbmsColumnNames.NUMBER_VALUE_COL_NAME + " IN (" + String.join(", ", vals) + " )" + NL;
   }
 
 }

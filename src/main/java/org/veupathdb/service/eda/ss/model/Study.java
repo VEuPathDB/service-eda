@@ -1,13 +1,17 @@
-package org.veupathdb.service.edass.model;
+package org.veupathdb.service.eda.ss.model;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.edass.Resources;
-import org.veupathdb.service.edass.generated.model.APIFilter;
-
-import javax.sql.DataSource;
-import java.util.*;
-import java.util.stream.Collectors;
+import org.veupathdb.service.eda.generated.model.APIFilter;
+import org.veupathdb.service.eda.ss.Resources;
 
 public class Study {
   private TreeNode<Entity> entityTree;

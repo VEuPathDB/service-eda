@@ -1,44 +1,118 @@
 package org.veupathdb.service.eda.common.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.gusdb.fgputil.functional.Either;
+import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
+import org.gusdb.fgputil.validation.ValidationLevel;
+import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
+import org.veupathdb.service.eda.generated.model.APIStudyOverview;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequestImpl;
+import org.veupathdb.service.eda.generated.model.StudiesGetResponse;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
+import org.veupathdb.service.eda.generated.model.VariableSpec;
 
-public class EdaSubsettingClient extends EdaClient {
+import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
+
+public class EdaSubsettingClient extends AbstractTabularDataClient {
+
+  // request-scope cache for subsetting service metadata responses
+  private List<String> _validStudyNameCache;
+  private Map<String, APIStudyDetail> _studyDetailCache = new HashMap<>();
 
   public EdaSubsettingClient(String serviceBaseUrl) {
     super(serviceBaseUrl);
   }
 
-  public APIStudyDetail getStudy(String studyId) {
-    return getResponseObject("/studies/" + studyId, StudyIdGetResponse.class).getStudy();
+  public List<String> getStudies() {
+    return _validStudyNameCache != null ? _validStudyNameCache :
+      (_validStudyNameCache = swallowAndGet(() -> ClientUtil
+          .getResponseObject(getUrl("/studies"), StudiesGetResponse.class))
+        .getStudies().stream().map(APIStudyOverview::getId).collect(Collectors.toList()));
   }
 
-  public InputStream getDataStream(
-      APIStudyDetail study,
+  /**
+   * Returns the study detail for the study with the passed ID, or an empty optional
+   * if no study exists for the passed ID.
+   *
+   * @param studyId id of a study
+   * @return optional study detail for the found study
+   */
+  public Optional<APIStudyDetail> getStudy(String studyId) {
+    if (!getStudies().contains(studyId)) return Optional.empty(); // invalid name
+    if (!_studyDetailCache.containsKey(studyId)) {
+      _studyDetailCache.put(studyId, swallowAndGet(() -> ClientUtil
+          .getResponseObject(getUrl("/studies/" + studyId), StudyIdGetResponse.class).getStudy()));
+    }
+    return Optional.of(_studyDetailCache.get(studyId));
+  }
+
+  @Override
+  public String varToColumnHeader(VariableSpec var) {
+    return var.getVariableId();
+  }
+
+  public InputStream getTabularDataStream(
+      String studyId,
       List<APIFilter> subset,
       StreamSpec spec) {
+
+    // build request object
     EntityTabularPostRequest request = new EntityTabularPostRequestImpl();
     request.setFilters(subset);
     request.setOutputVariableIds(spec.stream()
-      .map(var -> var.getVariableId()) // subsetting service only takes var IDs (must match entity requested)
+      // subsetting service only takes var IDs (must match entity requested, but should already be validated)
+      .map(var -> var.getVariableId())
       .collect(Collectors.toList()));
-    String url = "/studies/" + study.getId() + "/entities/" + spec.getEntityId() + "/tabular";
 
-    try {
-      Either<InputStream, RequestFailure> result = makePostRequest(url, request, "text/tabular");
-      if (result.isLeft()) return result.getLeft();
-      throw new RuntimeException(result.getRight().toString());
+    // build request url
+    String url = getUrl("/studies/" + studyId + "/entities/" + spec.getEntityId() + "/tabular");
+
+    // make request
+    Either<Optional<InputStream>, RequestFailure> result = ClientUtil
+        .makePostRequest(url, request, "text/tabular");
+
+    // handle result
+    if (result.isLeft()) {
+      return result.getLeft().orElseThrow(() ->
+          new RuntimeException("Tabular request did not return a response body."));
     }
-    catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+    throw new RuntimeException(result.getRight().toString());
+  }
+
+  @Override
+  public ValidationBundle validateStreamSpecs(Collection<StreamSpec> streamSpecs, ReferenceMetadata metadata) {
+    ValidationBundleBuilder validation = ValidationBundle.builder(ValidationLevel.RUNNABLE);
+    checkUniqueNames(streamSpecs, validation);
+    for (StreamSpec streamSpec : streamSpecs) {
+      if (!metadata.containsEntity(streamSpec.getEntityId())) {
+        validation.addError(streamSpec.getStreamName(), "Entity '" +
+            streamSpec.getEntityId() + "' does not exist in study '" + metadata.getStudyId());
+        continue;
+      }
+      for (VariableSpec var : streamSpec) {
+        if (!var.getEntityId().equals(streamSpec.getEntityId())) {
+          validation.addError(streamSpec.getStreamName(),
+              "Bad spec for subsetting request.  Variable '" + JsonUtil.serializeObject(var) +
+              "' must be a member of entity '" + streamSpec.getEntityId() + "'.");
+        }
+        else if (!metadata.isNativeVarOfEntity(var.getVariableId(), streamSpec.getEntityId())) {
+          validation.addError(streamSpec.getStreamName(),
+              "Bad spec for subsetting request.  Variable '" + var.getVariableId() +
+              "' must be a native variable of entity '" + streamSpec.getEntityId() + "'.");
+        }
+      }
     }
+    return validation.build();
   }
 }

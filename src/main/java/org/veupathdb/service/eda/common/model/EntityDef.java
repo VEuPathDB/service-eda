@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.common;
+package org.veupathdb.service.eda.common.model;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -34,7 +34,7 @@ public class EntityDef extends ArrayList<VariableDef> {
     return getVariableOpt(var).orElseThrow(() -> new RuntimeException("Variable " + var + " not available on entity " + _id));
   }
 
-  private Optional<VariableDef> getVariableOpt(VariableSpec var) {
+  Optional<VariableDef> getVariableOpt(VariableSpec var) {
     return stream()
         .filter(v -> v.getEntityId().equals(var.getEntityId()) && v.getVariableId().equals(var.getVariableId()))
         .findFirst();

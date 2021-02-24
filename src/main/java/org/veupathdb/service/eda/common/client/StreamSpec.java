@@ -1,6 +1,9 @@
 package org.veupathdb.service.eda.common.client;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 public class StreamSpec extends ArrayList<VariableSpec> {
@@ -23,6 +26,11 @@ public class StreamSpec extends ArrayList<VariableSpec> {
 
   public StreamSpec addVariable(VariableSpec variableSpec) {
     add(variableSpec);
+    return this;
+  }
+
+  public StreamSpec addVariables(Collection<VariableDef> variableSpecs) {
+    addAll(variableSpecs);
     return this;
   }
 }

@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.common.model;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
@@ -36,7 +37,7 @@ public class EntityDef extends ArrayList<VariableDef> {
 
   Optional<VariableDef> getVariableOpt(VariableSpec var) {
     return stream()
-        .filter(v -> v.getEntityId().equals(var.getEntityId()) && v.getVariableId().equals(var.getVariableId()))
+        .filter(v -> VariableDef.isSameVariable(v, var))
         .findFirst();
   }
 

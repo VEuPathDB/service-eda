@@ -53,6 +53,10 @@ public class VariableDef extends VariableSpecImpl {
     };
   }
 
+  public static String toDotNotation(VariableSpec var) {
+    return var.getEntityId() + "." + var.getVariableId();
+  }
+
   @JsonProperty("type")
   public APIVariableType getType() {
     return _type;
@@ -68,4 +72,7 @@ public class VariableDef extends VariableSpecImpl {
     return JsonUtil.serializeObject(this);
   }
 
+  public static boolean isSameVariable(VariableSpec v1, VariableSpec v2) {
+    return v1.getEntityId().equals(v2.getEntityId()) && v1.getVariableId().equals(v2.getVariableId());
+  }
 }

@@ -117,6 +117,14 @@ public class ReferenceMetadata {
     return _studyId;
   }
 
+  public List<DerivedVariable> getDerivedVariables() {
+    return _derivedVariables;
+  }
+
+  public Optional<DerivedVariable> findDerivedVariable(VariableSpec var) {
+    return _derivedVariables.stream().filter(dr -> VariableDef.isSameVariable(dr, var)).findFirst();
+  }
+
   public boolean containsEntity(String entityId) {
     return _entityMap.containsKey(entityId);
   }
@@ -138,6 +146,10 @@ public class ReferenceMetadata {
   public EntityDef getEntity(String entityId) {
     return Optional.ofNullable(_entityMap.get(entityId))
       .orElseThrow(() -> new RuntimeException(getNoEntityMsg(entityId)));
+  }
+
+  public VariableDef getVariableDef(VariableSpec var) {
+    return getEntity(var.getEntityId()).getVariable(var);
   }
 
   private String getNoEntityMsg(String entityId) {
@@ -167,4 +179,23 @@ public class ReferenceMetadata {
     }
   }
 
+  public List<EntityDef> getAncestors(EntityDef targetEntity) {
+    return Optional.ofNullable(getAncestors(targetEntity, _entityTree, new ArrayList<>()))
+        .orElseThrow(() -> new RuntimeException("Target entity '" + targetEntity.getId() + "' could not be found in entity tree."));
+  }
+
+  private static List<EntityDef> getAncestors(EntityDef targetEntity, TreeNode<EntityDef> entityTree, List<EntityDef> ancestors) {
+    if (entityTree.getContents().getId().equals(targetEntity.getId())) {
+      return ancestors; // done
+    }
+    for (TreeNode<EntityDef> child : entityTree.getChildNodes()) {
+      List<EntityDef> supplementedAncestors = new ArrayList<>(ancestors);
+      supplementedAncestors.add(0, entityTree.getContents()); // in ascending order (up the tree)
+      List<EntityDef> listForFoundEntity = getAncestors(targetEntity, child, supplementedAncestors);
+      if (listForFoundEntity != null) {
+        return listForFoundEntity;
+      }
+    }
+    return null;
+  }
 }

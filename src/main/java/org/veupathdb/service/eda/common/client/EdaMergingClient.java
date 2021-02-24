@@ -9,6 +9,7 @@ import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationLevel;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.DerivedVariable;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
@@ -25,7 +26,7 @@ public class EdaMergingClient extends AbstractTabularDataClient {
 
   @Override
   public String varToColumnHeader(VariableSpec var) {
-    return var.getEntityId() + "." + var.getVariableId();
+    return VariableDef.toDotNotation(var);
   }
 
   @Override

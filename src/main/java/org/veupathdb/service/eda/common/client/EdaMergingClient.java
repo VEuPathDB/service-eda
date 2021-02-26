@@ -33,7 +33,7 @@ public class EdaMergingClient extends AbstractTabularDataClient {
   public ValidationBundle validateStreamSpecs(Collection<StreamSpec> streamSpecs, ReferenceMetadata metadata) {
     // FIXME: currently do not support derived vars
     // TODO: don't forget to check for unique stream names
-    return new EdaSubsettingClient(null).validateStreamSpecs(streamSpecs, metadata);
+    return new EdaSubsettingClient("").validateStreamSpecs(streamSpecs, metadata);
   }
 
   public InputStream getTabularDataStream(

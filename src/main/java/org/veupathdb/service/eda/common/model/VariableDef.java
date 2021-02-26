@@ -1,6 +1,6 @@
 package org.veupathdb.service.eda.common.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
@@ -17,9 +17,7 @@ import static org.veupathdb.service.eda.common.model.VariableSource.DERIVED_BY_T
  */
 @JsonPropertyOrder({
     "entityId",
-    "variableId",
-    "type",
-    "source"
+    "variableId"
 })
 public class VariableDef extends VariableSpecImpl {
 
@@ -30,10 +28,10 @@ public class VariableDef extends VariableSpecImpl {
     return spec;
   }
 
-  @JsonProperty("type")
+  @JsonIgnore
   private final APIVariableType _type;
 
-  @JsonProperty("source")
+  @JsonIgnore
   private final VariableSource _source;
 
   public VariableDef(String entityId, String variableId, APIVariableType type, VariableSource source) {
@@ -57,12 +55,12 @@ public class VariableDef extends VariableSpecImpl {
     return var.getEntityId() + "." + var.getVariableId();
   }
 
-  @JsonProperty("type")
+  @JsonIgnore
   public APIVariableType getType() {
     return _type;
   }
 
-  @JsonProperty("source")
+  @JsonIgnore
   public VariableSource getSource() {
     return _source;
   }

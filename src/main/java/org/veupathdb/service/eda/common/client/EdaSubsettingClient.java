@@ -1,18 +1,12 @@
 package org.veupathdb.service.eda.common.client;
 
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.gusdb.fgputil.functional.Either;
-import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidationBundle;
-import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
-import org.gusdb.fgputil.validation.ValidationLevel;
-import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 import org.veupathdb.service.eda.generated.model.APIStudyOverview;
@@ -58,6 +52,11 @@ public class EdaSubsettingClient extends AbstractTabularDataClient {
   }
 
   @Override
+  public StreamSpecValidator getStreamSpecValidator() {
+    return new EdaSubsettingSpecValidator();
+  }
+
+  @Override
   public String varToColumnHeader(VariableSpec var) {
     return var.getVariableId();
   }
@@ -88,31 +87,5 @@ public class EdaSubsettingClient extends AbstractTabularDataClient {
           new RuntimeException("Tabular request did not return a response body."));
     }
     throw new RuntimeException(result.getRight().toString());
-  }
-
-  @Override
-  public ValidationBundle validateStreamSpecs(Collection<StreamSpec> streamSpecs, ReferenceMetadata metadata) {
-    ValidationBundleBuilder validation = ValidationBundle.builder(ValidationLevel.RUNNABLE);
-    checkUniqueNames(streamSpecs, validation);
-    for (StreamSpec streamSpec : streamSpecs) {
-      if (!metadata.containsEntity(streamSpec.getEntityId())) {
-        validation.addError(streamSpec.getStreamName(), "Entity '" +
-            streamSpec.getEntityId() + "' does not exist in study '" + metadata.getStudyId());
-        continue;
-      }
-      for (VariableSpec var : streamSpec) {
-        if (!var.getEntityId().equals(streamSpec.getEntityId())) {
-          validation.addError(streamSpec.getStreamName(),
-              "Bad spec for subsetting request.  Variable '" + JsonUtil.serializeObject(var) +
-              "' must be a member of entity '" + streamSpec.getEntityId() + "'.");
-        }
-        else if (!metadata.isNativeVarOfEntity(var.getVariableId(), streamSpec.getEntityId())) {
-          validation.addError(streamSpec.getStreamName(),
-              "Bad spec for subsetting request.  Variable '" + var.getVariableId() +
-              "' must be a native variable of entity '" + streamSpec.getEntityId() + "'.");
-        }
-      }
-    }
-    return validation.build();
   }
 }

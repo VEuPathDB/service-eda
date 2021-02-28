@@ -1,19 +1,12 @@
 package org.veupathdb.service.eda.common.client;
 
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.gusdb.fgputil.functional.Either;
-import org.gusdb.fgputil.validation.ValidationBundle;
-import org.gusdb.fgputil.validation.ValidationLevel;
-import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.DerivedVariable;
-import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
-import org.veupathdb.service.eda.generated.model.EntityTabularPostRequestImpl;
 import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequestImpl;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
@@ -25,15 +18,13 @@ public class EdaMergingClient extends AbstractTabularDataClient {
   }
 
   @Override
-  public String varToColumnHeader(VariableSpec var) {
-    return VariableDef.toDotNotation(var);
+  public StreamSpecValidator getStreamSpecValidator() {
+    return new EdaMergingSpecValidator();
   }
 
   @Override
-  public ValidationBundle validateStreamSpecs(Collection<StreamSpec> streamSpecs, ReferenceMetadata metadata) {
-    // FIXME: currently do not support derived vars
-    // TODO: don't forget to check for unique stream names
-    return new EdaSubsettingClient("").validateStreamSpecs(streamSpecs, metadata);
+  public String varToColumnHeader(VariableSpec var) {
+    return VariableDef.toDotNotation(var);
   }
 
   public InputStream getTabularDataStream(
@@ -48,7 +39,7 @@ public class EdaMergingClient extends AbstractTabularDataClient {
     request.setFilters(subset);
     request.setEntityId(spec.getEntityId());
     request.setDerivedVariables(derivedVariables);
-    request.setOutputVariableIds(spec);
+    request.setOutputVariables(spec);
 
     // make request
     Either<Optional<InputStream>, RequestFailure> result = ClientUtil

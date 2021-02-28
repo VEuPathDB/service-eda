@@ -2,7 +2,10 @@ package org.veupathdb.service.eda.common.client;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 

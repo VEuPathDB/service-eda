@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.gusdb.fgputil.functional.Either;
+import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 import org.veupathdb.service.eda.generated.model.APIStudyOverview;
@@ -61,8 +62,9 @@ public class EdaSubsettingClient extends AbstractTabularDataClient {
     return var.getVariableId();
   }
 
+  @Override
   public InputStream getTabularDataStream(
-      String studyId,
+      ReferenceMetadata metadata,
       List<APIFilter> subset,
       StreamSpec spec) {
 
@@ -75,7 +77,7 @@ public class EdaSubsettingClient extends AbstractTabularDataClient {
       .collect(Collectors.toList()));
 
     // build request url
-    String url = getUrl("/studies/" + studyId + "/entities/" + spec.getEntityId() + "/tabular");
+    String url = getUrl("/studies/" + metadata.getStudyId() + "/entities/" + spec.getEntityId() + "/tabular");
 
     // make request
     Either<Optional<InputStream>, RequestFailure> result = ClientUtil

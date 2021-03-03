@@ -10,16 +10,31 @@ import org.gusdb.fgputil.Tuples;
 
 public class RequestFailure extends Tuples.TwoTuple<Response.StatusType, String> {
 
+  /**
+   * Caches the response code and body for future use and closes the response
+   *
+   * @param failureResponse
+   */
   public RequestFailure(Response failureResponse) {
     super(failureResponse.getStatusInfo(), readResponseEntity(failureResponse));
   }
 
   private static String readResponseEntity(Response response) {
-    try (Reader in = new InputStreamReader((InputStream)response.getEntity())) {
-      return IoUtil.readAllChars(in);
+    try {
+      if (response.hasEntity()) {
+        try (Reader in = new InputStreamReader((InputStream)response.getEntity())) {
+          return IoUtil.readAllChars(in);
+        }
+        catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      else {
+        return "";
+      }
     }
-    catch (IOException e) {
-      throw new RuntimeException(e);
+    finally {
+      response.close();
     }
   }
 

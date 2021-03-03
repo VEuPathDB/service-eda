@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.function.Function;
+import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -21,11 +21,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.grizzly.http.util.Header;
 import org.gusdb.fgputil.AutoCloseableList;
-import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.functional.Either;
-import org.gusdb.fgputil.functional.FunctionalInterfaces;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.web.ResponseEntityInputStream;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
@@ -39,47 +36,41 @@ public class ClientUtil {
     return new ObjectMapper().readerFor(responseObjectClass).readValue(new URL(url));
   }
 
-  public static Either<Optional<InputStream>, RequestFailure> makePostRequest(
-      String url, Object postBodyObject, String expectedResponseType) {
+  public static ResponseFuture makeAsyncGetRequest(
+      String url, String expectedResponseType) {
+    LOG.info("Will send following GET request to " + url);
+    return makeAsyncRequest(url, expectedResponseType,
+      invoker -> invoker.get());
+  }
 
+  public static ResponseFuture makeAsyncPostRequest(
+      String url, Object postBodyObject, String expectedResponseType) {
     String json = JsonUtil.serializeObject(postBodyObject);
     LOG.info("Will send following POST request to " + url + "\n" + json);
+    return makeAsyncRequest(url, expectedResponseType,
+      invoker -> invoker.post(Entity.entity(json, MediaType.APPLICATION_JSON)));
+  }
 
+  private static ResponseFuture makeAsyncRequest(String url, String expectedResponseType,
+      Function<AsyncInvoker, Future<Response>> responseProducer) {
     MultivaluedMap<String,Object> headers = new MultivaluedHashMap<>();
     headers.add(Header.Accept.toString(), "*/*");
     if (LOG_RESPONSE_HEADERS) {
       headers.add("X-Jersey-Tracing-Accept", "any");
     }
-
-    Response response = ClientBuilder.newClient()
-      .target(url)
-      .request(expectedResponseType)
-      .headers(headers)
-      .post(Entity.entity(json, MediaType.APPLICATION_JSON));
-
-    if (LOG_RESPONSE_HEADERS)
-      logHeaders(response.getHeaders());
-
-    Optional<InputStream> responseBody = !response.hasEntity() ? Optional.empty() :
-        Optional.of(new ResponseEntityInputStream(response));
-
-    return response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL) ?
-        Either.left(responseBody) :
-        Either.right(new RequestFailure(response));
-  }
-
-  private static void logHeaders(MultivaluedMap<String, Object> headers) {
-    List<String> headerNames = new ArrayList<>(headers.keySet());
-    Collections.sort(headerNames);
-    for (String header : headerNames) {
-      LOG.info("Header " + header + ": " + FormatUtil.join(headers.get(header).toArray(), ","));
-    }
+    return new ResponseFuture(
+      responseProducer.apply(
+        ClientBuilder.newClient()
+          .target(url)
+          .request(expectedResponseType)
+          .headers(headers)
+          .async()), LOG_RESPONSE_HEADERS);
   }
 
   public static void buildAndProcessStreams(
       List<StreamSpec> requiredStreams,
-      Function<StreamSpec, InputStream> streamGenerator,
-      FunctionalInterfaces.ConsumerWithException<Map<String, InputStream>> streamProcessor) {
+      Function<StreamSpec, ResponseFuture> streamGenerator,
+      ConsumerWithException<Map<String, InputStream>> streamProcessor) {
     try (AutoCloseableList<InputStream> dataStreams = buildDataStreams(requiredStreams, streamGenerator)) {
       // convert auto-closeable list into a named stream map for processing
       Map<String,InputStream> streamMap = new LinkedHashMap<>();
@@ -91,17 +82,43 @@ public class ClientUtil {
   }
 
   private static AutoCloseableList<InputStream> buildDataStreams(
-      List<StreamSpec> requiredStreams, Function<StreamSpec,InputStream> streamGenerator) {
+      List<StreamSpec> requiredStreams,
+      Function<StreamSpec,ResponseFuture> streamGenerator) {
     AutoCloseableList<InputStream> dataStreams = new AutoCloseableList<>();
+    Map<String, ResponseFuture> responses = new HashMap<>();
     try {
+      // parallelize the calls
       for (StreamSpec spec : requiredStreams) {
-        dataStreams.add(streamGenerator.apply(spec));
+        responses.put(spec.getStreamName(), streamGenerator.apply(spec));
+      }
+      // wait for all to complete
+      boolean allDone = false;
+      while (!allDone) {
+        allDone = true;
+        for (ResponseFuture response : responses.values()) {
+          if (!response.isDone()) {
+            allDone = false;
+            break;
+          }
+        }
+        Thread.sleep(10); // let other threads run
+      }
+      // get results
+      for (StreamSpec spec : requiredStreams) {
+        dataStreams.add(responses.get(spec.getStreamName()).getInputStream());
+        responses.remove(spec.getStreamName());
       }
       return dataStreams;
     }
     catch (Exception e) {
-      // if exception occurs while creating streams; close any that successfully opened, then throw
+      // if exception occurs while creating streams; need to clean up (two parts)
+      // 1. cancel remaining responses not opened
+      for (ResponseFuture response : responses.values()) {
+        response.cancel();
+      }
+      // 2. close any that successfully opened
       dataStreams.close();
+      // throw as a runtime exception
       throw new RuntimeException("Unable to fetch all required data", e);
     }
   }

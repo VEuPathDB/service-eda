@@ -6,15 +6,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.ws.rs.ProcessingException;
+import javax.ws.rs.core.MediaType;
 import org.gusdb.fgputil.functional.Either;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 import org.veupathdb.service.eda.generated.model.APIStudyOverview;
+import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequestImpl;
 import org.veupathdb.service.eda.generated.model.StudiesGetResponse;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
+import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
@@ -63,10 +67,10 @@ public class EdaSubsettingClient extends AbstractTabularDataClient {
   }
 
   @Override
-  public InputStream getTabularDataStream(
+  public ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
       List<APIFilter> subset,
-      StreamSpec spec) {
+      StreamSpec spec) throws ProcessingException {
 
     // build request object
     EntityTabularPostRequest request = new EntityTabularPostRequestImpl();
@@ -80,14 +84,42 @@ public class EdaSubsettingClient extends AbstractTabularDataClient {
     String url = getUrl("/studies/" + metadata.getStudyId() + "/entities/" + spec.getEntityId() + "/tabular");
 
     // make request
-    Either<Optional<InputStream>, RequestFailure> result = ClientUtil
-        .makePostRequest(url, request, "text/tabular");
+    return ClientUtil.makeAsyncPostRequest(url, request, "text/tabular");
+  }
 
-    // handle result
-    if (result.isLeft()) {
-      return result.getLeft().orElseThrow(() ->
-          new RuntimeException("Tabular request did not return a response body."));
-    }
-    throw new RuntimeException(result.getRight().toString());
+  //*****************************************************************
+  //** Methods to support pass-through calls to subsetting service
+  //*****************************************************************
+
+  // GET request pass-throughs
+
+  private Either<InputStream, RequestFailure> doGet(String resourcePath) throws Exception {
+    return ClientUtil.makeAsyncGetRequest(getUrl(resourcePath), MediaType.APPLICATION_JSON).getEither();
+  }
+
+  public Either<InputStream, RequestFailure> getStudiesStream() throws Exception {
+    return doGet("/studies");
+  }
+
+  public Either<InputStream, RequestFailure> getStudyStream(String studyId) throws Exception {
+    return doGet("/studies/" + studyId);
+  }
+
+  public Either<InputStream, RequestFailure> getEntityStream(String studyId, String entityId) throws Exception {
+    return doGet("/studies/" + studyId + "/entities/" + entityId);
+  }
+
+  // POST request pass-throughs
+
+  private Either<InputStream, RequestFailure> doPost(String resourcePath, Object requestBodyObject) throws Exception {
+    return ClientUtil.makeAsyncPostRequest(getUrl(resourcePath), requestBodyObject, MediaType.APPLICATION_JSON).getEither();
+  }
+
+  public Either<InputStream, RequestFailure> getEntityCountStream(String studyId, String entityId, EntityCountPostRequest requestObject) throws Exception {
+    return doPost("/studies/" + studyId + "/entities/" + entityId + "/count", requestObject);
+  }
+
+  public Either<InputStream, RequestFailure> getVariableDistributionStream(String studyId, String entityId, String variableId, VariableDistributionPostRequest requestObject) throws Exception {
+    return doPost("/studies/" + studyId + "/entities/" + entityId + "/variables/" + variableId + "/distribution", requestObject);
   }
 }

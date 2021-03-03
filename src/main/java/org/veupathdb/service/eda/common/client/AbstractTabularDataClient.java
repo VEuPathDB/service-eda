@@ -1,7 +1,7 @@
 package org.veupathdb.service.eda.common.client;
 
-import java.io.InputStream;
 import java.util.List;
+import javax.ws.rs.ProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
@@ -18,10 +18,10 @@ public abstract class AbstractTabularDataClient {
 
   public abstract String varToColumnHeader(VariableSpec var);
 
-  public abstract InputStream getTabularDataStream(
+  public abstract ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
       List<APIFilter> subset,
-      StreamSpec spec);
+      StreamSpec spec) throws ProcessingException;
 
   public AbstractTabularDataClient(String serviceBaseUrl) {
     // remove trailing slash from baseUrl (paths must begin with a slash)

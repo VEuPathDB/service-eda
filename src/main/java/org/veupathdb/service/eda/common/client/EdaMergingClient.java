@@ -2,6 +2,8 @@ package org.veupathdb.service.eda.common.client;
 
 import java.util.List;
 import javax.ws.rs.ProcessingException;
+import org.gusdb.fgputil.client.ClientUtil;
+import org.gusdb.fgputil.client.ResponseFuture;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;

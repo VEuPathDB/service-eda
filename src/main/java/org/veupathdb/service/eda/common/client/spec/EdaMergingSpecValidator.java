@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.common.client;
+package org.veupathdb.service.eda.common.client.spec;
 
 import java.util.Collection;
 import org.gusdb.fgputil.validation.ValidationBundle;

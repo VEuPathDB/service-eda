@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.common.client;
+package org.veupathdb.service.eda.common.client.spec;
 
 import java.util.ArrayList;
 import java.util.Collection;

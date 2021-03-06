@@ -12,6 +12,9 @@ import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.RequestFailure;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.Either;
+import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
+import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
@@ -26,7 +29,7 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
-public class EdaSubsettingClient extends AbstractTabularDataClient {
+public class EdaSubsettingClient extends StreamingDataClient {
 
   // request-scope cache for subsetting service metadata responses
   private List<String> _validStudyNameCache;

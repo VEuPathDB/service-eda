@@ -12,15 +12,17 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.FunctionalInterfaces;
+import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
-public abstract class AbstractTabularDataClient {
+public abstract class StreamingDataClient {
 
-  private static Logger LOG = LogManager.getLogger(AbstractTabularDataClient.class);
+  private static Logger LOG = LogManager.getLogger(StreamingDataClient.class);
 
   private final String _serviceBaseUrl;
 
@@ -33,7 +35,7 @@ public abstract class AbstractTabularDataClient {
       List<APIFilter> subset,
       StreamSpec spec) throws ProcessingException;
 
-  public AbstractTabularDataClient(String serviceBaseUrl) {
+  public StreamingDataClient(String serviceBaseUrl) {
     // remove trailing slash from baseUrl (paths must begin with a slash)
     _serviceBaseUrl = !serviceBaseUrl.endsWith("/") ? serviceBaseUrl :
         serviceBaseUrl.substring(0, serviceBaseUrl.length() - 1);
@@ -67,18 +69,10 @@ public abstract class AbstractTabularDataClient {
       for (StreamSpec spec : requiredStreams) {
         responses.put(spec.getStreamName(), streamGenerator.apply(spec));
       }
+
       // wait for all to complete
-      boolean allDone = false;
-      while (!allDone) {
-        allDone = true;
-        for (ResponseFuture response : responses.values()) {
-          if (!response.isDone()) {
-            allDone = false;
-            break;
-          }
-        }
-        Thread.sleep(10); // let other threads run
-      }
+      ResponseFuture.waitForAll(responses.values());
+
       // get results
       for (StreamSpec spec : requiredStreams) {
         dataStreams.add(responses.get(spec.getStreamName()).getInputStream());

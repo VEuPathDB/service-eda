@@ -4,6 +4,9 @@ import java.util.List;
 import javax.ws.rs.ProcessingException;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
+import org.veupathdb.service.eda.common.client.spec.EdaMergingSpecValidator;
+import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
@@ -11,7 +14,7 @@ import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequestImpl;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
-public class EdaMergingClient extends AbstractTabularDataClient {
+public class EdaMergingClient extends StreamingDataClient {
 
   public EdaMergingClient(String serviceBaseUrl) {
     super(serviceBaseUrl);

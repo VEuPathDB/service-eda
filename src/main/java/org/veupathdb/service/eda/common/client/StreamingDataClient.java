@@ -22,8 +22,6 @@ import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
 public abstract class StreamingDataClient {
 
-  private static Logger LOG = LogManager.getLogger(StreamingDataClient.class);
-
   private final String _serviceBaseUrl;
 
   public abstract StreamSpecValidator getStreamSpecValidator();

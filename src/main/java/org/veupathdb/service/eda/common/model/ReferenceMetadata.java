@@ -102,7 +102,7 @@ public class ReferenceMetadata {
     TreeNode<EntityDef> node = new TreeNode<>(entityDef);
 
     // log resulting list
-    LOG.info("Supplemented Entity: " + entityDef);
+    //LOG.debug("Supplemented Entity: " + entityDef);
 
     // add child entities
     for (APIEntity childEntity : entity.getChildren()) {

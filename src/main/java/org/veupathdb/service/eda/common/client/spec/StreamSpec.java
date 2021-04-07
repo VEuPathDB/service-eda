@@ -23,13 +23,17 @@ public class StreamSpec extends ArrayList<VariableSpec> {
     return _entityId;
   }
 
-  public StreamSpec addVariable(VariableSpec variableSpec) {
-    add(variableSpec);
+  public StreamSpec addVar(VariableSpec variableSpec) {
+    if (variableSpec != null) {
+      add(variableSpec);
+    }
     return this;
   }
 
-  public StreamSpec addVariables(Collection<VariableDef> variableSpecs) {
-    addAll(variableSpecs);
+  public <T extends VariableSpec> StreamSpec addVars(Collection<T> variableSpecs) {
+    if (variableSpecs != null) {
+      addAll(variableSpecs);
+    }
     return this;
   }
 }

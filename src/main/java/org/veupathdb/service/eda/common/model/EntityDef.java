@@ -35,7 +35,7 @@ public class EntityDef extends ArrayList<VariableDef> {
     return getVariableOpt(var).orElseThrow(() -> new RuntimeException("Variable " + var + " not available on entity " + _id));
   }
 
-  Optional<VariableDef> getVariableOpt(VariableSpec var) {
+  public Optional<VariableDef> getVariableOpt(VariableSpec var) {
     return stream()
         .filter(v -> VariableDef.isSameVariable(v, var))
         .findFirst();

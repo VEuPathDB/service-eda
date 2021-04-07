@@ -134,13 +134,9 @@ public class ReferenceMetadata {
         .map(foundVar -> foundVar.getSource().equals(VariableSource.NATIVE)).orElse(false);
   }
 
-  public EntityDef getValidEntity(ValidationBundleBuilder validation, String entityId) throws ValidationException {
-    EntityDef entity = _entityMap.get(entityId);
-    if (entity == null) {
-      validation.addError(getNoEntityMsg(entityId));
-      validation.build().throwIfInvalid();
-    }
-    return entity;
+  public EntityDef validateEntityAndGet(String entityId) throws ValidationException {
+    return Optional.ofNullable(_entityMap.get(entityId))
+      .orElseThrow(() -> new ValidationException(getNoEntityMsg(entityId)));
   }
 
   public EntityDef getEntity(String entityId) {

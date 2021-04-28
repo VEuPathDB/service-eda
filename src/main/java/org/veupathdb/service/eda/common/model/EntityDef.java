@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
+import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -17,7 +18,8 @@ public class EntityDef extends ArrayList<VariableDef> {
   public EntityDef(String id, String displayName, String idColumnName) {
     _id = id;
     _displayName = displayName;
-    _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING, VariableSource.ID);
+    _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING,
+        APIVariableDataShape.CONTINUOUS ,VariableSource.ID);
     add(_idColumnDef);
   }
 

@@ -1,19 +1,14 @@
 package org.veupathdb.service.eda.common.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidationBundle.ValidationBundleBuilder;
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.generated.model.APIEntity;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
@@ -65,6 +60,7 @@ public class ReferenceMetadata {
           vd.getEntityId(),
           vd.getVariableId(),
           vd.getType(),
+          vd.getDataShape(),
           VariableSource.INHERITED)));
 
     // process this entity's native vars
@@ -74,6 +70,7 @@ public class ReferenceMetadata {
           entity.getId(),
           var.getId(),
           var.getType(),
+          var.getDataShape(),
           VariableSource.NATIVE))
       .forEach(vd -> {
         // add variables for this entity
@@ -94,15 +91,13 @@ public class ReferenceMetadata {
           entity.getId(),
           dr.getVariableId(),
           dr.getVariableType(),
+          dr.getVariableDataShape(),
           dr.getDerivationType()))
 
       .forEach(vd -> entityDef.add(vd));
 
     // put this entity in a node
     TreeNode<EntityDef> node = new TreeNode<>(entityDef);
-
-    // log resulting list
-    //LOG.debug("Supplemented Entity: " + entityDef);
 
     // add child entities
     for (APIEntity childEntity : entity.getChildren()) {

@@ -89,7 +89,7 @@ public class ReferenceMetadata {
       // only derived vars for this entity
       .filter(dr -> dr.getEntityId().equals(entity.getId()))
       // skip if entity already contains the variable; TODO: will throw later
-      .filter(dr -> !entityDef.hasVariable(dr))
+      .filter(dr -> !entityDef.getVariable(dr).isPresent())
       .map(dr -> new VariableDef(
           entity.getId(),
           dr.getVariableId(),
@@ -117,6 +117,14 @@ public class ReferenceMetadata {
     return _studyId;
   }
 
+  public Optional<EntityDef> getEntity(String entityId) {
+    return Optional.ofNullable(_entityMap.get(entityId));
+  }
+
+  public Optional<VariableDef> getVariable(VariableSpec var) {
+    return getEntity(var.getEntityId()).flatMap(e -> e.getVariable(var));
+  }
+
   public List<DerivedVariable> getDerivedVariables() {
     return _derivedVariables;
   }
@@ -125,59 +133,39 @@ public class ReferenceMetadata {
     return _derivedVariables.stream().filter(dr -> VariableDef.isSameVariable(dr, var)).findFirst();
   }
 
-  public boolean containsEntity(String entityId) {
-    return _entityMap.containsKey(entityId);
-  }
-
-  public boolean isNativeVarOfEntity(String variableId, String entityId) {
-    return _entityMap.get(entityId).getVariableOpt(VariableDef.newVariableSpec(entityId, variableId))
-        .map(foundVar -> foundVar.getSource().equals(VariableSource.NATIVE)).orElse(false);
-  }
-
-  public EntityDef validateEntityAndGet(String entityId) throws ValidationException {
-    return Optional.ofNullable(_entityMap.get(entityId))
-      .orElseThrow(() -> new ValidationException(getNoEntityMsg(entityId)));
-  }
-
-  public EntityDef getEntity(String entityId) {
-    return Optional.ofNullable(_entityMap.get(entityId))
-      .orElseThrow(() -> new RuntimeException(getNoEntityMsg(entityId)));
-  }
-
-  public VariableDef getVariableDef(VariableSpec var) {
-    return getEntity(var.getEntityId()).getVariable(var);
-  }
-
-  private String getNoEntityMsg(String entityId) {
-    return "No entity exists on study '" + getStudyId() + "' with ID '" + entityId + "'.";
-  }
-
-  public void validateVariableName(ValidationBundleBuilder validation,
-                                   EntityDef entity, String variableUse, VariableSpec variable) {
-    List<APIVariableType> nonCategoryTypes = Arrays.stream(APIVariableType.values())
-        .filter(type -> !type.equals(APIVariableType.CATEGORY))
+  /**
+   * Returns the child entities of the passed entity
+   *
+   * @param targetEntity
+   * @return
+   */
+  public List<EntityDef> getChildren(EntityDef targetEntity) {
+    return _entityTree
+        .findFirst(node -> node.getId().equals(targetEntity.getId()))
+        .getChildNodes()
+        .stream()
+        .map(node -> node.getContents())
         .collect(Collectors.toList());
-    validateVariableNameAndType(validation, entity, variableUse, variable, nonCategoryTypes.toArray(new APIVariableType[0]));
   }
 
-  public void validateVariableNameAndType(ValidationBundleBuilder validation,
-                                          EntityDef entity, String variableUse, VariableSpec varSpec, APIVariableType... allowedTypes) {
-    List<APIVariableType> allowedTypesList = Arrays.asList(allowedTypes);
-    if (allowedTypesList.contains(APIVariableType.CATEGORY)) {
-      throw new RuntimeException("Plugin should not be using categories as variables.");
-    }
-    String varDesc = "Variable " + JsonUtil.serializeObject(varSpec) + ", used for " + variableUse + ", ";
-    if (!entity.hasVariable(varSpec)) {
-      validation.addError(varDesc + "does not exist in entity " + entity.getId());
-    }
-    else if (!allowedTypesList.contains(entity.getVariable(varSpec).getType())) {
-      validation.addError(varDesc + "must be one of the following types: " + FormatUtil.join(allowedTypes, ", "));
-    }
+  public List<EntityDef> getDescendants(EntityDef targetEntity) {
+    return _entityTree
+        .findFirst(node -> node.getId().equals(targetEntity.getId()))
+        // find all nodes in this subtree except the root
+        .findAll(entity -> !entity.getId().equals(targetEntity.getId()))
+        .stream()
+        .map(node -> node.getContents())
+        .collect(Collectors.toList());
   }
 
+  /**
+   * Returns the ancestor entities of the passed entity, ordered from the bottom (parent) up to the root
+   *
+   * @param targetEntity
+   * @return
+   */
   public List<EntityDef> getAncestors(EntityDef targetEntity) {
-    return Optional.ofNullable(getAncestors(targetEntity, _entityTree, new ArrayList<>()))
-        .orElseThrow(() -> new RuntimeException("Target entity '" + targetEntity.getId() + "' could not be found in entity tree."));
+    return getAncestors(targetEntity, _entityTree, new ArrayList<>());
   }
 
   private static List<EntityDef> getAncestors(EntityDef targetEntity, TreeNode<EntityDef> entityTree, List<EntityDef> ancestors) {
@@ -192,6 +180,27 @@ public class ReferenceMetadata {
         return listForFoundEntity;
       }
     }
-    return null;
+    throw new RuntimeException("Target entity '" + targetEntity.getId() + "' could not be found in entity tree.");
   }
+
+  public List<VariableDef> getTabularColumns(EntityDef targetEntity, List<VariableSpec> requestedVars) {
+
+    List<VariableDef> columns = new ArrayList<>();
+
+    // first column is the ID col for the returned entity
+    columns.add(targetEntity.getIdColumnDef());
+
+    // next cols are the ID cols for ancestor entities (up the tree)
+    for (EntityDef ancestor : getAncestors(targetEntity)) {
+      columns.add(ancestor.getIdColumnDef());
+    }
+
+    // then add requested vars in the order requested
+    for (VariableSpec requestedVar : requestedVars) {
+      columns.add(getVariable(requestedVar).orElseThrow());
+    }
+
+    return columns;
+  }
+
 }

@@ -160,22 +160,27 @@ public class ReferenceMetadata {
    * @return
    */
   public List<EntityDef> getAncestors(EntityDef targetEntity) {
-    return getAncestors(targetEntity, _entityTree, new ArrayList<>());
+    return getAncestors(targetEntity, _entityTree, new ArrayList<>())
+        .orElseThrow(() -> new RuntimeException(
+            "Target entity '" + targetEntity.getId() +
+            "' could not be found in entity tree."));
   }
 
-  private static List<EntityDef> getAncestors(EntityDef targetEntity, TreeNode<EntityDef> entityTree, List<EntityDef> ancestors) {
+  private static Optional<List<EntityDef>> getAncestors(EntityDef targetEntity, TreeNode<EntityDef> entityTree, List<EntityDef> ancestors) {
     if (entityTree.getContents().getId().equals(targetEntity.getId())) {
-      return ancestors; // done
+      return Optional.of(ancestors); // entity found
     }
     for (TreeNode<EntityDef> child : entityTree.getChildNodes()) {
       List<EntityDef> supplementedAncestors = new ArrayList<>(ancestors);
       supplementedAncestors.add(0, entityTree.getContents()); // in ascending order (up the tree)
-      List<EntityDef> listForFoundEntity = getAncestors(targetEntity, child, supplementedAncestors);
-      if (listForFoundEntity != null) {
+      Optional<List<EntityDef>> listForFoundEntity = getAncestors(targetEntity, child, supplementedAncestors);
+      if (listForFoundEntity.isPresent()) {
+        // entity found in this branch
         return listForFoundEntity;
       }
     }
-    throw new RuntimeException("Target entity '" + targetEntity.getId() + "' could not be found in entity tree.");
+    // entity not found in this branch
+    return Optional.empty();
   }
 
   public List<VariableDef> getTabularColumns(EntityDef targetEntity, List<VariableSpec> requestedVars) {

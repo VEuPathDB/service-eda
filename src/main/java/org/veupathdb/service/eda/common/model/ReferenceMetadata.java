@@ -7,10 +7,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.Range;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.veupathdb.service.eda.common.model.VariableDef.DataRanges;
+import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIEntity;
+import org.veupathdb.service.eda.generated.model.APINumberVariable;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
+import org.veupathdb.service.eda.generated.model.APIVariable;
+import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.DerivedVariable;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
@@ -61,6 +67,7 @@ public class ReferenceMetadata {
           vd.getVariableId(),
           vd.getType(),
           vd.getDataShape(),
+          vd.getDataRanges(),
           VariableSource.INHERITED)));
 
     // process this entity's native vars
@@ -71,6 +78,7 @@ public class ReferenceMetadata {
           var.getId(),
           var.getType(),
           var.getDataShape(),
+          getDataRanges(var),
           VariableSource.NATIVE))
       .forEach(vd -> {
         // add variables for this entity
@@ -106,6 +114,34 @@ public class ReferenceMetadata {
     }
 
     return node;
+  }
+
+  private static Optional<DataRanges> getDataRanges(APIVariable var) {
+    if (var.getDataShape() != APIVariableDataShape.CONTINUOUS) {
+      return Optional.empty();
+    }
+    switch(var.getType()) {
+      case NUMBER:
+        APINumberVariable numVar = (APINumberVariable)var;
+        return Optional.of(new DataRanges(
+            new Range<>(
+                numVar.getRangeMin().toString(),
+                numVar.getRangeMax().toString()),
+            new Range<>(
+                numVar.getDisplayRangeMin().toString(),
+                numVar.getDisplayRangeMax().toString())));
+      case DATE:
+        APIDateVariable dateVar = (APIDateVariable)var;
+        return Optional.of(new DataRanges(
+            new Range<>(
+                dateVar.getRangeMin(),
+                dateVar.getRangeMax()),
+            new Range<>(
+                dateVar.getDisplayRangeMin(),
+                dateVar.getDisplayRangeMax())));
+      default:
+        return Optional.empty();
+    }
   }
 
   public String getStudyId() {

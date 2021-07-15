@@ -3,8 +3,13 @@ package org.veupathdb.service.eda.common.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import org.gusdb.fgputil.Range;
+import org.gusdb.fgputil.Tuples;
+import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.veupathdb.service.eda.generated.model.APIVariable;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.DerivationType;
@@ -31,6 +36,12 @@ public class VariableDef extends VariableSpecImpl {
     return spec;
   }
 
+  public static class DataRanges extends TwoTuple<Range<String>,Range<String>> {
+    public DataRanges(Range<String> dataRange, Range<String> displayRange) { super(dataRange, displayRange); }
+    public Range<String> getDataRange() { return getFirst(); }
+    public Range<String> getDisplayRange() { return getSecond(); }
+  }
+
   @JsonIgnore
   private final APIVariableType _type;
 
@@ -40,16 +51,21 @@ public class VariableDef extends VariableSpecImpl {
   @JsonIgnore
   private final VariableSource _source;
 
+  @JsonIgnore
+  private final Optional<DataRanges> _dataRanges;
+
   public VariableDef(
       String entityId,
       String variableId,
       APIVariableType type,
       APIVariableDataShape dataShape,
+      Optional<DataRanges> dataRanges,
       VariableSource source) {
     setEntityId(entityId);
     setVariableId(variableId);
     _type = type;
     _dataShape = dataShape;
+    _dataRanges = dataRanges;
     _source = source;
   }
 
@@ -59,7 +75,7 @@ public class VariableDef extends VariableSpecImpl {
       APIVariableType type,
       APIVariableDataShape dataShape,
       DerivationType derivationType) {
-    this(entityId, variableId, type, dataShape,
+    this(entityId, variableId, type, dataShape, Optional.empty(),
       switch(derivationType) {
         case REDUCTION -> DERIVED_BY_REDUCTION;
         case TRANSFORM -> DERIVED_BY_TRANSFORM;
@@ -75,6 +91,11 @@ public class VariableDef extends VariableSpecImpl {
   @JsonIgnore
   public APIVariableDataShape getDataShape() {
     return _dataShape;
+  }
+
+  @JsonIgnore
+  public Optional<DataRanges> getDataRanges() {
+    return _dataRanges;
   }
 
   @JsonIgnore

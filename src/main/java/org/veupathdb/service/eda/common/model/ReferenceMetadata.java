@@ -13,7 +13,9 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.common.model.VariableDef.DataRanges;
 import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIEntity;
+import org.veupathdb.service.eda.generated.model.APILongitudeVariable;
 import org.veupathdb.service.eda.generated.model.APINumberVariable;
+import org.veupathdb.service.eda.generated.model.APIStringVariable;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 import org.veupathdb.service.eda.generated.model.APIVariable;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
@@ -67,6 +69,7 @@ public class ReferenceMetadata {
           vd.getVariableId(),
           vd.getType(),
           vd.getDataShape(),
+          vd.isMultiValue(),
           vd.getDataRanges(),
           VariableSource.INHERITED)));
 
@@ -78,6 +81,7 @@ public class ReferenceMetadata {
           var.getId(),
           var.getType(),
           var.getDataShape(),
+          isMultiValue(var),
           getDataRanges(var),
           VariableSource.NATIVE))
       .forEach(vd -> {
@@ -114,6 +118,16 @@ public class ReferenceMetadata {
     }
 
     return node;
+  }
+
+  private static boolean isMultiValue(APIVariable var) {
+    return switch(var.getType()) {
+      case DATE -> ((APIDateVariable)var).getIsMultiValued();
+      case STRING -> ((APIStringVariable)var).getIsMultiValued();
+      case NUMBER -> ((APINumberVariable)var).getIsMultiValued();
+      case LONGITUDE -> ((APILongitudeVariable)var).getIsMultiValued();
+      case CATEGORY -> false;
+    };
   }
 
   private static Optional<DataRanges> getDataRanges(APIVariable var) {

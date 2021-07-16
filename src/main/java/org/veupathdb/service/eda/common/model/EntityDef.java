@@ -19,7 +19,7 @@ public class EntityDef extends ArrayList<VariableDef> {
     _id = id;
     _displayName = displayName;
     _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING,
-        APIVariableDataShape.CONTINUOUS, Optional.empty(), VariableSource.ID);
+        APIVariableDataShape.CONTINUOUS, false, Optional.empty(), VariableSource.ID);
     add(_idColumnDef);
   }
 

@@ -52,6 +52,9 @@ public class VariableDef extends VariableSpecImpl {
   private final VariableSource _source;
 
   @JsonIgnore
+  private final boolean _isMultiValue;
+
+  @JsonIgnore
   private final Optional<DataRanges> _dataRanges;
 
   public VariableDef(
@@ -59,12 +62,14 @@ public class VariableDef extends VariableSpecImpl {
       String variableId,
       APIVariableType type,
       APIVariableDataShape dataShape,
+      boolean isMultiValue,
       Optional<DataRanges> dataRanges,
       VariableSource source) {
     setEntityId(entityId);
     setVariableId(variableId);
     _type = type;
     _dataShape = dataShape;
+    _isMultiValue = isMultiValue;
     _dataRanges = dataRanges;
     _source = source;
   }
@@ -75,7 +80,7 @@ public class VariableDef extends VariableSpecImpl {
       APIVariableType type,
       APIVariableDataShape dataShape,
       DerivationType derivationType) {
-    this(entityId, variableId, type, dataShape, Optional.empty(),
+    this(entityId, variableId, type, dataShape, false, Optional.empty(),
       switch(derivationType) {
         case REDUCTION -> DERIVED_BY_REDUCTION;
         case TRANSFORM -> DERIVED_BY_TRANSFORM;
@@ -91,6 +96,11 @@ public class VariableDef extends VariableSpecImpl {
   @JsonIgnore
   public APIVariableDataShape getDataShape() {
     return _dataShape;
+  }
+
+  @JsonIgnore
+  public boolean isMultiValue() {
+    return _isMultiValue;
   }
 
   @JsonIgnore

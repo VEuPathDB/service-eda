@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.Range;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.veupathdb.service.eda.common.model.VariableDef.DataRange;
 import org.veupathdb.service.eda.common.model.VariableDef.DataRanges;
 import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIEntity;
@@ -138,21 +139,21 @@ public class ReferenceMetadata {
       case NUMBER:
         APINumberVariable numVar = (APINumberVariable)var;
         return Optional.of(new DataRanges(
-            new Range<>(
+            new DataRange(
                 numVar.getRangeMin().toString(),
                 numVar.getRangeMax().toString()),
-            new Range<>(
-                numVar.getDisplayRangeMin().toString(),
-                numVar.getDisplayRangeMax().toString())));
+            new DataRange(
+                Optional.ofNullable(numVar.getDisplayRangeMin()).orElse(numVar.getRangeMin()).toString(),
+                Optional.ofNullable(numVar.getDisplayRangeMax()).orElse(numVar.getRangeMax()).toString())));
       case DATE:
         APIDateVariable dateVar = (APIDateVariable)var;
         return Optional.of(new DataRanges(
-            new Range<>(
+            new DataRange(
                 dateVar.getRangeMin(),
                 dateVar.getRangeMax()),
-            new Range<>(
-                dateVar.getDisplayRangeMin(),
-                dateVar.getDisplayRangeMax())));
+            new DataRange(
+                Optional.ofNullable(dateVar.getDisplayRangeMin()).orElse(dateVar.getRangeMin()),
+                Optional.ofNullable(dateVar.getDisplayRangeMax()).orElse(dateVar.getRangeMax()))));
       default:
         return Optional.empty();
     }

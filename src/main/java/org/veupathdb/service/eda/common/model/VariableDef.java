@@ -5,11 +5,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.gusdb.fgputil.Range;
-import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.veupathdb.service.eda.generated.model.APIVariable;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.DerivationType;
@@ -36,10 +33,16 @@ public class VariableDef extends VariableSpecImpl {
     return spec;
   }
 
-  public static class DataRanges extends TwoTuple<Range<String>,Range<String>> {
-    public DataRanges(Range<String> dataRange, Range<String> displayRange) { super(dataRange, displayRange); }
-    public Range<String> getDataRange() { return getFirst(); }
-    public Range<String> getDisplayRange() { return getSecond(); }
+  public static class DataRange extends TwoTuple<String,String> {
+    public DataRange(String start, String end) { super(start, end); }
+    public String getStart() { return getFirst(); }
+    public String getEnd() { return getSecond(); }
+  }
+
+  public static class DataRanges extends TwoTuple<DataRange,DataRange> {
+    public DataRanges(DataRange dataRange, DataRange displayRange) { super(dataRange, displayRange); }
+    public DataRange getDataRange() { return getFirst(); }
+    public DataRange getDisplayRange() { return getSecond(); }
   }
 
   @JsonIgnore

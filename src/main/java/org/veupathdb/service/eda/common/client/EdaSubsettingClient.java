@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.MediaType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.RequestFailure;
 import org.gusdb.fgputil.client.ResponseFuture;
@@ -30,6 +32,8 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
 public class EdaSubsettingClient extends StreamingDataClient {
+
+  private static final Logger LOG = LogManager.getLogger(EdaSubsettingClient.class);
 
   // request-scope cache for subsetting service metadata responses
   private List<String> _validStudyNameCache;
@@ -99,20 +103,24 @@ public class EdaSubsettingClient extends StreamingDataClient {
 
   // GET request pass-throughs
 
-  private Either<InputStream, RequestFailure> doGet(String resourcePath) throws Exception {
-    return ClientUtil.makeAsyncGetRequest(getUrl(resourcePath), MediaType.APPLICATION_JSON).getEither();
+  private Either<InputStream, RequestFailure> doGet(String resourcePath, String expectedResponseType) throws Exception {
+    return ClientUtil.makeAsyncGetRequest(getUrl(resourcePath), expectedResponseType).getEither();
   }
 
   public Either<InputStream, RequestFailure> getStudiesStream() throws Exception {
-    return doGet("/studies");
+    return doGet("/studies", MediaType.APPLICATION_JSON);
   }
 
   public Either<InputStream, RequestFailure> getStudyStream(String studyId) throws Exception {
-    return doGet("/studies/" + studyId);
+    return doGet("/studies/" + studyId, MediaType.APPLICATION_JSON);
   }
 
   public Either<InputStream, RequestFailure> getEntityStream(String studyId, String entityId) throws Exception {
-    return doGet("/studies/" + studyId + "/entities/" + entityId);
+    return doGet("/studies/" + studyId + "/entities/" + entityId, MediaType.APPLICATION_JSON);
+  }
+
+  public Either<InputStream, RequestFailure> clearMetadataCache() throws Exception {
+    return doGet("/studies/clear-metadata-cache", MediaType.WILDCARD);
   }
 
   // POST request pass-throughs

@@ -15,6 +15,7 @@ import org.veupathdb.service.eda.common.model.VariableDef.DataRanges;
 import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIEntity;
 import org.veupathdb.service.eda.generated.model.APILongitudeVariable;
+import org.veupathdb.service.eda.generated.model.APIIntegerVariable;
 import org.veupathdb.service.eda.generated.model.APINumberVariable;
 import org.veupathdb.service.eda.generated.model.APIStringVariable;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
@@ -127,6 +128,7 @@ public class ReferenceMetadata {
       case STRING -> ((APIStringVariable)var).getIsMultiValued();
       case NUMBER -> ((APINumberVariable)var).getIsMultiValued();
       case LONGITUDE -> ((APILongitudeVariable)var).getIsMultiValued();
+      case INTEGER -> ((APIIntegerVariable)var).getIsMultiValued();
       case CATEGORY -> false;
     };
   }

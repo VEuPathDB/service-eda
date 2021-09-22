@@ -125,15 +125,20 @@ public class EdaSubsettingClient extends StreamingDataClient {
 
   // POST request pass-throughs
 
-  private Either<InputStream, RequestFailure> doPost(String resourcePath, Object requestBodyObject) throws Exception {
-    return ClientUtil.makeAsyncPostRequest(getUrl(resourcePath), requestBodyObject, MediaType.APPLICATION_JSON).getEither();
+  private Either<InputStream, RequestFailure> doPost(String resourcePath, Object requestBodyObject, String expectedResponseType) throws Exception {
+    return ClientUtil.makeAsyncPostRequest(getUrl(resourcePath), requestBodyObject, expectedResponseType).getEither();
   }
 
   public Either<InputStream, RequestFailure> getEntityCountStream(String studyId, String entityId, EntityCountPostRequest requestObject) throws Exception {
-    return doPost("/studies/" + studyId + "/entities/" + entityId + "/count", requestObject);
+    return doPost("/studies/" + studyId + "/entities/" + entityId + "/count", requestObject, MediaType.APPLICATION_JSON);
+  }
+
+  public Either<InputStream, RequestFailure> getEntityTabularStream(String studyId, String entityId, EntityTabularPostRequest requestObject, TabularResponseType responseType) throws Exception {
+    return doPost("/studies/" + studyId + "/entities/" + entityId + "/tabular", requestObject, responseType.getMediaType());
   }
 
   public Either<InputStream, RequestFailure> getVariableDistributionStream(String studyId, String entityId, String variableId, VariableDistributionPostRequest requestObject) throws Exception {
-    return doPost("/studies/" + studyId + "/entities/" + entityId + "/variables/" + variableId + "/distribution", requestObject);
+    return doPost("/studies/" + studyId + "/entities/" + entityId + "/variables/" + variableId + "/distribution", requestObject, MediaType.APPLICATION_JSON);
   }
+
 }

@@ -14,6 +14,7 @@ import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.RequestFailure;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.Either;
+import org.gusdb.fgputil.web.MimeTypes;
 import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
@@ -94,7 +95,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
     String url = getUrl("/studies/" + metadata.getStudyId() + "/entities/" + spec.getEntityId() + "/tabular");
 
     // make request
-    return ClientUtil.makeAsyncPostRequest(url, request, "text/tabular");
+    return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR);
   }
 
   //*****************************************************************

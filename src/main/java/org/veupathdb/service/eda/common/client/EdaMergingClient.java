@@ -4,6 +4,7 @@ import java.util.List;
 import javax.ws.rs.ProcessingException;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
+import org.gusdb.fgputil.web.MimeTypes;
 import org.veupathdb.service.eda.common.client.spec.EdaMergingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
@@ -45,6 +46,6 @@ public class EdaMergingClient extends StreamingDataClient {
     request.setOutputVariables(spec);
 
     // make request
-    return ClientUtil.makeAsyncPostRequest(getUrl("/query"), request, "text/tabular");
+    return ClientUtil.makeAsyncPostRequest(getUrl("/query"), request, MimeTypes.TEXT_TABULAR);
   }
 }

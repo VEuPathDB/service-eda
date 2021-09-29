@@ -22,6 +22,7 @@ import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 import org.veupathdb.service.eda.generated.model.APIVariable;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
+import org.veupathdb.service.eda.generated.model.APIVariableWithValues;
 import org.veupathdb.service.eda.generated.model.DerivedVariable;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -78,12 +79,13 @@ public class ReferenceMetadata {
     // process this entity's native vars
     entity.getVariables().stream()
       .filter(var -> !var.getType().equals(APIVariableType.CATEGORY))
+      .map(var -> (APIVariableWithValues)var)
       .map(var -> new VariableDef(
           entity.getId(),
           var.getId(),
           var.getType(),
           var.getDataShape(),
-          isMultiValue(var),
+          var.getIsMultiValued(),
           getDataRanges(var),
           VariableSource.NATIVE))
       .forEach(vd -> {
@@ -122,23 +124,13 @@ public class ReferenceMetadata {
     return node;
   }
 
-  private static boolean isMultiValue(APIVariable var) {
-    return switch(var.getType()) {
-      case DATE -> ((APIDateVariable)var).getIsMultiValued();
-      case STRING -> ((APIStringVariable)var).getIsMultiValued();
-      case NUMBER -> ((APINumberVariable)var).getIsMultiValued();
-      case LONGITUDE -> ((APILongitudeVariable)var).getIsMultiValued();
-      case INTEGER -> ((APIIntegerVariable)var).getIsMultiValued();
-      case CATEGORY -> false;
-    };
-  }
-
-  private static Optional<DataRanges> getDataRanges(APIVariable var) {
+  private static Optional<DataRanges> getDataRanges(APIVariableWithValues var) {
     if (var.getDataShape() != APIVariableDataShape.CONTINUOUS) {
       return Optional.empty();
     }
     switch(var.getType()) {
       case NUMBER:
+      case INTEGER:
         APINumberVariable numVar = (APINumberVariable)var;
         return Optional.of(new DataRanges(
             new DataRange(

@@ -130,7 +130,6 @@ public class ReferenceMetadata {
     }
     switch(var.getType()) {
       case NUMBER:
-      case INTEGER:
         APINumberVariable numVar = (APINumberVariable)var;
         return Optional.of(new DataRanges(
             new DataRange(
@@ -139,6 +138,15 @@ public class ReferenceMetadata {
             new DataRange(
                 Optional.ofNullable(numVar.getDisplayRangeMin()).orElse(numVar.getRangeMin()).toString(),
                 Optional.ofNullable(numVar.getDisplayRangeMax()).orElse(numVar.getRangeMax()).toString())));
+      case INTEGER:
+        APIIntegerVariable intVar = (APIIntegerVariable)var;
+        return Optional.of(new DataRanges(
+            new DataRange(
+                intVar.getRangeMin().toString(),
+                intVar.getRangeMax().toString()),
+            new DataRange(
+                Optional.ofNullable(intVar.getDisplayRangeMin()).orElse(intVar.getRangeMin()).toString(),
+                Optional.ofNullable(intVar.getDisplayRangeMax()).orElse(intVar.getRangeMax()).toString())));
       case DATE:
         APIDateVariable dateVar = (APIDateVariable)var;
         return Optional.of(new DataRanges(

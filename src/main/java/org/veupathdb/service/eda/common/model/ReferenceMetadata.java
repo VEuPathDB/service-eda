@@ -7,22 +7,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.Range;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.common.model.VariableDef.DataRange;
 import org.veupathdb.service.eda.common.model.VariableDef.DataRanges;
 import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIEntity;
-import org.veupathdb.service.eda.generated.model.APILongitudeVariable;
 import org.veupathdb.service.eda.generated.model.APIIntegerVariable;
 import org.veupathdb.service.eda.generated.model.APINumberVariable;
-import org.veupathdb.service.eda.generated.model.APIStringVariable;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
-import org.veupathdb.service.eda.generated.model.APIVariable;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.APIVariableWithValues;
+import org.veupathdb.service.eda.generated.model.APIVariablesCategory;
 import org.veupathdb.service.eda.generated.model.DerivedVariable;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -74,7 +72,26 @@ public class ReferenceMetadata {
           vd.getDataShape(),
           vd.isMultiValue(),
           vd.getDataRanges(),
+          vd.getParentId(),
           VariableSource.INHERITED)));
+
+    // process category vars (may still have children!)
+    entity.getVariables().stream()
+      .filter(var -> var.getType().equals(APIVariableType.CATEGORY))
+      .map(var -> (APIVariablesCategory)var)
+      .map(var -> new VariableDef(
+          entity.getId(),
+          var.getId(),
+          APIVariableType.CATEGORY,
+          null,
+          false,
+          Optional.empty(),
+          var.getParentId(),
+          VariableSource.NATIVE))
+      .forEach(cat -> {
+        // add category vars for this entity
+        entityDef.addCategory(cat);
+      });
 
     // process this entity's native vars
     entity.getVariables().stream()
@@ -87,6 +104,7 @@ public class ReferenceMetadata {
           var.getDataShape(),
           var.getIsMultiValued(),
           getDataRanges(var),
+          var.getParentId(),
           VariableSource.NATIVE))
       .forEach(vd -> {
         // add variables for this entity
@@ -219,6 +237,15 @@ public class ReferenceMetadata {
             "' could not be found in entity tree."));
   }
 
+  public List<String> getTabularIdColumns(EntityDef targetEntity) {
+    return new ListBuilder<String>()
+        .add(targetEntity.getIdColumnDef().getVariableId())
+        .addAll(getAncestors(targetEntity).stream()
+            .map(entity -> entity.getIdColumnDef().getVariableId())
+            .collect(Collectors.toList()))
+        .toList();
+  }
+
   private static Optional<List<EntityDef>> getAncestors(EntityDef targetEntity, TreeNode<EntityDef> entityTree, List<EntityDef> ancestors) {
     if (entityTree.getContents().getId().equals(targetEntity.getId())) {
       return Optional.of(ancestors); // entity found
@@ -255,5 +282,4 @@ public class ReferenceMetadata {
 
     return columns;
   }
-
 }

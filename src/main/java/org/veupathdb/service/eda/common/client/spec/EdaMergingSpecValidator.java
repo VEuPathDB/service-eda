@@ -37,12 +37,14 @@ public class EdaMergingSpecValidator implements StreamSpecValidator {
           validation.addError(spec.getStreamName(), "No variable exists in study " +
               metadata.getStudyId() + " with spec " + VariableDef.toDotNotation(varSpec));
         }
-        // variable exists; make sure its entity is the requested entity or an ancestor
-        String varEntityId = varOpt.get().getEntityId();
-        if (!varEntityId.equals(requestedEntity.getId()) && !ancestorIds.contains(varEntityId)) {
-          validation.addError(spec.getStreamName(), "Requested variable '" + VariableDef.toDotNotation(varOpt.get()) +
-              "' must be a member of the requested entity '" + requestedEntity.getId() +
-              "' or one of its ancestors: [" + ancestorIds.stream().collect(Collectors.joining(", ")) + "]");
+        else {
+          // variable exists; make sure its entity is the requested entity or an ancestor
+          String varEntityId = varOpt.get().getEntityId();
+          if (!varEntityId.equals(requestedEntity.getId()) && !ancestorIds.contains(varEntityId)) {
+            validation.addError(spec.getStreamName(), "Requested variable '" + VariableDef.toDotNotation(varOpt.get()) +
+                "' must be a member of the requested entity '" + requestedEntity.getId() +
+                "' or one of its ancestors: [" + ancestorIds.stream().collect(Collectors.joining(", ")) + "]");
+          }
         }
       }
     }

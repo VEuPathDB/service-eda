@@ -1,19 +1,16 @@
 package org.veupathdb.service.eda.common.client;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.ws.rs.ProcessingException;
-import javax.ws.rs.core.MediaType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.client.ClientUtil;
-import org.gusdb.fgputil.client.RequestFailure;
 import org.gusdb.fgputil.client.ResponseFuture;
-import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.web.MimeTypes;
 import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -22,12 +19,10 @@ import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 import org.veupathdb.service.eda.generated.model.APIStudyOverview;
-import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequestImpl;
 import org.veupathdb.service.eda.generated.model.StudiesGetResponse;
 import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
@@ -40,14 +35,14 @@ public class EdaSubsettingClient extends StreamingDataClient {
   private List<String> _validStudyNameCache;
   private Map<String, APIStudyDetail> _studyDetailCache = new HashMap<>();
 
-  public EdaSubsettingClient(String serviceBaseUrl) {
-    super(serviceBaseUrl);
+  public EdaSubsettingClient(String serviceBaseUrl, Entry<String, String> authHeader) {
+    super(serviceBaseUrl, authHeader);
   }
 
   public List<String> getStudies() {
     return _validStudyNameCache != null ? _validStudyNameCache :
       (_validStudyNameCache = swallowAndGet(() -> ClientUtil
-          .getResponseObject(getUrl("/studies"), StudiesGetResponse.class))
+          .getResponseObject(getUrl("/studies"), StudiesGetResponse.class, getAuthHeaderMap()))
         .getStudies().stream().map(APIStudyOverview::getId).collect(Collectors.toList()));
   }
 
@@ -62,7 +57,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
     if (!getStudies().contains(studyId)) return Optional.empty(); // invalid name
     if (!_studyDetailCache.containsKey(studyId)) {
       _studyDetailCache.put(studyId, swallowAndGet(() -> ClientUtil
-          .getResponseObject(getUrl("/studies/" + studyId), StudyIdGetResponse.class).getStudy()));
+          .getResponseObject(getUrl("/studies/" + studyId), StudyIdGetResponse.class, getAuthHeaderMap()).getStudy()));
     }
     return Optional.of(_studyDetailCache.get(studyId));
   }
@@ -91,55 +86,11 @@ public class EdaSubsettingClient extends StreamingDataClient {
       .map(var -> var.getVariableId())
       .collect(Collectors.toList()));
 
-    // build request url
-    String url = getUrl("/studies/" + metadata.getStudyId() + "/entities/" + spec.getEntityId() + "/tabular");
+    // build request url using internal endpoint (does not check user permissions via data access service
+    String url = getUrl("/ss-internal/studies/" + metadata.getStudyId() + "/entities/" + spec.getEntityId() + "/tabular");
 
     // make request
-    return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR);
-  }
-
-  //*****************************************************************
-  //** Methods to support pass-through calls to subsetting service
-  //*****************************************************************
-
-  // GET request pass-throughs
-
-  private Either<InputStream, RequestFailure> doGet(String resourcePath, String expectedResponseType) throws Exception {
-    return ClientUtil.makeAsyncGetRequest(getUrl(resourcePath), expectedResponseType).getEither();
-  }
-
-  public Either<InputStream, RequestFailure> getStudiesStream() throws Exception {
-    return doGet("/studies", MediaType.APPLICATION_JSON);
-  }
-
-  public Either<InputStream, RequestFailure> getStudyStream(String studyId) throws Exception {
-    return doGet("/studies/" + studyId, MediaType.APPLICATION_JSON);
-  }
-
-  public Either<InputStream, RequestFailure> getEntityStream(String studyId, String entityId) throws Exception {
-    return doGet("/studies/" + studyId + "/entities/" + entityId, MediaType.APPLICATION_JSON);
-  }
-
-  public Either<InputStream, RequestFailure> clearMetadataCache() throws Exception {
-    return doGet("/studies/clear-metadata-cache", MediaType.WILDCARD);
-  }
-
-  // POST request pass-throughs
-
-  private Either<InputStream, RequestFailure> doPost(String resourcePath, Object requestBodyObject, String expectedResponseType) throws Exception {
-    return ClientUtil.makeAsyncPostRequest(getUrl(resourcePath), requestBodyObject, expectedResponseType).getEither();
-  }
-
-  public Either<InputStream, RequestFailure> getEntityCountStream(String studyId, String entityId, EntityCountPostRequest requestObject) throws Exception {
-    return doPost("/studies/" + studyId + "/entities/" + entityId + "/count", requestObject, MediaType.APPLICATION_JSON);
-  }
-
-  public Either<InputStream, RequestFailure> getEntityTabularStream(String studyId, String entityId, EntityTabularPostRequest requestObject, TabularResponseType responseType) throws Exception {
-    return doPost("/studies/" + studyId + "/entities/" + entityId + "/tabular", requestObject, responseType.getMediaType());
-  }
-
-  public Either<InputStream, RequestFailure> getVariableDistributionStream(String studyId, String entityId, String variableId, VariableDistributionPostRequest requestObject) throws Exception {
-    return doPost("/studies/" + studyId + "/entities/" + entityId + "/variables/" + variableId + "/distribution", requestObject, MediaType.APPLICATION_JSON);
+    return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
   }
 
 }

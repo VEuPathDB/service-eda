@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.common.client;
 
 import java.util.List;
+import java.util.Map.Entry;
 import javax.ws.rs.ProcessingException;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
@@ -17,8 +18,8 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 public class EdaMergingClient extends StreamingDataClient {
 
-  public EdaMergingClient(String serviceBaseUrl) {
-    super(serviceBaseUrl);
+  public EdaMergingClient(String serviceBaseUrl, Entry<String, String> authHeader) {
+    super(serviceBaseUrl, authHeader);
   }
 
   @Override
@@ -46,6 +47,6 @@ public class EdaMergingClient extends StreamingDataClient {
     request.setOutputVariables(spec);
 
     // make request
-    return ClientUtil.makeAsyncPostRequest(getUrl("/query"), request, MimeTypes.TEXT_TABULAR);
+    return ClientUtil.makeAsyncPostRequest(getUrl("/query"), request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
   }
 }

@@ -5,10 +5,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import javax.ws.rs.ProcessingException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.FunctionalInterfaces;
@@ -20,9 +19,7 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
-public abstract class StreamingDataClient {
-
-  private final String _serviceBaseUrl;
+public abstract class StreamingDataClient extends ServiceClient {
 
   public abstract StreamSpecValidator getStreamSpecValidator();
 
@@ -33,14 +30,8 @@ public abstract class StreamingDataClient {
       List<APIFilter> subset,
       StreamSpec spec) throws ProcessingException;
 
-  public StreamingDataClient(String serviceBaseUrl) {
-    // remove trailing slash from baseUrl (paths must begin with a slash)
-    _serviceBaseUrl = !serviceBaseUrl.endsWith("/") ? serviceBaseUrl :
-        serviceBaseUrl.substring(0, serviceBaseUrl.length() - 1);
-  }
-
-  protected String getUrl(String urlPath) {
-    return _serviceBaseUrl + (urlPath.startsWith("/") ? urlPath : urlPath.substring(1));
+  protected StreamingDataClient(String serviceBaseUrl, Entry<String, String> authHeader) {
+    super(serviceBaseUrl, authHeader);
   }
 
   public static void buildAndProcessStreams(

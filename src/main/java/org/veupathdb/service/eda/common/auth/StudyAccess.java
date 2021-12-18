@@ -6,6 +6,7 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import org.gusdb.fgputil.ImmutableEntry;
+import org.json.JSONObject;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 
 public class StudyAccess {
@@ -52,5 +53,14 @@ public class StudyAccess {
     if (!accessPredicate.test(new DatasetAccessClient(dataAccessServiceUrl, authHeader).getStudyAccess(studyId))) {
       throw new ForbiddenException();
     }
+  }
+
+  public JSONObject toJson() {
+    return new JSONObject()
+      .put("allowStudyMetadata", _allowStudyMetadata)
+      .put("allowSubsetting", _allowSubsetting)
+      .put("allowVisualizations", _allowVisualizations)
+      .put("allowResultsFirstPage", _allowResultsFirstPage)
+      .put("allowResultsAll", _allowResultsAll);
   }
 }

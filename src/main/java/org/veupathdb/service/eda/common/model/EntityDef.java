@@ -45,7 +45,7 @@ public class EntityDef extends ArrayList<VariableDef> {
       .findFirst();
   }
 
-  public TreeNode<VariableDef> getNativeVariableTreeNode(VariableDef varSpec) {
+  public TreeNode<VariableDef> getNativeVariableTreeNode(VariableSpec varSpec) {
     return Optional.ofNullable(
       getNativeVariableTree().findFirst(var -> VariableDef.isSameVariable(var, varSpec))
     ).orElseThrow(() ->

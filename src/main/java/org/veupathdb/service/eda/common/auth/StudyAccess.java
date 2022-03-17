@@ -37,16 +37,6 @@ public class StudyAccess {
   public boolean allowResultsFirstPage() { return _allowResultsFirstPage; }
   public boolean allowResultsAll() { return _allowResultsAll; }
 
-  public static Entry<String,String> readAuthHeader(ContainerRequestContext request, String authHeaderKey) {
-    // read raw header value
-    String authHeaderValue = request.getHeaderString(authHeaderKey);
-    if (authHeaderValue.isBlank()) {
-      // this should not happen; should be covered by the @Authorization annotation
-      throw new NotAuthorizedException("Authorization is needed to access this resource.");
-    }
-    return new ImmutableEntry<>(authHeaderKey, authHeaderValue);
-  }
-
   public static void confirmPermission(Entry<String,String> authHeader,
       String dataAccessServiceUrl, String studyId, Predicate<StudyAccess> accessPredicate) {
     // check with dataset access service to see if attached auth header has permission to access

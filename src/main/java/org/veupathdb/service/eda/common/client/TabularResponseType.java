@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 import org.gusdb.fgputil.web.MimeTypes;
 import org.json.JSONArray;
 

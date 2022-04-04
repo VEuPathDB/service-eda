@@ -2,7 +2,7 @@ package org.veupathdb.service.eda.common.client;
 
 import java.util.List;
 import java.util.Map.Entry;
-import javax.ws.rs.ProcessingException;
+import jakarta.ws.rs.ProcessingException;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.web.MimeTypes;

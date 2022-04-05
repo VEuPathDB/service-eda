@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
-import javax.ws.rs.ProcessingException;
+import jakarta.ws.rs.ProcessingException;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.FunctionalInterfaces;

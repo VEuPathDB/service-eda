@@ -21,14 +21,16 @@ public class EntityDef extends ArrayList<VariableDef> {
   private final String _displayName;
   private final VariableDef _idColumnDef;
   private final List<VariableDef> _categories;
+  private final List<CollectionDef> _collections;
 
   public EntityDef(String id, String displayName, String idColumnName) {
     _id = id;
     _displayName = displayName;
     _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING,
-        APIVariableDataShape.CONTINUOUS, false, Optional.empty(), null, VariableSource.ID);
+        APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), null, VariableSource.ID);
     add(_idColumnDef);
     _categories = new ArrayList<>();
+    _collections = new ArrayList<>();
   }
 
   public String getId() {
@@ -96,7 +98,7 @@ public class EntityDef extends ArrayList<VariableDef> {
         // create a dummy root containing all (>1) parentless nodes
         TreeNode<VariableDef> dummyRoot = new TreeNode<>(new VariableDef(
           "dummyRoot", "dummyRoot", APIVariableType.STRING, APIVariableDataShape.CATEGORICAL,
-          false, Optional.empty(), null, VariableSource.NATIVE
+          false, false, Optional.empty(), null, VariableSource.NATIVE
         ));
         dummyRoot.addAllChildNodes(parentlessNodes);
         return dummyRoot;
@@ -115,7 +117,11 @@ public class EntityDef extends ArrayList<VariableDef> {
       .toString(2);
   }
 
-  public void addCategory(VariableDef cat) {
-    _categories.add(cat);
+  public void addCategory(VariableDef category) {
+    _categories.add(category);
+  }
+
+  public void addCollection(CollectionDef collection) {
+    _collections.add(collection);
   }
 }

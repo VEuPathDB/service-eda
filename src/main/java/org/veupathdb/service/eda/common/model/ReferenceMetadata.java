@@ -10,8 +10,6 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.common.model.VariableDef.DataRange;
-import org.veupathdb.service.eda.common.model.VariableDef.DataRanges;
 import org.veupathdb.service.eda.generated.model.APIDateVariable;
 import org.veupathdb.service.eda.generated.model.APIEntity;
 import org.veupathdb.service.eda.generated.model.APIIntegerVariable;
@@ -61,7 +59,26 @@ public class ReferenceMetadata {
   private static TreeNode<EntityDef> buildEntityTree(APIEntity entity,
       List<DerivedVariable> allSpecifiedDerivedVariables, List<VariableDef> ancestorVars) {
 
-    EntityDef entityDef = new EntityDef(entity.getId(), entity.getDisplayName(), entity.getIdColumnName());
+    EntityDef entityDef = new EntityDef(
+        entity.getId(),
+        entity.getDisplayName(),
+        entity.getIdColumnName()
+    );
+
+    entity.getCollections().stream().map(col ->
+        new CollectionDef(
+            entityDef,
+            col.getId(),
+            col.getDisplayName(),
+            col.getType(),
+            col.getDataShape(),
+            col.getImputeZero(),
+            col.getDistinctValuesCount().longValue(),
+            col.getVocabulary(),
+            col.getMemberVariableIds(),
+            DataRanges.getDataRanges(col)
+        )
+    ).forEach(colDef -> entityDef.addCollection(colDef));
 
     // add inherited variables from parent
     ancestorVars.stream()
@@ -71,6 +88,7 @@ public class ReferenceMetadata {
           vd.getType(),
           vd.getDataShape(),
           vd.isMultiValue(),
+          vd.isImputeZero(),
           vd.getDataRanges(),
           vd.getParentId(),
           VariableSource.INHERITED)));
@@ -84,6 +102,7 @@ public class ReferenceMetadata {
           var.getId(),
           APIVariableType.CATEGORY,
           null,
+          false,
           false,
           Optional.empty(),
           var.getParentId(),
@@ -103,7 +122,8 @@ public class ReferenceMetadata {
           var.getType(),
           var.getDataShape(),
           var.getIsMultiValued(),
-          getDataRanges(var),
+          var.getImputeZero(),
+          DataRanges.getDataRanges(var),
           var.getParentId(),
           VariableSource.NATIVE))
       .forEach(vd -> {
@@ -140,43 +160,6 @@ public class ReferenceMetadata {
     }
 
     return node;
-  }
-
-  private static Optional<DataRanges> getDataRanges(APIVariableWithValues var) {
-    if (var.getDataShape() != APIVariableDataShape.CONTINUOUS) {
-      return Optional.empty();
-    }
-    switch(var.getType()) {
-      case NUMBER:
-        APINumberVariable numVar = (APINumberVariable)var;
-        return Optional.of(new DataRanges(
-            new DataRange(
-                numVar.getRangeMin().toString(),
-                numVar.getRangeMax().toString()),
-            new DataRange(
-                Optional.ofNullable(numVar.getDisplayRangeMin()).orElse(numVar.getRangeMin()).toString(),
-                Optional.ofNullable(numVar.getDisplayRangeMax()).orElse(numVar.getRangeMax()).toString())));
-      case INTEGER:
-        APIIntegerVariable intVar = (APIIntegerVariable)var;
-        return Optional.of(new DataRanges(
-            new DataRange(
-                intVar.getRangeMin().toString(),
-                intVar.getRangeMax().toString()),
-            new DataRange(
-                Optional.ofNullable(intVar.getDisplayRangeMin()).orElse(intVar.getRangeMin()).toString(),
-                Optional.ofNullable(intVar.getDisplayRangeMax()).orElse(intVar.getRangeMax()).toString())));
-      case DATE:
-        APIDateVariable dateVar = (APIDateVariable)var;
-        return Optional.of(new DataRanges(
-            new DataRange(
-                dateVar.getRangeMin(),
-                dateVar.getRangeMax()),
-            new DataRange(
-                Optional.ofNullable(dateVar.getDisplayRangeMin()).orElse(dateVar.getRangeMin()),
-                Optional.ofNullable(dateVar.getDisplayRangeMax()).orElse(dateVar.getRangeMax()))));
-      default:
-        return Optional.empty();
-    }
   }
 
   public String getStudyId() {

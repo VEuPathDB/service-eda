@@ -2,9 +2,9 @@ package org.veupathdb.service.eda.common.auth;
 
 import java.util.Map.Entry;
 import java.util.function.Predicate;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.container.ContainerRequestContext;
 import org.gusdb.fgputil.ImmutableEntry;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;

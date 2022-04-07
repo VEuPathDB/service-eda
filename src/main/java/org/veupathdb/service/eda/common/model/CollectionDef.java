@@ -24,7 +24,7 @@ public class CollectionDef extends CollectionSpecImpl {
   private final APIVariableDataShape _dataShape;
 
   @JsonIgnore
-  private final boolean _imputeZero;
+  private final boolean _isImputeZero;
 
   @JsonIgnore
   private final long _distinctValuesCount;
@@ -44,7 +44,7 @@ public class CollectionDef extends CollectionSpecImpl {
       String displayName,
       APICollectionType dataType,
       APIVariableDataShape dataShape,
-      boolean imputeZero,
+      boolean isImputeZero,
       long distinctValuesCount,
       List<String> vocabulary,
       List<String> memberVariableIds,
@@ -55,7 +55,7 @@ public class CollectionDef extends CollectionSpecImpl {
     _displayName = displayName;
     _dataType = dataType;
     _dataShape = dataShape;
-    _imputeZero = imputeZero;
+    _isImputeZero = isImputeZero;
     _distinctValuesCount = distinctValuesCount;
     _vocabulary = vocabulary;
     _memberVariableIds = memberVariableIds;
@@ -79,7 +79,7 @@ public class CollectionDef extends CollectionSpecImpl {
 
   @JsonIgnore
   public boolean isImputeZero() {
-    return _imputeZero;
+    return _isImputeZero;
   }
 
   @JsonIgnore

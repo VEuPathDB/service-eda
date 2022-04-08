@@ -11,6 +11,7 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
+import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 public class EntityDef extends ArrayList<VariableDef> {
@@ -44,6 +45,15 @@ public class EntityDef extends ArrayList<VariableDef> {
   public Optional<VariableDef> getVariable(VariableSpec var) {
     return stream()
       .filter(v -> VariableDef.isSameVariable(v, var))
+      .findFirst();
+  }
+
+  public Optional<CollectionDef> getCollection(CollectionSpec colSpec) {
+    if (!colSpec.getEntityId().equals(_id)) {
+      return Optional.empty();
+    }
+    return _collections.stream()
+      .filter(c -> c.getCollectionId().equals(colSpec.getCollectionId()))
       .findFirst();
   }
 

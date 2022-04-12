@@ -13,6 +13,7 @@ import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
 public class EntityDef extends ArrayList<VariableDef> {
 
@@ -71,8 +72,8 @@ public class EntityDef extends ArrayList<VariableDef> {
     Map<String, TreeNode<VariableDef>> allVarNodes = stream()
         .filter(var -> var.getSource() == VariableSource.NATIVE)
         .collect(Collectors.toMap(
-            var -> var.getVariableId(),
-            var -> new TreeNode<>(var)
+            VariableSpecImpl::getVariableId,
+            TreeNode::new
         ));
 
     // add categories for proper tree structure

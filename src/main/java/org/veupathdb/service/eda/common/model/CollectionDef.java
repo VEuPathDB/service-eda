@@ -27,7 +27,7 @@ public class CollectionDef extends CollectionSpecImpl {
   private final boolean _isImputeZero;
 
   @JsonIgnore
-  private final long _distinctValuesCount;
+  private final Long _distinctValuesCount;
 
   @JsonIgnore
   private final List<String> _vocabulary;
@@ -45,7 +45,7 @@ public class CollectionDef extends CollectionSpecImpl {
       APICollectionType dataType,
       APIVariableDataShape dataShape,
       boolean isImputeZero,
-      long distinctValuesCount,
+      Long distinctValuesCount,
       List<String> vocabulary,
       List<String> memberVariableIds,
       Optional<DataRanges> dataRanges) {
@@ -83,7 +83,7 @@ public class CollectionDef extends CollectionSpecImpl {
   }
 
   @JsonIgnore
-  public long getDistinctValuesCount() {
+  public Long getDistinctValuesCount() {
     return _distinctValuesCount;
   }
 

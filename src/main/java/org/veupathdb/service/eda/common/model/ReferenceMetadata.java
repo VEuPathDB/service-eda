@@ -1,26 +1,17 @@
 package org.veupathdb.service.eda.common.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.generated.model.APIDateVariable;
-import org.veupathdb.service.eda.generated.model.APIEntity;
-import org.veupathdb.service.eda.generated.model.APIIntegerVariable;
-import org.veupathdb.service.eda.generated.model.APINumberVariable;
-import org.veupathdb.service.eda.generated.model.APIStudyDetail;
-import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
-import org.veupathdb.service.eda.generated.model.APIVariableType;
-import org.veupathdb.service.eda.generated.model.APIVariableWithValues;
-import org.veupathdb.service.eda.generated.model.APIVariablesCategory;
-import org.veupathdb.service.eda.generated.model.DerivedVariable;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
 
@@ -73,7 +64,7 @@ public class ReferenceMetadata {
             col.getType(),
             col.getDataShape(),
             col.getImputeZero(),
-            col.getDistinctValuesCount().longValue(),
+            col.getDistinctValuesCount(),
             col.getVocabulary(),
             col.getMemberVariableIds(),
             DataRanges.getDataRanges(col)
@@ -170,8 +161,12 @@ public class ReferenceMetadata {
     return Optional.ofNullable(_entityMap.get(entityId));
   }
 
-  public Optional<VariableDef> getVariable(VariableSpec var) {
-    return getEntity(var.getEntityId()).flatMap(e -> e.getVariable(var));
+  public Optional<VariableDef> getVariable(VariableSpec varSpec) {
+    return getEntity(varSpec.getEntityId()).flatMap(e -> e.getVariable(varSpec));
+  }
+
+  public Optional<CollectionDef> getCollection(CollectionSpec colSpec) {
+    return getEntity(colSpec.getEntityId()).flatMap(e -> e.getCollection(colSpec));
   }
 
   public List<DerivedVariable> getDerivedVariables() {

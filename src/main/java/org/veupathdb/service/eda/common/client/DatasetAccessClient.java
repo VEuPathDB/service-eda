@@ -20,18 +20,21 @@ public class DatasetAccessClient extends ServiceClient {
     private final String _studyId;
     private final String _datasetId;
     private final String _sha1Hash;
+    private final boolean _isUserStudy;
     private final StudyAccess _studyAccess;
 
-    public StudyDatasetInfo(String studyId, String datasetId, String sha1Hash, StudyAccess studyAccess) {
+    public StudyDatasetInfo(String studyId, String datasetId, String sha1Hash, boolean isUserStudy, StudyAccess studyAccess) {
       _studyId = studyId;
       _datasetId = datasetId;
       _sha1Hash = sha1Hash;
+      _isUserStudy = isUserStudy;
       _studyAccess = studyAccess;
     }
 
     public String getStudyId() { return _studyId; }
     public String getDatasetId() { return _datasetId; }
     public String getSha1Hash() { return _sha1Hash; }
+    public boolean isUserStudy() { return _isUserStudy; }
     public StudyAccess getStudyAccess() { return _studyAccess; }
 
     @Override
@@ -49,7 +52,12 @@ public class DatasetAccessClient extends ServiceClient {
     super(baseUrl, authHeader);
   }
 
-  // map from study ID to study info, including permissions for each study
+  /**
+   * Builds a map from study ID to study info, including permissions for each study;
+   * requires a request to the dataset access service.
+   *
+   * @return study map
+   */
   public Map<String, StudyDatasetInfo> getStudyDatasetInfoMapForUser() {
     try (InputStream response = ClientUtil.makeAsyncGetRequest(getUrl("/permissions"),
         MediaType.APPLICATION_JSON, getAuthHeaderMap()).getInputStream()) {
@@ -60,6 +68,7 @@ public class DatasetAccessClient extends ServiceClient {
         JSONObject dataset = datasetMap.getJSONObject(datasetId);
         String studyId = dataset.getString("studyId");
         String sha1Hash = dataset.getString("sha1Hash");
+        boolean isUserStudy = dataset.getBoolean("isUserStudy");
         JSONObject studyPerms = dataset.getJSONObject("actionAuthorization");
         StudyAccess studyAccess = new StudyAccess(
           studyPerms.getBoolean("studyMetadata"),
@@ -68,7 +77,7 @@ public class DatasetAccessClient extends ServiceClient {
           studyPerms.getBoolean("resultsFirstPage"),
           studyPerms.getBoolean("resultsAll")
         );
-        infoMap.put(studyId, new StudyDatasetInfo(studyId, datasetId, sha1Hash, studyAccess));
+        infoMap.put(studyId, new StudyDatasetInfo(studyId, datasetId, sha1Hash, isUserStudy, studyAccess));
       }
       return infoMap;
     }
@@ -77,15 +86,38 @@ public class DatasetAccessClient extends ServiceClient {
     }
   }
 
+  /**
+   * Calls <code>getStudyDatasetInfoMapForUser()</code> and looks up the passed
+   * study ID in the returned map, returning the entry's <code>StudyDatasetInfo</code>
+   * if present, throwing a <code>NotFoundException</code> if not.
+   *
+   * @param studyId study to look up
+   * @return dataset access service metadata about this study
+   */
+  public StudyDatasetInfo getStudyDatasetInfo(String studyId) {
+    Map<String, StudyDatasetInfo> map = getStudyDatasetInfoMapForUser();
+    if (map.containsKey(studyId)) {
+      return map.get(studyId);
+    }
+    throw new NotFoundException("Dataset Access: no study found with ID " + studyId + " in [ " + String.join(", ", map.keySet()) + "]");
+  }
+
+  /**
+   * Returns only the StudyAccess portion of the found StudyDatasetInfo.
+   *
+   * Note this method (but not others) respects the ENABLE_DATASET_ACCESS_RESTRICTIONS environment variable;
+   * if set to false, the the dataset access service is NOT queried, and a StudyAccess object is returned
+   * granting universal access to the study.  This was a hack added during development to support DBs not
+   * entirely populated with data and should eventually be removed.
+   *
+   * @param studyId study for which perms should be looked up
+   * @return set of access permissions to this study
+   */
   public StudyAccess getStudyAccess(String studyId) {
     if (!Boolean.parseBoolean(Environment.getOptionalVar(ENABLE_DATASET_ACCESS_RESTRICTIONS, Boolean.TRUE.toString()))) {
       return new StudyAccess(true, true, true, true, true);
     }
-    Map<String, StudyDatasetInfo> map = getStudyDatasetInfoMapForUser();
-    if (map.containsKey(studyId)) {
-      return map.get(studyId).getStudyAccess();
-    }
-    throw new NotFoundException("Dataset Access: no study found with ID " + studyId + " in [ " + String.join(", ", map.keySet()) + "]");
+    return getStudyDatasetInfo(studyId).getStudyAccess();
   }
 
 }

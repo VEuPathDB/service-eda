@@ -37,6 +37,15 @@ public class StudyAccess {
   public boolean allowResultsFirstPage() { return _allowResultsFirstPage; }
   public boolean allowResultsAll() { return _allowResultsAll; }
 
+  /**
+   * Looks up study metadata including whether the study is a user study, and
+   * permissions for the user represented by the passed header.
+   *
+   * @param authHeader authentication header to pass to dataset access service
+   * @param dataAccessServiceUrl dataset access service URL
+   * @param studyId study to look up
+   * @param accessPredicate test for access given a permissions map
+   */
   public static void confirmPermission(Entry<String,String> authHeader,
       String dataAccessServiceUrl, String studyId, Predicate<StudyAccess> accessPredicate) {
     // check with dataset access service to see if attached auth header has permission to access

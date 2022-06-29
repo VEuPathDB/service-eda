@@ -7,8 +7,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.ws.rs.ProcessingException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.web.MimeTypes;
@@ -29,11 +27,9 @@ import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
 public class EdaSubsettingClient extends StreamingDataClient {
 
-  private static final Logger LOG = LogManager.getLogger(EdaSubsettingClient.class);
-
   // request-scope cache for subsetting service metadata responses
   private List<String> _validStudyNameCache;
-  private Map<String, APIStudyDetail> _studyDetailCache = new HashMap<>();
+  private final Map<String, APIStudyDetail> _studyDetailCache = new HashMap<>();
 
   public EdaSubsettingClient(String serviceBaseUrl, Entry<String, String> authHeader) {
     super(serviceBaseUrl, authHeader);
@@ -83,7 +79,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
     request.setFilters(subset);
     request.setOutputVariableIds(spec.stream()
       // subsetting service only takes var IDs (must match entity requested, but should already be validated)
-      .map(var -> var.getVariableId())
+      .map(VariableSpec::getVariableId)
       .collect(Collectors.toList()));
 
     // build request url using internal endpoint (does not check user permissions via data access service

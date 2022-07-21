@@ -138,7 +138,7 @@ class PluginExecutor : JobExecutor {
       it.pluginMeta = provider
     }.build()
 
-    // Run the plugin.
+    // Create the plugin.
     val plugin = provider.createPlugin(context)
 
     // Validate the stream specs

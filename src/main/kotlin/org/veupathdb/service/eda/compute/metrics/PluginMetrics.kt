@@ -19,7 +19,9 @@ object PluginMetrics {
    * Time is measured in seconds.
    *
    * **NOTE**: This is not the full job execution time, this is specifically the
-   * time spent by the plugin implementation code.
+   * time spent by the plugin implementation code.  In other words, time spent
+   * between when this job is popped from the queue and when the plugin code
+   * is executed is not measured by this metric.
    */
   val execTime: Histogram = Histogram.build()
     .buckets(

@@ -9,6 +9,11 @@ import org.gusdb.fgputil.ImmutableEntry;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 
+/**
+ * Represents a set of permissions a single user has for a single study.  Also provides
+ * a static convenience method that can fetch these permissions from a running dataset
+ * access service and test them against a predicate.
+ */
 public class StudyAccess {
 
   private final boolean _allowStudyMetadata;

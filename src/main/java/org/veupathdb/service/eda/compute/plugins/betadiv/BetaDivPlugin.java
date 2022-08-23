@@ -4,8 +4,10 @@ import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
+import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginConfig;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
+
 
 import java.util.List;
 
@@ -30,10 +32,26 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivP
   protected void execute() {
     // TODO: actually do something.
     getWorkspace().writeDataResult(getWorkspace().openStream(INPUT_DATA));
-
-    // Copied from beta div data service plugin - need to rewrite basically.
-    // String method = computeConfig.getBetaDivDistanceMethod().getValue();
+    
+    // Get parameters for the beta div computation
+    BetaDivPluginConfig computeConfig = getConfig();
+    String distanceMethod = computeConfig.getBetaDivDistanceMethod().getName();
     // VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
+    // String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
+    String computeEntityIdColName = "entity.SampleID";
+
+    RServe.useRConnection(connection -> {
+      connection.voidEval("print('starting beta diversity computation')");
+      
+      // Eventually replace df with the streamed data (see useRConnectionWithRemoteFiles)
+      connection.voidEval("df <- testOTU");
+
+      // 
+      String command = "dt <- betaDiv(df, '" + computeEntityIdColName + "', method='" + distanceMethod + "', verbose=T)";
+      connection.voidEval(command);
+      connection.voidEval("print(dt)");
+
+    });
     // String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     // useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       // List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);

@@ -17,8 +17,10 @@ import org.veupathdb.service.eda.compute.plugins.PluginMeta;
 import org.veupathdb.service.eda.compute.plugins.PluginProvider;
 import org.veupathdb.service.eda.compute.plugins.PluginRegistry;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
+import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
+import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.JobResponse;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
@@ -70,6 +72,18 @@ public class ComputeController implements Computes {
   public PostComputesExampleByFileResponse postComputesExampleByFile(String file, ExamplePluginRequest entity) {
     return resultFile(new ExamplePluginProvider(), file, entity, PostComputesExampleByFileResponse::respond200WithTextPlain);
   }
+
+  @Override
+  public PostComputesBetadivResponse postComputesBetadiv(BetaDivPluginRequest entity) {
+    return PostComputesBetadivResponse.respond200WithApplicationJson(submitJob(new BetaDivPluginProvider(), entity));
+  }
+
+  @Override
+  public PostComputesBetadivByFileResponse postComputesBetadivByFile(String file, BetaDivPluginRequest entity) {
+    return resultFile(new BetaDivPluginProvider(), file, entity, PostComputesBetadivByFileResponse::respond200WithTextPlain);
+  }
+
+  
 
   // endregion Plugin Endpoints
 

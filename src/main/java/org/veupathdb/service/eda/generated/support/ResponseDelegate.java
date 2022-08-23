@@ -60,10 +60,6 @@ public class ResponseDelegate extends Response {
   }
 
   @Override
-  public Object getEntity() {
-    return this.entity;}
-
-  @Override
   public int getStatus() {
     return this.delegate.getStatus();
   }
@@ -162,6 +158,10 @@ public class ResponseDelegate extends Response {
   public MultivaluedMap<String, Object> getHeaders() {
     return this.delegate.getHeaders();
   }
+
+  @Override
+  public Object getEntity() {
+    return this.entity;}
 
   public static class HeaderBuilderBase {
     protected final Map<String, String> headerMap;

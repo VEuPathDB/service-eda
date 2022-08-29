@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.compute.plugins
 
+import org.veupathdb.service.eda.common.client.EdaMergingClient
 import org.veupathdb.service.eda.common.model.ReferenceMetadata
 import org.veupathdb.service.eda.compute.exec.ComputeJobContext
 import org.veupathdb.service.eda.compute.process.ComputeProcessBuilder
@@ -65,6 +66,11 @@ interface PluginContext<R: ComputeRequestBase, C> {
   val referenceMetadata: ReferenceMetadata
 
   /**
+   * EDA Merging Client Instance
+   */
+  val mergingClient: EdaMergingClient
+
+  /**
    * Returns a new [ComputeProcessBuilder] which may be used to construct an
    * external process execution and run that external process.
    *
@@ -101,6 +107,8 @@ class PluginContextBuilder<R : ComputeRequestBase, C> {
 
   var studyDetail: APIStudyDetail? = null
 
+  var mergingClient: EdaMergingClient? = null
+
   fun request(request: R): PluginContextBuilder<R, C> {
     this.request = request
     return this
@@ -126,13 +134,19 @@ class PluginContextBuilder<R : ComputeRequestBase, C> {
     return this
   }
 
+  fun mergingClient(mergingClient: EdaMergingClient): PluginContextBuilder<R, C> {
+    this.mergingClient = mergingClient
+    return this
+  }
+
   fun build(): PluginContext<R, C> =
     PluginContextImpl(
-      request     ?: throw IllegalStateException("request must not be null"),
-      workspace   ?: throw IllegalStateException("workspace must not be null"),
-      jobContext  ?: throw IllegalStateException("jobContext must not be null"),
-      pluginMeta  ?: throw IllegalStateException("pluginMeta must not be null"),
-      studyDetail ?: throw IllegalStateException("studyDetail must not be null")
+      request       ?: throw IllegalStateException("request must not be null"),
+      workspace     ?: throw IllegalStateException("workspace must not be null"),
+      jobContext    ?: throw IllegalStateException("jobContext must not be null"),
+      pluginMeta    ?: throw IllegalStateException("pluginMeta must not be null"),
+      studyDetail   ?: throw IllegalStateException("studyDetail must not be null"),
+      mergingClient ?: throw IllegalStateException("mergingClient must not be null"),
     )
 }
 
@@ -143,6 +157,7 @@ private class PluginContextImpl<R : ComputeRequestBase, C>(
   override val jobContext: ComputeJobContext,
   override val pluginMeta: PluginMeta<R>,
   override val studyDetail: APIStudyDetail,
+  override val mergingClient: EdaMergingClient
 ) : PluginContext<R, C> {
 
   @Suppress("UNCHECKED_CAST")

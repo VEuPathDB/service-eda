@@ -45,11 +45,16 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivP
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
 
-      String dataCmd = "betaDiv(" + INPUT_DATA + ", " + 
-                                    singleQuote(computeEntityIdColName) + ", " + 
-                                    singleQuote(distanceMethod) + ")";
+      connection.voidEval("betaDivDT <- betaDiv(" + INPUT_DATA + ", " + 
+                                                    singleQuote(computeEntityIdColName) + ", " + 
+                                                    singleQuote(distanceMethod) + ")");
+      String dataCmd = "print(betaDivDT)";
+      String metaCmd = "getMetadata(betaDivDT)";
+      String statsCmd = "getStatistics(betaDivDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
+      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeStatisticsResult(connection.eval(statsCmd).asString());
     });
   }
 }

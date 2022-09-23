@@ -1,7 +1,7 @@
 package org.veupathdb.service.eda.compute.plugins
 
 import org.apache.logging.log4j.LogManager
-import org.veupathdb.service.eda.common.client.spec.StreamSpec
+import org.veupathdb.service.eda.common.plugin.util.PluginUtil
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles
 import org.veupathdb.service.eda.compute.metrics.PluginMetrics
 import org.veupathdb.service.eda.generated.model.APIStudyDetail
@@ -102,6 +102,12 @@ abstract class AbstractPlugin<R : ComputeRequestBase, C>(
    */
   protected val workspace
     get() = context.workspace
+
+  /**
+   * EDA Common [PluginUtil] Instance
+   */
+  protected val util
+    get() =  PluginUtil(context.referenceMetadata, context.mergingClient)
 
   // ╔════════════════════════════════════════════════════════════════════╗ //
   // ║                                                                    ║ //

@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.compute.plugins.betadiv;
 
+import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -9,6 +10,7 @@ import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginConfig;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
+import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 
 import java.util.List;
@@ -46,8 +48,8 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivP
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
 
       connection.voidEval("betaDivDT <- betaDiv(" + INPUT_DATA + ", " + 
-                                                    singleQuote(computeEntityIdColName) + ", " + 
-                                                    singleQuote(distanceMethod) + ")");
+                                                    util.singleQuote(computeEntityIdColName) + ", " + 
+                                                    util.singleQuote(distanceMethod) + ")");
       String dataCmd = "print(betaDivDT)";
       String metaCmd = "getMetadata(betaDivDT)";
 

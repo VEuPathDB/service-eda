@@ -4,8 +4,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
+import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase;
 import org.veupathdb.service.eda.generated.model.PluginOverview;
 import org.veupathdb.service.eda.generated.model.PluginOverviewImpl;
@@ -41,7 +43,9 @@ public final class PluginRegistry {
 
     var pluginList = List.<PluginProvider<?, ?>>of(
       new ExamplePluginProvider(),
-      new BetaDivPluginProvider()
+      new AlphaDivPluginProvider(),
+      new BetaDivPluginProvider(),
+      new RankedAbundancePluginProvider()
     );
 
     //

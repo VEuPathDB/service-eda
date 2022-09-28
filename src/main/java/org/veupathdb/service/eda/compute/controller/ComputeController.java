@@ -16,11 +16,15 @@ import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
 import org.veupathdb.service.eda.compute.plugins.PluginMeta;
 import org.veupathdb.service.eda.compute.plugins.PluginProvider;
 import org.veupathdb.service.eda.compute.plugins.PluginRegistry;
+import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
+import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase;
+import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
+import org.veupathdb.service.eda.generated.model.RankedAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.JobResponse;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
@@ -83,7 +87,25 @@ public class ComputeController implements Computes {
     return resultFile(new BetaDivPluginProvider(), file, entity, PostComputesBetadivByFileResponse::respond200WithTextPlain);
   }
 
-  
+  @Override
+  public PostComputesAlphadivResponse postComputesAlphadiv(AlphaDivPluginRequest entity) {
+    return PostComputesAlphadivResponse.respond200WithApplicationJson(submitJob(new AlphaDivPluginProvider(), entity));
+  }
+
+  @Override
+  public PostComputesAlphadivByFileResponse postComputesAlphadivByFile(String file, AlphaDivPluginRequest entity) {
+    return resultFile(new AlphaDivPluginProvider(), file, entity, PostComputesAlphadivByFileResponse::respond200WithTextPlain);
+  }  
+
+  @Override
+  public PostComputesRankedabundanceResponse postComputesRankedabundance(RankedAbundancePluginRequest entity) {
+    return PostComputesRankedabundanceResponse.respond200WithApplicationJson(submitJob(new RankedAbundancePluginProvider(), entity));
+  }
+
+  @Override
+  public PostComputesRankedabundanceByFileResponse postComputesRankedabundanceByFile(String file, RankedAbundancePluginRequest entity) {
+    return resultFile(new RankedAbundancePluginProvider(), file, entity, PostComputesRankedabundanceByFileResponse::respond200WithTextPlain);
+  }
 
   // endregion Plugin Endpoints
 

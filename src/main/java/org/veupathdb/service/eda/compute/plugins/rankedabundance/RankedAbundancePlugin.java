@@ -51,10 +51,10 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
                                                     util.singleQuote(computeEntityIdColName) + ", " + 
                                                     util.singleQuote(method) + ")");
       String dataCmd = "print(abundanceDT)";
-      //String metaCmd = "getMetadata(abundanceDT)";
+      String metaCmd = "getMetadata(abundanceDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      //getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
     });
   }
 }

@@ -51,10 +51,10 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
                                                     util.singleQuote(computeEntityIdColName) + ", " + 
                                                     util.singleQuote(method) + ")");
       String dataCmd = "print(alphaDivDT)";
-      //String metaCmd = "getMetadata(alphaDivDT)";
+      String metaCmd = "getMetadata(alphaDivDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      //getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
     });
   }
 }

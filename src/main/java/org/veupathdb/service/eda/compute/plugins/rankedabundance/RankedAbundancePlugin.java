@@ -12,7 +12,8 @@ import org.veupathdb.service.eda.generated.model.RankedAbundancePluginConfig;
 import org.veupathdb.service.eda.generated.model.RankedAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
-
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 
 public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginRequest, RankedAbundancePluginConfig> {
@@ -39,8 +40,10 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getRankingMethod().getName();
+    HashMap<String, InputStream> dataStream = new HashMap<String, InputStream>();
+    dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     
-    RServe.useRConnection(connection -> {
+    RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting ranked abundance computation')");
 
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
@@ -50,7 +53,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       connection.voidEval("abundanceDT <- rankedAbundance(" + INPUT_DATA + ", " + 
                                                     util.singleQuote(computeEntityIdColName) + ", " + 
                                                     util.singleQuote(method) + ")");
-      String dataCmd = "print(abundanceDT)";
+      String dataCmd = "readr::format_tsv(abundanceDT)";
       String metaCmd = "getMetadata(abundanceDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());

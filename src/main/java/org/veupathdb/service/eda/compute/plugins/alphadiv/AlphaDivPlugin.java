@@ -12,7 +12,8 @@ import org.veupathdb.service.eda.generated.model.AlphaDivPluginConfig;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
-
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 
 public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaDivPluginConfig> {
@@ -39,8 +40,10 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getAlphaDivMethod().getName();
-    
-    RServe.useRConnection(connection -> {
+    HashMap<String, InputStream> dataStream = new HashMap<String, InputStream>();
+    dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
+
+    RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting alpha diversity computation')");
 
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
@@ -50,7 +53,7 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
       connection.voidEval("alphaDivDT <- alphaDiv(" + INPUT_DATA + ", " + 
                                                     util.singleQuote(computeEntityIdColName) + ", " + 
                                                     util.singleQuote(method) + ")");
-      String dataCmd = "print(alphaDivDT)";
+      String dataCmd = "readr::format_tsv(alphaDivDT)";
       String metaCmd = "getMetadata(alphaDivDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());

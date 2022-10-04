@@ -98,13 +98,13 @@ public class ComputeController implements Computes {
   }  
 
   @Override
-  public PostComputesRankedAbundanceResponse postComputesRankedAbundance(RankedAbundancePluginRequest entity) {
-    return PostComputesRankedAbundanceResponse.respond200WithApplicationJson(submitJob(new RankedAbundancePluginProvider(), entity));
+  public PostComputesRankedabundanceResponse postComputesRankedabundance(RankedAbundancePluginRequest entity) {
+    return PostComputesRankedabundanceResponse.respond200WithApplicationJson(submitJob(new RankedAbundancePluginProvider(), entity));
   }
 
   @Override
-  public PostComputesRankedAbundanceByFileResponse postComputesRankedAbundanceByFile(String file, RankedAbundancePluginRequest entity) {
-    return resultFile(new RankedAbundancePluginProvider(), file, entity, PostComputesRankedAbundanceByFileResponse::respond200WithTextPlain);
+  public PostComputesRankedabundanceByFileResponse postComputesRankedabundanceByFile(String file, RankedAbundancePluginRequest entity) {
+    return resultFile(new RankedAbundancePluginProvider(), file, entity, PostComputesRankedabundanceByFileResponse::respond200WithTextPlain);
   }
 
   // endregion Plugin Endpoints

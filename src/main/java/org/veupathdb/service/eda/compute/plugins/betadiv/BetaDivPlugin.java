@@ -12,7 +12,8 @@ import org.veupathdb.service.eda.generated.model.BetaDivPluginConfig;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
-
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 
 public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivPluginConfig> {
@@ -39,8 +40,10 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivP
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String distanceMethod = computeConfig.getBetaDivDistanceMethod().getName();
+    HashMap<String, InputStream> dataStream = new HashMap<String, InputStream>();
+    dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     
-    RServe.useRConnection(connection -> {
+    RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting beta diversity computation')");
 
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
@@ -50,7 +53,7 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivP
       connection.voidEval("betaDivDT <- betaDiv(" + INPUT_DATA + ", " + 
                                                     util.singleQuote(computeEntityIdColName) + ", " + 
                                                     util.singleQuote(distanceMethod) + ")");
-      String dataCmd = "print(betaDivDT)";
+      String dataCmd = "readr::format_tsv(betaDivDT)";
       String metaCmd = "getMetadata(betaDivDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());

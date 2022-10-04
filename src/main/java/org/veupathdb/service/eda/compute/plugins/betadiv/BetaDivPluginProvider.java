@@ -25,7 +25,7 @@ public class BetaDivPluginProvider implements PluginProvider<BetaDivPluginReques
   @NotNull
   @Override
   public PluginQueue getTargetQueue() {
-    return PluginQueue.Fast;
+    return PluginQueue.Slow;
   }
 
   @NotNull

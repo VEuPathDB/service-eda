@@ -11,6 +11,7 @@ import org.gusdb.fgputil.Tuples;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
+import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.service.eda.compute.EDA;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
 import org.veupathdb.service.eda.compute.plugins.PluginMeta;
@@ -51,6 +52,7 @@ import java.util.function.Function;
  * @author Elizabeth Paige Harper - https://github.com/foxcapades
  * @since 1.0.0
  */
+@Authenticated(allowGuests = true)
 public class ComputeController implements Computes {
 
   private final Logger Log = LogManager.getLogger(getClass());
@@ -95,7 +97,7 @@ public class ComputeController implements Computes {
   @Override
   public PostComputesAlphadivByFileResponse postComputesAlphadivByFile(String file, AlphaDivPluginRequest entity) {
     return resultFile(new AlphaDivPluginProvider(), file, entity, PostComputesAlphadivByFileResponse::respond200WithTextPlain);
-  }  
+  }
 
   @Override
   public PostComputesRankedabundanceResponse postComputesRankedabundance(RankedAbundancePluginRequest entity) {

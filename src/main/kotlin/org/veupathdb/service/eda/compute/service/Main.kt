@@ -48,6 +48,7 @@ object Main : Server() {
         accessToken = ServiceOptions.s3AccessToken
         secretKey   = ServiceOptions.s3SecretKey
         port        = ServiceOptions.s3Port
+        https       = true
       }
 
       jobConfig {

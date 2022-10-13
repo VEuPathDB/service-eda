@@ -9,10 +9,12 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
+import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 import org.veupathdb.service.eda.generated.model.JobResponse;
 import org.veupathdb.service.eda.generated.model.PluginOverview;
+import org.veupathdb.service.eda.generated.model.RankedAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
 @Path("/computes")
@@ -46,6 +48,33 @@ public interface Computes {
   @Consumes("application/json")
   PostComputesBetadivByFileResponse postComputesBetadivByFile(@PathParam("file") String file,
       BetaDivPluginRequest entity);
+
+  @POST
+  @Path("/alphadiv")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesAlphadivResponse postComputesAlphadiv(AlphaDivPluginRequest entity);
+
+  @POST
+  @Path("/alphadiv/{file}")
+  @Produces("text/plain")
+  @Consumes("application/json")
+  PostComputesAlphadivByFileResponse postComputesAlphadivByFile(@PathParam("file") String file,
+      AlphaDivPluginRequest entity);
+
+  @POST
+  @Path("/rankedabundance")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesRankedabundanceResponse postComputesRankedabundance(
+      RankedAbundancePluginRequest entity);
+
+  @POST
+  @Path("/rankedabundance/{file}")
+  @Produces("text/plain")
+  @Consumes("application/json")
+  PostComputesRankedabundanceByFileResponse postComputesRankedabundanceByFile(
+      @PathParam("file") String file, RankedAbundancePluginRequest entity);
 
   class GetComputesResponse extends ResponseDelegate {
     private GetComputesResponse(Response response, Object entity) {
@@ -125,6 +154,71 @@ public interface Computes {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "text/plain");
       responseBuilder.entity(entity);
       return new PostComputesBetadivByFileResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesAlphadivResponse extends ResponseDelegate {
+    private PostComputesAlphadivResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesAlphadivResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesAlphadivResponse respond200WithApplicationJson(JobResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostComputesAlphadivResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesAlphadivByFileResponse extends ResponseDelegate {
+    private PostComputesAlphadivByFileResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesAlphadivByFileResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesAlphadivByFileResponse respond200WithTextPlain(Object entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "text/plain");
+      responseBuilder.entity(entity);
+      return new PostComputesAlphadivByFileResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesRankedabundanceResponse extends ResponseDelegate {
+    private PostComputesRankedabundanceResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesRankedabundanceResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesRankedabundanceResponse respond200WithApplicationJson(
+        JobResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostComputesRankedabundanceResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesRankedabundanceByFileResponse extends ResponseDelegate {
+    private PostComputesRankedabundanceByFileResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesRankedabundanceByFileResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesRankedabundanceByFileResponse respond200WithTextPlain(Object entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "text/plain");
+      responseBuilder.entity(entity);
+      return new PostComputesRankedabundanceByFileResponse(responseBuilder.build(), entity);
     }
   }
 }

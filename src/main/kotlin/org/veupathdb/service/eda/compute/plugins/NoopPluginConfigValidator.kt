@@ -1,5 +1,8 @@
 package org.veupathdb.service.eda.compute.plugins
 
+import org.veupathdb.service.eda.common.model.ReferenceMetadata
+import java.util.function.Supplier
+
 /**
  * Default implementation of [PluginConfigValidator] that performs no
  * validation.
@@ -12,7 +15,7 @@ package org.veupathdb.service.eda.compute.plugins
  */
 class NoopPluginConfigValidator : PluginConfigValidator<Any> {
 
-  override fun validate(request: Any) {
+  override fun validate(request: Any, referenceMetadata : Supplier<ReferenceMetadata>) {
     // This method does nothing.
   }
 }

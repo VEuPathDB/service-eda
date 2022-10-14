@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.compute.plugins.example;
 
 import org.gusdb.fgputil.DelimitedDataParser;
+import org.gusdb.fgputil.Wrapper;
 import org.gusdb.fgputil.functional.Functions;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -14,6 +15,7 @@ import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 
 import java.io.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExamplePluginConfig> {
 
@@ -38,6 +40,7 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleP
     ReferenceMetadata metadata = getContext().getReferenceMetadata();
     EntityDef entity = metadata.getEntity(config.getOutputEntityId()).orElseThrow();
     int numIds = metadata.getAncestors(entity).size() + 1;
+    AtomicInteger numEmptyValues = new AtomicInteger(0); // just using mutability here
     getWorkspace().writeDataResult(outStream -> {
       try (BufferedReader in = new BufferedReader(new InputStreamReader(getWorkspace().openStream(INPUT_DATA)))) {
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(outStream));
@@ -46,8 +49,12 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleP
         out.newLine();
         while (in.ready()) {
           String line = in.readLine();
-          if (!line.endsWith("\t")) {
+          if (line.endsWith("\t")) {
             // a tab at the end means no value for this var on this record; value with suffix should also be empty
+            numEmptyValues.incrementAndGet();
+          }
+          else {
+            // appending the suffix to the line is akin to appending to the single var value
             line += config.getValueSuffix();
           }
           out.write(line);
@@ -63,6 +70,9 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleP
         .put("computeColumnName", config.getInputVariable().getVariableId() + COMPUTED_COLUMN_NAME_SUFFIX)
         .toString()
     );
-    getWorkspace().writeStatisticsResult("{}");
+    getWorkspace().writeStatisticsResult(new JSONObject()
+        .put("numEmptyValues", numEmptyValues.get())
+        .toString()
+    );
   }
 }

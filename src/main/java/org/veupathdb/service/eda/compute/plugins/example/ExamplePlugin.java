@@ -43,8 +43,15 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleP
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(outStream));
         // write header
         out.write(in.readLine() + COMPUTED_COLUMN_NAME_SUFFIX);
+        out.newLine();
         while (in.ready()) {
-          out.write(in.readLine() + config.getValueSuffix());
+          String line = in.readLine();
+          if (!line.endsWith("\t")) {
+            // a tab at the end means no value for this var on this record; value with suffix should also be empty
+            line += config.getValueSuffix();
+          }
+          out.write(line);
+          out.newLine();
         }
         out.flush();
       }

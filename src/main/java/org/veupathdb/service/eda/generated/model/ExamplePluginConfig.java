@@ -16,6 +16,18 @@ public interface ExamplePluginConfig {
   @JsonProperty("outputEntityId")
   void setOutputEntityId(String outputEntityId);
 
+  @JsonProperty("inputVariable")
+  VariableSpec getInputVariable();
+
+  @JsonProperty("inputVariable")
+  void setInputVariable(VariableSpec inputVariable);
+
+  @JsonProperty("valueSuffix")
+  String getValueSuffix();
+
+  @JsonProperty("valueSuffix")
+  void setValueSuffix(String valueSuffix);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

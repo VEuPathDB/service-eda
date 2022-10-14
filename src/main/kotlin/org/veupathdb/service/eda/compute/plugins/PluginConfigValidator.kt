@@ -1,6 +1,8 @@
 package org.veupathdb.service.eda.compute.plugins
 
 import org.veupathdb.lib.container.jaxrs.errors.UnprocessableEntityException
+import org.veupathdb.service.eda.common.model.ReferenceMetadata
+import java.util.function.Supplier
 
 /**
  * Plugin Configuration Validator
@@ -20,5 +22,5 @@ fun interface PluginConfigValidator<C> {
    * @throws UnprocessableEntityException if the given plugin configuration
    * fails the implementation defined validation.
    */
-  fun validate(request: C)
+  fun validate(request: C, referenceMetadata : Supplier<ReferenceMetadata>)
 }

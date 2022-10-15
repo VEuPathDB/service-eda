@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.compute.controller;
 
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
+import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.compute.EDA;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
 import org.veupathdb.service.eda.compute.plugins.PluginMeta;
@@ -31,6 +33,7 @@ import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 
 /**
@@ -152,8 +155,12 @@ public class ComputeController implements Computes {
     requirePermissions(entity, auth);
 
     // Validate the request body.
+    Supplier<ReferenceMetadata> referenceMetadata = () -> new ReferenceMetadata(
+        EDA.getAPIStudyDetail(entity.getStudyId(), auth)
+            .orElseThrow(() -> new BadRequestException("Invalid study ID: " + entity.getStudyId())),
+        entity.getDerivedVariables());
     plugin.getValidator()
-      .validate(entity);
+      .validate(entity, referenceMetadata);
 
     return EDA.getOrSubmitComputeJob(plugin, entity, auth);
   }

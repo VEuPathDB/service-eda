@@ -3,7 +3,9 @@ package org.veupathdb.service.eda.compute.plugins
 import org.veupathdb.lib.compute.platform.job.JobWorkspace
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles
 import java.io.InputStream
+import java.io.OutputStream
 import java.io.Reader
+import java.util.function.Consumer
 
 /**
  * Plugin Workspace
@@ -24,6 +26,15 @@ class PluginWorkspace(val internalWorkspace: JobWorkspace) : JobWorkspace by int
    */
   fun writeDataResult(data: InputStream) {
     write(ReservedFiles.OutputTabular, data)
+  }
+
+  /**
+   * Uses the passed consumer to write plugin result data out to the data file.
+   *
+   * @param consumer Function that will write data out to the result data file.
+   */
+  fun writeDataResult(consumer: Consumer<OutputStream>) {
+    write(ReservedFiles.OutputTabular, consumer)
   }
 
   /**

@@ -23,7 +23,7 @@ private const val DefaultFastQueueWorkers = 5
 
 // S3 Defaults
 private const val DefaultS3Port     = 80
-private const val DefaultS3UseHttps = false
+private const val DefaultS3UseHttps = true
 
 // Job Cache Defaults
 private const val DefaultJobCacheTimeoutDays = 30

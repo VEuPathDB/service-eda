@@ -22,7 +22,8 @@ private const val DefaultFastQueueWorkers = 5
 
 
 // S3 Defaults
-private const val DefaultS3Port = 80
+private const val DefaultS3Port     = 80
+private const val DefaultS3UseHttps = false
 
 // Job Cache Defaults
 private const val DefaultJobCacheTimeoutDays = 30
@@ -238,6 +239,15 @@ object ServiceOptions : Options() {
     arity = "1"
   )
   var s3Port = DefaultS3Port
+    private set
+
+  @Option(
+    names = ["--s3-use-https"],
+    defaultValue = "\${env:S3_USE_HTTPS}",
+    description = ["Whether the platform should use HTTPS when connecting to S3"],
+    arity = "1"
+  )
+  var s3UseHttps = DefaultS3UseHttps
     private set
 
   // endregion Minio (S3)

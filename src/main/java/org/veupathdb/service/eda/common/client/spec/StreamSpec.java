@@ -11,12 +11,14 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 public class StreamSpec extends ArrayList<VariableSpec> {
 
-  private String _streamName;
-  private String _entityId;
+  private final String _streamName;
+  private final String _entityId;
+  private boolean _includeComputedVars;
 
   public StreamSpec(String streamName, String entityId) {
     _streamName = streamName;
     _entityId = entityId;
+    _includeComputedVars = false;
   }
 
   public String getStreamName() {
@@ -25,6 +27,11 @@ public class StreamSpec extends ArrayList<VariableSpec> {
 
   public String getEntityId() {
     return _entityId;
+  }
+
+  public StreamSpec setIncludeComputedVars(boolean includeComputedVars) {
+    _includeComputedVars = includeComputedVars;
+    return this;
   }
 
   public StreamSpec addVar(VariableSpec variableSpec) {

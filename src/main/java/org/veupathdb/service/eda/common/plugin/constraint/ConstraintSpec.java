@@ -21,14 +21,14 @@ import org.veupathdb.service.eda.generated.model.VisualizationDataElementConstra
  */
 public class ConstraintSpec extends ArrayList<VisualizationDataElementConstraintPattern> {
 
-  private List<String> _dependencyOrder;
+  private List<List<String>> _dependencyOrder;
 
-  public ConstraintSpec dependencyOrder(String... orderedElementNames) {
+  public ConstraintSpec dependencyOrder(List<String>... orderedElementNames) {
     _dependencyOrder = Arrays.asList(orderedElementNames);
     return this;
   }
 
-  public List<String> getDependencyOrder() {
+  public List<List<String>> getDependencyOrder() {
     return _dependencyOrder;
   }
 

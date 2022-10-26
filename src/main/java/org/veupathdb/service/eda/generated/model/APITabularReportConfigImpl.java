@@ -14,7 +14,8 @@ import java.util.Map;
     "sorting",
     "paging",
     "headerFormat",
-    "trimTimeFromDateVars"
+    "trimTimeFromDateVars",
+    "dataSource"
 })
 public class APITabularReportConfigImpl implements APITabularReportConfig {
   @JsonProperty("sorting")
@@ -28,6 +29,9 @@ public class APITabularReportConfigImpl implements APITabularReportConfig {
 
   @JsonProperty("trimTimeFromDateVars")
   private Boolean trimTimeFromDateVars;
+
+  @JsonProperty("dataSource")
+  private DataSourceType dataSource;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -70,6 +74,16 @@ public class APITabularReportConfigImpl implements APITabularReportConfig {
   @JsonProperty("trimTimeFromDateVars")
   public void setTrimTimeFromDateVars(Boolean trimTimeFromDateVars) {
     this.trimTimeFromDateVars = trimTimeFromDateVars;
+  }
+
+  @JsonProperty("dataSource")
+  public DataSourceType getDataSource() {
+    return this.dataSource;
+  }
+
+  @JsonProperty("dataSource")
+  public void setDataSource(DataSourceType dataSource) {
+    this.dataSource = dataSource;
   }
 
   @JsonAnyGetter

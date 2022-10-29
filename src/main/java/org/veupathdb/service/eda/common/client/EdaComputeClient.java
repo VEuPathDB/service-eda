@@ -10,6 +10,8 @@ import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.json.JSONObject;
+import org.veupathdb.service.eda.generated.model.ComputedVariableMetadata;
+import org.veupathdb.service.eda.generated.model.ComputedVariableMetadataImpl;
 import org.veupathdb.service.eda.generated.model.JobResponse;
 import org.veupathdb.service.eda.generated.model.JobStatus;
 
@@ -37,8 +39,8 @@ public class EdaComputeClient {
     return readJsonResponse(computeName + "/statistics", computeConfig, statsClass);
   }
 
-  public <T> T getJobMetadata(String computeName, JsonNode computeConfig, Class<T> metadataClass) {
-    return readJsonResponse(computeName + "/meta", computeConfig, metadataClass);
+  public ComputedVariableMetadata getVariableMetadata(String computeName, JsonNode computeConfig) {
+    return readJsonResponse(computeName + "/meta", computeConfig, ComputedVariableMetadataImpl.class);
   }
 
   private <T> T readJsonResponse(String pathSuffix, JsonNode computeConfig, Class<T> responseClass) {

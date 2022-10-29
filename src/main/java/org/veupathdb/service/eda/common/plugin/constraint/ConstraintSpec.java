@@ -23,7 +23,8 @@ public class ConstraintSpec extends ArrayList<VisualizationDataElementConstraint
 
   private List<List<String>> _dependencyOrder;
 
-  public ConstraintSpec dependencyOrder(List<String>... orderedElementNames) {
+  @SafeVarargs
+  public final ConstraintSpec dependencyOrder(List<String>... orderedElementNames) {
     _dependencyOrder = Arrays.asList(orderedElementNames);
     return this;
   }

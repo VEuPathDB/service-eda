@@ -40,7 +40,7 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getAlphaDivMethod().getName();
-    HashMap<String, InputStream> dataStream = new HashMap<String, InputStream>();
+    HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
@@ -51,13 +51,13 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
 
       connection.voidEval("alphaDivDT <- alphaDiv(" + INPUT_DATA + ", " + 
-                                                    util.singleQuote(computeEntityIdColName) + ", " + 
-                                                    util.singleQuote(method) + ")");
+                                                    PluginUtil.singleQuote(computeEntityIdColName) + ", " +
+                                                    PluginUtil.singleQuote(method) + ")");
       String dataCmd = "readr::format_tsv(alphaDivDT)";
       String metaCmd = "getMetadata(alphaDivDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeStatisticsResult(connection.eval(metaCmd).asString());
     });
   }
 }

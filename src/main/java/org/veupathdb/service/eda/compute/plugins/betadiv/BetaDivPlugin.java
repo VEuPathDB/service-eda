@@ -40,7 +40,7 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivP
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String distanceMethod = computeConfig.getBetaDivDistanceMethod().getName();
-    HashMap<String, InputStream> dataStream = new HashMap<String, InputStream>();
+    HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
@@ -50,14 +50,14 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivP
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
 
-      connection.voidEval("betaDivDT <- betaDiv(" + INPUT_DATA + ", " + 
-                                                    util.singleQuote(computeEntityIdColName) + ", " + 
-                                                    util.singleQuote(distanceMethod) + ")");
+      connection.voidEval("betaDivDT <- betaDiv(" + INPUT_DATA + ", " +
+                                                    PluginUtil.singleQuote(computeEntityIdColName) + ", " +
+                                                    PluginUtil.singleQuote(distanceMethod) + ")");
       String dataCmd = "readr::format_tsv(betaDivDT)";
       String metaCmd = "getMetadata(betaDivDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeStatisticsResult(connection.eval(metaCmd).asString());
     });
   }
 }

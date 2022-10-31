@@ -6,7 +6,6 @@ import org.apache.logging.log4j.LogManager
 import org.gusdb.fgputil.Tuples.TwoTuple
 import org.veupathdb.lib.compute.platform.AsyncPlatform
 import org.veupathdb.lib.compute.platform.job.JobFileReference
-import org.veupathdb.lib.container.jaxrs.utils.logging.Log
 import org.veupathdb.lib.jackson.Json
 import org.veupathdb.service.eda.common.auth.StudyAccess
 import org.veupathdb.service.eda.common.client.DatasetAccessClient
@@ -119,7 +118,7 @@ object EDA {
     auth: TwoTuple<String, String>
   ): InputStream =
     EdaMergingClient(ServiceOptions.edaMergeHost, auth)
-      .getTabularDataStream(refMeta, filters, spec).inputStream
+      .getTabularDataStream(refMeta, filters, Optional.empty(), spec).inputStream
 
 
   /**

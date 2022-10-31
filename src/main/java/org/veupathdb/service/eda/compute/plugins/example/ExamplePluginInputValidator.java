@@ -5,7 +5,7 @@ import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.compute.plugins.PluginConfigValidator;
-import org.veupathdb.service.eda.generated.model.ExamplePluginConfig;
+import org.veupathdb.service.eda.generated.model.ExampleComputeConfig;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 
 import java.util.function.Supplier;
@@ -15,7 +15,7 @@ public class ExamplePluginInputValidator implements PluginConfigValidator<Exampl
   @Override
   public void validate(ExamplePluginRequest request, Supplier<ReferenceMetadata> referenceMetadata) {
     ReferenceMetadata meta = referenceMetadata.get();
-    ExamplePluginConfig config = request.getConfig();
+    ExampleComputeConfig config = request.getConfig();
 
     // check entity
     EntityDef entity = meta.getEntity(config.getOutputEntityId())

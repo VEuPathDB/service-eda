@@ -30,10 +30,10 @@ public interface ExamplePluginRequest extends ComputeRequestBase {
   void setDerivedVariables(List<DerivedVariable> derivedVariables);
 
   @JsonProperty("config")
-  ExamplePluginConfig getConfig();
+  ExampleComputeConfig getConfig();
 
   @JsonProperty("config")
-  void setConfig(ExamplePluginConfig config);
+  void setConfig(ExampleComputeConfig config);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

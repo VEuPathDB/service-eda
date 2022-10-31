@@ -8,7 +8,7 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.compute.RServe;
-import org.veupathdb.service.eda.generated.model.RankedAbundancePluginConfig;
+import org.veupathdb.service.eda.generated.model.RankedAbundanceComputeConfig;
 import org.veupathdb.service.eda.generated.model.RankedAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -16,11 +16,11 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 
-public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginRequest, RankedAbundancePluginConfig> {
+public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginRequest, RankedAbundanceComputeConfig> {
 
   private static final String INPUT_DATA = "ranked_abundance_input";
 
-  public RankedAbundancePlugin(@NotNull PluginContext<RankedAbundancePluginRequest, RankedAbundancePluginConfig> context) {
+  public RankedAbundancePlugin(@NotNull PluginContext<RankedAbundancePluginRequest, RankedAbundanceComputeConfig> context) {
     super(context);
   }
 
@@ -34,8 +34,8 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
 
   @Override
   protected void execute() {
-    
-    RankedAbundancePluginConfig computeConfig = getConfig();
+
+    RankedAbundanceComputeConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);

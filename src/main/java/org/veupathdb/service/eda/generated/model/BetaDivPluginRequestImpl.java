@@ -27,7 +27,7 @@ public class BetaDivPluginRequestImpl implements BetaDivPluginRequest {
   private List<DerivedVariable> derivedVariables;
 
   @JsonProperty("config")
-  private BetaDivPluginConfig config;
+  private BetaDivComputeConfig config;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -63,12 +63,12 @@ public class BetaDivPluginRequestImpl implements BetaDivPluginRequest {
   }
 
   @JsonProperty("config")
-  public BetaDivPluginConfig getConfig() {
+  public BetaDivComputeConfig getConfig() {
     return this.config;
   }
 
   @JsonProperty("config")
-  public void setConfig(BetaDivPluginConfig config) {
+  public void setConfig(BetaDivComputeConfig config) {
     this.config = config;
   }
 

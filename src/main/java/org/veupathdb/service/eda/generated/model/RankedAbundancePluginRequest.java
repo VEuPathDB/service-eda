@@ -30,10 +30,10 @@ public interface RankedAbundancePluginRequest extends ComputeRequestBase {
   void setDerivedVariables(List<DerivedVariable> derivedVariables);
 
   @JsonProperty("config")
-  RankedAbundancePluginConfig getConfig();
+  RankedAbundanceComputeConfig getConfig();
 
   @JsonProperty("config")
-  void setConfig(RankedAbundancePluginConfig config);
+  void setConfig(RankedAbundanceComputeConfig config);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

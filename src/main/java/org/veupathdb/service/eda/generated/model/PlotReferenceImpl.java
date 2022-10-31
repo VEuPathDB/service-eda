@@ -6,13 +6,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "id",
+    "computedVariableId",
     "variablePlotRef",
     "valuePlotRef"
 })
 public class PlotReferenceImpl implements PlotReference {
-  @JsonProperty("id")
-  private String id;
+  @JsonProperty("computedVariableId")
+  private String computedVariableId;
 
   @JsonProperty("variablePlotRef")
   private String variablePlotRef;
@@ -20,14 +20,14 @@ public class PlotReferenceImpl implements PlotReference {
   @JsonProperty("valuePlotRef")
   private String valuePlotRef;
 
-  @JsonProperty("id")
-  public String getId() {
-    return this.id;
+  @JsonProperty("computedVariableId")
+  public String getComputedVariableId() {
+    return this.computedVariableId;
   }
 
-  @JsonProperty("id")
-  public void setId(String id) {
-    this.id = id;
+  @JsonProperty("computedVariableId")
+  public void setComputedVariableId(String computedVariableId) {
+    this.computedVariableId = computedVariableId;
   }
 
   @JsonProperty("variablePlotRef")

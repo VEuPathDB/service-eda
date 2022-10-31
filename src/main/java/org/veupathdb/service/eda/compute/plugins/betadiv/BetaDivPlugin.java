@@ -8,7 +8,7 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.compute.RServe;
-import org.veupathdb.service.eda.generated.model.BetaDivPluginConfig;
+import org.veupathdb.service.eda.generated.model.BetaDivComputeConfig;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -16,11 +16,11 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 
-public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivPluginConfig> {
+public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivComputeConfig> {
 
   private static final String INPUT_DATA = "beta_div_input";
 
-  public BetaDivPlugin(@NotNull PluginContext<BetaDivPluginRequest, BetaDivPluginConfig> context) {
+  public BetaDivPlugin(@NotNull PluginContext<BetaDivPluginRequest, BetaDivComputeConfig> context) {
     super(context);
   }
 
@@ -34,8 +34,8 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivP
 
   @Override
   protected void execute() {
-    
-    BetaDivPluginConfig computeConfig = getConfig();
+
+    BetaDivComputeConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);

@@ -30,10 +30,10 @@ public interface AlphaDivPluginRequest extends ComputeRequestBase {
   void setDerivedVariables(List<DerivedVariable> derivedVariables);
 
   @JsonProperty("config")
-  AlphaDivPluginConfig getConfig();
+  AlphaDivComputeConfig getConfig();
 
   @JsonProperty("config")
-  void setConfig(AlphaDivPluginConfig config);
+  void setConfig(AlphaDivComputeConfig config);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

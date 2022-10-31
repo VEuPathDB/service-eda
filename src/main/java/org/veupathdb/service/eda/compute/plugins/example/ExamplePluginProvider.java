@@ -3,13 +3,13 @@ package org.veupathdb.service.eda.compute.plugins.example;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.compute.plugins.*;
-import org.veupathdb.service.eda.generated.model.ExamplePluginConfig;
+import org.veupathdb.service.eda.generated.model.ExampleComputeConfig;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequestImpl;
 
 import java.util.function.Supplier;
 
-public class ExamplePluginProvider implements PluginProvider<ExamplePluginRequest, ExamplePluginConfig> {
+public class ExamplePluginProvider implements PluginProvider<ExamplePluginRequest, ExampleComputeConfig> {
   @NotNull
   @Override
   public String getUrlSegment() {
@@ -42,7 +42,7 @@ public class ExamplePluginProvider implements PluginProvider<ExamplePluginReques
 
   @NotNull
   @Override
-  public ExamplePlugin createPlugin(@NotNull PluginContext<ExamplePluginRequest, ExamplePluginConfig> context) {
+  public ExamplePlugin createPlugin(@NotNull PluginContext<ExamplePluginRequest, ExampleComputeConfig> context) {
     return new ExamplePlugin(context);
   }
 }

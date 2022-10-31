@@ -27,7 +27,7 @@ public class AlphaDivPluginRequestImpl implements AlphaDivPluginRequest {
   private List<DerivedVariable> derivedVariables;
 
   @JsonProperty("config")
-  private AlphaDivPluginConfig config;
+  private AlphaDivComputeConfig config;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -63,12 +63,12 @@ public class AlphaDivPluginRequestImpl implements AlphaDivPluginRequest {
   }
 
   @JsonProperty("config")
-  public AlphaDivPluginConfig getConfig() {
+  public AlphaDivComputeConfig getConfig() {
     return this.config;
   }
 
   @JsonProperty("config")
-  public void setConfig(AlphaDivPluginConfig config) {
+  public void setConfig(AlphaDivComputeConfig config) {
     this.config = config;
   }
 

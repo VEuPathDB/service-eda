@@ -27,7 +27,7 @@ public class RankedAbundancePluginRequestImpl implements RankedAbundancePluginRe
   private List<DerivedVariable> derivedVariables;
 
   @JsonProperty("config")
-  private RankedAbundancePluginConfig config;
+  private RankedAbundanceComputeConfig config;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -63,12 +63,12 @@ public class RankedAbundancePluginRequestImpl implements RankedAbundancePluginRe
   }
 
   @JsonProperty("config")
-  public RankedAbundancePluginConfig getConfig() {
+  public RankedAbundanceComputeConfig getConfig() {
     return this.config;
   }
 
   @JsonProperty("config")
-  public void setConfig(RankedAbundancePluginConfig config) {
+  public void setConfig(RankedAbundanceComputeConfig config) {
     this.config = config;
   }
 

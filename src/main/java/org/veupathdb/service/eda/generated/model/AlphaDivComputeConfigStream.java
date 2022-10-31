@@ -8,11 +8,11 @@ import java.util.function.Consumer;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 
-public class BetaDivPluginConfigStream extends BetaDivPluginConfigImpl implements StreamingOutput {
+public class AlphaDivComputeConfigStream extends AlphaDivComputeConfigImpl implements StreamingOutput {
 
   private final Consumer<OutputStream> _streamer;
 
-  public BetaDivPluginConfigStream(Consumer<OutputStream> streamer) {
+  public AlphaDivComputeConfigStream(Consumer<OutputStream> streamer) {
     _streamer = streamer;
   }
 

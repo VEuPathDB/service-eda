@@ -30,10 +30,10 @@ public interface BetaDivPluginRequest extends ComputeRequestBase {
   void setDerivedVariables(List<DerivedVariable> derivedVariables);
 
   @JsonProperty("config")
-  BetaDivPluginConfig getConfig();
+  BetaDivComputeConfig getConfig();
 
   @JsonProperty("config")
-  void setConfig(BetaDivPluginConfig config);
+  void setConfig(BetaDivComputeConfig config);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

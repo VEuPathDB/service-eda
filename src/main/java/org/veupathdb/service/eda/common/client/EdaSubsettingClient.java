@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import jakarta.ws.rs.ProcessingException;
+import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.web.MimeTypes;
@@ -14,14 +15,7 @@ import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
-import org.veupathdb.service.eda.generated.model.APIFilter;
-import org.veupathdb.service.eda.generated.model.APIStudyDetail;
-import org.veupathdb.service.eda.generated.model.APIStudyOverview;
-import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
-import org.veupathdb.service.eda.generated.model.EntityTabularPostRequestImpl;
-import org.veupathdb.service.eda.generated.model.StudiesGetResponse;
-import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.*;
 
 import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
@@ -72,6 +66,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
   public ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
       List<APIFilter> subset,
+      Optional<Tuples.TwoTuple<String,ComputeConfigBase>> computeInfo, // should always be null; will be ignored
       StreamSpec spec) throws ProcessingException {
 
     // build request object

@@ -51,6 +51,8 @@ public class EdaMergingSpecValidator implements StreamSpecValidator {
 
     // TODO: validate merge service requests MORE?
 
+    // TODO: figure out if validating requests that include computed var columns is feasible/necessary/desirable
+
     return validation.build();
   }
 }

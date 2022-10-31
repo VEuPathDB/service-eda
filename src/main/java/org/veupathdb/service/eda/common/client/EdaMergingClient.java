@@ -2,19 +2,20 @@ package org.veupathdb.service.eda.common.client;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
+
 import jakarta.ws.rs.ProcessingException;
+import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.web.MimeTypes;
 import org.veupathdb.service.eda.common.client.spec.EdaMergingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
+import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.APIFilter;
-import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequest;
-import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequestImpl;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.*;
 
 public class EdaMergingClient extends StreamingDataClient {
 
@@ -36,6 +37,7 @@ public class EdaMergingClient extends StreamingDataClient {
   public ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
       List<APIFilter> subset,
+      Optional<Tuples.TwoTuple<String,ComputeConfigBase>> computeInfoOpt,
       StreamSpec spec) throws ProcessingException {
 
     // build request object
@@ -45,6 +47,24 @@ public class EdaMergingClient extends StreamingDataClient {
     request.setEntityId(spec.getEntityId());
     request.setDerivedVariables(metadata.getDerivedVariables());
     request.setOutputVariables(spec);
+
+    // if asked to include computed vars, do some validation before trying
+    if (spec.isIncludeComputedVars()) {
+      // a compute name and config must be provided
+      Tuples.TwoTuple<String,ComputeConfigBase> computeInfo = computeInfoOpt.orElseThrow(() -> new RuntimeException(
+          "Computed vars requested but no compute associated with this visualization"));
+      // compute entity must be the same as, or a parent of, the target entity
+      String computeEntityId = computeInfo.getSecond().getOutputEntityId();
+      EntityDef target = metadata.getEntity(spec.getEntityId()).orElseThrow();
+      if (!computeEntityId.equals(target.getId()) &&
+          metadata.getAncestors(target).stream().filter(ent -> ent.getId().equals(computeEntityId)).findFirst().isEmpty()) {
+        throw new RuntimeException("Computed entity must be the same as, or an ancestor of, the target entity of the merged stream.");
+      }
+      ComputeSpecForMerging computeSpec = new ComputeSpecForMergingImpl();
+      computeSpec.setComputeName(computeInfo.getFirst());
+      computeSpec.setComputeConfig(computeInfo.getSecond());
+      request.setComputeSpec(computeSpec);
+    }
 
     // make request
     return ClientUtil.makeAsyncPostRequest(getUrl("/query"), request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());

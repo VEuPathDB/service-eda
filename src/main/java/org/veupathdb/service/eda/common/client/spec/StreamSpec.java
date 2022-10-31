@@ -13,12 +13,11 @@ public class StreamSpec extends ArrayList<VariableSpec> {
 
   private final String _streamName;
   private final String _entityId;
-  private boolean _includeComputedVars;
+  private boolean _includeComputedVars = false;
 
   public StreamSpec(String streamName, String entityId) {
     _streamName = streamName;
     _entityId = entityId;
-    _includeComputedVars = false;
   }
 
   public String getStreamName() {
@@ -27,6 +26,10 @@ public class StreamSpec extends ArrayList<VariableSpec> {
 
   public String getEntityId() {
     return _entityId;
+  }
+
+  public boolean isIncludeComputedVars() {
+    return _includeComputedVars;
   }
 
   public StreamSpec setIncludeComputedVars(boolean includeComputedVars) {

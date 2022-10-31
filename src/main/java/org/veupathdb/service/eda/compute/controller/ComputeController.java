@@ -23,12 +23,7 @@ import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
-import org.veupathdb.service.eda.generated.model.ComputeRequestBase;
-import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
-import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
-import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
-import org.veupathdb.service.eda.generated.model.RankedAbundancePluginRequest;
-import org.veupathdb.service.eda.generated.model.JobResponse;
+import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
@@ -149,7 +144,7 @@ public class ComputeController implements Computes {
    * @param <C> Type of the configuration wrapped by the raw request body that
    * the target plugin accepts.
    */
-  private <R extends ComputeRequestBase, C> JobResponse submitJob(PluginProvider<R, C> plugin, R entity) {
+  private <R extends ComputeRequestBase, C extends ComputeConfigBase> JobResponse submitJob(PluginProvider<R, C> plugin, R entity) {
     var auth = UserProvider.getSubmittedAuth(request).orElseThrow();
 
     requirePermissions(entity, auth);

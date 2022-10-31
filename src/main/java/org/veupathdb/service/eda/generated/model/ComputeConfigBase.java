@@ -7,26 +7,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Map;
 
 @JsonDeserialize(
-    as = ExamplePluginConfigImpl.class
+    as = ComputeConfigBaseImpl.class
 )
-public interface ExamplePluginConfig {
+public interface ComputeConfigBase {
   @JsonProperty("outputEntityId")
   String getOutputEntityId();
 
   @JsonProperty("outputEntityId")
   void setOutputEntityId(String outputEntityId);
-
-  @JsonProperty("inputVariable")
-  VariableSpec getInputVariable();
-
-  @JsonProperty("inputVariable")
-  void setInputVariable(VariableSpec inputVariable);
-
-  @JsonProperty("valueSuffix")
-  String getValueSuffix();
-
-  @JsonProperty("valueSuffix")
-  void setValueSuffix(String valueSuffix);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

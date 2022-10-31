@@ -1,12 +1,15 @@
 package org.veupathdb.service.eda.generated.model;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.Map;
 
 @JsonDeserialize(
-    as = AlphaDivPluginConfigImpl.class
+    as = AlphaDivComputeConfigImpl.class
 )
-public interface AlphaDivPluginConfig {
+public interface AlphaDivComputeConfig extends ComputeConfigBase {
   @JsonProperty("outputEntityId")
   String getOutputEntityId();
 
@@ -24,4 +27,10 @@ public interface AlphaDivPluginConfig {
 
   @JsonProperty("alphaDivMethod")
   void setAlphaDivMethod(AlphaDivMethod alphaDivMethod);
+
+  @JsonAnyGetter
+  Map<String, Object> getAdditionalProperties();
+
+  @JsonAnySetter
+  void setAdditionalProperties(String key, Object value);
 }

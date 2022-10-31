@@ -1,24 +1,31 @@
 package org.veupathdb.service.eda.generated.model;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "outputEntityId",
     "collectionVariable",
-    "alphaDivMethod"
+    "rankingMethod"
 })
-public class AlphaDivPluginConfigImpl implements AlphaDivPluginConfig {
+public class RankedAbundanceComputeConfigImpl implements RankedAbundanceComputeConfig {
   @JsonProperty("outputEntityId")
   private String outputEntityId;
 
   @JsonProperty("collectionVariable")
   private VariableSpec collectionVariable;
 
-  @JsonProperty("alphaDivMethod")
-  private AlphaDivMethod alphaDivMethod;
+  @JsonProperty("rankingMethod")
+  private RankingMethod rankingMethod;
+
+  @JsonIgnore
+  private Map<String, Object> additionalProperties = new ExcludingMap();
 
   @JsonProperty("outputEntityId")
   public String getOutputEntityId() {
@@ -40,13 +47,23 @@ public class AlphaDivPluginConfigImpl implements AlphaDivPluginConfig {
     this.collectionVariable = collectionVariable;
   }
 
-  @JsonProperty("alphaDivMethod")
-  public AlphaDivMethod getAlphaDivMethod() {
-    return this.alphaDivMethod;
+  @JsonProperty("rankingMethod")
+  public RankingMethod getRankingMethod() {
+    return this.rankingMethod;
   }
 
-  @JsonProperty("alphaDivMethod")
-  public void setAlphaDivMethod(AlphaDivMethod alphaDivMethod) {
-    this.alphaDivMethod = alphaDivMethod;
+  @JsonProperty("rankingMethod")
+  public void setRankingMethod(RankingMethod rankingMethod) {
+    this.rankingMethod = rankingMethod;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getAdditionalProperties() {
+    return additionalProperties;
+  }
+
+  @JsonAnySetter
+  public void setAdditionalProperties(String key, Object value) {
+    this.additionalProperties.put(key, value);
   }
 }

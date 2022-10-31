@@ -27,7 +27,7 @@ public class ExamplePluginRequestImpl implements ExamplePluginRequest {
   private List<DerivedVariable> derivedVariables;
 
   @JsonProperty("config")
-  private ExamplePluginConfig config;
+  private ExampleComputeConfig config;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -63,12 +63,12 @@ public class ExamplePluginRequestImpl implements ExamplePluginRequest {
   }
 
   @JsonProperty("config")
-  public ExamplePluginConfig getConfig() {
+  public ExampleComputeConfig getConfig() {
     return this.config;
   }
 
   @JsonProperty("config")
-  public void setConfig(ExamplePluginConfig config) {
+  public void setConfig(ExampleComputeConfig config) {
     this.config = config;
   }
 

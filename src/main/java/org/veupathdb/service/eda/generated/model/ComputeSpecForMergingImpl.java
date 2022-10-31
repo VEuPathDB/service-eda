@@ -14,7 +14,7 @@ public class ComputeSpecForMergingImpl implements ComputeSpecForMerging {
   private String computeName;
 
   @JsonProperty("computeConfig")
-  private Object computeConfig;
+  private ComputeConfigBase computeConfig;
 
   @JsonProperty("computeName")
   public String getComputeName() {
@@ -27,12 +27,12 @@ public class ComputeSpecForMergingImpl implements ComputeSpecForMerging {
   }
 
   @JsonProperty("computeConfig")
-  public Object getComputeConfig() {
+  public ComputeConfigBase getComputeConfig() {
     return this.computeConfig;
   }
 
   @JsonProperty("computeConfig")
-  public void setComputeConfig(Object computeConfig) {
+  public void setComputeConfig(ComputeConfigBase computeConfig) {
     this.computeConfig = computeConfig;
   }
 }

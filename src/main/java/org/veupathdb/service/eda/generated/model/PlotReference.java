@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
     as = PlotReferenceImpl.class
 )
 public interface PlotReference {
-  @JsonProperty("id")
-  String getId();
+  @JsonProperty("computedVariableId")
+  String getComputedVariableId();
 
-  @JsonProperty("id")
-  void setId(String id);
+  @JsonProperty("computedVariableId")
+  void setComputedVariableId(String computedVariableId);
 
   @JsonProperty("variablePlotRef")
   String getVariablePlotRef();

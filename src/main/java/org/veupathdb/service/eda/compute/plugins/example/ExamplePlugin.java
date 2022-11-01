@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.compute.plugins.example;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.*;
@@ -37,7 +38,7 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     getWorkspace().writeDataResult(outStream -> {
       try (BufferedReader in = new BufferedReader(new InputStreamReader(getWorkspace().openStream(INPUT_DATA)))) {
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(outStream));
-        // write header
+        // write header (trick: adding suffix will make new name compliant with dot notation, matching value below)
         out.write(in.readLine() + COMPUTED_COLUMN_NAME_SUFFIX);
         out.newLine();
         while (in.ready()) {
@@ -60,7 +61,10 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
 
     // write the metadata result
     getWorkspace().writeMetaResult(createMetadataObject(
-        getConfig().getInputVariable().getVariableId() + COMPUTED_COLUMN_NAME_SUFFIX
+        // use same format as other columns for ease of reading and compliance with tooling
+        getUtil().toColNameOrEmpty(VariableDef.newVariableSpec(
+            getConfig().getOutputEntityId(),
+            getConfig().getInputVariable().getVariableId() + COMPUTED_COLUMN_NAME_SUFFIX))
     ));
 
     // write the statistics result

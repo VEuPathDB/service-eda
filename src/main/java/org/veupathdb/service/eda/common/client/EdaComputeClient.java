@@ -58,8 +58,8 @@ public class EdaComputeClient {
   }
 
   public ResponseFuture getJobTabularOutput(String computeName, ComputeRequestBody requestBody) {
-    String url = "/tabular";
-    return null;
+    return ClientUtil.makeAsyncPostRequest(
+        _baseComputesUrl + computeName + "/tabular", requestBody, MediaType.APPLICATION_JSON, _authHeader);
   }
 
   private <T> T readJsonResponse(String pathSuffix, ComputeRequestBase computeConfig, Class<T> responseClass) {

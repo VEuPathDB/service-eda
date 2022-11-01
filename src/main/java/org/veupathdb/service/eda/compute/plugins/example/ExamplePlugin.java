@@ -71,8 +71,17 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
 
   private static ComputedVariableMetadata createMetadataObject(String computedColumnName) {
     ComputedVariableMetadata meta = new ComputedVariableMetadataImpl();
+
+    // skip collections for the example
     meta.setComputedCollections(Collections.emptyList());
-    meta.setPlotReferences(Collections.emptyList());
+
+    // give the generated variable a role in the viz plugin
+    PlotReference pr = new PlotReferenceImpl();
+    pr.setComputedVariableId(computedColumnName);
+    pr.setVariablePlotRef("appendedValue");
+    meta.setPlotReferences(List.of(pr));
+
+    // build the metadata for the variable
     APIStringVariable var = new APIStringVariableImpl();
     var.setId(computedColumnName);
     var.setDataShape(APIVariableDataShape.CONTINUOUS);
@@ -81,6 +90,7 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     var.setIsMultiValued(false);
     var.setIsTemporal(false);
     meta.setComputedVariables(List.of(var));
+
     return meta;
   }
 }

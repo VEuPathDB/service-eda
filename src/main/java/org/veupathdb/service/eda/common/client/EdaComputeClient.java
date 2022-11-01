@@ -59,12 +59,14 @@ public class EdaComputeClient {
 
   public ResponseFuture getJobTabularOutput(String computeName, ComputeRequestBody requestBody) {
     return ClientUtil.makeAsyncPostRequest(
-        _baseComputesUrl + computeName + "/tabular", requestBody, MediaType.APPLICATION_JSON, _authHeader);
+        // note: need to use wildcard here since compute service serves all result files out at the same endpoint
+        _baseComputesUrl + computeName + "/tabular", requestBody, MediaType.MEDIA_TYPE_WILDCARD, _authHeader);
   }
 
   private <T> T readJsonResponse(String pathSuffix, ComputeRequestBase computeConfig, Class<T> responseClass) {
     ResponseFuture response = ClientUtil.makeAsyncPostRequest(
-        _baseComputesUrl + pathSuffix, computeConfig, MediaType.APPLICATION_JSON, _authHeader);
+        // note: need to use wildcard here since compute service serves all result files out at the same endpoint
+        _baseComputesUrl + pathSuffix, computeConfig, MediaType.MEDIA_TYPE_WILDCARD, _authHeader);
     try (InputStream responseBody = response.getEither().leftOrElseThrowWithRight(f -> new RuntimeException(f.toString()))) {
       String json = IoUtil.readAllChars(new InputStreamReader(responseBody));
       return JsonUtil.Jackson.readValue(json, responseClass);

@@ -57,7 +57,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       String metaCmd = "getMetadata(abundanceDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeStatisticsResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
     });
   }
 }

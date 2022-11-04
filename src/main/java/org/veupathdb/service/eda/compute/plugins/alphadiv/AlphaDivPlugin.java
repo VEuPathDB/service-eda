@@ -57,7 +57,7 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
       String metaCmd = "getMetadata(alphaDivDT)";
 
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeStatisticsResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
     });
   }
 }

@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.compute.plugins.betadiv;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -10,6 +11,7 @@ import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.generated.model.BetaDivComputeConfig;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
+import org.veupathdb.service.eda.generated.model.ComputedVariableMetadata;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.io.InputStream;
@@ -56,8 +58,9 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       String dataCmd = "readr::format_tsv(betaDivDT)";
       String metaCmd = "getMetadata(betaDivDT)";
 
+      // FIXME: should not be storing off tabular result in memory!!
       getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeMetaResult(new ObjectMapper().readValue(connection.eval(metaCmd).asString(), ComputedVariableMetadata.class));
     });
   }
 }

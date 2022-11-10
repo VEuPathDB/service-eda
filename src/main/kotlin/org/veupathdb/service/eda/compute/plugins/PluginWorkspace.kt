@@ -1,6 +1,8 @@
 package org.veupathdb.service.eda.compute.plugins
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.rosuda.REngine.Rserve.RConnection
+import org.rosuda.REngine.Rserve.RFileInputStream
 import org.veupathdb.lib.compute.platform.job.JobWorkspace
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles
 import org.veupathdb.service.eda.generated.model.ComputedVariableMetadata
@@ -28,6 +30,18 @@ class PluginWorkspace(val internalWorkspace: JobWorkspace) : JobWorkspace by int
    */
   fun writeDataResult(data: InputStream) {
     write(ReservedFiles.OutputTabular, data)
+  }
+
+  /**
+   * Helper function that streams the resulting file of the R command
+   * into the job's data result file.
+   *
+   * @param connection an R connection
+   * @param cmd R command whose result is a file reference in the R workspace
+   */
+  fun writeDataResult(connection: RConnection, cmd: String) {
+    val outFile = connection.eval(cmd).asString();
+    writeDataResult(connection.openFile(outFile));
   }
 
   /**
@@ -64,10 +78,22 @@ class PluginWorkspace(val internalWorkspace: JobWorkspace) : JobWorkspace by int
    * result metadata.
    *
    * @param data Stream of data to write out to the result metadata file.
-   *//*
+   */
   fun writeMetaResult(data: InputStream) {
     write(ReservedFiles.OutputMeta, data)
-  }*/
+  }
+
+  /**
+   * Helper function that streams the resulting file of the R command
+   * into the job's meta result file.
+   *
+   * @param connection an R connection
+   * @param cmd R command whose result is a file reference in the R workspace
+   */
+  fun writeMetaResult(connection: RConnection, cmd: String) {
+    val outFile = connection.eval(cmd).asString();
+    writeMetaResult(connection.openFile(outFile));
+  }
 
   /**
    * Writes the given stream out to the file expected by the service for plugin
@@ -107,6 +133,18 @@ class PluginWorkspace(val internalWorkspace: JobWorkspace) : JobWorkspace by int
    */
   fun writeStatisticsResult(data: InputStream) {
     write(ReservedFiles.OutputStats, data)
+  }
+
+  /**
+   * Helper function that streams the resulting file of the R command
+   * into the job's statistics result file.
+   *
+   * @param connection an R connection
+   * @param cmd R command whose result is a file reference in the R workspace
+   */
+  fun writeStatisticsResult(connection: RConnection, cmd: String) {
+    val outFile = connection.eval(cmd).asString();
+    writeStatisticsResult(connection.openFile(outFile));
   }
 
   /**

@@ -53,11 +53,11 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       connection.voidEval("betaDivDT <- betaDiv(" + INPUT_DATA + ", " +
                                                     PluginUtil.singleQuote(computeEntityIdColName) + ", " +
                                                     PluginUtil.singleQuote(distanceMethod) + ")");
-      String dataCmd = "readr::format_tsv(betaDivDT)";
-      String metaCmd = "getMetadata(betaDivDT)";
+      String dataCmd = "writeData(betaDivDT)";
+      String metaCmd = "writeMeta(betaDivDT)";
 
-      getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeDataResult(connection, dataCmd);
+      getWorkspace().writeMetaResult(connection, metaCmd));
     });
   }
 }

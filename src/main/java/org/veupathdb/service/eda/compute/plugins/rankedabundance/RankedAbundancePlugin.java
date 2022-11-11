@@ -53,11 +53,11 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       connection.voidEval("abundanceDT <- rankedAbundance(" + INPUT_DATA + ", " + 
                                                     PluginUtil.singleQuote(computeEntityIdColName) + ", " +
                                                     PluginUtil.singleQuote(method) + ")");
-      String dataCmd = "readr::format_tsv(abundanceDT)";
-      String metaCmd = "getMetadata(abundanceDT)";
+      String dataCmd = "writeData(abundanceDT)";
+      String metaCmd = "writeMeta(abundanceDT)";
 
-      getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeDataResult(connection, dataCmd);
+      getWorkspace().writeMetaResult(connection, metaCmd);
     });
   }
 }

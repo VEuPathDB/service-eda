@@ -53,11 +53,11 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
       connection.voidEval("alphaDivDT <- alphaDiv(" + INPUT_DATA + ", " + 
                                                     PluginUtil.singleQuote(computeEntityIdColName) + ", " +
                                                     PluginUtil.singleQuote(method) + ")");
-      String dataCmd = "readr::format_tsv(alphaDivDT)";
-      String metaCmd = "getMetadata(alphaDivDT)";
+      String dataCmd = "writeData(alphaDivDT)";
+      String metaCmd = "writeMeta(alphaDivDT)";
 
-      getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      getWorkspace().writeDataResult(connection, dataCmd);
+      getWorkspace().writeMetaResult(connection, metaCmd);
     });
   }
 }

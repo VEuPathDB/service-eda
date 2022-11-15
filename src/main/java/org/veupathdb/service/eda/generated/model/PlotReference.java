@@ -18,10 +18,4 @@ public interface PlotReference {
 
   @JsonProperty("variablePlotRef")
   void setVariablePlotRef(String variablePlotRef);
-
-  @JsonProperty("valuePlotRef")
-  String getValuePlotRef();
-
-  @JsonProperty("valuePlotRef")
-  void setValuePlotRef(String valuePlotRef);
 }

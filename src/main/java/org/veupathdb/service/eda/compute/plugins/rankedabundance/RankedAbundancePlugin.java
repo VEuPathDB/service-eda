@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.compute.plugins.rankedabundance;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -8,6 +9,7 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.compute.RServe;
+import org.veupathdb.service.eda.generated.model.ComputedVariableMetadata;
 import org.veupathdb.service.eda.generated.model.RankedAbundanceComputeConfig;
 import org.veupathdb.service.eda.generated.model.RankedAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;

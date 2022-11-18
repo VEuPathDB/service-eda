@@ -69,16 +69,16 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     getWorkspace().writeStatisticsResult(JsonUtil.serializeObject(stats));
   }
 
-  private ComputedVariableMetadata createMetadataObject(VariableSpec computedVariableSpec) {
+  private static ComputedVariableMetadata createMetadataObject(VariableSpec computedVariableSpec) {
 
     // build the metadata for the variable
     VariableMapping var = new VariableMappingImpl();
-    var.setDataShape(APIVariableDataShape.CONTINUOUS);
-    var.setDataType(APIVariableType.STRING);
-    var.setImputeZero(false);
-    var.setDisplayName("Example Computed Variable");
     var.setVariableSpec(computedVariableSpec);
+    var.setDataType(APIVariableType.STRING);
+    var.setDataShape(APIVariableDataShape.CONTINUOUS);
     var.setVariableClass(VariableClass.COMPUTED);
+    var.setDisplayName("Example Computed Variable");
+    var.setImputeZero(false);
     var.setIsCollection(false);
 
     ComputedVariableMetadata meta = new ComputedVariableMetadataImpl();

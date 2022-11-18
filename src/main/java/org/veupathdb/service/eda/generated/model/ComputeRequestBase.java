@@ -24,10 +24,10 @@ public interface ComputeRequestBase {
   void setFilters(List<APIFilter> filters);
 
   @JsonProperty("derivedVariables")
-  List<DerivedVariable> getDerivedVariables();
+  List<DerivedVariableSpec> getDerivedVariables();
 
   @JsonProperty("derivedVariables")
-  void setDerivedVariables(List<DerivedVariable> derivedVariables);
+  void setDerivedVariables(List<DerivedVariableSpec> derivedVariables);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

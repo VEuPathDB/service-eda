@@ -33,10 +33,10 @@ public interface MergedEntityTabularPostRequest {
   void setOutputVariables(List<VariableSpec> outputVariables);
 
   @JsonProperty("derivedVariables")
-  List<DerivedVariable> getDerivedVariables();
+  List<DerivedVariableSpec> getDerivedVariables();
 
   @JsonProperty("derivedVariables")
-  void setDerivedVariables(List<DerivedVariable> derivedVariables);
+  void setDerivedVariables(List<DerivedVariableSpec> derivedVariables);
 
   @JsonProperty("computeSpec")
   ComputeSpecForMerging getComputeSpec();

@@ -24,7 +24,7 @@ public class AlphaDivPluginRequestImpl implements AlphaDivPluginRequest {
   private List<APIFilter> filters;
 
   @JsonProperty("derivedVariables")
-  private List<DerivedVariable> derivedVariables;
+  private List<DerivedVariableSpec> derivedVariables;
 
   @JsonProperty("config")
   private AlphaDivComputeConfig config;
@@ -53,12 +53,12 @@ public class AlphaDivPluginRequestImpl implements AlphaDivPluginRequest {
   }
 
   @JsonProperty("derivedVariables")
-  public List<DerivedVariable> getDerivedVariables() {
+  public List<DerivedVariableSpec> getDerivedVariables() {
     return this.derivedVariables;
   }
 
   @JsonProperty("derivedVariables")
-  public void setDerivedVariables(List<DerivedVariable> derivedVariables) {
+  public void setDerivedVariables(List<DerivedVariableSpec> derivedVariables) {
     this.derivedVariables = derivedVariables;
   }
 

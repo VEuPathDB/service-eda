@@ -8,11 +8,11 @@ import java.util.function.Consumer;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 
-public class DerivedVariableStream extends DerivedVariableImpl implements StreamingOutput {
+public class DerivedVariableSpecStream extends DerivedVariableSpecImpl implements StreamingOutput {
 
   private final Consumer<OutputStream> _streamer;
 
-  public DerivedVariableStream(Consumer<OutputStream> streamer) {
+  public DerivedVariableSpecStream(Consumer<OutputStream> streamer) {
     _streamer = streamer;
   }
 

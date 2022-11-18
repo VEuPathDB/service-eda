@@ -59,7 +59,7 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       String metaCmd = "writeMeta(betaDivDT)";
 
       getWorkspace().writeDataResult(connection, dataCmd);
-      getWorkspace().writeMetaResult(connection, metaCmd));
+      getWorkspace().writeMetaResult(connection, metaCmd);
     });
   }
 }

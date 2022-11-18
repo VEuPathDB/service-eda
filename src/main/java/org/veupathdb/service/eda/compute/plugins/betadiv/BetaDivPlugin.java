@@ -55,12 +55,11 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       connection.voidEval("betaDivDT <- betaDiv(" + INPUT_DATA + ", " +
                                                     PluginUtil.singleQuote(computeEntityIdColName) + ", " +
                                                     PluginUtil.singleQuote(distanceMethod) + ")");
-      String dataCmd = "readr::format_tsv(betaDivDT)";
-      String metaCmd = "getMetadata(betaDivDT)";
+      String dataCmd = "writeData(betaDivDT)";
+      String metaCmd = "writeMeta(betaDivDT)";
 
-      // FIXME: should not be storing off tabular result in memory!!
-      getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeMetaResult(new ObjectMapper().readValue(connection.eval(metaCmd).asString(), ComputedVariableMetadata.class));
+      getWorkspace().writeDataResult(connection, dataCmd);
+      getWorkspace().writeMetaResult(connection, metaCmd);
     });
   }
 }

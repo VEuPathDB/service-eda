@@ -61,11 +61,9 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
 
     // write the metadata result
     getWorkspace().writeMetaResult(createMetadataObject(
-        // use same format as other columns for ease of reading and compliance with tooling
-        getUtil().toColNameOrEmpty(VariableDef.newVariableSpec(
-            getConfig().getOutputEntityId(),
-            getConfig().getInputVariable().getVariableId() + COMPUTED_COLUMN_NAME_SUFFIX))
-    ));
+        getConfig().getOutputEntityId(),
+        getConfig().getInputVariable().getVariableId() + COMPUTED_COLUMN_NAME_SUFFIX)
+    );
 
     // write the statistics result
     ExamplePluginStats stats = new ExamplePluginStatsImpl();
@@ -73,27 +71,23 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     getWorkspace().writeStatisticsResult(JsonUtil.serializeObject(stats));
   }
 
-  private static ComputedVariableMetadata createMetadataObject(String computedColumnName) {
+  private static ComputedVariableMetadata createMetadataObject(String outputEntityId, String computedVariableId) {
     ComputedVariableMetadata meta = new ComputedVariableMetadataImpl();
 
-    // skip collections for the example
-    meta.setComputedCollections(Collections.emptyList());
-
-    // give the generated variable a role in the viz plugin
-    PlotReference pr = new PlotReferenceImpl();
-    pr.setComputedVariableId(computedColumnName);
-    pr.setVariablePlotRef("appendedValue");
-    meta.setPlotReferences(List.of(pr));
-
-    // build the metadata for the variable
-    APIStringVariable var = new APIStringVariableImpl();
-    var.setId(computedColumnName);
+    VariableMapping var = new VariableMappingImpl();
+    var.setVariableClass(VariableClass.COMPUTED);
+    VariableSpec varSpec = new VariableSpecImpl();
+    varSpec.setVariableId(computedVariableId);
+    varSpec.setEntityId(outputEntityId);
+    var.setVariableSpec(varSpec);
+    var.setPlotReference(PlotReference.XAXIS);
+    var.setDataType(APIVariableType.STRING);
     var.setDataShape(APIVariableDataShape.CONTINUOUS);
-    var.setDisplayType(APIVariableDisplayType.DEFAULT);
+    var.setIsCollection(false);
     var.setImputeZero(false);
-    var.setIsMultiValued(false);
-    var.setIsTemporal(false);
-    meta.setComputedVariables(List.of(var));
+    var.setDisplayName("Example Computed Variable");
+
+    meta.setVariables(List.of(var));
 
     return meta;
   }

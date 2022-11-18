@@ -80,7 +80,7 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     varSpec.setVariableId(computedVariableId);
     varSpec.setEntityId(outputEntityId);
     var.setVariableSpec(varSpec);
-    var.setPlotReference(PlotReference.XAXIS);
+    var.setPlotReference(PlotReferenceValue.XAXIS);
     var.setDataType(APIVariableType.STRING);
     var.setDataShape(APIVariableDataShape.CONTINUOUS);
     var.setIsCollection(false);

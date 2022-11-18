@@ -5,9 +5,11 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.common.client.EdaMergingClient;
+import org.veupathdb.service.eda.common.model.CollectionDef;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.util.List;
@@ -33,6 +35,8 @@ public class PluginUtil {
    *** Metadata access utilities
    ****************************************************************/
 
+  // do the same w CollectionSpec as arg
+
   public VariableDef getEntityIdVarSpec(String entityId) {
     return _metadata.getEntity(entityId).orElseThrow().getIdColumnDef();
   }
@@ -49,8 +53,16 @@ public class PluginUtil {
     return getVariableEntityId(getVariableSpecFromList(vars, index));
   }
 
+  private String getCollectionAttribute(Function<CollectionDef, ?> getter, CollectionSpec collection) {
+    return collection == null ? "" : getter.apply(_metadata.getCollection(collection).orElseThrow()).toString();
+  }
+
   private String getVariableAttribute(Function<VariableDef, ?> getter, VariableSpec var) {
     return var == null ? "" : getter.apply(_metadata.getVariable(var).orElseThrow()).toString();
+  }
+
+  public String getCollectionType(CollectionSpec collection) {
+    return getCollectionAttribute(CollectionDef::getDataType, collection);
   }
 
   public String getVariableType(VariableSpec var) {
@@ -61,6 +73,10 @@ public class PluginUtil {
     return getVariableType(getVariableSpecFromList(vars, index));
   }
 
+  public String getCollectionDataShape(CollectionSpec collection) {
+    return getCollectionAttribute(CollectionDef::getDataShape, collection);
+  }
+
   public String getVariableDataShape(VariableSpec var) {
     return getVariableAttribute(VariableDef::getDataShape, var);
   }
@@ -69,6 +85,23 @@ public class PluginUtil {
     return getVariableDataShape(getVariableSpecFromList(vars, index));
   }
 
+  public String getCollectionImputeZero(CollectionSpec collection) {
+    return getCollectionAttribute(CollectionDef::isImputeZero, collection);
+  }
+
+  public String getVariableImputeZero(VariableSpec var) {
+    return getVariableAttribute(VariableDef::isImputeZero, var);
+  }
+
+  public String getVariableImputeZero(List<VariableSpec> vars, int index) {
+    return getVariableImputeZero(getVariableSpecFromList(vars, index));
+  }
+
+  public List<VariableDef> getCollectionMembers(CollectionSpec collection) {
+    return collection == null ? null : _metadata.getCollection(collection).orElseThrow().getMemberVariables();
+  }
+
+  //deprecated
   public List<VariableDef> getChildrenVariables(VariableSpec collectionVar) {
     EntityDef collectionVarEntityDef = _metadata.getEntity(collectionVar.getEntityId()).orElseThrow();
     TreeNode<VariableDef> childVarsTree = collectionVarEntityDef.getNativeVariableTreeNode(collectionVar);

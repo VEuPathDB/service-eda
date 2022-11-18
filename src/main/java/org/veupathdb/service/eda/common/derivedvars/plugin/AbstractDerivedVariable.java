@@ -1,14 +1,12 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
 import static org.gusdb.fgputil.functional.Functions.wrapException;
@@ -32,6 +30,12 @@ public abstract class AbstractDerivedVariable extends VariableSpecImpl implement
    * @throws ValidationException if input variables are invalid
    */
   protected abstract void receiveInputVariables(List<VariableDef> inputVariables) throws ValidationException;
+
+  @Override
+  public List<VariableSpec> getRequiredInputVars() {
+    // FIXME: apply actual required vars; holdover until compute is running!
+    return Collections.emptyList();
+  }
 
   public String getName() {
     return getClass().getSimpleName().toLowerCase();

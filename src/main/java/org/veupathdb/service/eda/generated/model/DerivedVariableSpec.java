@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.List;
 
 @JsonDeserialize(
-    as = DerivedVariableImpl.class
+    as = DerivedVariableSpecImpl.class
 )
-public interface DerivedVariable extends VariableSpec {
+public interface DerivedVariableSpec extends VariableSpec {
   @JsonProperty("entityId")
   String getEntityId();
 
@@ -20,23 +20,17 @@ public interface DerivedVariable extends VariableSpec {
   @JsonProperty("variableId")
   void setVariableId(String variableId);
 
-  @JsonProperty("variableType")
-  APIVariableType getVariableType();
+  @JsonProperty("expectedVariableType")
+  APIVariableType getExpectedVariableType();
 
-  @JsonProperty("variableType")
-  void setVariableType(APIVariableType variableType);
+  @JsonProperty("expectedVariableType")
+  void setExpectedVariableType(APIVariableType expectedVariableType);
 
-  @JsonProperty("variableDataShape")
-  APIVariableDataShape getVariableDataShape();
+  @JsonProperty("expectedVariableDataShape")
+  APIVariableDataShape getExpectedVariableDataShape();
 
-  @JsonProperty("variableDataShape")
-  void setVariableDataShape(APIVariableDataShape variableDataShape);
-
-  @JsonProperty("derivationType")
-  DerivationType getDerivationType();
-
-  @JsonProperty("derivationType")
-  void setDerivationType(DerivationType derivationType);
+  @JsonProperty("expectedVariableDataShape")
+  void setExpectedVariableDataShape(APIVariableDataShape expectedVariableDataShape);
 
   @JsonProperty("functionName")
   String getFunctionName();

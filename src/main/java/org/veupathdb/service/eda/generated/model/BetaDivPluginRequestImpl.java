@@ -24,7 +24,7 @@ public class BetaDivPluginRequestImpl implements BetaDivPluginRequest {
   private List<APIFilter> filters;
 
   @JsonProperty("derivedVariables")
-  private List<DerivedVariable> derivedVariables;
+  private List<DerivedVariableSpec> derivedVariables;
 
   @JsonProperty("config")
   private BetaDivComputeConfig config;
@@ -53,12 +53,12 @@ public class BetaDivPluginRequestImpl implements BetaDivPluginRequest {
   }
 
   @JsonProperty("derivedVariables")
-  public List<DerivedVariable> getDerivedVariables() {
+  public List<DerivedVariableSpec> getDerivedVariables() {
     return this.derivedVariables;
   }
 
   @JsonProperty("derivedVariables")
-  public void setDerivedVariables(List<DerivedVariable> derivedVariables) {
+  public void setDerivedVariables(List<DerivedVariableSpec> derivedVariables) {
     this.derivedVariables = derivedVariables;
   }
 

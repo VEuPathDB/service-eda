@@ -6,48 +6,18 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder({
-    "computedVariables",
-    "computedCollections",
-    "plotReferences"
-})
+@JsonPropertyOrder("variables")
 public class ComputedVariableMetadataImpl implements ComputedVariableMetadata {
-  @JsonProperty("computedVariables")
-  private List<APIVariableWithValues> computedVariables;
+  @JsonProperty("variables")
+  private List<VariableMapping> variables;
 
-  @JsonProperty("computedCollections")
-  private List<APICollection> computedCollections;
-
-  @JsonProperty("plotReferences")
-  private List<PlotReference> plotReferences;
-
-  @JsonProperty("computedVariables")
-  public List<APIVariableWithValues> getComputedVariables() {
-    return this.computedVariables;
+  @JsonProperty("variables")
+  public List<VariableMapping> getVariables() {
+    return this.variables;
   }
 
-  @JsonProperty("computedVariables")
-  public void setComputedVariables(List<APIVariableWithValues> computedVariables) {
-    this.computedVariables = computedVariables;
-  }
-
-  @JsonProperty("computedCollections")
-  public List<APICollection> getComputedCollections() {
-    return this.computedCollections;
-  }
-
-  @JsonProperty("computedCollections")
-  public void setComputedCollections(List<APICollection> computedCollections) {
-    this.computedCollections = computedCollections;
-  }
-
-  @JsonProperty("plotReferences")
-  public List<PlotReference> getPlotReferences() {
-    return this.plotReferences;
-  }
-
-  @JsonProperty("plotReferences")
-  public void setPlotReferences(List<PlotReference> plotReferences) {
-    this.plotReferences = plotReferences;
+  @JsonProperty("variables")
+  public void setVariables(List<VariableMapping> variables) {
+    this.variables = variables;
   }
 }

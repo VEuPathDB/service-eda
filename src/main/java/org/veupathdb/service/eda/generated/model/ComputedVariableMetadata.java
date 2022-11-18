@@ -8,21 +8,9 @@ import java.util.List;
     as = ComputedVariableMetadataImpl.class
 )
 public interface ComputedVariableMetadata {
-  @JsonProperty("computedVariables")
-  List<APIVariableWithValues> getComputedVariables();
+  @JsonProperty("variables")
+  List<VariableMapping> getVariables();
 
-  @JsonProperty("computedVariables")
-  void setComputedVariables(List<APIVariableWithValues> computedVariables);
-
-  @JsonProperty("computedCollections")
-  List<APICollection> getComputedCollections();
-
-  @JsonProperty("computedCollections")
-  void setComputedCollections(List<APICollection> computedCollections);
-
-  @JsonProperty("plotReferences")
-  List<PlotReference> getPlotReferences();
-
-  @JsonProperty("plotReferences")
-  void setPlotReferences(List<PlotReference> plotReferences);
+  @JsonProperty("variables")
+  void setVariables(List<VariableMapping> variables);
 }

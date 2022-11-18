@@ -23,7 +23,7 @@ public class ComputeRequestBaseImpl implements ComputeRequestBase {
   private List<APIFilter> filters;
 
   @JsonProperty("derivedVariables")
-  private List<DerivedVariable> derivedVariables;
+  private List<DerivedVariableSpec> derivedVariables;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -49,12 +49,12 @@ public class ComputeRequestBaseImpl implements ComputeRequestBase {
   }
 
   @JsonProperty("derivedVariables")
-  public List<DerivedVariable> getDerivedVariables() {
+  public List<DerivedVariableSpec> getDerivedVariables() {
     return this.derivedVariables;
   }
 
   @JsonProperty("derivedVariables")
-  public void setDerivedVariables(List<DerivedVariable> derivedVariables) {
+  public void setDerivedVariables(List<DerivedVariableSpec> derivedVariables) {
     this.derivedVariables = derivedVariables;
   }
 

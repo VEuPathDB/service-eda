@@ -24,7 +24,7 @@ public class RankedAbundancePluginRequestImpl implements RankedAbundancePluginRe
   private List<APIFilter> filters;
 
   @JsonProperty("derivedVariables")
-  private List<DerivedVariable> derivedVariables;
+  private List<DerivedVariableSpec> derivedVariables;
 
   @JsonProperty("config")
   private RankedAbundanceComputeConfig config;
@@ -53,12 +53,12 @@ public class RankedAbundancePluginRequestImpl implements RankedAbundancePluginRe
   }
 
   @JsonProperty("derivedVariables")
-  public List<DerivedVariable> getDerivedVariables() {
+  public List<DerivedVariableSpec> getDerivedVariables() {
     return this.derivedVariables;
   }
 
   @JsonProperty("derivedVariables")
-  public void setDerivedVariables(List<DerivedVariable> derivedVariables) {
+  public void setDerivedVariables(List<DerivedVariableSpec> derivedVariables) {
     this.derivedVariables = derivedVariables;
   }
 

@@ -9,28 +9,24 @@ import java.util.List;
 @JsonPropertyOrder({
     "entityId",
     "variableId",
-    "variableType",
-    "variableDataShape",
-    "derivationType",
+    "expectedVariableType",
+    "expectedVariableDataShape",
     "functionName",
     "inputVars",
     "config"
 })
-public class DerivedVariableImpl implements DerivedVariable {
+public class DerivedVariableSpecImpl implements DerivedVariableSpec {
   @JsonProperty("entityId")
   private String entityId;
 
   @JsonProperty("variableId")
   private String variableId;
 
-  @JsonProperty("variableType")
-  private APIVariableType variableType;
+  @JsonProperty("expectedVariableType")
+  private APIVariableType expectedVariableType;
 
-  @JsonProperty("variableDataShape")
-  private APIVariableDataShape variableDataShape;
-
-  @JsonProperty("derivationType")
-  private DerivationType derivationType;
+  @JsonProperty("expectedVariableDataShape")
+  private APIVariableDataShape expectedVariableDataShape;
 
   @JsonProperty("functionName")
   private String functionName;
@@ -61,34 +57,24 @@ public class DerivedVariableImpl implements DerivedVariable {
     this.variableId = variableId;
   }
 
-  @JsonProperty("variableType")
-  public APIVariableType getVariableType() {
-    return this.variableType;
+  @JsonProperty("expectedVariableType")
+  public APIVariableType getExpectedVariableType() {
+    return this.expectedVariableType;
   }
 
-  @JsonProperty("variableType")
-  public void setVariableType(APIVariableType variableType) {
-    this.variableType = variableType;
+  @JsonProperty("expectedVariableType")
+  public void setExpectedVariableType(APIVariableType expectedVariableType) {
+    this.expectedVariableType = expectedVariableType;
   }
 
-  @JsonProperty("variableDataShape")
-  public APIVariableDataShape getVariableDataShape() {
-    return this.variableDataShape;
+  @JsonProperty("expectedVariableDataShape")
+  public APIVariableDataShape getExpectedVariableDataShape() {
+    return this.expectedVariableDataShape;
   }
 
-  @JsonProperty("variableDataShape")
-  public void setVariableDataShape(APIVariableDataShape variableDataShape) {
-    this.variableDataShape = variableDataShape;
-  }
-
-  @JsonProperty("derivationType")
-  public DerivationType getDerivationType() {
-    return this.derivationType;
-  }
-
-  @JsonProperty("derivationType")
-  public void setDerivationType(DerivationType derivationType) {
-    this.derivationType = derivationType;
+  @JsonProperty("expectedVariableDataShape")
+  public void setExpectedVariableDataShape(APIVariableDataShape expectedVariableDataShape) {
+    this.expectedVariableDataShape = expectedVariableDataShape;
   }
 
   @JsonProperty("functionName")

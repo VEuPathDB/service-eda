@@ -9,7 +9,6 @@ import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.*;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -60,12 +59,9 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     });
 
     // write the metadata result
-    getWorkspace().writeMetaResult(createMetadataObject(
-        // use same format as other columns for ease of reading and compliance with tooling
-        getUtil().toColNameOrEmpty(VariableDef.newVariableSpec(
-            getConfig().getOutputEntityId(),
-            getConfig().getInputVariable().getVariableId() + COMPUTED_COLUMN_NAME_SUFFIX))
-    ));
+    String computedVariableName = getConfig().getInputVariable().getVariableId() + COMPUTED_COLUMN_NAME_SUFFIX;
+    VariableSpec computedVariableSpec = VariableDef.newVariableSpec(getConfig().getOutputEntityId(), computedVariableName);
+    getWorkspace().writeMetaResult(createMetadataObject(computedVariableSpec));
 
     // write the statistics result
     ExamplePluginStats stats = new ExamplePluginStatsImpl();
@@ -73,28 +69,20 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     getWorkspace().writeStatisticsResult(JsonUtil.serializeObject(stats));
   }
 
-  private static ComputedVariableMetadata createMetadataObject(String computedColumnName) {
-    ComputedVariableMetadata meta = new ComputedVariableMetadataImpl();
-
-    // skip collections for the example
-    meta.setComputedCollections(Collections.emptyList());
-
-    // give the generated variable a role in the viz plugin
-    PlotReference pr = new PlotReferenceImpl();
-    pr.setComputedVariableId(computedColumnName);
-    pr.setVariablePlotRef("appendedValue");
-    meta.setPlotReferences(List.of(pr));
+  private ComputedVariableMetadata createMetadataObject(VariableSpec computedVariableSpec) {
 
     // build the metadata for the variable
-    APIStringVariable var = new APIStringVariableImpl();
-    var.setId(computedColumnName);
+    VariableMapping var = new VariableMappingImpl();
     var.setDataShape(APIVariableDataShape.CONTINUOUS);
-    var.setDisplayType(APIVariableDisplayType.DEFAULT);
+    var.setDataType(APIVariableType.STRING);
     var.setImputeZero(false);
-    var.setIsMultiValued(false);
-    var.setIsTemporal(false);
-    meta.setComputedVariables(List.of(var));
+    var.setDisplayName("Example Computed Variable");
+    var.setVariableSpec(computedVariableSpec);
+    var.setVariableClass(VariableClass.COMPUTED);
+    var.setIsCollection(false);
 
+    ComputedVariableMetadata meta = new ComputedVariableMetadataImpl();
+    meta.setVariables(List.of(var));
     return meta;
   }
 }

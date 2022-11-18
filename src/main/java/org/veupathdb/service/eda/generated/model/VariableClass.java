@@ -2,16 +2,19 @@ package org.veupathdb.service.eda.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public enum DerivationType {
-  @JsonProperty("transform")
-  TRANSFORM("transform"),
+public enum VariableClass {
+  @JsonProperty("native")
+  NATIVE("native"),
 
-  @JsonProperty("reduction")
-  REDUCTION("reduction");
+  @JsonProperty("derived")
+  DERIVED("derived"),
+
+  @JsonProperty("computed")
+  COMPUTED("computed");
 
   public final String name;
 
-  DerivationType(String name) {
+  VariableClass(String name) {
     this.name = name;
   }
 

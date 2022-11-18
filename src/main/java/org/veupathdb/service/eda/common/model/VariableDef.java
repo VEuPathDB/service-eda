@@ -9,12 +9,8 @@ import java.util.stream.Collectors;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
-import org.veupathdb.service.eda.generated.model.DerivationType;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
-
-import static org.veupathdb.service.eda.common.model.VariableSource.DERIVED_BY_REDUCTION;
-import static org.veupathdb.service.eda.common.model.VariableSource.DERIVED_BY_TRANSFORM;
 
 /**
  * Wrapper containing only what a plugin would need to know about a variable for
@@ -73,20 +69,6 @@ public class VariableDef extends VariableSpecImpl {
     _dataRanges = dataRanges;
     _parentId = parentId;
     _source = source;
-  }
-
-  public VariableDef(
-      String entityId,
-      String variableId,
-      APIVariableType type,
-      APIVariableDataShape dataShape,
-      DerivationType derivationType) {
-    this(entityId, variableId, type, dataShape, false, false, Optional.empty(), null,
-      switch(derivationType) {
-        case REDUCTION -> DERIVED_BY_REDUCTION;
-        case TRANSFORM -> DERIVED_BY_TRANSFORM;
-      }
-    );
   }
 
   @JsonIgnore

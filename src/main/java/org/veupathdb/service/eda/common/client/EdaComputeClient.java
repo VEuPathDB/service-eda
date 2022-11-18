@@ -23,7 +23,7 @@ public class EdaComputeClient {
     private final ComputeConfigBase _computeConfig;
 
     public <T extends ComputeConfigBase> ComputeRequestBody(
-        String studyId, List<APIFilter> subset, List<DerivedVariable> derivedVariables, T computeConfig) {
+        String studyId, List<APIFilter> subset, List<DerivedVariableSpec> derivedVariables, T computeConfig) {
       setStudyId(studyId);
       setFilters(subset);
       setDerivedVariables(derivedVariables);

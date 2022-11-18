@@ -5,12 +5,11 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.veupathdb.service.eda.common.derivedvars.plugin.DerivedVariable;
+import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.functional.Functions.getMapFromList;
@@ -22,13 +21,43 @@ public class ReferenceMetadata {
   private final String _studyId;
   private final TreeNode<EntityDef> _entityTree;
   private final Map<String,EntityDef> _entityMap;
+  private final List<DerivedVariableSpec> _derivedVariableSpecs;
   private final List<DerivedVariable> _derivedVariables;
 
-  public ReferenceMetadata(APIStudyDetail study, List<DerivedVariable> derivedVariables) {
+  public ReferenceMetadata(APIStudyDetail study, List<DerivedVariableSpec> derivedVariableSpecs) {
     _studyId = study.getId();
-    _entityTree = buildEntityTree(study.getRootEntity(), derivedVariables, new ArrayList<>());
+    _entityTree = buildEntityTree(study.getRootEntity(), new ArrayList<>());
     _entityMap = buildEntityMap(_entityTree);
-    _derivedVariables = derivedVariables;
+    _derivedVariableSpecs = derivedVariableSpecs;
+    _derivedVariables = new DerivedVariableFactory(this).createDerivedVariables(derivedVariableSpecs);
+    incorporateDerivedVariables(_derivedVariables);
+  }
+
+  // note: incoming list will be in dependency order; i.e. only later derived vars
+  //       will depend on earlier derived vars (plus no circular dependencies);
+  //       name will also be validated for uniqueness within study
+  private void incorporateDerivedVariables(List<DerivedVariable> derivedVariables) {
+    // add derived variables for this entity to itself and all children (who can inherit the derived var)
+    for (DerivedVariable derivedVariable: derivedVariables) {
+      // get this DR's entity and descendents
+      List<EntityDef> entities = new ArrayList<>();
+      entities.add(derivedVariable.getEntity());
+      entities.addAll(getDescendants(derivedVariable.getEntity()));
+      for (EntityDef entity : entities) {
+        entity.add(new VariableDef(
+            derivedVariable.getEntity().getId(),
+            derivedVariable.getVariableId(),
+            derivedVariable.getVariableType(),
+            derivedVariable.getVariableDataShape(),
+            false,
+            false,
+            derivedVariable.getDataRanges(),
+            null,
+            entity == derivedVariable.getEntity()
+              ? VariableSource.DERIVED
+              : VariableSource.INHERITED));
+      }
+    }
   }
 
   private static Map<String, EntityDef> buildEntityMap(TreeNode<EntityDef> entityTree) {
@@ -43,12 +72,10 @@ public class ReferenceMetadata {
    * calls itself on the entity's children to produce child nodes.
    *
    * @param entity an entity to convert to a def node, supplement vars of, and convert children of
-   * @param allSpecifiedDerivedVariables all available derived var definitions
    * @param ancestorVars vars supplied by ancestor entities
    * @return root of a tree of entity defs containing all available vars on those entities
    */
-  private static TreeNode<EntityDef> buildEntityTree(APIEntity entity,
-      List<DerivedVariable> allSpecifiedDerivedVariables, List<VariableDef> ancestorVars) {
+  private static TreeNode<EntityDef> buildEntityTree(APIEntity entity, List<VariableDef> ancestorVars) {
 
     EntityDef entityDef = new EntityDef(
         entity.getId(),
@@ -125,29 +152,13 @@ public class ReferenceMetadata {
         ancestorVars.add(vd);
       });
 
-    // add derived variables for this entity
-    //  (for now, can only use derived vars declared on the current entity, not its parents)
-    allSpecifiedDerivedVariables.stream()
-      // only derived vars for this entity
-      .filter(dr -> dr.getEntityId().equals(entity.getId()))
-      // skip if entity already contains the variable; TODO: will throw later
-      .filter(dr -> !entityDef.getVariable(dr).isPresent())
-      .map(dr -> new VariableDef(
-          entity.getId(),
-          dr.getVariableId(),
-          dr.getVariableType(),
-          dr.getVariableDataShape(),
-          dr.getDerivationType()))
-
-      .forEach(vd -> entityDef.add(vd));
-
     // put this entity in a node
     TreeNode<EntityDef> node = new TreeNode<>(entityDef);
 
     // add child entities
     for (APIEntity childEntity : entity.getChildren()) {
       // create new array list each time; don't want branches of entity tree polluting each other
-      node.addChildNode(buildEntityTree(childEntity, allSpecifiedDerivedVariables, new ArrayList<>(ancestorVars)));
+      node.addChildNode(buildEntityTree(childEntity, new ArrayList<>(ancestorVars)));
     }
 
     return node;
@@ -169,8 +180,8 @@ public class ReferenceMetadata {
     return getEntity(colSpec.getEntityId()).flatMap(e -> e.getCollection(colSpec));
   }
 
-  public List<DerivedVariable> getDerivedVariables() {
-    return _derivedVariables;
+  public List<DerivedVariableSpec> getDerivedVariableSpecs() {
+    return _derivedVariableSpecs;
   }
 
   public Optional<DerivedVariable> findDerivedVariable(VariableSpec var) {

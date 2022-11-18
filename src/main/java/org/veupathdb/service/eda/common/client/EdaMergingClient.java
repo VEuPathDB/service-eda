@@ -45,7 +45,7 @@ public class EdaMergingClient extends StreamingDataClient {
     request.setStudyId(metadata.getStudyId());
     request.setFilters(subset);
     request.setEntityId(spec.getEntityId());
-    request.setDerivedVariables(metadata.getDerivedVariables());
+    request.setDerivedVariables(metadata.getDerivedVariableSpecs());
     request.setOutputVariables(spec);
 
     // if asked to include computed vars, do some validation before trying

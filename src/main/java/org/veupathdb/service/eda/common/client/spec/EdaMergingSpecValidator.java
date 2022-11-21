@@ -52,6 +52,8 @@ public class EdaMergingSpecValidator implements StreamSpecValidator {
     // TODO: validate merge service requests MORE?
 
     // TODO: figure out if validating requests that include computed var columns is feasible/necessary/desirable
+    //          answer: yes, we should validate that computed var is the same as or an ancestor of the target entity,
+    //            but can't currently do that with this API so will check in merge service
 
     return validation.build();
   }

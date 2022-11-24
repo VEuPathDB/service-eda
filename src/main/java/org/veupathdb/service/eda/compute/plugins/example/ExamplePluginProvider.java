@@ -1,13 +1,13 @@
 package org.veupathdb.service.eda.compute.plugins.example;
 
 import org.jetbrains.annotations.NotNull;
-import org.veupathdb.service.eda.common.model.ReferenceMetadata;
-import org.veupathdb.service.eda.compute.plugins.*;
+import org.veupathdb.service.eda.compute.plugins.PluginConfigValidator;
+import org.veupathdb.service.eda.compute.plugins.PluginContext;
+import org.veupathdb.service.eda.compute.plugins.PluginProvider;
+import org.veupathdb.service.eda.compute.plugins.PluginQueue;
 import org.veupathdb.service.eda.generated.model.ExampleComputeConfig;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequestImpl;
-
-import java.util.function.Supplier;
 
 public class ExamplePluginProvider implements PluginProvider<ExamplePluginRequest, ExampleComputeConfig> {
   @NotNull

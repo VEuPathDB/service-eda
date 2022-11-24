@@ -11,7 +11,7 @@ import org.veupathdb.service.eda.compute.util.toJobResponse
 import org.veupathdb.service.eda.generated.resources.Jobs
 
 @Authenticated(allowGuests = false)
-object JobsController : Jobs {
+class JobsController : Jobs {
 
   /**
    * Lookup job by job id.

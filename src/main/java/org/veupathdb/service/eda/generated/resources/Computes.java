@@ -2,11 +2,13 @@ package org.veupathdb.service.eda.generated.resources;
 
 import java.util.List;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
@@ -27,7 +29,9 @@ public interface Computes {
   @Path("/example")
   @Produces("application/json")
   @Consumes("application/json")
-  PostComputesExampleResponse postComputesExample(ExamplePluginRequest entity);
+  PostComputesExampleResponse postComputesExample(
+      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      ExamplePluginRequest entity);
 
   @POST
   @Path("/example/{file}")
@@ -40,7 +44,9 @@ public interface Computes {
   @Path("/betadiv")
   @Produces("application/json")
   @Consumes("application/json")
-  PostComputesBetadivResponse postComputesBetadiv(BetaDivPluginRequest entity);
+  PostComputesBetadivResponse postComputesBetadiv(
+      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      BetaDivPluginRequest entity);
 
   @POST
   @Path("/betadiv/{file}")
@@ -53,7 +59,9 @@ public interface Computes {
   @Path("/alphadiv")
   @Produces("application/json")
   @Consumes("application/json")
-  PostComputesAlphadivResponse postComputesAlphadiv(AlphaDivPluginRequest entity);
+  PostComputesAlphadivResponse postComputesAlphadiv(
+      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      AlphaDivPluginRequest entity);
 
   @POST
   @Path("/alphadiv/{file}")
@@ -67,6 +75,7 @@ public interface Computes {
   @Produces("application/json")
   @Consumes("application/json")
   PostComputesRankedabundanceResponse postComputesRankedabundance(
+      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
       RankedAbundancePluginRequest entity);
 
   @POST

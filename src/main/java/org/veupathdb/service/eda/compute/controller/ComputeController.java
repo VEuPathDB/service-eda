@@ -42,8 +42,8 @@ import java.util.function.Supplier;
  * Endpoints" statement.
  * <p>
  * Plugin endpoints should follow the example set by the
- * {@link #postComputesExample(ExamplePluginRequest)} method and call the
- * {@link #submitJob(PluginProvider, ComputeRequestBase)} method, passing in an
+ * {@link #postComputesExample(Boolean, ExamplePluginRequest)} method and call the
+ * {@link #submitJob(PluginProvider, ComputeRequestBase, boolean)} method, passing in an
  * instance of the target {@link PluginProvider} for their plugin along with the
  * raw request body (entity).
  *
@@ -68,8 +68,8 @@ public class ComputeController implements Computes {
 
 
   @Override
-  public PostComputesExampleResponse postComputesExample(ExamplePluginRequest entity) {
-    return PostComputesExampleResponse.respond200WithApplicationJson(submitJob(new ExamplePluginProvider(), entity));
+  public PostComputesExampleResponse postComputesExample(Boolean autostart, ExamplePluginRequest entity) {
+    return PostComputesExampleResponse.respond200WithApplicationJson(submitJob(new ExamplePluginProvider(), entity, autostart));
   }
 
   @Override
@@ -78,8 +78,8 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesBetadivResponse postComputesBetadiv(BetaDivPluginRequest entity) {
-    return PostComputesBetadivResponse.respond200WithApplicationJson(submitJob(new BetaDivPluginProvider(), entity));
+  public PostComputesBetadivResponse postComputesBetadiv(Boolean autostart, BetaDivPluginRequest entity) {
+    return PostComputesBetadivResponse.respond200WithApplicationJson(submitJob(new BetaDivPluginProvider(), entity, autostart));
   }
 
   @Override
@@ -88,8 +88,8 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesAlphadivResponse postComputesAlphadiv(AlphaDivPluginRequest entity) {
-    return PostComputesAlphadivResponse.respond200WithApplicationJson(submitJob(new AlphaDivPluginProvider(), entity));
+  public PostComputesAlphadivResponse postComputesAlphadiv(Boolean autostart, AlphaDivPluginRequest entity) {
+    return PostComputesAlphadivResponse.respond200WithApplicationJson(submitJob(new AlphaDivPluginProvider(), entity, autostart));
   }
 
   @Override
@@ -98,8 +98,8 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesRankedabundanceResponse postComputesRankedabundance(RankedAbundancePluginRequest entity) {
-    return PostComputesRankedabundanceResponse.respond200WithApplicationJson(submitJob(new RankedAbundancePluginProvider(), entity));
+  public PostComputesRankedabundanceResponse postComputesRankedabundance(Boolean autostart, RankedAbundancePluginRequest entity) {
+    return PostComputesRankedabundanceResponse.respond200WithApplicationJson(submitJob(new RankedAbundancePluginProvider(), entity, autostart));
   }
 
   @Override
@@ -136,6 +136,8 @@ public class ComputeController implements Computes {
    *
    * @param entity The raw request payload.
    *
+   * @param autostart Whether to start a job if none already exists
+   *
    * @return Basic information about the submitted job to be returned to the
    * caller.
    *
@@ -144,7 +146,7 @@ public class ComputeController implements Computes {
    * @param <C> Type of the configuration wrapped by the raw request body that
    * the target plugin accepts.
    */
-  private <R extends ComputeRequestBase, C extends ComputeConfigBase> JobResponse submitJob(PluginProvider<R, C> plugin, R entity) {
+  private <R extends ComputeRequestBase, C extends ComputeConfigBase> JobResponse submitJob(PluginProvider<R, C> plugin, R entity, boolean autostart) {
     var auth = UserProvider.getSubmittedAuth(request).orElseThrow();
 
     requirePermissions(entity, auth);
@@ -157,7 +159,7 @@ public class ComputeController implements Computes {
     plugin.getValidator()
       .validate(entity, referenceMetadata);
 
-    return EDA.getOrSubmitComputeJob(plugin, entity, auth);
+    return EDA.getOrSubmitComputeJob(plugin, entity, auth, autostart);
   }
 
   /**

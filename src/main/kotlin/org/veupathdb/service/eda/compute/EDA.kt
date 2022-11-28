@@ -19,10 +19,8 @@ import org.veupathdb.service.eda.compute.service.ServiceOptions
 import org.veupathdb.service.eda.compute.util.JobIDs
 import org.veupathdb.service.eda.compute.util.toAuthTuple
 import org.veupathdb.service.eda.compute.util.toJobResponse
-import org.veupathdb.service.eda.generated.model.APIFilter
-import org.veupathdb.service.eda.generated.model.APIStudyDetail
-import org.veupathdb.service.eda.generated.model.ComputeRequestBase
-import org.veupathdb.service.eda.generated.model.JobResponse
+import org.veupathdb.service.eda.compute.util.toOutJobStatus
+import org.veupathdb.service.eda.generated.model.*
 import java.io.InputStream
 import java.util.*
 
@@ -130,13 +128,16 @@ object EDA {
    *
    * @param auth: Auth header sent in with the job HTTP request.
    *
+   * @param autostart: Whether to start a job that does not yet exist.
+   *
    * @return A response describing the job that was created.
    */
   @JvmStatic
   fun <R : ComputeRequestBase> getOrSubmitComputeJob(
-    plugin:  PluginMeta<R>,
+    plugin: PluginMeta<R>,
     payload: R,
-    auth:    TwoTuple<String, String>,
+    auth: TwoTuple<String, String>,
+    autostart: Boolean,
   ): JobResponse {
     // Serialize the http request to json
     val serial = Json.convert(payload)
@@ -146,19 +147,27 @@ object EDA {
     // If the job already exists, just return it.
     AsyncPlatform.getJob(jobID)?.let { return it.toJobResponse() }
 
-    Log.info("Submitting job {} to the queue", jobID)
+    if (autostart) {
+      Log.info("Submitting job {} to the queue", jobID)
 
-    // Build the rabbitmq message payload
-    val jobPay = PluginJobPayload(plugin.urlSegment, serial, auth.toAuthTuple())
+      // Build the rabbitmq message payload
+      val jobPay = PluginJobPayload(plugin.urlSegment, serial, auth.toAuthTuple())
 
-    // Submit the job
-    AsyncPlatform.submitJob(plugin.targetQueue.queueName) {
-      this.jobID  = jobID
-      this.config = Json.convert(jobPay)
+      // Submit the job
+      AsyncPlatform.submitJob(plugin.targetQueue.queueName) {
+        this.jobID = jobID
+        this.config = Json.convert(jobPay)
+      }
+
+      // Look up the job we just submitted
+      return AsyncPlatform.getJob(jobID)!!.toJobResponse()
     }
 
-    // Look up the job we just submitted
-    return AsyncPlatform.getJob(jobID)!!.toJobResponse()
+    // Return the job ID with no-such-job status
+    return JobResponseImpl().also {
+      it.jobID = jobID.string
+      it.status = JobStatus.NOSUCHJOB
+    }
   }
 
   @JvmStatic

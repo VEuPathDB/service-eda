@@ -91,6 +91,7 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     var.setDisplayName("Example Computed Variable");
     var.setImputeZero(false);
     var.setIsCollection(false);
+    var.setPlotReference(PlotReferenceValue.XAXIS);
 
     ComputedVariableMetadata meta = new ComputedVariableMetadataImpl();
     meta.setVariables(List.of(var));

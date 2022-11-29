@@ -27,6 +27,7 @@ import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -155,6 +156,7 @@ public class ComputeController implements Computes {
     Supplier<ReferenceMetadata> referenceMetadata = () -> new ReferenceMetadata(
         EDA.getAPIStudyDetail(entity.getStudyId(), auth)
             .orElseThrow(() -> new BadRequestException("Invalid study ID: " + entity.getStudyId())),
+        Collections.emptyList(),
         entity.getDerivedVariables());
     plugin.getValidator()
       .validate(entity, referenceMetadata);

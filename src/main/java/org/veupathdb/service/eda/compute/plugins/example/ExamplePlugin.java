@@ -9,8 +9,10 @@ import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.*;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleComputeConfig> {
 
@@ -37,8 +39,7 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     getWorkspace().writeDataResult(outStream -> {
       try (BufferedReader in = new BufferedReader(new InputStreamReader(getWorkspace().openStream(INPUT_DATA)))) {
         BufferedWriter out = new BufferedWriter(new OutputStreamWriter(outStream));
-        // write header (trick: adding suffix will make new name compliant with dot notation, matching value below)
-        out.write(in.readLine() + COMPUTED_COLUMN_NAME_SUFFIX);
+        out.write(convertMergeHeader(in.readLine()));
         out.newLine();
         while (in.ready()) {
           String line = in.readLine();
@@ -67,6 +68,16 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
     ExamplePluginStats stats = new ExamplePluginStatsImpl();
     stats.setNumEmptyValues(numEmptyValues.get());
     getWorkspace().writeStatisticsResult(JsonUtil.serializeObject(stats));
+  }
+
+  private String convertMergeHeader(String mergeServiceHeader) {
+    // merge service produces column header names in 'dot' format since its columns may come from various entities;
+    // for this simple plugin, want to trim off the entity IDs since we're just echoing the cols.
+    return Arrays.stream(mergeServiceHeader.split("\t"))
+        .map(column -> column.split("\\.")[1])
+        .collect(Collectors.joining("\t"))
+        // additional trick: adding suffix to whole row will make new name compliant with dot notation, matching declared name above
+        + COMPUTED_COLUMN_NAME_SUFFIX;
   }
 
   private static ComputedVariableMetadata createMetadataObject(VariableSpec computedVariableSpec) {

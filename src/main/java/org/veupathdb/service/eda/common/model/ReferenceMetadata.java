@@ -24,13 +24,66 @@ public class ReferenceMetadata {
   private final List<DerivedVariableSpec> _derivedVariableSpecs;
   private final List<DerivedVariable> _derivedVariables;
 
-  public ReferenceMetadata(APIStudyDetail study, List<DerivedVariableSpec> derivedVariableSpecs) {
+  public ReferenceMetadata(
+      APIStudyDetail study,
+      List<VariableMapping> computedVariables,
+      List<DerivedVariableSpec> derivedVariableSpecs) {
     _studyId = study.getId();
     _entityTree = buildEntityTree(study.getRootEntity(), new ArrayList<>());
     _entityMap = buildEntityMap(_entityTree);
     _derivedVariableSpecs = derivedVariableSpecs;
     _derivedVariables = new DerivedVariableFactory(this).createDerivedVariables(derivedVariableSpecs);
+    // incorporate derived vars after native data since they will depend on the native vars
     incorporateDerivedVariables(_derivedVariables);
+    // incorporate computed vars after derived since derived vars cannot depend on computed vars
+    incorporateComputedVariables(computedVariables);
+  }
+
+  private void incorporateComputedVariables(List<VariableMapping> computedVariables) {
+    if (computedVariables.isEmpty()) return;
+
+    // all computed vars must be of the same entity (one compute per request)
+    String entityId = computedVariables.get(0).getVariableSpec().getEntityId();
+    EntityDef entity = getEntity(entityId).orElseThrow(() ->
+        new RuntimeException("Cannot find compute's entity in tree (" + entityId + ")"));
+
+    // get list of the entity and its descendants; will add computed vars to each
+    List<EntityDef> entities = new ArrayList<>();
+    entities.add(entity);
+    entities.addAll(getDescendants(entity));
+
+    // convert each variable mapping to a variable def and add to all entities it will be available on
+    for (VariableMapping computedVar : computedVariables) {
+      if (!computedVar.getVariableSpec().getEntityId().equals(entityId)) {
+        throw new RuntimeException("Not all computed vars specs are delcared as the same entity");
+      }
+      for (EntityDef treeEntity : entities) {
+        entity.add(new VariableDef(
+            entityId,
+            computedVar.getVariableSpec().getVariableId(),
+            computedVar.getDataType(),
+            computedVar.getDataShape(),
+            false,
+            computedVar.getImputeZero(),
+            determineComputedVarDataRanges(computedVar.getDisplayRangeMin(), computedVar.getDisplayRangeMax()),
+            null,
+            entityId.equals(treeEntity.getId())
+                ? VariableSource.COMPUTED
+                : VariableSource.INHERITED
+        ));
+      }
+    }
+  }
+
+  private Optional<DataRanges> determineComputedVarDataRanges(Object displayRangeMin, Object displayRangeMax) {
+    if (displayRangeMin == null && displayRangeMax == null)
+      return Optional.empty();
+    if (displayRangeMin == null || displayRangeMax == null)
+      throw new RuntimeException("Computed variable display range must contain both min and max or neither.");
+    return Optional.of(new DataRanges(
+        new DataRange(displayRangeMin.toString(), displayRangeMax.toString()),
+        new DataRange(displayRangeMin.toString(), displayRangeMax.toString())
+    ));
   }
 
   // note: incoming list will be in dependency order; i.e. only later derived vars
@@ -55,7 +108,8 @@ public class ReferenceMetadata {
             null,
             entity == derivedVariable.getEntity()
               ? VariableSource.DERIVED
-              : VariableSource.INHERITED));
+              : VariableSource.INHERITED
+        ));
       }
     }
   }
@@ -99,8 +153,8 @@ public class ReferenceMetadata {
     ).forEach(colDef -> entityDef.addCollection(colDef));
 
     // add inherited variables from parent
-    ancestorVars.stream()
-      .forEach(vd -> entityDef.add(new VariableDef(
+    ancestorVars.forEach(vd -> entityDef.add(
+        new VariableDef(
           vd.getEntityId(),
           vd.getVariableId(),
           vd.getType(),
@@ -191,15 +245,15 @@ public class ReferenceMetadata {
   /**
    * Returns the child entities of the passed entity
    *
-   * @param targetEntity
-   * @return
+   * @param targetEntity entity whose children should be returned
+   * @return list of child entities
    */
   public List<EntityDef> getChildren(EntityDef targetEntity) {
     return _entityTree
         .findFirst(node -> node.getId().equals(targetEntity.getId()))
         .getChildNodes()
         .stream()
-        .map(node -> node.getContents())
+        .map(TreeNode::getContents)
         .collect(Collectors.toList());
   }
 
@@ -209,15 +263,15 @@ public class ReferenceMetadata {
         // find all nodes in this subtree except the root
         .findAll(entity -> !entity.getId().equals(targetEntity.getId()))
         .stream()
-        .map(node -> node.getContents())
+        .map(TreeNode::getContents)
         .collect(Collectors.toList());
   }
 
   /**
    * Returns the ancestor entities of the passed entity, ordered from the bottom (parent) up to the root
    *
-   * @param targetEntity
-   * @return
+   * @param targetEntity entity whose ancestors should be returned
+   * @return list of ancestor entities
    */
   public List<EntityDef> getAncestors(EntityDef targetEntity) {
     return getAncestors(targetEntity, _entityTree, new ArrayList<>())

@@ -52,11 +52,11 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
 
-      connection.voidEval("betaDivDT <- betaDiv(" + INPUT_DATA + ", " +
-                                                    PluginUtil.singleQuote(computeEntityIdColName) + ", " +
-                                                    PluginUtil.singleQuote(distanceMethod) + ")");
-      String dataCmd = "writeData(betaDivDT)";
-      String metaCmd = "writeMeta(betaDivDT)";
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + ",recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) + ",imputeZero=TRUE)");
+      connection.voidEval("betaDivDT <- betaDiv(abundDT, " +
+                                                PluginUtil.singleQuote(distanceMethod) + ", TRUE)");
+      String dataCmd = "writeData(betaDivDT, NULL, TRUE)";
+      String metaCmd = "writeMeta(betaDivDT, NULL, TRUE)";
 
       getWorkspace().writeDataResult(connection, dataCmd);
       getWorkspace().writeMetaResult(connection, metaCmd);

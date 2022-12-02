@@ -52,11 +52,11 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
 
-      connection.voidEval("abundanceDT <- rankedAbundance(" + INPUT_DATA + ", " + 
-                                                    PluginUtil.singleQuote(computeEntityIdColName) + ", " +
-                                                    PluginUtil.singleQuote(method) + ")");
-      String dataCmd = "writeData(abundanceDT)";
-      String metaCmd = "writeMeta(abundanceDT)";
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + ",recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) + ",imputeZero=TRUE)");
+      connection.voidEval("abundanceDT <- rankedAbundance(abundDT, " +
+                                                          PluginUtil.singleQuote(method) + ", TRUE)");
+      String dataCmd = "writeData(abundanceDT, NULL, TRUE)";
+      String metaCmd = "writeMeta(abundanceDT, NULL, TRUE)";
 
       getWorkspace().writeDataResult(connection, dataCmd);
       getWorkspace().writeMetaResult(connection, metaCmd);

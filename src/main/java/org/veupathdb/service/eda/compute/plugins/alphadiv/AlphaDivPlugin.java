@@ -52,11 +52,11 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
 
-      connection.voidEval("alphaDivDT <- alphaDiv(" + INPUT_DATA + ", " + 
-                                                    PluginUtil.singleQuote(computeEntityIdColName) + ", " +
-                                                    PluginUtil.singleQuote(method) + ")");
-      String dataCmd = "writeData(alphaDivDT)";
-      String metaCmd = "writeMeta(alphaDivDT)";
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + ",recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) + ",imputeZero=TRUE)");
+      connection.voidEval("alphaDivDT <- alphaDiv(abundDT, " +
+                                                  PluginUtil.singleQuote(method) + ", TRUE)");
+      String dataCmd = "writeData(alphaDivDT, NULL, TRUE)";
+      String metaCmd = "writeMeta(alphaDivDT, NULL, TRUE)";
 
       getWorkspace().writeDataResult(connection, dataCmd);
       getWorkspace().writeMetaResult(connection, metaCmd);

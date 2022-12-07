@@ -39,20 +39,43 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
 
     AlphaDivComputeConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
-    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
+    ReferenceMetadata meta = getContext().getReferenceMetadata();
+    String entityId = computeConfig.getCollectionVariable().getEntityId();
+    EntityDef entity = meta.getEntity(entityId).orElseThrow();
+    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getAlphaDivMethod().getName();
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
+    List<VariableDef> idColumns = new ArrayList<>();
+    for (EntityDef ancestor : getAncestors(entity)) {
+      idColumns.add(ancestor.getIdColumnDef());
+    }
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting alpha diversity computation')");
 
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
-      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+      computeInputVars.addAll(idColumns);
+      //connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+      connection.voidEval(INPUT_DATA + " <- data.table::fread(" + INPUT_DATA + ")");
+      List<String> dotNotatedIdColumns = idColumns.map(VariableDef::toDotNotation).collect(Collectors.toList());
+      String dotNotatedIdColumnsString;
+      for (String idCol : dotNotatedIdColumns) {
+        boolean first = true;
+        if (first) {
+          dotNotatedIdColumnsString = "c(" + util.singleQuote(idCol);
+        } else {
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
+        }
+        dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
+      }
 
-      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + ",recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) + ",imputeZero=TRUE)");
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + 
+                                                                          ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
+                                                                          ",ancestorIdColumns=" + dotNotatedIdColumnsString +
+                                                                          ",imputeZero=TRUE)");
       connection.voidEval("alphaDivDT <- alphaDiv(abundDT, " +
                                                   PluginUtil.singleQuote(method) + ", TRUE)");
       String dataCmd = "writeData(alphaDivDT, NULL, TRUE)";

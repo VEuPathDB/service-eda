@@ -39,20 +39,43 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
 
     BetaDivComputeConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
-    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
+    ReferenceMetadata meta = getContext().getReferenceMetadata();
+    String entityId = computeConfig.getCollectionVariable().getEntityId();
+    EntityDef entity = meta.getEntity(entityId).orElseThrow();
+    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String distanceMethod = computeConfig.getBetaDivDistanceMethod().getName();
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
-    
+    List<VariableDef> idColumns = new ArrayList<>();
+    for (EntityDef ancestor : getAncestors(entity)) {
+      idColumns.add(ancestor.getIdColumnDef());
+    }
+
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting beta diversity computation')");
 
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
-      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+      computeInputVars.addAll(idColumns);
+      //connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+      connection.voidEval(INPUT_DATA + " <- data.table::fread(" + INPUT_DATA + ")");
+      List<String> dotNotatedIdColumns = idColumns.map(VariableDef::toDotNotation).collect(Collectors.toList());
+      String dotNotatedIdColumnsString;
+      for (String idCol : dotNotatedIdColumns) {
+        boolean first = true;
+        if (first) {
+          dotNotatedIdColumnsString = "c(" + util.singleQuote(idCol);
+        } else {
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
+        }
+        dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
+      }
 
-      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + ",recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) + ",imputeZero=TRUE)");
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + 
+                                                                          ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
+                                                                          ",ancestorIdColumns=" + dotNotatedIdColumnsString +
+                                                                          ",imputeZero=TRUE)");
       connection.voidEval("betaDivDT <- betaDiv(abundDT, " +
                                                 PluginUtil.singleQuote(distanceMethod) + ", TRUE)");
       String dataCmd = "writeData(betaDivDT, NULL, TRUE)";

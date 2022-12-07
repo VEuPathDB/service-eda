@@ -39,20 +39,43 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
 
     RankedAbundanceComputeConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
-    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
+    ReferenceMetadata meta = getContext().getReferenceMetadata();
+    String entityId = computeConfig.getCollectionVariable().getEntityId();
+    EntityDef entity = meta.getEntity(entityId).orElseThrow();
+    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getRankingMethod().getName();
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
+    List<VariableDef> idColumns = new ArrayList<>();
+    for (EntityDef ancestor : getAncestors(entity)) {
+      idColumns.add(ancestor.getIdColumnDef());
+    }
     
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting ranked abundance computation')");
 
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
+      computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+      // TODO make a helper for this i think
+      List<String> dotNotatedIdColumns = idColumns.map(VariableDef::toDotNotation).collect(Collectors.toList());
+      String dotNotatedIdColumnsString;
+      for (String idCol : dotNotatedIdColumns) {
+        boolean first = true;
+        if (first) {
+          dotNotatedIdColumnsString = "c(" + util.singleQuote(idCol);
+        } else {
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
+        }
+        dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
+      }
 
-      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + ",recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) + ",imputeZero=TRUE)");
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + 
+                                                                          ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
+                                                                          ",ancestorIdColumns=" + dotNotatedIdColumnsString +
+                                                                          ",imputeZero=TRUE)");
       connection.voidEval("abundanceDT <- rankedAbundance(abundDT, " +
                                                           PluginUtil.singleQuote(method) + ", TRUE)");
       String dataCmd = "writeData(abundanceDT, NULL, TRUE)";

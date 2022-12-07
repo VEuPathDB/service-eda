@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
@@ -15,8 +17,10 @@ import org.veupathdb.service.eda.generated.model.RankedAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginRequest, RankedAbundanceComputeConfig> {
 
@@ -48,7 +52,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     List<VariableDef> idColumns = new ArrayList<>();
-    for (EntityDef ancestor : getAncestors(entity)) {
+    for (EntityDef ancestor : meta.getAncestors(entity)) {
       idColumns.add(ancestor.getIdColumnDef());
     }
     
@@ -60,8 +64,8 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
       // TODO make a helper for this i think
-      List<String> dotNotatedIdColumns = idColumns.map(VariableDef::toDotNotation).collect(Collectors.toList());
-      String dotNotatedIdColumnsString;
+      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
+      String dotNotatedIdColumnsString = new String();
       for (String idCol : dotNotatedIdColumns) {
         boolean first = true;
         if (first) {

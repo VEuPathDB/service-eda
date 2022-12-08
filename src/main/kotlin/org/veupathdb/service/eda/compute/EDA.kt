@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager
 import org.gusdb.fgputil.Tuples.TwoTuple
 import org.veupathdb.lib.compute.platform.AsyncPlatform
 import org.veupathdb.lib.compute.platform.job.JobFileReference
+import org.veupathdb.lib.hash_id.HashID
 import org.veupathdb.lib.jackson.Json
 import org.veupathdb.service.eda.common.auth.StudyAccess
 import org.veupathdb.service.eda.common.client.DatasetAccessClient
@@ -97,11 +98,11 @@ object EDA {
   /**
    * Fetches tabular study data from the EDA Merge Service for the given params.
    *
-   * @param refMeta TODO: What is this?
+   * @param refMeta reference metadata about the EDA study whose data is being computed
    *
-   * @param filters TODO: What is this?
+   * @param filters set of filters to determine the current subset
    *
-   * @param spec TODO: What is this?
+   * @param spec specification of tabular data stream needed from subsetting service (entity + vars)
    *
    * @param auth Auth header sent in with the job HTTP request.
    *
@@ -139,10 +140,9 @@ object EDA {
     auth: TwoTuple<String, String>,
     autostart: Boolean,
   ): JobResponse {
-    // Serialize the http request to json
-    val serial = Json.convert(payload)
 
-    val jobID = JobIDs.of(plugin.urlSegment, serial)
+    // Create job ID by hashing plugin name and compute config
+    val jobID = JobIDs.of(plugin.urlSegment, payload)
 
     // If the job already exists, just return it.
     AsyncPlatform.getJob(jobID)?.let { return it.toJobResponse() }
@@ -151,7 +151,7 @@ object EDA {
       Log.info("Submitting job {} to the queue", jobID)
 
       // Build the rabbitmq message payload
-      val jobPay = PluginJobPayload(plugin.urlSegment, serial, auth.toAuthTuple())
+      val jobPay = PluginJobPayload(plugin.urlSegment, Json.convert(payload), auth.toAuthTuple())
 
       // Submit the job
       AsyncPlatform.submitJob(plugin.targetQueue.queueName) {

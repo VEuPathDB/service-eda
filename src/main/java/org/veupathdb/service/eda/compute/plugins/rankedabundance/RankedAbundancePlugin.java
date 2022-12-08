@@ -66,15 +66,16 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       // TODO make a helper for this i think
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
       String dotNotatedIdColumnsString = new String();
+      boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
-        boolean first = true;
         if (first) {
+          first = false;
           dotNotatedIdColumnsString = "c(" + util.singleQuote(idCol);
         } else {
           dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
         }
-        dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
       }
+      dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
       connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + 
                                                                           ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 

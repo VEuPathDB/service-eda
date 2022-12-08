@@ -82,7 +82,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
                                                                           ",ancestorIdColumns=" + dotNotatedIdColumnsString +
                                                                           ",imputeZero=TRUE)");
       connection.voidEval("abundanceDT <- rankedAbundance(abundDT, " +
-                                                          PluginUtil.singleQuote(method) + ", TRUE)");
+                                                          PluginUtil.singleQuote(method) + ")");
       String dataCmd = "writeData(abundanceDT, NULL, TRUE)";
       String metaCmd = "writeMeta(abundanceDT, NULL, TRUE)";
 

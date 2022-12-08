@@ -81,7 +81,8 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
                                                                           ",ancestorIdColumns=" + dotNotatedIdColumnsString +
                                                                           ",imputeZero=TRUE)");
       connection.voidEval("betaDivDT <- betaDiv(abundDT, " +
-                                                PluginUtil.singleQuote(distanceMethod) + ", TRUE)");
+                                                PluginUtil.singleQuote(distanceMethod) + ")");
+      connection.voidEval("print(names(betaDivDT@data))");
       String dataCmd = "writeData(betaDivDT, NULL, TRUE)";
       String metaCmd = "writeMeta(betaDivDT, NULL, TRUE)";
 

@@ -1,8 +1,11 @@
 package org.veupathdb.service.eda.generated.model;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.List;
+import java.util.Map;
 
 @JsonDeserialize(
     as = AlphaDivPluginRequestImpl.class
@@ -21,14 +24,20 @@ public interface AlphaDivPluginRequest extends ComputeRequestBase {
   void setFilters(List<APIFilter> filters);
 
   @JsonProperty("derivedVariables")
-  List<DerivedVariable> getDerivedVariables();
+  List<DerivedVariableSpec> getDerivedVariables();
 
   @JsonProperty("derivedVariables")
-  void setDerivedVariables(List<DerivedVariable> derivedVariables);
+  void setDerivedVariables(List<DerivedVariableSpec> derivedVariables);
 
   @JsonProperty("config")
-  AlphaDivPluginConfig getConfig();
+  AlphaDivComputeConfig getConfig();
 
   @JsonProperty("config")
-  void setConfig(AlphaDivPluginConfig config);
+  void setConfig(AlphaDivComputeConfig config);
+
+  @JsonAnyGetter
+  Map<String, Object> getAdditionalProperties();
+
+  @JsonAnySetter
+  void setAdditionalProperties(String key, Object value);
 }

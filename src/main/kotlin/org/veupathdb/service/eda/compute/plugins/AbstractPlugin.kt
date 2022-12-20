@@ -5,6 +5,7 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles
 import org.veupathdb.service.eda.compute.metrics.PluginMetrics
 import org.veupathdb.service.eda.generated.model.APIStudyDetail
+import org.veupathdb.service.eda.generated.model.ComputeConfigBase
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase
 
 /**
@@ -33,7 +34,7 @@ import org.veupathdb.service.eda.generated.model.ComputeRequestBase
  * @author Elizabeth Paige Harper - https://github.com/Foxcapades
  * @since 1.0.0
  */
-abstract class AbstractPlugin<R : ComputeRequestBase, C>(
+abstract class AbstractPlugin<R : ComputeRequestBase, C : ComputeConfigBase>(
   /**
    * Context in/for which this plugin is being executed.
    */

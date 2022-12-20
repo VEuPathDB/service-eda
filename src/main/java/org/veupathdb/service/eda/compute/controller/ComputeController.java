@@ -23,15 +23,13 @@ import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
-import org.veupathdb.service.eda.generated.model.ComputeRequestBase;
-import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
-import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
-import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
-import org.veupathdb.service.eda.generated.model.RankedAbundancePluginRequest;
-import org.veupathdb.service.eda.generated.model.JobResponse;
+import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -47,8 +45,8 @@ import java.util.function.Supplier;
  * Endpoints" statement.
  * <p>
  * Plugin endpoints should follow the example set by the
- * {@link #postComputesExample(ExamplePluginRequest)} method and call the
- * {@link #submitJob(PluginProvider, ComputeRequestBase)} method, passing in an
+ * {@link #postComputesExample(Boolean, ExamplePluginRequest)} method and call the
+ * {@link #submitJob(PluginProvider, ComputeRequestBase, boolean)} method, passing in an
  * instance of the target {@link PluginProvider} for their plugin along with the
  * raw request body (entity).
  *
@@ -73,8 +71,8 @@ public class ComputeController implements Computes {
 
 
   @Override
-  public PostComputesExampleResponse postComputesExample(ExamplePluginRequest entity) {
-    return PostComputesExampleResponse.respond200WithApplicationJson(submitJob(new ExamplePluginProvider(), entity));
+  public PostComputesExampleResponse postComputesExample(Boolean autostart, ExamplePluginRequest entity) {
+    return PostComputesExampleResponse.respond200WithApplicationJson(submitJob(new ExamplePluginProvider(), entity, autostart));
   }
 
   @Override
@@ -83,8 +81,8 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesBetadivResponse postComputesBetadiv(BetaDivPluginRequest entity) {
-    return PostComputesBetadivResponse.respond200WithApplicationJson(submitJob(new BetaDivPluginProvider(), entity));
+  public PostComputesBetadivResponse postComputesBetadiv(Boolean autostart, BetaDivPluginRequest entity) {
+    return PostComputesBetadivResponse.respond200WithApplicationJson(submitJob(new BetaDivPluginProvider(), entity, autostart));
   }
 
   @Override
@@ -93,8 +91,8 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesAlphadivResponse postComputesAlphadiv(AlphaDivPluginRequest entity) {
-    return PostComputesAlphadivResponse.respond200WithApplicationJson(submitJob(new AlphaDivPluginProvider(), entity));
+  public PostComputesAlphadivResponse postComputesAlphadiv(Boolean autostart, AlphaDivPluginRequest entity) {
+    return PostComputesAlphadivResponse.respond200WithApplicationJson(submitJob(new AlphaDivPluginProvider(), entity, autostart));
   }
 
   @Override
@@ -103,8 +101,8 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesRankedabundanceResponse postComputesRankedabundance(RankedAbundancePluginRequest entity) {
-    return PostComputesRankedabundanceResponse.respond200WithApplicationJson(submitJob(new RankedAbundancePluginProvider(), entity));
+  public PostComputesRankedabundanceResponse postComputesRankedabundance(Boolean autostart, RankedAbundancePluginRequest entity) {
+    return PostComputesRankedabundanceResponse.respond200WithApplicationJson(submitJob(new RankedAbundancePluginProvider(), entity, autostart));
   }
 
   @Override
@@ -139,7 +137,9 @@ public class ComputeController implements Computes {
    * @param plugin {@code PluginProvider} that will be used to validate and
    * submit the new job request.
    *
-   * @param entity The raw request payload.
+   * @param requestObject The raw request payload.
+   *
+   * @param autostart Whether to start a job if none already exists
    *
    * @return Basic information about the submitted job to be returned to the
    * caller.
@@ -149,20 +149,34 @@ public class ComputeController implements Computes {
    * @param <C> Type of the configuration wrapped by the raw request body that
    * the target plugin accepts.
    */
-  private <R extends ComputeRequestBase, C> JobResponse submitJob(PluginProvider<R, C> plugin, R entity) {
+  private <R extends ComputeRequestBase, C extends ComputeConfigBase> JobResponse submitJob(PluginProvider<R, C> plugin, R requestObject, boolean autostart) {
     var auth = UserProvider.getSubmittedAuth(request).orElseThrow();
 
-    requirePermissions(entity, auth);
+    requirePermissions(requestObject, auth);
 
-    // Validate the request body.
+    // Validate the request body
     Supplier<ReferenceMetadata> referenceMetadata = () -> new ReferenceMetadata(
-        EDA.getAPIStudyDetail(entity.getStudyId(), auth)
-            .orElseThrow(() -> new BadRequestException("Invalid study ID: " + entity.getStudyId())),
-        entity.getDerivedVariables());
-    plugin.getValidator()
-      .validate(entity, referenceMetadata);
+        EDA.getAPIStudyDetail(requestObject.getStudyId(), auth)
+            .orElseThrow(() -> new BadRequestException("Invalid study ID: " + requestObject.getStudyId())),
+        Collections.emptyList(),
+        requestObject.getDerivedVariables());
 
-    return EDA.getOrSubmitComputeJob(plugin, entity, auth);
+    // make sure enclosed config object is present and contains outputEntityId property
+    try {
+      ComputeConfigBase config = (ComputeConfigBase)requestObject.getClass().getMethod("getConfig").invoke(requestObject);
+      if (config == null)
+        throw new BadRequestException("The request object does not contain a valid 'config' property");
+      if (config.getOutputEntityId() == null)
+        throw new BadRequestException("The request's config property must be an object that contains an 'outputEntityId' property");
+    }
+    catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException("Request object type does not contain a callable 'getConfig()' method");
+    }
+
+    plugin.getValidator()
+      .validate(requestObject, referenceMetadata);
+
+    return EDA.getOrSubmitComputeJob(plugin, requestObject, auth, autostart);
   }
 
   /**

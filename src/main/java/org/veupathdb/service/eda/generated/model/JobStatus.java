@@ -3,6 +3,9 @@ package org.veupathdb.service.eda.generated.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public enum JobStatus {
+  @JsonProperty("no-such-job")
+  NOSUCHJOB("no-such-job"),
+
   @JsonProperty("queued")
   QUEUED("queued"),
 

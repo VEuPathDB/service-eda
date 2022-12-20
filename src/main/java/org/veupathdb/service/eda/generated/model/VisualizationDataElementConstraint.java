@@ -32,6 +32,12 @@ public interface VisualizationDataElementConstraint {
   @JsonProperty("maxNumVars")
   void setMaxNumVars(Number maxNumVars);
 
+  @JsonProperty("minNumValues")
+  Number getMinNumValues();
+
+  @JsonProperty("minNumValues")
+  void setMinNumValues(Number minNumValues);
+
   @JsonProperty("maxNumValues")
   Number getMaxNumValues();
 

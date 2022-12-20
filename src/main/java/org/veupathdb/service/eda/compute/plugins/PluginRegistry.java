@@ -8,6 +8,7 @@ import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
+import org.veupathdb.service.eda.generated.model.ComputeConfigBase;
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase;
 import org.veupathdb.service.eda.generated.model.PluginOverview;
 import org.veupathdb.service.eda.generated.model.PluginOverviewImpl;
@@ -74,9 +75,9 @@ public final class PluginRegistry {
    */
   @Nullable
   @SuppressWarnings("unchecked")
-  public static PluginProvider<ComputeRequestBase, Object> get(String urlSegment) {
+  public static PluginProvider<ComputeRequestBase, ComputeConfigBase> get(String urlSegment) {
     Log.trace("looking up plugin {}", urlSegment);
-    return (PluginProvider<ComputeRequestBase, Object>) Registry.get(urlSegment);
+    return (PluginProvider<ComputeRequestBase, ComputeConfigBase>) Registry.get(urlSegment);
   }
 
   /**

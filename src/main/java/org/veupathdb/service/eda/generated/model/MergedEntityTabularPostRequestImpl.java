@@ -11,7 +11,8 @@ import java.util.List;
     "filters",
     "entityId",
     "outputVariables",
-    "derivedVariables"
+    "derivedVariables",
+    "computeSpec"
 })
 public class MergedEntityTabularPostRequestImpl implements MergedEntityTabularPostRequest {
   @JsonProperty("studyId")
@@ -27,7 +28,10 @@ public class MergedEntityTabularPostRequestImpl implements MergedEntityTabularPo
   private List<VariableSpec> outputVariables;
 
   @JsonProperty("derivedVariables")
-  private List<DerivedVariable> derivedVariables;
+  private List<DerivedVariableSpec> derivedVariables;
+
+  @JsonProperty("computeSpec")
+  private ComputeSpecForMerging computeSpec;
 
   @JsonProperty("studyId")
   public String getStudyId() {
@@ -70,12 +74,22 @@ public class MergedEntityTabularPostRequestImpl implements MergedEntityTabularPo
   }
 
   @JsonProperty("derivedVariables")
-  public List<DerivedVariable> getDerivedVariables() {
+  public List<DerivedVariableSpec> getDerivedVariables() {
     return this.derivedVariables;
   }
 
   @JsonProperty("derivedVariables")
-  public void setDerivedVariables(List<DerivedVariable> derivedVariables) {
+  public void setDerivedVariables(List<DerivedVariableSpec> derivedVariables) {
     this.derivedVariables = derivedVariables;
+  }
+
+  @JsonProperty("computeSpec")
+  public ComputeSpecForMerging getComputeSpec() {
+    return this.computeSpec;
+  }
+
+  @JsonProperty("computeSpec")
+  public void setComputeSpec(ComputeSpecForMerging computeSpec) {
+    this.computeSpec = computeSpec;
   }
 }

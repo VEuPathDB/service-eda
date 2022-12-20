@@ -11,6 +11,7 @@ import java.util.List;
     "isTemporal",
     "minNumVars",
     "maxNumVars",
+    "minNumValues",
     "maxNumValues",
     "allowedTypes",
     "allowedShapes",
@@ -28,6 +29,9 @@ public class VisualizationDataElementConstraintImpl implements VisualizationData
 
   @JsonProperty("maxNumVars")
   private Number maxNumVars;
+
+  @JsonProperty("minNumValues")
+  private Number minNumValues;
 
   @JsonProperty("maxNumValues")
   private Number maxNumValues;
@@ -79,6 +83,16 @@ public class VisualizationDataElementConstraintImpl implements VisualizationData
   @JsonProperty("maxNumVars")
   public void setMaxNumVars(Number maxNumVars) {
     this.maxNumVars = maxNumVars;
+  }
+
+  @JsonProperty("minNumValues")
+  public Number getMinNumValues() {
+    return this.minNumValues;
+  }
+
+  @JsonProperty("minNumValues")
+  public void setMinNumValues(Number minNumValues) {
+    this.minNumValues = minNumValues;
   }
 
   @JsonProperty("maxNumValues")

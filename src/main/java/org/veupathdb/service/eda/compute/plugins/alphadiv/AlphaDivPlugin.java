@@ -1,26 +1,32 @@
 package org.veupathdb.service.eda.compute.plugins.alphadiv;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.compute.RServe;
-import org.veupathdb.service.eda.generated.model.AlphaDivPluginConfig;
+import org.veupathdb.service.eda.generated.model.AlphaDivComputeConfig;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
+import org.veupathdb.service.eda.generated.model.ComputedVariableMetadata;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaDivPluginConfig> {
+public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaDivComputeConfig> {
 
   private static final String INPUT_DATA = "alpha_div_input";
 
-  public AlphaDivPlugin(@NotNull PluginContext<AlphaDivPluginRequest, AlphaDivPluginConfig> context) {
+  public AlphaDivPlugin(@NotNull PluginContext<AlphaDivPluginRequest, AlphaDivComputeConfig> context) {
     super(context);
   }
 
@@ -34,30 +40,54 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
 
   @Override
   protected void execute() {
-    
-    AlphaDivPluginConfig computeConfig = getConfig();
+
+    AlphaDivComputeConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
-    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(computeConfig.getCollectionVariable().getEntityId());
+    ReferenceMetadata meta = getContext().getReferenceMetadata();
+    String entityId = computeConfig.getCollectionVariable().getEntityId();
+    EntityDef entity = meta.getEntity(entityId).orElseThrow();
+    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getAlphaDivMethod().getName();
-    HashMap<String, InputStream> dataStream = new HashMap<String, InputStream>();
+    HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
+    List<VariableDef> idColumns = new ArrayList<>();
+    for (EntityDef ancestor : meta.getAncestors(entity)) {
+      idColumns.add(ancestor.getIdColumnDef());
+    }
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting alpha diversity computation')");
 
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
+      computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
+      String dotNotatedIdColumnsString = new String();
+      boolean first = true;
+      for (String idCol : dotNotatedIdColumns) {
+        if (first) {
+          first = false;
+          dotNotatedIdColumnsString = "c(" + util.singleQuote(idCol);
+        } else {
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
+        }
+      }
+      dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-      connection.voidEval("alphaDivDT <- alphaDiv(" + INPUT_DATA + ", " + 
-                                                    util.singleQuote(computeEntityIdColName) + ", " + 
-                                                    util.singleQuote(method) + ")");
-      String dataCmd = "readr::format_tsv(alphaDivDT)";
-      String metaCmd = "getMetadata(alphaDivDT)";
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + 
+                                                                          ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
+                                                                          ",ancestorIdColumns=" + dotNotatedIdColumnsString +
+                                                                          ",imputeZero=TRUE)");
 
-      getWorkspace().writeDataResult(connection.eval(dataCmd).asString());
-      getWorkspace().writeMetaResult(connection.eval(metaCmd).asString());
+      connection.voidEval("alphaDivDT <- alphaDiv(abundDT, " +
+                                                  PluginUtil.singleQuote(method) + ", TRUE)");
+      String dataCmd = "writeData(alphaDivDT, NULL, TRUE)";
+      String metaCmd = "writeMeta(alphaDivDT, NULL, TRUE)";
+
+      getWorkspace().writeDataResult(connection, dataCmd);
+      getWorkspace().writeMetaResult(connection, metaCmd);
     });
   }
 }

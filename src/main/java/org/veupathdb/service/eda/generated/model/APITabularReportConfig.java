@@ -35,6 +35,12 @@ public interface APITabularReportConfig {
   @JsonProperty("trimTimeFromDateVars")
   void setTrimTimeFromDateVars(Boolean trimTimeFromDateVars);
 
+  @JsonProperty("dataSource")
+  DataSourceType getDataSource();
+
+  @JsonProperty("dataSource")
+  void setDataSource(DataSourceType dataSource);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

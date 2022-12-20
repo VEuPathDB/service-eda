@@ -1,15 +1,15 @@
 package org.veupathdb.service.eda.compute.plugins.alphadiv;
 
 import org.jetbrains.annotations.NotNull;
-import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.compute.plugins.PluginProvider;
 import org.veupathdb.service.eda.compute.plugins.PluginQueue;
-import org.veupathdb.service.eda.generated.model.AlphaDivPluginConfig;
+import org.veupathdb.service.eda.generated.model.AlphaDivComputeConfig;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequestImpl;
 
-public class AlphaDivPluginProvider implements PluginProvider<AlphaDivPluginRequest, AlphaDivPluginConfig> {
+public class AlphaDivPluginProvider implements PluginProvider<AlphaDivPluginRequest, AlphaDivComputeConfig> {
+
   @NotNull
   @Override
   public String getUrlSegment() {
@@ -36,7 +36,7 @@ public class AlphaDivPluginProvider implements PluginProvider<AlphaDivPluginRequ
 
   @NotNull
   @Override
-  public AlphaDivPlugin createPlugin(@NotNull PluginContext<AlphaDivPluginRequest, AlphaDivPluginConfig> context) {
+  public AlphaDivPlugin createPlugin(@NotNull PluginContext<AlphaDivPluginRequest, AlphaDivComputeConfig> context) {
     return new AlphaDivPlugin(context);
   }
 }

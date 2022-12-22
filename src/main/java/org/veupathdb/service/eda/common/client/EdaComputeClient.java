@@ -20,10 +20,10 @@ public class EdaComputeClient {
   public static class ComputeRequestBody extends ComputeRequestBaseImpl {
 
     @JsonIgnore
-    private final ComputeConfigBase _computeConfig;
+    private final Object _computeConfig;
 
-    public <T extends ComputeConfigBase> ComputeRequestBody(
-        String studyId, List<APIFilter> subset, List<DerivedVariableSpec> derivedVariables, T computeConfig) {
+    public ComputeRequestBody(
+        String studyId, List<APIFilter> subset, List<DerivedVariableSpec> derivedVariables, Object computeConfig) {
       setStudyId(studyId);
       setFilters(subset);
       setDerivedVariables(derivedVariables);
@@ -31,7 +31,7 @@ public class EdaComputeClient {
     }
 
     @JsonProperty("config")
-    public ComputeConfigBase getConfig() {
+    public Object getConfig() {
       return _computeConfig;
     }
   }

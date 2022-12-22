@@ -66,7 +66,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
   public ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
       List<APIFilter> subset,
-      Optional<Tuples.TwoTuple<String,ComputeConfigBase>> computeInfo, // should always be null; will be ignored
+      Optional<Tuples.TwoTuple<String,Object>> computeInfo, // should always be null; will be ignored
       StreamSpec spec) throws ProcessingException {
 
     // build request object

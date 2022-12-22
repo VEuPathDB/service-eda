@@ -37,7 +37,7 @@ public class EdaMergingClient extends StreamingDataClient {
   public ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
       List<APIFilter> subset,
-      Optional<Tuples.TwoTuple<String,ComputeConfigBase>> computeInfoOpt,
+      Optional<Tuples.TwoTuple<String,Object>> computeInfoOpt,
       StreamSpec spec) throws ProcessingException {
 
     // build request object
@@ -51,15 +51,17 @@ public class EdaMergingClient extends StreamingDataClient {
     // if asked to include computed vars, do some validation before trying
     if (spec.isIncludeComputedVars()) {
       // a compute name and config must be provided
-      Tuples.TwoTuple<String,ComputeConfigBase> computeInfo = computeInfoOpt.orElseThrow(() -> new RuntimeException(
+      Tuples.TwoTuple<String,Object> computeInfo = computeInfoOpt.orElseThrow(() -> new RuntimeException(
           "Computed vars requested but no compute associated with this visualization"));
       // compute entity must be the same as, or a parent of, the target entity
+      /* FIX on 12/21/22: compute config does not necessarily know output entity so cannot validate here without
+                          first requesting the metadata object; may do that in the future but for now, skip
       String computeEntityId = computeInfo.getSecond().getOutputEntityId();
       EntityDef target = metadata.getEntity(spec.getEntityId()).orElseThrow();
       if (!computeEntityId.equals(target.getId()) &&
           metadata.getAncestors(target).stream().filter(ent -> ent.getId().equals(computeEntityId)).findFirst().isEmpty()) {
         throw new RuntimeException("Computed entity must be the same as, or an ancestor of, the target entity of the merged stream.");
-      }
+      }*/
       ComputeSpecForMerging computeSpec = new ComputeSpecForMergingImpl();
       computeSpec.setComputeName(computeInfo.getFirst());
       computeSpec.setComputeConfig(computeInfo.getSecond());

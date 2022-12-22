@@ -13,7 +13,6 @@ import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.generated.model.APIFilter;
-import org.veupathdb.service.eda.generated.model.ComputeConfigBase;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
@@ -27,7 +26,7 @@ public abstract class StreamingDataClient extends ServiceClient {
   public abstract ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
       List<APIFilter> subset,
-      Optional<Tuples.TwoTuple<String,ComputeConfigBase>> computeInfo,
+      Optional<Tuples.TwoTuple<String,Object>> computeInfo,
       StreamSpec spec) throws ProcessingException;
 
   protected StreamingDataClient(String serviceBaseUrl, Entry<String, String> authHeader) {

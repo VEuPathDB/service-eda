@@ -88,11 +88,11 @@ public class DatasetAccessClient extends ServiceClient {
       for (String datasetId : datasetMap.keySet()) {
         JSONObject dataset = datasetMap.getJSONObject(datasetId);
         String studyId = dataset.getString("studyId");
-        String sha1Hash = dataset.getString("sha1Hash");
+        String sha1Hash = dataset.optString("sha1Hash", "");
         boolean isUserStudy = dataset.getBoolean("isUserStudy");
         String displayName = dataset.getString("displayName");
-        String shortDisplayName = dataset.getString("shortDisplayName");
-        String description = dataset.getString("description");
+        String shortDisplayName = dataset.optString("shortDisplayName", displayName);
+        String description = dataset.optString("description", null);
         JSONObject studyPerms = dataset.getJSONObject("actionAuthorization");
         StudyAccess studyAccess = new StudyAccess(
           studyPerms.getBoolean("studyMetadata"),

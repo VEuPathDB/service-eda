@@ -10,14 +10,10 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "outputEntityId",
     "inputVariable",
     "valueSuffix"
 })
 public class ExampleComputeConfigImpl implements ExampleComputeConfig {
-  @JsonProperty("outputEntityId")
-  private String outputEntityId;
-
   @JsonProperty("inputVariable")
   private VariableSpec inputVariable;
 
@@ -26,16 +22,6 @@ public class ExampleComputeConfigImpl implements ExampleComputeConfig {
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
-
-  @JsonProperty("outputEntityId")
-  public String getOutputEntityId() {
-    return this.outputEntityId;
-  }
-
-  @JsonProperty("outputEntityId")
-  public void setOutputEntityId(String outputEntityId) {
-    this.outputEntityId = outputEntityId;
-  }
 
   @JsonProperty("inputVariable")
   public VariableSpec getInputVariable() {

@@ -9,13 +9,7 @@ import java.util.Map;
 @JsonDeserialize(
     as = BetaDivComputeConfigImpl.class
 )
-public interface BetaDivComputeConfig extends ComputeConfigBase {
-  @JsonProperty("outputEntityId")
-  String getOutputEntityId();
-
-  @JsonProperty("outputEntityId")
-  void setOutputEntityId(String outputEntityId);
-
+public interface BetaDivComputeConfig {
   @JsonProperty("collectionVariable")
   VariableSpec getCollectionVariable();
 

@@ -7,6 +7,7 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.compute.plugins.PluginConfigValidator;
 import org.veupathdb.service.eda.generated.model.ExampleComputeConfig;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
+import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.util.function.Supplier;
 
@@ -14,15 +15,16 @@ public class ExamplePluginInputValidator implements PluginConfigValidator<Exampl
 
   @Override
   public void validate(ExamplePluginRequest request, Supplier<ReferenceMetadata> referenceMetadata) {
-    ReferenceMetadata meta = referenceMetadata.get();
+
     ExampleComputeConfig config = request.getConfig();
+    VariableSpec inputVar = config.getInputVariable();
 
     // check entity
-    EntityDef entity = meta.getEntity(config.getOutputEntityId())
-        .orElseThrow(() -> new BadRequestException("Invalid entity ID : " + config.getOutputEntityId()));
+    EntityDef entity = referenceMetadata.get().getEntity(inputVar.getEntityId())
+        .orElseThrow(() -> new BadRequestException("Invalid entity ID : " + inputVar.getEntityId()));
 
     // check variable
-    VariableDef variable = entity.getVariable(config.getInputVariable())
+    VariableDef variable = entity.getVariable(inputVar)
         .orElseThrow(() -> new BadRequestException("Invalid variable spec for output entity"));
 
     // check that variable is native to entity

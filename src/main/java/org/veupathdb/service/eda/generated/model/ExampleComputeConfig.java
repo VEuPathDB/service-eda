@@ -9,13 +9,7 @@ import java.util.Map;
 @JsonDeserialize(
     as = ExampleComputeConfigImpl.class
 )
-public interface ExampleComputeConfig extends ComputeConfigBase {
-  @JsonProperty("outputEntityId")
-  String getOutputEntityId();
-
-  @JsonProperty("outputEntityId")
-  void setOutputEntityId(String outputEntityId);
-
+public interface ExampleComputeConfig {
   @JsonProperty("inputVariable")
   VariableSpec getInputVariable();
 

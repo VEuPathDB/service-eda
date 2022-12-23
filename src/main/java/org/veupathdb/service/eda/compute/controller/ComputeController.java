@@ -27,7 +27,6 @@ import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.function.Function;
@@ -149,7 +148,7 @@ public class ComputeController implements Computes {
    * @param <C> Type of the configuration wrapped by the raw request body that
    * the target plugin accepts.
    */
-  private <R extends ComputeRequestBase, C extends ComputeConfigBase> JobResponse submitJob(PluginProvider<R, C> plugin, R requestObject, boolean autostart) {
+  private <R extends ComputeRequestBase, C> JobResponse submitJob(PluginProvider<R, C> plugin, R requestObject, boolean autostart) {
     var auth = UserProvider.getSubmittedAuth(request).orElseThrow();
 
     requirePermissions(requestObject, auth);
@@ -161,13 +160,11 @@ public class ComputeController implements Computes {
         Collections.emptyList(),
         requestObject.getDerivedVariables());
 
-    // make sure enclosed config object is present and contains outputEntityId property
+    // make sure config property was submitted with non-null value
     try {
-      ComputeConfigBase config = (ComputeConfigBase)requestObject.getClass().getMethod("getConfig").invoke(requestObject);
+      Object config = requestObject.getClass().getMethod("getConfig").invoke(requestObject);
       if (config == null)
-        throw new BadRequestException("The request object does not contain a valid 'config' property");
-      if (config.getOutputEntityId() == null)
-        throw new BadRequestException("The request's config property must be an object that contains an 'outputEntityId' property");
+        throw new BadRequestException("The request object does not contain a 'config' property value.");
     }
     catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException("Request object type does not contain a callable 'getConfig()' method");

@@ -9,13 +9,7 @@ import java.util.Map;
 @JsonDeserialize(
     as = AlphaDivComputeConfigImpl.class
 )
-public interface AlphaDivComputeConfig extends ComputeConfigBase {
-  @JsonProperty("outputEntityId")
-  String getOutputEntityId();
-
-  @JsonProperty("outputEntityId")
-  void setOutputEntityId(String outputEntityId);
-
+public interface AlphaDivComputeConfig {
   @JsonProperty("collectionVariable")
   VariableSpec getCollectionVariable();
 

@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.compute.plugins
 
-import org.veupathdb.service.eda.generated.model.ComputeConfigBase
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase
 
 /**
@@ -16,7 +15,7 @@ import org.veupathdb.service.eda.generated.model.ComputeRequestBase
  * @author Elizabeth Paige Harper - https://github.com/foxcapades
  * @since 1.0.0
  */
-interface PluginProvider<R : ComputeRequestBase, C : ComputeConfigBase> : PluginMeta<R> {
+interface PluginProvider<R : ComputeRequestBase, C> : PluginMeta<R> {
 
   /**
    * Creates a new instance of this plugin

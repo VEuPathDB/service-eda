@@ -16,6 +16,42 @@ public interface APIStudyOverview {
   @JsonProperty("id")
   void setId(String id);
 
+  @JsonProperty("datasetId")
+  String getDatasetId();
+
+  @JsonProperty("datasetId")
+  void setDatasetId(String datasetId);
+
+  @JsonProperty("sha1hash")
+  String getSha1hash();
+
+  @JsonProperty("sha1hash")
+  void setSha1hash(String sha1hash);
+
+  @JsonProperty("sourceType")
+  StudySourceType getSourceType();
+
+  @JsonProperty("sourceType")
+  void setSourceType(StudySourceType sourceType);
+
+  @JsonProperty("displayName")
+  String getDisplayName();
+
+  @JsonProperty("displayName")
+  void setDisplayName(String displayName);
+
+  @JsonProperty("shortDisplayName")
+  String getShortDisplayName();
+
+  @JsonProperty("shortDisplayName")
+  void setShortDisplayName(String shortDisplayName);
+
+  @JsonProperty("description")
+  String getDescription();
+
+  @JsonProperty("description")
+  void setDescription(String description);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

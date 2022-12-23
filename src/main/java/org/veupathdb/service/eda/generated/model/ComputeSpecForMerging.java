@@ -14,8 +14,8 @@ public interface ComputeSpecForMerging {
   void setComputeName(String computeName);
 
   @JsonProperty("computeConfig")
-  ComputeConfigBase getComputeConfig();
+  Object getComputeConfig();
 
   @JsonProperty("computeConfig")
-  void setComputeConfig(ComputeConfigBase computeConfig);
+  void setComputeConfig(Object computeConfig);
 }

@@ -9,13 +9,7 @@ import java.util.Map;
 @JsonDeserialize(
     as = RankedAbundanceComputeConfigImpl.class
 )
-public interface RankedAbundanceComputeConfig extends ComputeConfigBase {
-  @JsonProperty("outputEntityId")
-  String getOutputEntityId();
-
-  @JsonProperty("outputEntityId")
-  void setOutputEntityId(String outputEntityId);
-
+public interface RankedAbundanceComputeConfig {
   @JsonProperty("collectionVariable")
   VariableSpec getCollectionVariable();
 

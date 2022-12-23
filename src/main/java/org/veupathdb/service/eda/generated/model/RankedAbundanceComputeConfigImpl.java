@@ -10,14 +10,10 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "outputEntityId",
     "collectionVariable",
     "rankingMethod"
 })
 public class RankedAbundanceComputeConfigImpl implements RankedAbundanceComputeConfig {
-  @JsonProperty("outputEntityId")
-  private String outputEntityId;
-
   @JsonProperty("collectionVariable")
   private VariableSpec collectionVariable;
 
@@ -26,16 +22,6 @@ public class RankedAbundanceComputeConfigImpl implements RankedAbundanceComputeC
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
-
-  @JsonProperty("outputEntityId")
-  public String getOutputEntityId() {
-    return this.outputEntityId;
-  }
-
-  @JsonProperty("outputEntityId")
-  public void setOutputEntityId(String outputEntityId) {
-    this.outputEntityId = outputEntityId;
-  }
 
   @JsonProperty("collectionVariable")
   public VariableSpec getCollectionVariable() {

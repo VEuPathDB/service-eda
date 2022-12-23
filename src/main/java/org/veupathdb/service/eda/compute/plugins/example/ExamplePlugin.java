@@ -27,7 +27,7 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
   @Override
   public List<StreamSpec> getStreamSpecs() {
     ExampleComputeConfig config = getConfig();
-    return List.of(new StreamSpec(INPUT_DATA, config.getOutputEntityId())
+    return List.of(new StreamSpec(INPUT_DATA, config.getInputVariable().getEntityId())
         .addVars(List.of(config.getInputVariable())));
   }
 
@@ -61,7 +61,7 @@ public class ExamplePlugin extends AbstractPlugin<ExamplePluginRequest, ExampleC
 
     // write the metadata result
     String computedVariableName = getConfig().getInputVariable().getVariableId() + COMPUTED_COLUMN_NAME_SUFFIX;
-    VariableSpec computedVariableSpec = VariableDef.newVariableSpec(getConfig().getOutputEntityId(), computedVariableName);
+    VariableSpec computedVariableSpec = VariableDef.newVariableSpec(getConfig().getInputVariable().getEntityId(), computedVariableName);
     getWorkspace().writeMetaResult(createMetadataObject(computedVariableSpec));
 
     // write the statistics result

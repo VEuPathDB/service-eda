@@ -22,13 +22,27 @@ public class DatasetAccessClient extends ServiceClient {
     private final String _sha1Hash;
     private final boolean _isUserStudy;
     private final StudyAccess _studyAccess;
+    private final String _displayName;
+    private final String _shortDisplayName;
+    private final String _description;
 
-    public StudyDatasetInfo(String studyId, String datasetId, String sha1Hash, boolean isUserStudy, StudyAccess studyAccess) {
+    public StudyDatasetInfo(
+        String studyId,
+        String datasetId,
+        String sha1Hash,
+        boolean isUserStudy,
+        StudyAccess studyAccess,
+        String displayName,
+        String shortDisplayName,
+        String description) {
       _studyId = studyId;
       _datasetId = datasetId;
       _sha1Hash = sha1Hash;
       _isUserStudy = isUserStudy;
       _studyAccess = studyAccess;
+      _displayName = displayName;
+      _shortDisplayName = shortDisplayName;
+      _description = description;
     }
 
     public String getStudyId() { return _studyId; }
@@ -36,6 +50,9 @@ public class DatasetAccessClient extends ServiceClient {
     public String getSha1Hash() { return _sha1Hash; }
     public boolean isUserStudy() { return _isUserStudy; }
     public StudyAccess getStudyAccess() { return _studyAccess; }
+    public String getDisplayName() { return _displayName; }
+    public String getShortDisplayName() { return _shortDisplayName; }
+    public String getDescription() { return _description; }
 
     @Override
     public String toString() {
@@ -43,7 +60,11 @@ public class DatasetAccessClient extends ServiceClient {
           .put("studyId", _studyId)
           .put("datasetId", _datasetId)
           .put("sha1Hash", _sha1Hash)
+          .put("isUserStudy", _isUserStudy)
           .put("studyAccess", _studyAccess.toJson())
+          .put("displayName", _displayName)
+          .put("shortDisplayName", _shortDisplayName)
+          .put("description", _description)
           .toString();
     }
   }
@@ -69,6 +90,9 @@ public class DatasetAccessClient extends ServiceClient {
         String studyId = dataset.getString("studyId");
         String sha1Hash = dataset.getString("sha1Hash");
         boolean isUserStudy = dataset.getBoolean("isUserStudy");
+        String displayName = dataset.getString("displayName");
+        String shortDisplayName = dataset.getString("shortDisplayName");
+        String description = dataset.getString("description");
         JSONObject studyPerms = dataset.getJSONObject("actionAuthorization");
         StudyAccess studyAccess = new StudyAccess(
           studyPerms.getBoolean("studyMetadata"),
@@ -77,7 +101,7 @@ public class DatasetAccessClient extends ServiceClient {
           studyPerms.getBoolean("resultsFirstPage"),
           studyPerms.getBoolean("resultsAll")
         );
-        infoMap.put(studyId, new StudyDatasetInfo(studyId, datasetId, sha1Hash, isUserStudy, studyAccess));
+        infoMap.put(studyId, new StudyDatasetInfo(studyId, datasetId, sha1Hash, isUserStudy, studyAccess, displayName, shortDisplayName, description));
       }
       return infoMap;
     }

@@ -62,7 +62,7 @@ public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implem
   @Override
   public EntityDef getEntity() {
     return _metadata.getEntity(getEntityId()).orElseThrow(
-        () -> new IllegalStateException("Could not find derived variable entity: " + getEntityId()));
+        () -> new BadRequestException("Could not find derived variable entity: " + getEntityId()));
   }
 
   @Override

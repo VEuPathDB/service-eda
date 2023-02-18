@@ -1,26 +1,53 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.transforms;
 
+import org.gusdb.fgputil.validation.ValidationException;
+import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
+import org.veupathdb.service.eda.generated.model.*;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.gusdb.fgputil.validation.ValidationException;
-import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
-import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
-import org.veupathdb.service.eda.generated.model.APIVariableType;
 
-public class Concatenation extends Transform {
+public class Concatenation extends Transform<ConcatenationConfig> {
+
+  private ConcatenationConfig _config;
+  private List<String> _inputColumnNames;
 
   @Override
-  protected void receiveInputVariables(List<VariableDef> inputVariables) throws ValidationException {
-    // no validation needed; all number and type of vars allowed
+  public String getFunctionName() {
+    return "concatenation";
+  }
+
+  @Override
+  protected Class<ConcatenationConfig> getConfigClass() {
+    return ConcatenationConfig.class;
+  }
+
+  @Override
+  protected void acceptConfig(ConcatenationConfig config) throws ValidationException {
+    _config = config;
+  }
+
+  @Override
+  public List<VariableSpec> getRequiredInputVars() {
+    return _config.getInputVariables();
   }
 
   @Override
   public String getValue(Map<String, String> row) {
-    return _inputColumnNames.stream()
-      .map(col -> row.get(col))
-      .collect(Collectors.joining());
+    return new StringBuilder()
+        .append(_config.getPrefix())
+        .append(_inputColumnNames.stream()
+            .map(row::get)
+            .collect(Collectors.joining(_config.getDelimiter())))
+        .append(_config.getSuffix())
+        .toString();
+  }
+
+  @Override
+  public List<DerivedVariableSpec> getDependedDerivedVarSpecs() {
+    return Collections.emptyList();
   }
 
   @Override
@@ -32,4 +59,5 @@ public class Concatenation extends Transform {
   public APIVariableDataShape getVariableDataShape() {
     return APIVariableDataShape.CONTINUOUS;
   }
+
 }

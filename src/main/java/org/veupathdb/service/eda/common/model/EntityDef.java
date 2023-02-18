@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+
+import jakarta.ws.rs.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.functional.TreeNode;
@@ -15,13 +18,14 @@ import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
-public class EntityDef extends ArrayList<VariableDef> {
+public class EntityDef {
 
   private static final Logger LOG = LogManager.getLogger(EntityDef.class);
 
   private final String _id;
   private final String _displayName;
   private final VariableDef _idColumnDef;
+  private final List<VariableDef> _variables;
   private final List<VariableDef> _categories;
   private final List<CollectionDef> _collections;
 
@@ -30,7 +34,8 @@ public class EntityDef extends ArrayList<VariableDef> {
     _displayName = displayName;
     _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING,
         APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), null, VariableSource.ID);
-    add(_idColumnDef);
+    _variables = new ArrayList<>();
+    _variables.add(_idColumnDef);
     _categories = new ArrayList<>();
     _collections = new ArrayList<>();
   }
@@ -43,8 +48,12 @@ public class EntityDef extends ArrayList<VariableDef> {
     return _idColumnDef;
   }
 
+  public List<VariableDef> getVariables() {
+    return _variables;
+  }
+
   public Optional<VariableDef> getVariable(VariableSpec var) {
-    return stream()
+    return _variables.stream()
       .filter(v -> VariableDef.isSameVariable(v, var))
       .findFirst();
   }
@@ -69,7 +78,7 @@ public class EntityDef extends ArrayList<VariableDef> {
   public TreeNode<VariableDef> getNativeVariableTree() {
 
     // add only native vars (not IDs or inherited or derived vars)
-    Map<String, TreeNode<VariableDef>> allVarNodes = stream()
+    Map<String, TreeNode<VariableDef>> allVarNodes = _variables.stream()
         .filter(var -> var.getSource() == VariableSource.NATIVE)
         .collect(Collectors.toMap(
             VariableSpecImpl::getVariableId,
@@ -77,7 +86,7 @@ public class EntityDef extends ArrayList<VariableDef> {
         ));
 
     // add categories for proper tree structure
-    _categories.stream().forEach(cat -> allVarNodes.put(cat.getVariableId(), new TreeNode<>(cat)));
+    _categories.forEach(cat -> allVarNodes.put(cat.getVariableId(), new TreeNode<>(cat)));
 
     List<TreeNode<VariableDef>> parentlessNodes = new ArrayList<>();
     for (TreeNode<VariableDef> varNode : allVarNodes.values()) {
@@ -122,17 +131,31 @@ public class EntityDef extends ArrayList<VariableDef> {
       .put("id", _id)
       .put("displayName", _displayName)
       .put("idColumnName", _idColumnDef.getVariableId())
-      .put("variables", stream()
+      .put("variables", _variables.stream()
         .map(var -> VariableDef.toDotNotation(var) + ":" + var.getType().toString().toLowerCase())
         .collect(Collectors.toList()))
       .toString(2);
   }
 
+  public void addVariable(VariableDef variable) {
+    addIfUniqueName(variable, _variables, VariableDef::isSameVariable);
+  }
+
   public void addCategory(VariableDef category) {
-    _categories.add(category);
+    addIfUniqueName(category, _categories, VariableDef::isSameVariable);
   }
 
   public void addCollection(CollectionDef collection) {
-    _collections.add(collection);
+    addIfUniqueName(collection, _collections, CollectionDef::isSameCollection);
   }
+
+  private <T> void addIfUniqueName(T newItem, List<T> existingItems, BiPredicate<T,T> equals) {
+    for (T existingItem : existingItems) {
+      if (equals.test(existingItem, newItem)) {
+        throw new BadRequestException("Tried to add element " + existingItem.toString() + " to entity def with name that already exists.");
+      }
+    }
+    existingItems.add(newItem);
+  }
+
 }

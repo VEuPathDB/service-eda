@@ -7,8 +7,13 @@ public class Sum extends SingleNumericVarReduction {
   private Double _sum = 0D;
 
   @Override
+  public String getFunctionName() {
+    return "sum";
+  }
+
+  @Override
   public void addRow(Map<String, String> nextRow) {
-    _sum += Double.parseDouble(nextRow.get(getTargetColumnName()));
+    _sum += Double.parseDouble(nextRow.get(_inputColumnName));
   }
 
   @Override

@@ -21,8 +21,7 @@ public class ReferenceMetadata {
   private final String _studyId;
   private final TreeNode<EntityDef> _entityTree;
   private final Map<String,EntityDef> _entityMap;
-  private final List<DerivedVariableSpec> _derivedVariableSpecs;
-  private final List<DerivedVariable> _derivedVariables;
+  private final DerivedVariableFactory _derivedVariableFactory;
 
   public ReferenceMetadata(
       APIStudyDetail study,
@@ -31,10 +30,9 @@ public class ReferenceMetadata {
     _studyId = study.getId();
     _entityTree = buildEntityTree(study.getRootEntity(), new ArrayList<>());
     _entityMap = buildEntityMap(_entityTree);
-    _derivedVariableSpecs = derivedVariableSpecs;
-    _derivedVariables = new DerivedVariableFactory(this).createDerivedVariables(derivedVariableSpecs);
+    _derivedVariableFactory = new DerivedVariableFactory(this, derivedVariableSpecs);
     // incorporate derived vars after native data since they will depend on the native vars
-    incorporateDerivedVariables(_derivedVariables);
+    incorporateDerivedVariables(_derivedVariableFactory.getAllDerivedVars());
     // incorporate computed vars after derived since derived vars cannot depend on computed vars
     incorporateComputedVariables(computedVariables);
   }
@@ -58,7 +56,7 @@ public class ReferenceMetadata {
         throw new RuntimeException("Not all computed vars specs are delcared as the same entity");
       }
       for (EntityDef treeEntity : entities) {
-        entity.add(new VariableDef(
+        entity.addVariable(new VariableDef(
             entityId,
             computedVar.getVariableSpec().getVariableId(),
             computedVar.getDataType(),
@@ -88,17 +86,23 @@ public class ReferenceMetadata {
 
   // note: incoming list will be in dependency order; i.e. only later derived vars
   //       will depend on earlier derived vars (plus no circular dependencies);
-  //       name will also be validated for uniqueness within study
+  //       name will also be pre-validated for uniqueness within study
   private void incorporateDerivedVariables(List<DerivedVariable> derivedVariables) {
     // add derived variables for this entity to itself and all children (who can inherit the derived var)
     for (DerivedVariable derivedVariable: derivedVariables) {
-      // get this DR's entity and descendents
+
+      // before adding to metadata, ask derived variable to validate its depended
+      //  variable defs against those already in metadata.  This is why the ordering
+      //  note above is important
+      derivedVariable.validateDependedVariables();
+
+      // get this DR's entity and descendents and insert as available in all
       List<EntityDef> entities = new ArrayList<>();
       entities.add(derivedVariable.getEntity());
       entities.addAll(getDescendants(derivedVariable.getEntity()));
       for (EntityDef entity : entities) {
-        entity.add(new VariableDef(
-            derivedVariable.getEntity().getId(),
+        entity.addVariable(new VariableDef(
+            derivedVariable.getEntityId(),
             derivedVariable.getVariableId(),
             derivedVariable.getVariableType(),
             derivedVariable.getVariableDataShape(),
@@ -153,7 +157,7 @@ public class ReferenceMetadata {
     ).forEach(colDef -> entityDef.addCollection(colDef));
 
     // add inherited variables from parent
-    ancestorVars.forEach(vd -> entityDef.add(
+    ancestorVars.forEach(vd -> entityDef.addVariable(
         new VariableDef(
           vd.getEntityId(),
           vd.getVariableId(),
@@ -200,7 +204,7 @@ public class ReferenceMetadata {
           VariableSource.NATIVE))
       .forEach(vd -> {
         // add variables for this entity
-        entityDef.add(vd);
+        entityDef.addVariable(vd);
 
         // add this entity's native vars to ancestorVars list (copy will be passed to children)
         ancestorVars.add(vd);
@@ -234,12 +238,8 @@ public class ReferenceMetadata {
     return getEntity(colSpec.getEntityId()).flatMap(e -> e.getCollection(colSpec));
   }
 
-  public List<DerivedVariableSpec> getDerivedVariableSpecs() {
-    return _derivedVariableSpecs;
-  }
-
-  public Optional<DerivedVariable> findDerivedVariable(VariableSpec var) {
-    return _derivedVariables.stream().filter(dr -> VariableDef.isSameVariable(dr, var)).findFirst();
+  public DerivedVariableFactory getDerivedVariableFactory() {
+    return _derivedVariableFactory;
   }
 
   /**

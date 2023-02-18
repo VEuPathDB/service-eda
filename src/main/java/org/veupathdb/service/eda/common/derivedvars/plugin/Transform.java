@@ -1,13 +1,15 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin;
 
-import java.util.Map;
-import java.util.function.Supplier;
-import org.gusdb.fgputil.validation.ValidationException;
+import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory.PluginMap;
 import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.Concatenation;
 
-public abstract class Transform extends AbstractDerivedVariable {
+import java.util.Map;
 
-  static Map<String, Supplier<Transform>> getPlugins() {
+import static org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory.pluginsOf;
+
+public abstract class Transform<T> extends AbstractDerivedVariable<T> {
+
+  public static PluginMap<Transform> getPlugins() {
     return pluginsOf(Transform.class,
       // available transforms
       Concatenation.class
@@ -17,10 +19,8 @@ public abstract class Transform extends AbstractDerivedVariable {
   public abstract String getValue(Map<String,String> row);
 
   @Override
-  protected void validateSourceEntity(String sourceEntityId, String targetEntityId) throws ValidationException {
-    if (!sourceEntityId.equals(targetEntityId)) {
-      throw new ValidationException("Input variables for a transform must be the same as " +
-          "the output variable (input=" + sourceEntityId + ", output=" + targetEntityId + ").");
-    }
+  public void validateDependedVariables() {
+    // TODO: fill in; depended vars must be on this entity or an ancestor, but
+    //   note if checking against reference metadata, we get the ancestor check for free
   }
 }

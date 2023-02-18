@@ -1,103 +1,86 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin;
 
-import java.util.*;
-import java.util.function.Supplier;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import jakarta.ws.rs.BadRequestException;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
-import static org.gusdb.fgputil.functional.Functions.wrapException;
+import java.util.List;
+import java.util.Map;
 
-public abstract class AbstractDerivedVariable extends VariableSpecImpl implements DerivedVariable {
+public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implements DerivedVariable {
 
   protected ReferenceMetadata _metadata;
+  protected String _displayName;
 
-  protected List<VariableDef> _inputVariables;
-  protected List<String> _inputColumnNames;
+  // essentially cached values so they are not calculated for each row
+  private String _columnName;
+  private List<String> _dependedColumnNames;
 
-  private VariableDef _outputVariable;
-  private String _outputColumnName;
-
-  protected abstract void validateSourceEntity(String sourceEntityId, String targetEntityId) throws ValidationException;
+  protected abstract Class<T> getConfigClass();
 
   /**
-   * A combination of validate and initialize any local vars dependent on these vars
+   * Read and validate config, assigning local fields as needed to execute derived
+   * variable logic later during data processing
    *
-   * @param inputVariables input variables set by the caller
-   * @throws ValidationException if input variables are invalid
+   * @param config config object sent as part of the request
+   * @throws ValidationException if validation fails
    */
-  protected abstract void receiveInputVariables(List<VariableDef> inputVariables) throws ValidationException;
+  protected abstract void acceptConfig(T config) throws ValidationException;
 
   @Override
-  public List<VariableSpec> getRequiredInputVars() {
-    // FIXME: apply actual required vars; holdover until compute is running!
-    return Collections.emptyList();
-  }
-
-  public String getName() {
-    return getClass().getSimpleName().toLowerCase();
-  }
-
-  public AbstractDerivedVariable setMetadata(ReferenceMetadata metadata) {
+  public void init(ReferenceMetadata metadata, DerivedVariableSpec spec) throws ValidationException {
     _metadata = metadata;
-    return this;
+    setEntityId(spec.getEntityId());
+    setVariableId(spec.getVariableId());
+    _displayName = spec.getDisplayName();
+    acceptConfig(convertConfig(spec.getConfig()));
   }
 
-  public AbstractDerivedVariable setOutputVariable(VariableDef outputVariable) {
-    _outputVariable = outputVariable;
-    _outputColumnName = VariableDef.toDotNotation(outputVariable);
-    return this;
+  private T convertConfig(Object configObject) {
+    if (configObject instanceof Map) {
+      try {
+        String jsonString = new JSONObject(configObject).toString();
+        return JsonUtil.Jackson.readValue(jsonString, getConfigClass());
+      }
+      catch (JSONException | JsonProcessingException e) {
+        throw new BadRequestException("Could not coerce config object for spec " +
+            "of derived variable " + getFunctionName() + " to type " + getConfigClass().getName());
+      }
+    }
+    throw new BadRequestException("config property for spec of derived variable " +
+        getFunctionName() + " must be an object");
   }
 
   @Override
   public EntityDef getEntity() {
-    return null;
+    return _metadata.getEntity(getEntityId()).orElseThrow(
+        () -> new IllegalStateException("Could not find derived variable entity: " + getEntityId()));
   }
 
-  public String getOutputColumnName() {
-    return _outputColumnName;
-  }
-
-  public final AbstractDerivedVariable setInputVariables(List<VariableDef> inputVariables) throws ValidationException {
-    String sourceEntityId = getCommonEntity(inputVariables);
-    validateSourceEntity(sourceEntityId, _outputVariable.getEntityId());
-    receiveInputVariables(inputVariables);
-    _inputVariables = inputVariables;
-    _inputColumnNames = VariableDef.toDotNotation(inputVariables);
-    return this;
-  }
-
-  private static String getCommonEntity(List<VariableDef> inputVariables) throws ValidationException {
-    if (inputVariables.isEmpty()) throw new ValidationException("At least one input variable is required.");
-    String entityId = inputVariables.get(0).getEntityId();
-    for (int i = 1; i < inputVariables.size(); i++) {
-      if (!inputVariables.get(i).getEntityId().equals(entityId)) {
-        throw new ValidationException("All input variables must be members of the same entity.");
-      }
+  @Override
+  public String getColumnName() {
+    // only calculate once
+    if (_columnName == null) {
+      _columnName = VariableDef.toDotNotation(this);
     }
-    return entityId;
+    return _columnName;
   }
 
-  public boolean allRequiredColsPresent(Map<String, String> row) {
-    Collection<String> availableCols = row.keySet();
-    for (String requiredCol : _inputColumnNames) {
-      if (!availableCols.contains(requiredCol)) {
-        return false;
-      }
+  @Override
+  public List<String> getRequiredInputColumnNames() {
+    // only calculate once
+    if (_dependedColumnNames == null) {
+      _dependedColumnNames = VariableDef.toDotNotation(getRequiredInputVars());
     }
-    return true;
+    return _dependedColumnNames;
   }
 
-  @SafeVarargs
-  protected static <T extends AbstractDerivedVariable> Map<String, Supplier<T>> pluginsOf(Class<T> subtype, Class<? extends T>... implementations) {
-    Map<String, Supplier<T>> map = new HashMap<>();
-    for (Class<? extends T> plugin : implementations) {
-      Supplier<T> supplier = () -> wrapException(() -> plugin.getConstructor().newInstance());
-      map.put(supplier.get().getName(), supplier);
-    }
-    return map;
-  }
 }

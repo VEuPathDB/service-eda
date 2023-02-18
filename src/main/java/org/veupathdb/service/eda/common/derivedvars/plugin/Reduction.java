@@ -1,14 +1,16 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin;
 
-import java.util.Map;
-import java.util.function.Supplier;
-import org.gusdb.fgputil.validation.ValidationException;
+import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory.PluginMap;
 import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.Mean;
 import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.Sum;
 
-public abstract class Reduction extends AbstractDerivedVariable {
+import java.util.Map;
 
-  static Map<String, Supplier<Reduction>> getPlugins() {
+import static org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory.pluginsOf;
+
+public abstract class Reduction<T> extends AbstractDerivedVariable<T> {
+
+  public static PluginMap<Reduction> getPlugins() {
     return pluginsOf(Reduction.class,
       // available reductions
       Sum.class,
@@ -21,7 +23,8 @@ public abstract class Reduction extends AbstractDerivedVariable {
   public abstract String getResultingValue();
 
   @Override
-  protected void validateSourceEntity(String sourceEntityId, String targetEntityId) throws ValidationException {
-
+  public void validateDependedVariables() {
+    // TODO: fill in; depended vars must all be on the same entity, which
+    //   must be a descendant of this entity
   }
 }

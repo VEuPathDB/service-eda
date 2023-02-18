@@ -1,9 +1,5 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.reductions;
 
-import org.veupathdb.service.eda.common.model.EntityDef;
-import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
-import org.veupathdb.service.eda.generated.model.APIVariableType;
-
 import java.util.Map;
 
 public class Mean extends SingleNumericVarReduction {
@@ -12,9 +8,14 @@ public class Mean extends SingleNumericVarReduction {
   private double _sum = 0D;
 
   @Override
+  public String getFunctionName() {
+    return "mean";
+  }
+
+  @Override
   public void addRow(Map<String, String> nextRow) {
     _numRows++;
-    _sum += Double.parseDouble(nextRow.get(getTargetColumnName()));
+    _sum += Double.parseDouble(nextRow.get(_inputColumnName));
   }
 
   @Override

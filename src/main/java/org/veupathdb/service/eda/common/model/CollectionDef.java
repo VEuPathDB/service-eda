@@ -1,9 +1,7 @@
 package org.veupathdb.service.eda.common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.veupathdb.service.eda.generated.model.APICollectionType;
-import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
-import org.veupathdb.service.eda.generated.model.CollectionSpecImpl;
+import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -104,5 +102,9 @@ public class CollectionDef extends CollectionSpecImpl {
             .orElseThrow(() -> new RuntimeException("Collection " + getCollectionId() + " in entity " +
                 _entity.getId() + " has variable " + id + " which does not belong to " + _entity.getId())))
         .collect(Collectors.toList());
+  }
+
+  public static boolean isSameCollection(CollectionSpec c1, CollectionSpec c2) {
+    return c1.getEntityId().equals(c2.getEntityId()) && c1.getCollectionId().equals(c2.getCollectionId());
   }
 }

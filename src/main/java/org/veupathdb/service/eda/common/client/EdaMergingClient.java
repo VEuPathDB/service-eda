@@ -43,7 +43,7 @@ public class EdaMergingClient extends StreamingDataClient {
     // build request object
     MergedEntityTabularPostRequest request = new MergedEntityTabularPostRequestImpl();
     request.setStudyId(metadata.getStudyId());
-    request.setFilters(subset);
+    request.setFilters(spec.getFiltersOverride().orElse(subset));
     request.setEntityId(spec.getEntityId());
     request.setDerivedVariables(metadata.getDerivedVariableFactory().getDerivedVariableSpecs());
     request.setOutputVariables(spec);

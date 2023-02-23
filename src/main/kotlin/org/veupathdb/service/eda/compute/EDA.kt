@@ -6,7 +6,6 @@ import org.apache.logging.log4j.LogManager
 import org.gusdb.fgputil.Tuples.TwoTuple
 import org.veupathdb.lib.compute.platform.AsyncPlatform
 import org.veupathdb.lib.compute.platform.job.JobFileReference
-import org.veupathdb.lib.hash_id.HashID
 import org.veupathdb.lib.jackson.Json
 import org.veupathdb.service.eda.common.auth.StudyAccess
 import org.veupathdb.service.eda.common.client.DatasetAccessClient
@@ -20,7 +19,6 @@ import org.veupathdb.service.eda.compute.service.ServiceOptions
 import org.veupathdb.service.eda.compute.util.JobIDs
 import org.veupathdb.service.eda.compute.util.toAuthTuple
 import org.veupathdb.service.eda.compute.util.toJobResponse
-import org.veupathdb.service.eda.compute.util.toOutJobStatus
 import org.veupathdb.service.eda.generated.model.*
 import java.io.InputStream
 import java.util.*

@@ -22,6 +22,7 @@ import org.veupathdb.service.eda.compute.util.toJobResponse
 import org.veupathdb.service.eda.generated.model.*
 import java.io.InputStream
 import java.util.*
+import org.veupathdb.lib.compute.platform.job.JobStatus as JS
 
 /**
  * EDA Project/Service Access Singleton
@@ -142,8 +143,15 @@ object EDA {
     // Create job ID by hashing plugin name and compute config
     val jobID = JobIDs.of(plugin.urlSegment, payload)
 
-    // If the job already exists, just return it.
-    AsyncPlatform.getJob(jobID)?.let { return it.toJobResponse() }
+    // Lookup the job to see if it already exists
+    val existingJob = AsyncPlatform.getJob(jobID)
+
+    // If the job already exists
+    if (existingJob != null)
+      // And the status is not expired OR autostart is false
+      if (existingJob.status != JS.Expired || !autostart)
+        // Just return the job
+        return existingJob.toJobResponse()
 
     if (autostart) {
       Log.info("Submitting job {} to the queue", jobID)

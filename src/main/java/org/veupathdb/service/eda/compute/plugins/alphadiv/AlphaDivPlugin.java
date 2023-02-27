@@ -63,12 +63,12 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
-      String dotNotatedIdColumnsString = new String();
+      String dotNotatedIdColumnsString = "c(";
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
         if (first) {
           first = false;
-          dotNotatedIdColumnsString = "c(" + util.singleQuote(idCol);
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + util.singleQuote(idCol);
         } else {
           dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
         }
@@ -77,7 +77,7 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
 
       connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + 
                                                                           ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
-                                                                          ",ancestorIdColumns=" + dotNotatedIdColumnsString +
+                                                                          ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ",imputeZero=TRUE)");
 
       connection.voidEval("alphaDivDT <- alphaDiv(abundDT, " +

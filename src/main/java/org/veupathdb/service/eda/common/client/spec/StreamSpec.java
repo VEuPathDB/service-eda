@@ -62,7 +62,7 @@ public class StreamSpec extends ArrayList<VariableSpec> {
    * the household stream, we cannot inherit household vars (because the
    * household of those participants does not exist in the household stream.
    *
-   * @param overriddenFilters filters to override
+   * @param overriddenFilters filters to override or null if no override necessary
    * @return this stream spec
    */
   public StreamSpec setFiltersOverride(List<APIFilter> overriddenFilters) {

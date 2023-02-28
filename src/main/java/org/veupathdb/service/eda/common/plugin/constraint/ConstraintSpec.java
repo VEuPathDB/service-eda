@@ -17,7 +17,7 @@ import org.veupathdb.service.eda.generated.model.VisualizationDataElementConstra
  *     }];
  *   }
  * }
- * if var1 is at index x and var2 is at index x+1, then var2 must be a member of the same entity as var1, or a descendent
+ * if var1 is at index x and var2 is at index x+1, then var2 must be a member of the same entity as var1, or a descendant
  */
 public class ConstraintSpec extends ArrayList<VisualizationDataElementConstraintPattern> {
 

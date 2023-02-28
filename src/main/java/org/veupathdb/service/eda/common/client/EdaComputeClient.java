@@ -45,7 +45,7 @@ public class EdaComputeClient {
   }
 
   public boolean isJobResultsAvailable(String computeName, ComputeRequestBody requestBody) {
-    JobResponse response = readJsonResponse(computeName, requestBody, JobResponse.class);
+    JobResponse response = readJsonResponse(computeName + "?autostart=false", requestBody, JobResponse.class);
     return response.getStatus().equals(JobStatus.COMPLETE);
   }
 

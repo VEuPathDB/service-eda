@@ -1,19 +1,17 @@
 package org.veupathdb.service.eda.compute.plugins.betadiv;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.EntityDef;
-import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
+import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
-import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.generated.model.BetaDivComputeConfig;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
-import org.veupathdb.service.eda.generated.model.ComputedVariableMetadata;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.io.InputStream;
@@ -48,7 +46,7 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    String distanceMethod = computeConfig.getBetaDivDistanceMethod().getName();
+    String distanceMethod = computeConfig.getBetaDivDistanceMethod().getValue();
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     List<VariableDef> idColumns = new ArrayList<>();

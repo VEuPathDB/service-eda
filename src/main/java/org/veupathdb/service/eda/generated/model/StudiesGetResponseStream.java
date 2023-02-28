@@ -20,6 +20,4 @@ public class StudiesGetResponseStream extends StudiesGetResponseImpl implements 
   public void write(OutputStream output) throws IOException, WebApplicationException {
     _streamer.accept(output);
   }
-
 }
-

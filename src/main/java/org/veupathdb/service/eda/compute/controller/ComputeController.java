@@ -44,7 +44,7 @@ import java.util.function.Supplier;
  * Endpoints" statement.
  * <p>
  * Plugin endpoints should follow the example set by the
- * {@link #postComputesExample(Boolean, ExamplePluginRequest)} method and call the
+ * {@link #postComputesExample(boolean, ExamplePluginRequest)} method and call the
  * {@link #submitJob(PluginProvider, ComputeRequestBase, boolean)} method, passing in an
  * instance of the target {@link PluginProvider} for their plugin along with the
  * raw request body (entity).
@@ -70,7 +70,7 @@ public class ComputeController implements Computes {
 
 
   @Override
-  public PostComputesExampleResponse postComputesExample(Boolean autostart, ExamplePluginRequest entity) {
+  public PostComputesExampleResponse postComputesExample(boolean autostart, ExamplePluginRequest entity) {
     return PostComputesExampleResponse.respond200WithApplicationJson(submitJob(new ExamplePluginProvider(), entity, autostart));
   }
 
@@ -80,7 +80,7 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesBetadivResponse postComputesBetadiv(Boolean autostart, BetaDivPluginRequest entity) {
+  public PostComputesBetadivResponse postComputesBetadiv(boolean autostart, BetaDivPluginRequest entity) {
     return PostComputesBetadivResponse.respond200WithApplicationJson(submitJob(new BetaDivPluginProvider(), entity, autostart));
   }
 
@@ -90,7 +90,7 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesAlphadivResponse postComputesAlphadiv(Boolean autostart, AlphaDivPluginRequest entity) {
+  public PostComputesAlphadivResponse postComputesAlphadiv(boolean autostart, AlphaDivPluginRequest entity) {
     return PostComputesAlphadivResponse.respond200WithApplicationJson(submitJob(new AlphaDivPluginProvider(), entity, autostart));
   }
 
@@ -100,7 +100,7 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesRankedabundanceResponse postComputesRankedabundance(Boolean autostart, RankedAbundancePluginRequest entity) {
+  public PostComputesRankedabundanceResponse postComputesRankedabundance(boolean autostart, RankedAbundancePluginRequest entity) {
     return PostComputesRankedabundanceResponse.respond200WithApplicationJson(submitJob(new RankedAbundancePluginProvider(), entity, autostart));
   }
 

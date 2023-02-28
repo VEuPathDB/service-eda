@@ -30,7 +30,7 @@ public interface Computes {
   @Produces("application/json")
   @Consumes("application/json")
   PostComputesExampleResponse postComputesExample(
-      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      @QueryParam("autostart") @DefaultValue("true") boolean autostart,
       ExamplePluginRequest entity);
 
   @POST
@@ -45,7 +45,7 @@ public interface Computes {
   @Produces("application/json")
   @Consumes("application/json")
   PostComputesBetadivResponse postComputesBetadiv(
-      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      @QueryParam("autostart") @DefaultValue("true") boolean autostart,
       BetaDivPluginRequest entity);
 
   @POST
@@ -60,7 +60,7 @@ public interface Computes {
   @Produces("application/json")
   @Consumes("application/json")
   PostComputesAlphadivResponse postComputesAlphadiv(
-      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      @QueryParam("autostart") @DefaultValue("true") boolean autostart,
       AlphaDivPluginRequest entity);
 
   @POST
@@ -75,7 +75,7 @@ public interface Computes {
   @Produces("application/json")
   @Consumes("application/json")
   PostComputesRankedabundanceResponse postComputesRankedabundance(
-      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      @QueryParam("autostart") @DefaultValue("true") boolean autostart,
       RankedAbundancePluginRequest entity);
 
   @POST

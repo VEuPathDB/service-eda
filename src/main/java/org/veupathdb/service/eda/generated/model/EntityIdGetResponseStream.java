@@ -20,6 +20,4 @@ public class EntityIdGetResponseStream extends EntityIdGetResponseImpl implement
   public void write(OutputStream output) throws IOException, WebApplicationException {
     _streamer.accept(output);
   }
-
 }
-

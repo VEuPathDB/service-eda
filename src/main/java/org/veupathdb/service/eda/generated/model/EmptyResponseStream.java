@@ -20,6 +20,4 @@ public class EmptyResponseStream extends EmptyResponseImpl implements StreamingO
   public void write(OutputStream output) throws IOException, WebApplicationException {
     _streamer.accept(output);
   }
-
 }
-

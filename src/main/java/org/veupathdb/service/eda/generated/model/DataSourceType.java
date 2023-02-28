@@ -9,14 +9,13 @@ public enum DataSourceType {
   @JsonProperty("file")
   FILE("file");
 
-  public final String name;
+  private final String value;
 
-  DataSourceType(String name) {
-    this.name = name;
+  public String getValue() {
+    return this.value;
   }
 
-
-  public String getName() {
-    return this.name;
+  DataSourceType(String name) {
+    this.value = name;
   }
 }

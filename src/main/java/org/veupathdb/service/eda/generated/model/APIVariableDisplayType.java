@@ -21,14 +21,13 @@ public enum APIVariableDisplayType {
   @JsonProperty("longitude")
   LONGITUDE("longitude");
 
-  public final String name;
+  private final String value;
 
-  APIVariableDisplayType(String name) {
-    this.name = name;
+  public String getValue() {
+    return this.value;
   }
 
-
-  public String getName() {
-    return this.name;
+  APIVariableDisplayType(String name) {
+    this.value = name;
   }
 }

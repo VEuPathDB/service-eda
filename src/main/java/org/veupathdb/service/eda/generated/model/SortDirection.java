@@ -9,14 +9,13 @@ public enum SortDirection {
   @JsonProperty("desc")
   DESC("desc");
 
-  public final String name;
+  private final String value;
 
-  SortDirection(String name) {
-    this.name = name;
+  public String getValue() {
+    return this.value;
   }
 
-
-  public String getName() {
-    return this.name;
+  SortDirection(String name) {
+    this.value = name;
   }
 }

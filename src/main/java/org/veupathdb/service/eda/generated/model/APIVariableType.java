@@ -21,14 +21,13 @@ public enum APIVariableType {
   @JsonProperty("integer")
   INTEGER("integer");
 
-  public final String name;
+  private final String value;
 
-  APIVariableType(String name) {
-    this.name = name;
+  public String getValue() {
+    return this.value;
   }
 
-
-  public String getName() {
-    return this.name;
+  APIVariableType(String name) {
+    this.value = name;
   }
 }

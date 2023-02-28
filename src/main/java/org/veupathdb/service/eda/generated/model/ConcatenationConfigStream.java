@@ -8,11 +8,11 @@ import java.util.function.Consumer;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 
-public class EntityCountPostResponseStream extends EntityCountPostResponseImpl implements StreamingOutput {
+public class ConcatenationConfigStream extends ConcatenationConfigImpl implements StreamingOutput {
 
   private final Consumer<OutputStream> _streamer;
 
-  public EntityCountPostResponseStream(Consumer<OutputStream> streamer) {
+  public ConcatenationConfigStream(Consumer<OutputStream> streamer) {
     _streamer = streamer;
   }
 

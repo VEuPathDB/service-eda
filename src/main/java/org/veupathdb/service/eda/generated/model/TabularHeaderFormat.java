@@ -9,14 +9,13 @@ public enum TabularHeaderFormat {
   @JsonProperty("display")
   DISPLAY("display");
 
-  public final String name;
+  private final String value;
 
-  TabularHeaderFormat(String name) {
-    this.name = name;
+  public String getValue() {
+    return this.value;
   }
 
-
-  public String getName() {
-    return this.name;
+  TabularHeaderFormat(String name) {
+    this.value = name;
   }
 }

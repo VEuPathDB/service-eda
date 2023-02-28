@@ -8,11 +8,11 @@ import java.util.function.Consumer;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 
-public class EntityCountPostResponseStream extends EntityCountPostResponseImpl implements StreamingOutput {
+public class SingleNumericVarReductionConfigStream extends SingleNumericVarReductionConfigImpl implements StreamingOutput {
 
   private final Consumer<OutputStream> _streamer;
 
-  public EntityCountPostResponseStream(Consumer<OutputStream> streamer) {
+  public SingleNumericVarReductionConfigStream(Consumer<OutputStream> streamer) {
     _streamer = streamer;
   }
 

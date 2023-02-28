@@ -15,14 +15,13 @@ public enum RankingMethod {
   @JsonProperty("max")
   MAX("max");
 
-  public final String name;
+  private final String value;
 
-  RankingMethod(String name) {
-    this.name = name;
+  public String getValue() {
+    return this.value;
   }
 
-
-  public String getName() {
-    return this.name;
+  RankingMethod(String name) {
+    this.value = name;
   }
 }

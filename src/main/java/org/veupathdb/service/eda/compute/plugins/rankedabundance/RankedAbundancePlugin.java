@@ -63,12 +63,12 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
       // TODO make a helper for this i think
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
-      String dotNotatedIdColumnsString = new String();
+      String dotNotatedIdColumnsString = "c(";
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
         if (first) {
           first = false;
-          dotNotatedIdColumnsString = "c(" + util.singleQuote(idCol);
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + util.singleQuote(idCol);
         } else {
           dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
         }
@@ -77,7 +77,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
 
       connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + 
                                                                           ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
-                                                                          ",ancestorIdColumns=" + dotNotatedIdColumnsString +
+                                                                          ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ",imputeZero=TRUE)");
       connection.voidEval("abundanceDT <- rankedAbundance(abundDT, " +
                                                           PluginUtil.singleQuote(method) + ")");

@@ -16,11 +16,11 @@ public interface BetaDivComputeConfig {
   @JsonProperty("collectionVariable")
   void setCollectionVariable(VariableSpec collectionVariable);
 
-  @JsonProperty("betaDivDistanceMethod")
-  BetaDivDistanceMethod getBetaDivDistanceMethod();
+  @JsonProperty("betaDivDissimilarityMethod")
+  BetaDivDissimilarityMethod getBetaDivDissimilarityMethod();
 
-  @JsonProperty("betaDivDistanceMethod")
-  void setBetaDivDistanceMethod(BetaDivDistanceMethod betaDivDistanceMethod);
+  @JsonProperty("betaDivDissimilarityMethod")
+  void setBetaDivDissimilarityMethod(BetaDivDissimilarityMethod betaDivDissimilarityMethod);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

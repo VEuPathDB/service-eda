@@ -20,6 +20,4 @@ public class EntityCountPostResponseStream extends EntityCountPostResponseImpl i
   public void write(OutputStream output) throws IOException, WebApplicationException {
     _streamer.accept(output);
   }
-
 }
-

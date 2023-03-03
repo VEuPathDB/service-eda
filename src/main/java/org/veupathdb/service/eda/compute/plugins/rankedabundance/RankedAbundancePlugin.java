@@ -48,7 +48,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    String method = computeConfig.getRankingMethod().getName();
+    String method = computeConfig.getRankingMethod().getValue();
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     List<VariableDef> idColumns = new ArrayList<>();

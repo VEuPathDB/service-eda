@@ -20,6 +20,4 @@ public class VariableDistributionPostResponseStream extends VariableDistribution
   public void write(OutputStream output) throws IOException, WebApplicationException {
     _streamer.accept(output);
   }
-
 }
-

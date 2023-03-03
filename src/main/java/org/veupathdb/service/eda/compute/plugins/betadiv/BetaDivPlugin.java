@@ -18,7 +18,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
 
 public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivComputeConfig> {
 
@@ -46,7 +47,7 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    String distanceMethod = computeConfig.getBetaDivDistanceMethod().getValue();
+    String dissimilarityMethod = computeConfig.getBetaDivDissimilarityMethod().getValue();
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     List<VariableDef> idColumns = new ArrayList<>();
@@ -61,25 +62,25 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
-      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
+      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedIdColumnsString = "c(";
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
         if (first) {
           first = false;
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + util.singleQuote(idCol);
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + singleQuote(idCol);
         } else {
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + singleQuote(idCol);
         }
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
       connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + 
-                                                                          ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
+                                                                          ",recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ",imputeZero=TRUE)");
       connection.voidEval("betaDivDT <- betaDiv(abundDT, " +
-                                                PluginUtil.singleQuote(distanceMethod) + ")");
+                                                singleQuote(dissimilarityMethod) + ")");
       connection.voidEval("print(names(betaDivDT@data))");
       String dataCmd = "writeData(betaDivDT, NULL, TRUE)";
       String metaCmd = "writeMeta(betaDivDT, NULL, TRUE)";

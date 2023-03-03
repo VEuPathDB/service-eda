@@ -2,7 +2,7 @@ package org.veupathdb.service.eda.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public enum BetaDivDistanceMethod {
+public enum BetaDivDissimilarityMethod {
   @JsonProperty("bray")
   BRAY("bray"),
 
@@ -18,7 +18,7 @@ public enum BetaDivDistanceMethod {
     return this.value;
   }
 
-  BetaDivDistanceMethod(String name) {
+  BetaDivDissimilarityMethod(String name) {
     this.value = name;
   }
 }

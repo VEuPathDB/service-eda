@@ -11,14 +11,14 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "collectionVariable",
-    "betaDivDistanceMethod"
+    "betaDivDissimilarityMethod"
 })
 public class BetaDivComputeConfigImpl implements BetaDivComputeConfig {
   @JsonProperty("collectionVariable")
   private VariableSpec collectionVariable;
 
-  @JsonProperty("betaDivDistanceMethod")
-  private BetaDivDistanceMethod betaDivDistanceMethod;
+  @JsonProperty("betaDivDissimilarityMethod")
+  private BetaDivDissimilarityMethod betaDivDissimilarityMethod;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -33,14 +33,14 @@ public class BetaDivComputeConfigImpl implements BetaDivComputeConfig {
     this.collectionVariable = collectionVariable;
   }
 
-  @JsonProperty("betaDivDistanceMethod")
-  public BetaDivDistanceMethod getBetaDivDistanceMethod() {
-    return this.betaDivDistanceMethod;
+  @JsonProperty("betaDivDissimilarityMethod")
+  public BetaDivDissimilarityMethod getBetaDivDissimilarityMethod() {
+    return this.betaDivDissimilarityMethod;
   }
 
-  @JsonProperty("betaDivDistanceMethod")
-  public void setBetaDivDistanceMethod(BetaDivDistanceMethod betaDivDistanceMethod) {
-    this.betaDivDistanceMethod = betaDivDistanceMethod;
+  @JsonProperty("betaDivDissimilarityMethod")
+  public void setBetaDivDissimilarityMethod(BetaDivDissimilarityMethod betaDivDissimilarityMethod) {
+    this.betaDivDissimilarityMethod = betaDivDissimilarityMethod;
   }
 
   @JsonAnyGetter

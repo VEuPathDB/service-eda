@@ -48,7 +48,7 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    String distanceMethod = computeConfig.getBetaDivDistanceMethod().getName();
+    String distanceMethod = computeConfig.getBetaDivDistanceMethod().getValue();
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     List<VariableDef> idColumns = new ArrayList<>();

@@ -12,14 +12,13 @@ public enum BetaDivDistanceMethod {
   @JsonProperty("jsd")
   JSD("jsd");
 
-  public final String name;
+  private final String value;
 
-  BetaDivDistanceMethod(String name) {
-    this.name = name;
+  public String getValue() {
+    return this.value;
   }
 
-
-  public String getName() {
-    return this.name;
+  BetaDivDistanceMethod(String name) {
+    this.value = name;
   }
 }

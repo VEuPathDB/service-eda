@@ -9,14 +9,13 @@ public enum StudySourceType {
   @JsonProperty("user_submitted")
   USERSUBMITTED("user_submitted");
 
-  public final String name;
+  private final String value;
 
-  StudySourceType(String name) {
-    this.name = name;
+  public String getValue() {
+    return this.value;
   }
 
-
-  public String getName() {
-    return this.name;
+  StudySourceType(String name) {
+    this.value = name;
   }
 }

@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.common.client;
 
 import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.gusdb.fgputil.client.ClientUtil;
@@ -122,25 +123,25 @@ public class DatasetAccessClient extends ServiceClient {
   }
 
   /**
-   * Looks up permissions for a user on a particular study; however, unlike
+   * Looks up permissions for a user on a particular dataset; however, unlike
    * <code>getStudyDatasetInfoMapForUser()</code>, this method will look up user
    * studies the user does NOT have permissions on, and still return information
-   * about the study (with false for all perms).  A passed studyId string that
+   * about the study (with false for all perms).  A passed datasetId string that
    * does not exist (curated or user study, regardless of this user's perms)
    * will result in a NotFoundException.
    *
-   * @param studyId study to look up
+   * @param datasetId dataset ID for study to look up
    * @return dataset access service metadata about this study
    */
-  public BasicStudyDatasetInfo getStudyDatasetInfo(String studyId) {
+  public BasicStudyDatasetInfo getStudyDatasetInfo(String datasetId) {
     try {
       Either<InputStream, RequestFailure> response = ClientUtil
-          .makeAsyncGetRequest(getUrl("/permissions/" + studyId),
+          .makeAsyncGetRequest(getUrl("/permissions/" + datasetId),
               MediaType.APPLICATION_JSON, getAuthHeaderMap()).getEither();
       response.ifRight(fail -> {
         // check for 404
         if (fail.getStatusType().getStatusCode() == Response.Status.NOT_FOUND.getStatusCode()) {
-          throw new NotFoundException("Dataset Access: no study found with ID " + studyId);
+          throw new NotFoundException("Dataset Access: no study found with dataset ID " + datasetId);
         }
         throw new RuntimeException("Failed to request permissions from dataset access: " + fail.toString());
       });
@@ -148,6 +149,9 @@ public class DatasetAccessClient extends ServiceClient {
         JSONObject json = new JSONObject(ClientUtil.readSmallResponseBody(responseBody));
         return new BasicStudyDatasetInfo(json);
       }
+    }
+    catch (WebApplicationException e) {
+      throw e;
     }
     catch (Exception e) {
       throw new RuntimeException("Unable to read permissions response", e);

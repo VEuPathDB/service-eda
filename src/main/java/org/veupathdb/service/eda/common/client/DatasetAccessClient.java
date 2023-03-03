@@ -1,71 +1,95 @@
 package org.veupathdb.service.eda.common.client;
 
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import org.gusdb.fgputil.client.ClientUtil;
+import org.gusdb.fgputil.client.RequestFailure;
+import org.gusdb.fgputil.functional.Either;
+import org.gusdb.fgputil.runtime.Environment;
+import org.json.JSONObject;
+import org.veupathdb.service.eda.common.auth.StudyAccess;
+
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.core.MediaType;
-import org.gusdb.fgputil.client.ClientUtil;
-import org.gusdb.fgputil.runtime.Environment;
-import org.json.JSONObject;
-import org.veupathdb.service.eda.common.auth.StudyAccess;
 
 public class DatasetAccessClient extends ServiceClient {
 
   private static final String ENABLE_DATASET_ACCESS_RESTRICTIONS = "ENABLE_DATASET_ACCESS_RESTRICTIONS";
 
-  public static class StudyDatasetInfo {
+  public static class BasicStudyDatasetInfo {
 
     private final String _studyId;
     private final String _datasetId;
-    private final String _sha1Hash;
     private final boolean _isUserStudy;
     private final StudyAccess _studyAccess;
-    private final String _displayName;
-    private final String _shortDisplayName;
-    private final String _description;
 
-    public StudyDatasetInfo(
-        String studyId,
-        String datasetId,
-        String sha1Hash,
-        boolean isUserStudy,
-        StudyAccess studyAccess,
-        String displayName,
-        String shortDisplayName,
-        String description) {
-      _studyId = studyId;
+    public BasicStudyDatasetInfo(JSONObject json) {
+      this(json.getString("datasetId"), json);
+    }
+
+    public BasicStudyDatasetInfo(String datasetId, JSONObject json) {
       _datasetId = datasetId;
-      _sha1Hash = sha1Hash;
-      _isUserStudy = isUserStudy;
-      _studyAccess = studyAccess;
-      _displayName = displayName;
-      _shortDisplayName = shortDisplayName;
-      _description = description;
+      _studyId = json.getString("studyId");
+      _isUserStudy = json.getBoolean("isUserStudy");
+      JSONObject studyPerms = json.getJSONObject("actionAuthorization");
+      _studyAccess = new StudyAccess(
+          studyPerms.getBoolean("studyMetadata"),
+          studyPerms.getBoolean("subsetting"),
+          studyPerms.getBoolean("visualizations"),
+          studyPerms.getBoolean("resultsFirstPage"),
+          studyPerms.getBoolean("resultsAll")
+      );
     }
 
     public String getStudyId() { return _studyId; }
     public String getDatasetId() { return _datasetId; }
-    public String getSha1Hash() { return _sha1Hash; }
     public boolean isUserStudy() { return _isUserStudy; }
     public StudyAccess getStudyAccess() { return _studyAccess; }
+
+    @Override
+    public String toString() {
+      return toJson().toString();
+    }
+
+    public JSONObject toJson() {
+      return new JSONObject()
+          .put("studyId", _studyId)
+          .put("datasetId", _datasetId)
+          .put("isUserStudy", _isUserStudy)
+          .put("studyAccess", _studyAccess.toJson());
+    }
+  }
+
+  public static class StudyDatasetInfo extends BasicStudyDatasetInfo {
+
+    private final String _sha1Hash;
+    private final String _displayName;
+    private final String _shortDisplayName;
+    private final String _description;
+
+    public StudyDatasetInfo(String datasetId, JSONObject json) {
+      super(datasetId, json);
+      _sha1Hash = json.optString("sha1Hash", "");
+      _displayName = json.getString("displayName");
+      _shortDisplayName = json.optString("shortDisplayName", _displayName);
+      _description = json.optString("description", null);
+    }
+
+    public String getSha1Hash() { return _sha1Hash; }
     public String getDisplayName() { return _displayName; }
     public String getShortDisplayName() { return _shortDisplayName; }
     public String getDescription() { return _description; }
 
-    @Override
-    public String toString() {
-      return new JSONObject()
-          .put("studyId", _studyId)
-          .put("datasetId", _datasetId)
+    public JSONObject toJson() {
+      return super.toJson()
           .put("sha1Hash", _sha1Hash)
-          .put("isUserStudy", _isUserStudy)
-          .put("studyAccess", _studyAccess.toJson())
           .put("displayName", _displayName)
           .put("shortDisplayName", _shortDisplayName)
-          .put("description", _description)
-          .toString();
+          .put("description", _description);
     }
   }
 
@@ -74,10 +98,10 @@ public class DatasetAccessClient extends ServiceClient {
   }
 
   /**
-   * Builds a map from study ID to study info, including permissions for each study;
-   * requires a request to the dataset access service.
+   * Builds a map from study ID to study info, including permissions for each curated
+   * study, plus user studies this user has access to.  Requires a request to the dataset access service.
    *
-   * @return study map
+   * @return study map with study IDs as keys
    */
   public Map<String, StudyDatasetInfo> getStudyDatasetInfoMapForUser() {
     try (InputStream response = ClientUtil.makeAsyncGetRequest(getUrl("/permissions"),
@@ -86,22 +110,10 @@ public class DatasetAccessClient extends ServiceClient {
       JSONObject datasetMap = new JSONObject(permissionsJson).getJSONObject("perDataset");
       Map<String, StudyDatasetInfo> infoMap = new HashMap<>();
       for (String datasetId : datasetMap.keySet()) {
-        JSONObject dataset = datasetMap.getJSONObject(datasetId);
-        String studyId = dataset.getString("studyId");
-        String sha1Hash = dataset.optString("sha1Hash", "");
-        boolean isUserStudy = dataset.getBoolean("isUserStudy");
-        String displayName = dataset.getString("displayName");
-        String shortDisplayName = dataset.optString("shortDisplayName", displayName);
-        String description = dataset.optString("description", null);
-        JSONObject studyPerms = dataset.getJSONObject("actionAuthorization");
-        StudyAccess studyAccess = new StudyAccess(
-          studyPerms.getBoolean("studyMetadata"),
-          studyPerms.getBoolean("subsetting"),
-          studyPerms.getBoolean("visualizations"),
-          studyPerms.getBoolean("resultsFirstPage"),
-          studyPerms.getBoolean("resultsAll")
-        );
-        infoMap.put(studyId, new StudyDatasetInfo(studyId, datasetId, sha1Hash, isUserStudy, studyAccess, displayName, shortDisplayName, description));
+        JSONObject datasetInfoJson = datasetMap.getJSONObject(datasetId);
+        StudyDatasetInfo datasetInfo = new StudyDatasetInfo(datasetId, datasetInfoJson);
+        // reorganizing here; response JSON is keyed by dataset ID, but resulting map is keyed by study ID
+        infoMap.put(datasetInfo.getStudyId(), datasetInfo);
       }
       return infoMap;
     }
@@ -111,19 +123,39 @@ public class DatasetAccessClient extends ServiceClient {
   }
 
   /**
-   * Calls <code>getStudyDatasetInfoMapForUser()</code> and looks up the passed
-   * study ID in the returned map, returning the entry's <code>StudyDatasetInfo</code>
-   * if present, throwing a <code>NotFoundException</code> if not.
+   * Looks up permissions for a user on a particular dataset; however, unlike
+   * <code>getStudyDatasetInfoMapForUser()</code>, this method will look up user
+   * studies the user does NOT have permissions on, and still return information
+   * about the study (with false for all perms).  A passed datasetId string that
+   * does not exist (curated or user study, regardless of this user's perms)
+   * will result in a NotFoundException.
    *
-   * @param studyId study to look up
+   * @param datasetId dataset ID for study to look up
    * @return dataset access service metadata about this study
    */
-  public StudyDatasetInfo getStudyDatasetInfo(String studyId) {
-    Map<String, StudyDatasetInfo> map = getStudyDatasetInfoMapForUser();
-    if (map.containsKey(studyId)) {
-      return map.get(studyId);
+  public BasicStudyDatasetInfo getStudyDatasetInfo(String datasetId) {
+    try {
+      Either<InputStream, RequestFailure> response = ClientUtil
+          .makeAsyncGetRequest(getUrl("/permissions/" + datasetId),
+              MediaType.APPLICATION_JSON, getAuthHeaderMap()).getEither();
+      response.ifRight(fail -> {
+        // check for 404
+        if (fail.getStatusType().getStatusCode() == Response.Status.NOT_FOUND.getStatusCode()) {
+          throw new NotFoundException("Dataset Access: no study found with dataset ID " + datasetId);
+        }
+        throw new RuntimeException("Failed to request permissions from dataset access: " + fail.toString());
+      });
+      try (InputStream responseBody = response.getLeft()) {
+        JSONObject json = new JSONObject(ClientUtil.readSmallResponseBody(responseBody));
+        return new BasicStudyDatasetInfo(json);
+      }
     }
-    throw new NotFoundException("Dataset Access: no study found with ID " + studyId + " in [ " + String.join(", ", map.keySet()) + "]");
+    catch (WebApplicationException e) {
+      throw e;
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Unable to read permissions response", e);
+    }
   }
 
   /**

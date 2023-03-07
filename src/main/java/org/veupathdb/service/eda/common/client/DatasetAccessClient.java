@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 public class DatasetAccessClient extends ServiceClient {
 
@@ -133,7 +134,7 @@ public class DatasetAccessClient extends ServiceClient {
    * @param datasetId dataset ID for study to look up
    * @return dataset access service metadata about this study
    */
-  public BasicStudyDatasetInfo getStudyDatasetInfo(String datasetId) {
+  public BasicStudyDatasetInfo getStudyPermsByDatasetId(String datasetId) {
     try {
       Either<InputStream, RequestFailure> response = ClientUtil
           .makeAsyncGetRequest(getUrl("/permissions/" + datasetId),
@@ -159,21 +160,31 @@ public class DatasetAccessClient extends ServiceClient {
   }
 
   /**
-   * Returns only the StudyAccess portion of the found StudyDatasetInfo.
+   * Looks up the permissions for the authenticated user, finds the study for the passed study ID, and
+   * returns only the StudyAccess portion of the dataset found.  This calls getStudyDatasetInfoMapForUser()
+   * so will return an empty optional unless the study is a curated study or the user has access via
+   * shared user dataset (even if the study exists as a user study this user does not have permissions on).
    *
    * Note this method (but not others) respects the ENABLE_DATASET_ACCESS_RESTRICTIONS environment variable;
-   * if set to false, the the dataset access service is NOT queried, and a StudyAccess object is returned
+   * if set to false, the dataset access service is NOT queried, and a StudyAccess object is returned
    * granting universal access to the study.  This was a hack added during development to support DBs not
    * entirely populated with data and should eventually be removed.
    *
    * @param studyId study for which perms should be looked up
    * @return set of access permissions to this study
    */
-  public StudyAccess getStudyAccess(String studyId) {
+  public Optional<StudyAccess> getStudyAccessByStudyId(String studyId) {
     if (!Boolean.parseBoolean(Environment.getOptionalVar(ENABLE_DATASET_ACCESS_RESTRICTIONS, Boolean.TRUE.toString()))) {
-      return new StudyAccess(true, true, true, true, true);
+      return Optional.of(new StudyAccess(true, true, true, true, true));
     }
-    return getStudyDatasetInfo(studyId).getStudyAccess();
+    // get the perms for this user of known studies
+    return getStudyDatasetInfoMapForUser().values().stream()
+        // filter to find this study
+        .filter(info -> info.getStudyId().equals(studyId))
+        // convert to optional
+        .findAny()
+        // fish out the perms
+        .map(BasicStudyDatasetInfo::getStudyAccess);
   }
 
 }

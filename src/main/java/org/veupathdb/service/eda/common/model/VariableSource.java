@@ -4,7 +4,8 @@ public enum VariableSource {
   ID,
   NATIVE,
   INHERITED,
-  DERIVED,
+  DERIVED_TRANSFORM,
+  DERIVED_REDUCTION,
   COMPUTED;
 
   public boolean isNativeOrId() {

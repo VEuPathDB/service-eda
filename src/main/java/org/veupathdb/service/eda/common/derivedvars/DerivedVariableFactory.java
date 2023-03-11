@@ -121,6 +121,18 @@ public class DerivedVariableFactory {
     return _allDerivedVariablesOrdered;
   }
 
+  public Optional<Transform> getTransform(VariableDef var) {
+    return getTransforms(_metadata.getEntity(var.getEntityId()).orElseThrow()).stream()
+        .filter(t -> VariableDef.isSameVariable(t, var))
+        .findAny();
+  }
+
+  public Optional<Reduction> getReduction(VariableDef var) {
+    return getReductions(_metadata.getEntity(var.getEntityId()).orElseThrow()).stream()
+        .filter(t -> VariableDef.isSameVariable(t, var))
+        .findAny();
+  }
+
   public List<Transform> getTransforms(EntityDef targetEntity) {
     return _transforms.computeIfAbsent(targetEntity.getId(), entityId -> new ArrayList<>());
   }

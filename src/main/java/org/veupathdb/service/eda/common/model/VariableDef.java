@@ -2,11 +2,14 @@ package org.veupathdb.service.eda.common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.json.JsonUtil;
+import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
@@ -122,4 +125,5 @@ public class VariableDef extends VariableSpecImpl {
   public static boolean isSameVariable(VariableSpec v1, VariableSpec v2) {
     return v1.getEntityId().equals(v2.getEntityId()) && v1.getVariableId().equals(v2.getVariableId());
   }
+
 }

@@ -25,11 +25,14 @@ public abstract class Reduction<T> extends AbstractDerivedVariable<T> {
     );
   }
 
+  public interface Reducer {
+    void addRow(Map<String,String> nextRow);
+    String getResultingValue();
+  }
+
+  public abstract Reducer createReducer();
+
   private StreamSpec _inputStreamSpec;
-
-  public abstract void addRow(Map<String,String> nextRow);
-
-  public abstract String getResultingValue();
 
   public StreamSpec getInputStreamSpec() {
     if (_inputStreamSpec == null) {

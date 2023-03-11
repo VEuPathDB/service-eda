@@ -7,6 +7,7 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.common.derivedvars.plugin.DerivedVariable;
 import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.*;
@@ -96,7 +97,11 @@ public class ReferenceMetadata {
       //  note above is important
       derivedVariable.validateDependedVariables();
 
-      // get this DR's entity and descendents and insert as available in all
+      // set custom source; easier to look up DV instance later
+      VariableSource typedSource = derivedVariable instanceof Transform
+          ? VariableSource.DERIVED_TRANSFORM : VariableSource.DERIVED_REDUCTION;
+
+      // get this DR's entity and descendants and insert as available in all
       List<EntityDef> entities = new ArrayList<>();
       entities.add(derivedVariable.getEntity());
       entities.addAll(getDescendants(derivedVariable.getEntity()));
@@ -111,7 +116,7 @@ public class ReferenceMetadata {
             derivedVariable.getDataRanges(),
             null,
             entity == derivedVariable.getEntity()
-              ? VariableSource.DERIVED
+              ? typedSource
               : VariableSource.INHERITED
         ));
       }
@@ -230,6 +235,15 @@ public class ReferenceMetadata {
     return Optional.ofNullable(_entityMap.get(entityId));
   }
 
+  /**
+   * Returns the variable def for this variable spec.  Note that when vars can be
+   * inherited, they have more than one spec (with the second spec living on the
+   * inheriting entity and having source 'inherited'.  However, this method will
+   * always return the spec for the var's 'native' entity.
+   *
+   * @param varSpec variable spec for which variable def is desired
+   * @return variable def optional if found, else empty optional
+   */
   public Optional<VariableDef> getVariable(VariableSpec varSpec) {
     return getEntity(varSpec.getEntityId()).flatMap(e -> e.getVariable(varSpec));
   }
@@ -324,5 +338,11 @@ public class ReferenceMetadata {
     }
 
     return columns;
+  }
+
+  public List<VariableDef> toVariableDefs(List<VariableSpec> varSpecs) {
+    return varSpecs.stream()
+        .map(spec -> getVariable(spec).orElseThrow())
+        .toList();
   }
 }

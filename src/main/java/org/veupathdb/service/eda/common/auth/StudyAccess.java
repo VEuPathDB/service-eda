@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.common.auth;
 
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Predicate;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotAuthorizedException;
@@ -54,7 +55,8 @@ public class StudyAccess {
   public static void confirmPermission(Entry<String,String> authHeader,
       String dataAccessServiceUrl, String studyId, Predicate<StudyAccess> accessPredicate) {
     // check with dataset access service to see if attached auth header has permission to access
-    if (!accessPredicate.test(new DatasetAccessClient(dataAccessServiceUrl, authHeader).getStudyAccess(studyId))) {
+    Optional<StudyAccess> perms = new DatasetAccessClient(dataAccessServiceUrl, authHeader).getStudyAccessByStudyId(studyId);
+    if (perms.isEmpty() || !accessPredicate.test(perms.get())) {
       throw new ForbiddenException();
     }
   }

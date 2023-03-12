@@ -3,13 +3,16 @@ package org.veupathdb.service.eda.generated.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "entityId",
     "variableId",
+    "expectedVariableType",
+    "expectedVariableDataShape",
     "functionName",
-    "displayName",
+    "inputVars",
     "config"
 })
 public class DerivedVariableSpecImpl implements DerivedVariableSpec {
@@ -19,11 +22,17 @@ public class DerivedVariableSpecImpl implements DerivedVariableSpec {
   @JsonProperty("variableId")
   private String variableId;
 
+  @JsonProperty("expectedVariableType")
+  private APIVariableType expectedVariableType;
+
+  @JsonProperty("expectedVariableDataShape")
+  private APIVariableDataShape expectedVariableDataShape;
+
   @JsonProperty("functionName")
   private String functionName;
 
-  @JsonProperty("displayName")
-  private String displayName;
+  @JsonProperty("inputVars")
+  private List<VariableSpec> inputVars;
 
   @JsonProperty("config")
   private Object config;
@@ -48,6 +57,26 @@ public class DerivedVariableSpecImpl implements DerivedVariableSpec {
     this.variableId = variableId;
   }
 
+  @JsonProperty("expectedVariableType")
+  public APIVariableType getExpectedVariableType() {
+    return this.expectedVariableType;
+  }
+
+  @JsonProperty("expectedVariableType")
+  public void setExpectedVariableType(APIVariableType expectedVariableType) {
+    this.expectedVariableType = expectedVariableType;
+  }
+
+  @JsonProperty("expectedVariableDataShape")
+  public APIVariableDataShape getExpectedVariableDataShape() {
+    return this.expectedVariableDataShape;
+  }
+
+  @JsonProperty("expectedVariableDataShape")
+  public void setExpectedVariableDataShape(APIVariableDataShape expectedVariableDataShape) {
+    this.expectedVariableDataShape = expectedVariableDataShape;
+  }
+
   @JsonProperty("functionName")
   public String getFunctionName() {
     return this.functionName;
@@ -58,14 +87,14 @@ public class DerivedVariableSpecImpl implements DerivedVariableSpec {
     this.functionName = functionName;
   }
 
-  @JsonProperty("displayName")
-  public String getDisplayName() {
-    return this.displayName;
+  @JsonProperty("inputVars")
+  public List<VariableSpec> getInputVars() {
+    return this.inputVars;
   }
 
-  @JsonProperty("displayName")
-  public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+  @JsonProperty("inputVars")
+  public void setInputVars(List<VariableSpec> inputVars) {
+    this.inputVars = inputVars;
   }
 
   @JsonProperty("config")

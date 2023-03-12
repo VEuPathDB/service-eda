@@ -51,7 +51,8 @@ object EDA {
    */
   @JvmStatic
   fun getStudyPerms(studyID: String, auth: TwoTuple<String, String>): StudyAccess =
-    DatasetAccessClient(ServiceOptions.datasetAccessHost, auth).getStudyAccess(studyID)
+    DatasetAccessClient(ServiceOptions.datasetAccessHost, auth).getStudyAccessByStudyId(studyID)
+      .orElseThrow { ForbiddenException() }
 
   /**
    * Fetches the [APIStudyDetail] information from the EDA Subsetting Service

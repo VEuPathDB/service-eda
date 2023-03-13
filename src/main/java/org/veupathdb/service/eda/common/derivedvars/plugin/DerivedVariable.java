@@ -27,7 +27,6 @@ public interface DerivedVariable extends VariableSpec {
    *
    * @param metadata metadata for the appropriate study
    * @param spec configuration for this derived variable instance
-   * @return this object
    */
   void init(ReferenceMetadata metadata, DerivedVariableSpec spec) throws ValidationException;
 

@@ -2,9 +2,9 @@ package org.veupathdb.service.eda.common.derivedvars.plugin.transforms;
 
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,6 +27,7 @@ public class Concatenation extends Transform<ConcatenationConfig> {
   @Override
   protected void acceptConfig(ConcatenationConfig config) throws ValidationException {
     _config = config;
+    _inputColumnNames = config.getInputVariables().stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
   }
 
   @Override
@@ -43,11 +44,6 @@ public class Concatenation extends Transform<ConcatenationConfig> {
             .collect(Collectors.joining(_config.getDelimiter())))
         .append(_config.getSuffix())
         .toString();
-  }
-
-  @Override
-  public List<DerivedVariableSpec> getDependedDerivedVarSpecs() {
-    return Collections.emptyList();
   }
 
   @Override

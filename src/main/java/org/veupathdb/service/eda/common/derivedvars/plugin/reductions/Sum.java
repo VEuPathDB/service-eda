@@ -1,7 +1,5 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.reductions;
 
-import java.util.Map;
-
 public class Sum extends SingleNumericVarReduction {
 
   @Override
@@ -11,13 +9,13 @@ public class Sum extends SingleNumericVarReduction {
 
   @Override
   public Reducer createReducer() {
-    return new Reducer() {
+    return new SingleNumericVarReducer() {
 
-      private Double _sum = 0D;
+      private double _sum = 0D;
 
       @Override
-      public void addRow(Map<String, String> nextRow) {
-        _sum += Double.parseDouble(nextRow.get(_inputColumnName));
+      protected void processValue(double d) {
+        _sum += d;
       }
 
       @Override

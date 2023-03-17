@@ -4,6 +4,7 @@ import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.model.DataRanges;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
@@ -61,6 +62,11 @@ public interface DerivedVariable extends VariableSpec {
    * generated to support this derived var
    */
   List<DerivedVariableSpec> getDependedDerivedVarSpecs();
+
+  /**
+   * @return display name for this derived variable
+   */
+  String getDisplayName();
 
   /**
    * @return the type of the variable this instance will return

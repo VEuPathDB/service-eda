@@ -2,6 +2,8 @@ package org.veupathdb.service.eda.common.client.spec;
 
 import org.gusdb.fgputil.json.JsonUtil;
 import org.json.JSONObject;
+import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -10,6 +12,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * Specifies an entity and set of variables desired in a named tabular stream.
@@ -94,5 +98,14 @@ public class StreamSpec extends ArrayList<VariableSpec> {
       .put("entityId", _entityId)
       .put("variables", vars)
       .toString(2);
+  }
+
+  public String toString(int indentSize) {
+      String indent = PluginUtil.getIndent(indentSize);
+      return indent + "{" + NL +
+          indent + "  name: " + getStreamName() + NL +
+          indent + "  entityId: " + getEntityId() + NL +
+          indent + "  vars: [ " + stream().map(VariableDef::toDotNotation).collect(Collectors.joining()) + " ]" + NL +
+          indent + "}";
   }
 }

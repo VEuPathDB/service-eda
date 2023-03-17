@@ -2,7 +2,10 @@ package org.veupathdb.service.eda.common.derivedvars.plugin;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory.PluginMap;
+import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.BodyMassIndex;
+import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.CategoricalRecoding;
 import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.Concatenation;
+import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.ContinuousNumericToCategorical;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -16,7 +19,10 @@ public abstract class Transform<T> extends AbstractDerivedVariable<T> {
   public static PluginMap<Transform> getPlugins() {
     return pluginsOf(Transform.class,
       // available transforms
-      Concatenation.class
+      Concatenation.class,
+      BodyMassIndex.class,
+      CategoricalRecoding.class,
+      ContinuousNumericToCategorical.class
     );
   }
 

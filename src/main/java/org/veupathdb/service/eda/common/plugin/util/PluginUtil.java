@@ -14,7 +14,8 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.util.List;
 import java.util.function.Function;
-
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Shared plugin utilities
@@ -30,6 +31,11 @@ public class PluginUtil {
     _metadata = metadata;
     _mergingClient = mergingClient;
   }
+
+  public static String getIndent(int indentSize) {
+    return IntStream.range(0, indentSize).mapToObj(i -> " ").collect(Collectors.joining());
+  }
+
 
   /*****************************************************************
    *** Metadata access utilities

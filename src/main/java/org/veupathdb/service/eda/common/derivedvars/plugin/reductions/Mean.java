@@ -1,7 +1,5 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.reductions;
 
-import java.util.Map;
-
 public class Mean extends SingleNumericVarReduction {
 
   @Override
@@ -11,15 +9,15 @@ public class Mean extends SingleNumericVarReduction {
 
   @Override
   public Reducer createReducer() {
-    return new Reducer() {
+    return new SingleNumericVarReducer() {
 
       private int _numRows = 0;
       private double _sum = 0D;
 
       @Override
-      public void addRow(Map<String, String> nextRow) {
+      protected void processValue(double d) {
         _numRows++;
-        _sum += Double.parseDouble(nextRow.get(_inputColumnName));
+        _sum += d;
       }
 
       @Override
@@ -28,5 +26,4 @@ public class Mean extends SingleNumericVarReduction {
       }
     };
   }
-
 }

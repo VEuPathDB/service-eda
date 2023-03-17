@@ -12,6 +12,7 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -83,4 +84,18 @@ public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implem
     return _dependedColumnNames;
   }
 
+  @Override
+  public List<DerivedVariableSpec> getDependedDerivedVarSpecs() {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public String getDisplayName() {
+    return _displayName;
+  }
+
+  @Override
+  public String toString() {
+    return "{ functionName: " + getFunctionName() + ", variable: " + VariableDef.toDotNotation(this) + " }";
+  }
 }

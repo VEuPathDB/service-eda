@@ -5,13 +5,34 @@ import org.veupathdb.service.eda.common.derivedvars.plugin.Reduction;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public abstract class SingleNumericVarReduction extends Reduction<SingleNumericVarReductionConfig> {
 
+  protected abstract class SingleNumericVarReducer implements Reducer {
+
+    protected abstract void processValue(double d);
+
+    @Override
+    public void addRow(Map<String, String> nextRow) {
+      String s = nextRow.get(_inputColumnName);
+      if (s.isBlank()) {
+        if (_imputeZero) {
+          processValue(0);
+        }
+        // otherwise, skip empty values (TBD: is this a good API?)
+      }
+      else {
+        processValue(Double.parseDouble(s));
+      }
+    }
+  }
+
   protected VariableSpec _inputColumn;
   protected String _inputColumnName;
+  protected boolean _imputeZero;
 
   @Override
   protected Class<SingleNumericVarReductionConfig> getConfigClass() {
@@ -22,16 +43,12 @@ public abstract class SingleNumericVarReduction extends Reduction<SingleNumericV
   protected void acceptConfig(SingleNumericVarReductionConfig config) {
     _inputColumn = config.getInputVariable();
     _inputColumnName = VariableDef.toDotNotation(_inputColumn);
+    _imputeZero = Optional.ofNullable(config.getImputeZero()).orElse(false);
   }
 
   @Override
   public List<VariableSpec> getRequiredInputVars() {
     return List.of(_inputColumn);
-  }
-
-  @Override
-  public List<DerivedVariableSpec> getDependedDerivedVarSpecs() {
-    return Collections.emptyList();
   }
 
   @Override

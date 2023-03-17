@@ -5,6 +5,9 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
+import org.gusdb.fgputil.validation.ValidationBundle;
+import org.gusdb.fgputil.validation.ValidationException;
+import org.gusdb.fgputil.validation.ValidationLevel;
 import org.veupathdb.service.eda.common.derivedvars.plugin.DerivedVariable;
 import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory;
 import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
@@ -340,9 +343,16 @@ public class ReferenceMetadata {
     return columns;
   }
 
-  public List<VariableDef> toVariableDefs(List<VariableSpec> varSpecs) {
-    return varSpecs.stream()
-        .map(spec -> getVariable(spec).orElseThrow())
-        .toList();
+  public List<VariableDef> toVariableDefs(List<VariableSpec> varSpecs) throws ValidationException {
+    ValidationBundle.ValidationBundleBuilder validation = ValidationBundle.builder(ValidationLevel.RUNNABLE);
+    List<VariableDef> vars = new ArrayList<>();
+    for (VariableSpec varSpec : varSpecs) {
+      getVariable(varSpec).ifPresentOrElse(
+          vars::add,
+          () -> validation.addError(VariableDef.toDotNotation(varSpec), "Variable does not exist.")
+      );
+    }
+    validation.build().throwIfInvalid();
+    return vars;
   }
 }

@@ -37,13 +37,13 @@ public abstract class Reduction<T> extends AbstractDerivedVariable<T> {
   public StreamSpec getInputStreamSpec() {
     if (_inputStreamSpec == null) {
       _inputStreamSpec = new StreamSpec(UUID.randomUUID().toString(), getCommonEntityId())
-          .addVars(getDependedDerivedVarSpecs())
+          .addVars(getRequiredInputVars())
           .setFiltersOverride(getFiltersOverride());
     }
     return _inputStreamSpec;
   }
 
-  public List<APIFilter> getFiltersOverride() {
+  protected List<APIFilter> getFiltersOverride() {
     return null;
   }
 

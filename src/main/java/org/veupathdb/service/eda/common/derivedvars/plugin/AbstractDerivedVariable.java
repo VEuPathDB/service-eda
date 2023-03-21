@@ -53,7 +53,7 @@ public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implem
   private T convertConfig(Object configObject) {
     if (configObject instanceof Map) {
       try {
-        Map<String,Object> map = (Map<String, Object>)configObject;
+        Map<?,?> map = (Map<?,?>)configObject;
         JSONObject jsonObj = new JSONObject(map);
         LOG.info("Received the following config, to be converted to " + getConfigClass().getName() + ":" + FormatUtil.NL + jsonObj.toString(2));
         return JsonUtil.Jackson.readValue(jsonObj.toString(), getConfigClass());

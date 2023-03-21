@@ -2,6 +2,9 @@ package org.veupathdb.service.eda.common.derivedvars.plugin;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.ws.rs.BadRequestException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.json.JSONException;
@@ -17,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implements DerivedVariable {
+
+  private static final Logger LOG = LogManager.getLogger(AbstractDerivedVariable.class);
 
   protected ReferenceMetadata _metadata;
   protected String _displayName;
@@ -48,8 +53,10 @@ public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implem
   private T convertConfig(Object configObject) {
     if (configObject instanceof Map) {
       try {
-        String jsonString = new JSONObject(configObject).toString();
-        return JsonUtil.Jackson.readValue(jsonString, getConfigClass());
+        Map<String,Object> map = (Map<String, Object>)configObject;
+        JSONObject jsonObj = new JSONObject(map);
+        LOG.info("Received the following config, to be converted to " + getConfigClass().getName() + ":" + FormatUtil.NL + jsonObj.toString(2));
+        return JsonUtil.Jackson.readValue(jsonObj.toString(), getConfigClass());
       }
       catch (JSONException | JsonProcessingException e) {
         throw new BadRequestException("Could not coerce config object for spec " +

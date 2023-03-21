@@ -42,7 +42,7 @@ public class DerivedVariableFactory {
     List<DerivedVariable> unorderedDerivedVars = new ArrayList<>();
     addDerivedVariableInstances(derivedVariableSpecs, unorderedDerivedVars);
     // ensure unique names
-    if (unorderedDerivedVars.size() != unorderedDerivedVars.stream().map(v -> VariableDef.toDotNotation(v)).collect(Collectors.toSet()).size())
+    if (unorderedDerivedVars.size() != unorderedDerivedVars.stream().map(VariableDef::toDotNotation).collect(Collectors.toSet()).size())
       throw new BadRequestException("Derived variable names are not unique.");
     _allDerivedVariablesOrdered = orderInstancesAndCheckCircularDependencies(unorderedDerivedVars);
   }

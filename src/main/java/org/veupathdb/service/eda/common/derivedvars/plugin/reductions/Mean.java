@@ -22,7 +22,7 @@ public class Mean extends SingleNumericVarReduction {
 
       @Override
       public String getResultingValue() {
-        return String.valueOf(_sum / _numRows);
+        return _numRows == 0 ? "" : String.valueOf(_sum / _numRows);
       }
     };
   }

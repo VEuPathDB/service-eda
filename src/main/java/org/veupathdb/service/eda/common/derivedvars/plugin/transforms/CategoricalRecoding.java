@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.transforms;
 
+import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -52,6 +53,15 @@ public class CategoricalRecoding extends Transform<CategoricalRecodingConfig> {
     List<String> vocab = new ArrayList<>(_recodingRules.stream().map(CategoricalRecodingRule::getOutputValue).toList());
     vocab.add(_unmappedValue);
     return Optional.of(vocab);
+  }
+
+  @Override
+  public void validateDependedVariables() {
+    super.validateDependedVariables();
+    VariableDef inputVar = _metadata.getVariable(_inputVar).orElseThrow();
+    if (inputVar.getDataShape() != APIVariableDataShape.CATEGORICAL) {
+      throw new BadRequestException("Input variable to " + getFunctionName() + " must be a categorical variable.");
+    }
   }
 
   @Override

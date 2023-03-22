@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.transforms;
 
+import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -75,6 +76,18 @@ public class ContinuousNumericToCategorical extends Transform<ContinuousNumericR
   @Override
   public Optional<List<String>> getVocabulary() {
     return Optional.of(_codingRules.stream().map(RuleApplier::getOutputValue).toList());
+  }
+
+  @Override
+  public void validateDependedVariables() {
+    super.validateDependedVariables();
+    VariableDef inputVar = _metadata.getVariable(_inputVar).orElseThrow();
+    if (inputVar.getDataShape() != APIVariableDataShape.CONTINUOUS ||
+        (inputVar.getType() != APIVariableType.INTEGER &&
+         inputVar.getType() != APIVariableType.NUMBER &&
+         inputVar.getType() != APIVariableType.LONGITUDE)) {
+      throw new BadRequestException("Input variable to " + getFunctionName() + " must be a continuous numeric variable.");
+    }
   }
 
   @Override

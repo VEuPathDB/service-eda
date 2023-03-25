@@ -1,21 +1,29 @@
 package org.veupathdb.service.eda.common.client;
 
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.core.MediaType;
+import org.gusdb.fgputil.Tuples;
+import org.gusdb.fgputil.client.ClientUtil;
+import org.gusdb.fgputil.client.ResponseFuture;
+import org.gusdb.fgputil.json.JsonUtil;
+import org.gusdb.fgputil.web.MimeTypes;
+import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
+import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
+import org.veupathdb.service.eda.common.model.EntityDef;
+import org.veupathdb.service.eda.common.model.ReferenceMetadata;
+import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.common.model.VariableSource;
+import org.veupathdb.service.eda.generated.model.*;
+
+import java.io.InputStream;
+import java.sql.Ref;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import jakarta.ws.rs.ProcessingException;
-import org.gusdb.fgputil.Tuples;
-import org.gusdb.fgputil.client.ClientUtil;
-import org.gusdb.fgputil.client.ResponseFuture;
-import org.gusdb.fgputil.web.MimeTypes;
-import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
-import org.veupathdb.service.eda.common.client.spec.StreamSpec;
-import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
-import org.veupathdb.service.eda.common.model.ReferenceMetadata;
-import org.veupathdb.service.eda.generated.model.*;
 
 import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
@@ -77,11 +85,73 @@ public class EdaSubsettingClient extends StreamingDataClient {
       .map(VariableSpec::getVariableId)
       .collect(Collectors.toList()));
 
-    // build request url using internal endpoint (does not check user permissions via data access service
+    // build request url using internal endpoint (does not check user permissions via data access service)
     String url = getUrl("/ss-internal/studies/" + metadata.getStudyId() + "/entities/" + spec.getEntityId() + "/tabular");
 
     // make request
     return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
   }
 
+  public long getSubsetCount(
+      ReferenceMetadata metadata,
+      String entityId,
+      List<APIFilter> subsetFilters
+  ) {
+    // validate entity ID against this study
+    EntityDef entity = metadata.getEntity(entityId).orElseThrow();
+
+    // build request object
+    EntityCountPostRequest request = new EntityCountPostRequestImpl();
+    request.setFilters(subsetFilters);
+
+    // build request url using internal endpoint (does not check user permissions via data access service)
+    String url = getUrl("/ss-internal/studies/" + metadata.getStudyId() + "/entities/" + entity.getId() + "/count");
+
+    // make request
+    ResponseFuture response = ClientUtil.makeAsyncPostRequest(url, request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
+
+    // parse output and return
+    try (InputStream responseBody = response.getInputStream()) {
+      EntityCountPostResponse responseObj = JsonUtil.Jackson.readValue(responseBody, EntityCountPostResponse.class);
+      return responseObj.getCount();
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Unable to complete subset count request.", e);
+    }
+  }
+
+  public VariableDistributionPostResponse getCategoricalDistribution(
+      ReferenceMetadata metadata,
+      VariableSpec varSpec,
+      List<APIFilter> subsetFilters,
+      ValueSpec valueSpec
+  ) {
+    // check variable compatibility with this functionality
+    VariableDef var = metadata.getVariable(varSpec).orElseThrow();
+    if (var.getSource() != VariableSource.NATIVE) {
+      throw new IllegalArgumentException("Cannot call subsetting distribution endpoint with a non-native var: " + var);
+    }
+    if (var.getDataShape() != APIVariableDataShape.CATEGORICAL) {
+      throw new IllegalArgumentException("Cannot call subsetting distribution endpoint with a non-categorical var (for now): " + var);
+    }
+
+    // build request object
+    VariableDistributionPostRequest request = new VariableDistributionPostRequestImpl();
+    request.setFilters(subsetFilters);
+    request.setValueSpec(valueSpec);
+
+    // build request url using internal endpoint (does not check user permissions via data access service)
+    String url = getUrl("/ss-internal/studies/" + metadata.getStudyId() + "/entities/" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId() + "/distribution");
+
+    // make request
+    ResponseFuture response = ClientUtil.makeAsyncPostRequest(url, request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
+
+    // parse output and return
+    try (InputStream responseBody = response.getInputStream()) {
+      return JsonUtil.Jackson.readValue(responseBody, VariableDistributionPostResponse.class);
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Unable to complete subset distribution request.", e);
+    }
+  }
 }

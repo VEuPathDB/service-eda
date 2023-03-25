@@ -141,7 +141,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
     request.setValueSpec(valueSpec);
 
     // build request url using internal endpoint (does not check user permissions via data access service)
-    String url = getUrl("/ss-internal/studies/" + metadata.getStudyId() + "/entities/" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId());
+    String url = getUrl("/ss-internal/studies/" + metadata.getStudyId() + "/entities/" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId() + "/distribution");
 
     // make request
     ResponseFuture response = ClientUtil.makeAsyncPostRequest(url, request, MediaType.APPLICATION_JSON, getAuthHeaderMap());

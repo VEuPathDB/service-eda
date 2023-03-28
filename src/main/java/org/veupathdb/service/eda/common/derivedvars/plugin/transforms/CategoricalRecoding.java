@@ -1,12 +1,14 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.transforms;
 
-import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class CategoricalRecoding extends Transform<CategoricalRecodingConfig> {
 
@@ -26,6 +28,11 @@ public class CategoricalRecoding extends Transform<CategoricalRecodingConfig> {
     _inputColumn = VariableDef.toDotNotation(_inputVar);
     _recodingRules = config.getRules();
     _unmappedValue = Optional.ofNullable(config.getUnmappedValue()).orElse("");
+  }
+
+  @Override
+  protected void performSupplementalDependedVariableValidation() throws ValidationException {
+    checkVariable("Input", _inputVar, null, List.of(APIVariableDataShape.CATEGORICAL, APIVariableDataShape.BINARY));
   }
 
   @Override
@@ -53,15 +60,6 @@ public class CategoricalRecoding extends Transform<CategoricalRecodingConfig> {
     List<String> vocab = new ArrayList<>(_recodingRules.stream().map(CategoricalRecodingRule::getOutputValue).toList());
     vocab.add(_unmappedValue);
     return Optional.of(vocab);
-  }
-
-  @Override
-  public void validateDependedVariables() {
-    super.validateDependedVariables();
-    VariableDef inputVar = _metadata.getVariable(_inputVar).orElseThrow();
-    if (inputVar.getDataShape() != APIVariableDataShape.CATEGORICAL) {
-      throw new BadRequestException("Input variable to " + getFunctionName() + " must be a categorical variable.");
-    }
   }
 
   @Override

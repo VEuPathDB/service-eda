@@ -55,7 +55,7 @@ public interface DerivedVariable extends VariableSpec {
    * Validate that the variable specs this derived variable
    * depends on exist and are available on a permitted entity
    */
-  void validateDependedVariables();
+  void validateDependedVariables() throws ValidationException;
 
   /**
    * @return any additional derived variables that need to be
@@ -92,13 +92,10 @@ public interface DerivedVariable extends VariableSpec {
     return Optional.empty();
   }
 
-  default boolean allRequiredColsPresent(Map<String, String> row) {
-    Collection<String> availableCols = row.keySet();
-    for (String requiredCol : getRequiredInputColumnNames()) {
-      if (!availableCols.contains(requiredCol)) {
-        return false;
-      }
-    }
-    return true;
+  /**
+   * @return the units of the variable this instance will return
+   */
+  default Optional<String> getUnits() {
+    return Optional.empty();
   }
 }

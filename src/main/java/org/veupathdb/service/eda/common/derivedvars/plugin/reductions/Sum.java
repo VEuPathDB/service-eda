@@ -11,7 +11,7 @@ public class Sum extends SingleNumericVarReduction {
   public Reducer createReducer() {
     return new SingleNumericVarReducer() {
 
-      private double _sum = 0D;
+      private double _sum = 0;
 
       @Override
       protected void processValue(double d) {

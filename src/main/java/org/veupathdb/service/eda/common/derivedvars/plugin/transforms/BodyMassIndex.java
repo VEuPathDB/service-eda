@@ -1,13 +1,14 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.transforms;
 
 import org.gusdb.fgputil.validation.ValidationException;
+import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.List;
 import java.util.Map;
 
-public class BodyMassIndex extends org.veupathdb.service.eda.common.derivedvars.plugin.Transform<BodyMassIndexConfig> {
+public class BodyMassIndex extends Transform<BodyMassIndexConfig> {
 
   private VariableSpec _heightVar;
   private String _heightColumn;
@@ -25,6 +26,12 @@ public class BodyMassIndex extends org.veupathdb.service.eda.common.derivedvars.
     _heightColumn = VariableDef.toDotNotation(_heightVar);
     _weightVar = config.getWeightVariable();
     _weightColumn = VariableDef.toDotNotation(_weightVar);
+  }
+
+  @Override
+  protected void performSupplementalDependedVariableValidation() throws ValidationException {
+    checkVariable("Height", _heightVar, List.of(APIVariableType.INTEGER, APIVariableType.NUMBER), null);
+    checkVariable("Weight", _weightVar, List.of(APIVariableType.INTEGER, APIVariableType.NUMBER), null);
   }
 
   @Override

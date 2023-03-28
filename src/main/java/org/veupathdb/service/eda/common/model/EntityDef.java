@@ -33,7 +33,7 @@ public class EntityDef {
     _id = id;
     _displayName = displayName;
     _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING,
-        APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), null, VariableSource.ID);
+        APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), Optional.empty(), null, VariableSource.ID);
     _variables = new ArrayList<>();
     _variables.add(_idColumnDef);
     _categories = new ArrayList<>();
@@ -118,7 +118,7 @@ public class EntityDef {
         // create a dummy root containing all (>1) parentless nodes
         TreeNode<VariableDef> dummyRoot = new TreeNode<>(new VariableDef(
           "dummyRoot", "dummyRoot", APIVariableType.STRING, APIVariableDataShape.CATEGORICAL,
-          false, false, Optional.empty(), null, VariableSource.NATIVE
+          false, false, Optional.empty(), Optional.empty(), null, VariableSource.NATIVE
         ));
         dummyRoot.addAllChildNodes(parentlessNodes);
         return dummyRoot;

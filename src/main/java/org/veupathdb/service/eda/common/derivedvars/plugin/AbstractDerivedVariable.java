@@ -12,12 +12,12 @@ import org.json.JSONObject;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
-import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
+import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implements DerivedVariable {
 
@@ -34,12 +34,37 @@ public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implem
 
   /**
    * Read and validate config, assigning local fields as needed to execute derived
-   * variable logic later during data processing
+   * variable logic later during data processing.  Note this method should NOT
+   * try to convert any passed VariableSpecs to VariableDefs.  This will be checked
+   * later by the depended variable validation methods.
    *
    * @param config config object sent as part of the request
    * @throws ValidationException if validation fails
    */
   protected abstract void acceptConfig(T config) throws ValidationException;
+
+  // validation method to be implemented by the derived variable type (reduction vs transform)
+  protected abstract void validateDependedVariableLocations() throws ValidationException;
+
+  // validation method to be implemented by the specific plugin
+  protected abstract void performSupplementalDependedVariableValidation() throws ValidationException;
+
+  public final void validateDependedVariables() throws ValidationException {
+    validateDependedVariableLocations();
+    performSupplementalDependedVariableValidation();
+  }
+
+  protected void checkVariable(String inputName, VariableSpec varSpec, List<APIVariableType> allowedTypesOrNull, List<APIVariableDataShape> allowedShapesOrNull) throws ValidationException {
+    VariableDef var = _metadata.getVariable(varSpec).orElseThrow();
+    if (allowedTypesOrNull != null && !allowedTypesOrNull.contains(var.getType())) {
+      throw new ValidationException(inputName + " variable must be of type: [" + allowedTypesOrNull.stream()
+          .map(APIVariableType::getValue).collect(Collectors.joining(", ")) + "]");
+    }
+    if (allowedShapesOrNull != null && !allowedShapesOrNull.contains(var.getDataShape())) {
+      throw new ValidationException(inputName + " variable must be of shape: [" + allowedShapesOrNull.stream()
+          .map(APIVariableDataShape::getValue).collect(Collectors.joining(", ")) + "]");
+    }
+  }
 
   @Override
   public void init(ReferenceMetadata metadata, DerivedVariableSpec spec) throws ValidationException {

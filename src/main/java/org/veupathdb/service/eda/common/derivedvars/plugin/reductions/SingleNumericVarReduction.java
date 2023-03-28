@@ -1,6 +1,6 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.reductions;
 
-import jakarta.ws.rs.BadRequestException;
+import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.derivedvars.plugin.Reduction;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
@@ -30,7 +30,7 @@ public abstract class SingleNumericVarReduction extends Reduction<SingleNumericV
     }
   }
 
-  protected VariableSpec _inputColumn;
+  protected VariableSpec _inputVariable;
   protected String _inputColumnName;
   protected boolean _imputeZero;
 
@@ -41,23 +41,19 @@ public abstract class SingleNumericVarReduction extends Reduction<SingleNumericV
 
   @Override
   protected void acceptConfig(SingleNumericVarReductionConfig config) {
-    _inputColumn = config.getInputVariable();
-    _inputColumnName = VariableDef.toDotNotation(_inputColumn);
+    _inputVariable = config.getInputVariable();
+    _inputColumnName = VariableDef.toDotNotation(_inputVariable);
     _imputeZero = Optional.ofNullable(config.getImputeZero()).orElse(false);
   }
 
   @Override
   public List<VariableSpec> getRequiredInputVars() {
-    return List.of(_inputColumn);
+    return List.of(_inputVariable);
   }
 
   @Override
-  public void validateDependedVariables() {
-    VariableDef inputVar = _metadata.getVariable(_inputColumn).orElseThrow(() ->
-        new BadRequestException("Variable " + VariableDef.toDotNotation(_inputColumn) + " does not exist."));
-    if (!inputVar.getType().equals(APIVariableType.NUMBER)) {
-      throw new BadRequestException(getFunctionName() + " reduction accepts only a single variable of type " + APIVariableType.NUMBER);
-    }
+  public void performSupplementalDependedVariableValidation() throws ValidationException {
+    checkVariable("Input", _inputVariable, List.of(APIVariableType.INTEGER, APIVariableType.NUMBER), null);
   }
 
   @Override

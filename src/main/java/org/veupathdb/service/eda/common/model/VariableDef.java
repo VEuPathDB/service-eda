@@ -51,6 +51,9 @@ public class VariableDef extends VariableSpecImpl {
   private final Optional<DataRanges> _dataRanges;
 
   @JsonIgnore
+  private final Optional<String> _units;
+
+  @JsonIgnore
   private final String _parentId;
 
   public VariableDef(
@@ -61,6 +64,7 @@ public class VariableDef extends VariableSpecImpl {
       boolean isMultiValue,
       boolean isImputZero,
       Optional<DataRanges> dataRanges,
+      Optional<String> units,
       String parentId,
       VariableSource source) {
     setEntityId(entityId);
@@ -70,6 +74,7 @@ public class VariableDef extends VariableSpecImpl {
     _isMultiValue = isMultiValue;
     _isImputeZero = isImputZero;
     _dataRanges = dataRanges;
+    _units = units;
     _parentId = parentId;
     _source = source;
   }
@@ -97,6 +102,11 @@ public class VariableDef extends VariableSpecImpl {
   @JsonIgnore
   public Optional<DataRanges> getDataRanges() {
     return _dataRanges;
+  }
+
+  @JsonIgnore
+  public Optional<String> getUnits() {
+    return _units;
   }
 
   @JsonIgnore

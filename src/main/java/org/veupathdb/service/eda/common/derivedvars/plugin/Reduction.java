@@ -4,11 +4,14 @@ import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory.PluginMap;
 import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.Mean;
+import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.SubsetMembership;
 import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.Sum;
 import org.veupathdb.service.eda.common.model.EntityDef;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,7 +24,8 @@ public abstract class Reduction<T> extends AbstractDerivedVariable<T> {
     return pluginsOf(Reduction.class,
       // available reductions
       Sum.class,
-      Mean.class
+      Mean.class,
+      SubsetMembership.class
     );
   }
 
@@ -36,11 +40,22 @@ public abstract class Reduction<T> extends AbstractDerivedVariable<T> {
 
   public StreamSpec getInputStreamSpec() {
     if (_inputStreamSpec == null) {
-      _inputStreamSpec = new StreamSpec(UUID.randomUUID().toString(), getCommonEntityId())
-          .addVars(getRequiredInputVars())
+      EntityDef entity = _metadata.getEntity(getCommonEntityId()).orElseThrow();
+      _inputStreamSpec = new StreamSpec(UUID.randomUUID().toString(), entity.getId())
+          .addVars(getRequiredInputVars().stream()
+              // filter out IDs of the requested entity and its ancestors
+              .filter(var -> !isVariableInList(var, _metadata.getTabularColumns(entity, Collections.emptyList())))
+              .toList())
           .setFiltersOverride(getFiltersOverride());
     }
     return _inputStreamSpec;
+  }
+
+  private static boolean isVariableInList(VariableSpec var, List<VariableDef> list) {
+    for (VariableSpec listVar : list) {
+      if (VariableDef.isSameVariable(listVar, var)) return true;
+    }
+    return false;
   }
 
   protected List<APIFilter> getFiltersOverride() {
@@ -48,7 +63,7 @@ public abstract class Reduction<T> extends AbstractDerivedVariable<T> {
   }
 
   @Override
-  public void validateDependedVariables() {
+  public void validateDependedVariableLocations() {
     // find the ancestors of the common entity of the input vars, which should be a descendant of the target entity
     List<String> ancestorIds = _metadata
         .getAncestors(_metadata.getEntity(getCommonEntityId()).orElseThrow())

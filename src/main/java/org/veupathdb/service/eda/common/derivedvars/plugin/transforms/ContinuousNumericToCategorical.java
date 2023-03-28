@@ -54,6 +54,11 @@ public class ContinuousNumericToCategorical extends Transform<ContinuousNumericR
   }
 
   @Override
+  protected void performSupplementalDependedVariableValidation() throws ValidationException {
+    checkVariable("Input", _inputVar, List.of(APIVariableType.INTEGER, APIVariableType.NUMBER), List.of(APIVariableDataShape.CONTINUOUS));
+  }
+
+  @Override
   public String getFunctionName() {
     return "continuousToCategorical";
   }
@@ -76,18 +81,6 @@ public class ContinuousNumericToCategorical extends Transform<ContinuousNumericR
   @Override
   public Optional<List<String>> getVocabulary() {
     return Optional.of(_codingRules.stream().map(RuleApplier::getOutputValue).toList());
-  }
-
-  @Override
-  public void validateDependedVariables() {
-    super.validateDependedVariables();
-    VariableDef inputVar = _metadata.getVariable(_inputVar).orElseThrow();
-    if (inputVar.getDataShape() != APIVariableDataShape.CONTINUOUS ||
-        (inputVar.getType() != APIVariableType.INTEGER &&
-         inputVar.getType() != APIVariableType.NUMBER &&
-         inputVar.getType() != APIVariableType.LONGITUDE)) {
-      throw new BadRequestException("Input variable to " + getFunctionName() + " must be a continuous numeric variable.");
-    }
   }
 
   @Override

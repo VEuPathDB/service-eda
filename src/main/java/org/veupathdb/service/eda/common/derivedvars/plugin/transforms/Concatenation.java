@@ -31,6 +31,11 @@ public class Concatenation extends Transform<ConcatenationConfig> {
   }
 
   @Override
+  protected void performSupplementalDependedVariableValidation() throws ValidationException {
+    // nothing else to do here
+  }
+
+  @Override
   public List<VariableSpec> getRequiredInputVars() {
     return _config.getInputVariables();
   }

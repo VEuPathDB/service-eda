@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.common.model;
 
+import jakarta.ws.rs.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
@@ -68,6 +69,7 @@ public class ReferenceMetadata {
             false,
             computedVar.getImputeZero(),
             determineComputedVarDataRanges(computedVar.getDisplayRangeMin(), computedVar.getDisplayRangeMax()),
+            Optional.empty(),
             null,
             entityId.equals(treeEntity.getId())
                 ? VariableSource.COMPUTED
@@ -97,8 +99,13 @@ public class ReferenceMetadata {
 
       // before adding to metadata, ask derived variable to validate its depended
       //  variable defs against those already in metadata.  This is why the ordering
-      //  note above is important
-      derivedVariable.validateDependedVariables();
+      //  note above is important.
+      try {
+        derivedVariable.validateDependedVariables();
+      }
+      catch(ValidationException e) {
+        throw new BadRequestException(e.toString());
+      }
 
       // set custom source; easier to look up DV instance later
       VariableSource typedSource = derivedVariable instanceof Transform
@@ -117,6 +124,7 @@ public class ReferenceMetadata {
             false,
             false,
             derivedVariable.getDataRanges(),
+            derivedVariable.getUnits(),
             null,
             entity == derivedVariable.getEntity()
               ? typedSource
@@ -174,6 +182,7 @@ public class ReferenceMetadata {
           vd.isMultiValue(),
           vd.isImputeZero(),
           vd.getDataRanges(),
+          vd.getUnits(),
           vd.getParentId(),
           VariableSource.INHERITED)));
 
@@ -188,6 +197,7 @@ public class ReferenceMetadata {
           null,
           false,
           false,
+          Optional.empty(),
           Optional.empty(),
           var.getParentId(),
           VariableSource.NATIVE))
@@ -208,6 +218,7 @@ public class ReferenceMetadata {
           var.getIsMultiValued(),
           var.getImputeZero(),
           DataRanges.getDataRanges(var),
+          getUnits(var),
           var.getParentId(),
           VariableSource.NATIVE))
       .forEach(vd -> {
@@ -228,6 +239,15 @@ public class ReferenceMetadata {
     }
 
     return node;
+  }
+
+  private static Optional<String> getUnits(APIVariableWithValues var) {
+    if (var instanceof APINumberVariable)
+      return Optional.ofNullable(((APINumberVariable)var).getUnits());
+    else if (var instanceof APIIntegerVariable)
+      return Optional.ofNullable(((APIIntegerVariable)var).getUnits());
+    else
+      return Optional.empty();
   }
 
   public String getStudyId() {

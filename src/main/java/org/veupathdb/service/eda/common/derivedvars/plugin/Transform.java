@@ -2,10 +2,7 @@ package org.veupathdb.service.eda.common.derivedvars.plugin;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory.PluginMap;
-import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.BodyMassIndex;
-import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.CategoricalRecoding;
-import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.Concatenation;
-import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.ContinuousNumericToCategorical;
+import org.veupathdb.service.eda.common.derivedvars.plugin.transforms.*;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -22,14 +19,18 @@ public abstract class Transform<T> extends AbstractDerivedVariable<T> {
       Concatenation.class,
       BodyMassIndex.class,
       CategoricalRecoding.class,
-      ContinuousNumericToCategorical.class
+      ContinuousNumericToCategorical.class,
+      AdvancedSubset.class,
+      EcmaScriptExpressionEval.class,
+      RelativeObservationMinTimeInterval.class,
+      UnitConversion.class
     );
   }
 
   public abstract String getValue(Map<String,String> row);
 
   @Override
-  public void validateDependedVariables() {
+  public final void validateDependedVariableLocations() {
     // find the ancestors of the entity this var is declared on; dependant vars must live on the same entity as this var or an ancestor
     List<String> ancestorIds = _metadata.getAncestors(getEntity()).stream().map(EntityDef::getId).toList();
     for (VariableSpec spec : getRequiredInputVars()) {

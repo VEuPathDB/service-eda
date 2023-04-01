@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.common.derivedvars.plugin.transforms;
 
-import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -10,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class ContinuousNumericToCategorical extends Transform<ContinuousNumericRecodingConfig> {
+public class ContinuousNumericToOrdinal extends Transform<ContinuousNumericRecodingConfig> {
 
   private static class RuleApplier {
 
@@ -75,7 +74,7 @@ public class ContinuousNumericToCategorical extends Transform<ContinuousNumericR
 
   @Override
   public APIVariableDataShape getVariableDataShape() {
-    return APIVariableDataShape.CATEGORICAL;
+    return APIVariableDataShape.ORDINAL;
   }
 
   @Override

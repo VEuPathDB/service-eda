@@ -19,7 +19,7 @@ public abstract class Transform<T> extends AbstractDerivedVariable<T> {
       Concatenation.class,
       BodyMassIndex.class,
       CategoricalRecoding.class,
-      ContinuousNumericToCategorical.class,
+      ContinuousNumericToOrdinal.class,
       AdvancedSubset.class,
       EcmaScriptExpressionEval.class,
       RelativeObservationMinTimeInterval.class,

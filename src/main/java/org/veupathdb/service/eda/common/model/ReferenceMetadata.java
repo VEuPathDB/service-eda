@@ -317,6 +317,14 @@ public class ReferenceMetadata {
             "' could not be found in entity tree."));
   }
 
+  /**
+   * Returns the ID column names (headers) for the target entity and its ancestors.
+   * Note this is NOT a dot notation with entity and variable names, but simply the
+   * ID column defs as returned by the subsetting and compute services.
+   *
+   * @param targetEntity entity for which ID names are needed
+   * @return list of ID column names (variable names only)
+   */
   public List<String> getTabularIdColumns(EntityDef targetEntity) {
     return new ListBuilder<String>()
         .add(targetEntity.getIdColumnDef().getVariableId())

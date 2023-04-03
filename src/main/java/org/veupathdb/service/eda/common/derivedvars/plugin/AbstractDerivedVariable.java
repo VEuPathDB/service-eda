@@ -108,15 +108,6 @@ public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implem
   }
 
   @Override
-  public List<String> getRequiredInputColumnNames() {
-    // only calculate once
-    if (_dependedColumnNames == null) {
-      _dependedColumnNames = VariableDef.toDotNotation(getRequiredInputVars());
-    }
-    return _dependedColumnNames;
-  }
-
-  @Override
   public List<DerivedVariableSpec> getDependedDerivedVarSpecs() {
     return Collections.emptyList();
   }

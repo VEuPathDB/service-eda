@@ -40,6 +40,7 @@ public class DerivedVariableFactory {
     _metadata = metadata;
     _incomingSpecs = derivedVariableSpecs;
     List<DerivedVariable> unorderedDerivedVars = new ArrayList<>();
+    // generates DerivedVariables and adds them to unorderedDerivedVars (not part of metadata yet)
     addDerivedVariableInstances(derivedVariableSpecs, unorderedDerivedVars);
     // ensure unique names
     if (unorderedDerivedVars.size() != unorderedDerivedVars.stream().map(VariableDef::toDotNotation).collect(Collectors.toSet()).size())

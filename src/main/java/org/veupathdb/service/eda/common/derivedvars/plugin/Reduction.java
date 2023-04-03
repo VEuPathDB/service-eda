@@ -4,11 +4,12 @@ import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory.PluginMap;
 import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.Mean;
-import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.RelativeObservationMinTimeIntervalHelper;
+import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.RelativeObservationAggregator;
 import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.SubsetMembership;
 import org.veupathdb.service.eda.common.derivedvars.plugin.reductions.Sum;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -27,7 +28,7 @@ public abstract class Reduction<T> extends AbstractDerivedVariable<T> {
       Sum.class,
       Mean.class,
       SubsetMembership.class,
-      RelativeObservationMinTimeIntervalHelper.class
+      RelativeObservationAggregator.class
     );
   }
 

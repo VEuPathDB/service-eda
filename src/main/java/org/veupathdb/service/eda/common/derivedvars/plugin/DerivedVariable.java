@@ -47,11 +47,6 @@ public interface DerivedVariable extends VariableSpec {
   List<VariableSpec> getRequiredInputVars();
 
   /**
-   * @return required column names for this derived variable
-   */
-  List<String> getRequiredInputColumnNames();
-
-  /**
    * Validate that the variable specs this derived variable
    * depends on exist and are available on a permitted entity
    */

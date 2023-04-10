@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.common.model;
 
-import jakarta.ws.rs.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
@@ -9,9 +8,6 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.gusdb.fgputil.validation.ValidationLevel;
-import org.veupathdb.service.eda.common.derivedvars.plugin.DerivedVariable;
-import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory;
-import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.*;
@@ -26,23 +22,14 @@ public class ReferenceMetadata {
   private final String _studyId;
   private final TreeNode<EntityDef> _entityTree;
   private final Map<String,EntityDef> _entityMap;
-  private final DerivedVariableFactory _derivedVariableFactory;
 
-  public ReferenceMetadata(
-      APIStudyDetail study,
-      List<VariableMapping> computedVariables,
-      List<DerivedVariableSpec> derivedVariableSpecs) {
+  public ReferenceMetadata(APIStudyDetail study) {
     _studyId = study.getId();
     _entityTree = buildEntityTree(study.getRootEntity(), new ArrayList<>());
     _entityMap = buildEntityMap(_entityTree);
-    _derivedVariableFactory = new DerivedVariableFactory(this, derivedVariableSpecs);
-    // incorporate derived vars after native data since they will depend on the native vars
-    incorporateDerivedVariables(_derivedVariableFactory.getAllDerivedVars());
-    // incorporate computed vars after derived since derived vars cannot depend on computed vars
-    incorporateComputedVariables(computedVariables);
   }
 
-  private void incorporateComputedVariables(List<VariableMapping> computedVariables) {
+  public void incorporateComputedVariables(List<VariableMapping> computedVariables) {
     if (computedVariables.isEmpty()) return;
 
     // all computed vars must be of the same entity (one compute per request)
@@ -68,7 +55,7 @@ public class ReferenceMetadata {
             computedVar.getDataShape(),
             false,
             computedVar.getImputeZero(),
-            determineComputedVarDataRanges(computedVar.getDisplayRangeMin(), computedVar.getDisplayRangeMax()),
+            determineCustomVarDataRanges(computedVar.getDisplayRange()),
             Optional.empty(),
             null,
             entityId.equals(treeEntity.getId())
@@ -79,58 +66,57 @@ public class ReferenceMetadata {
     }
   }
 
-  private Optional<DataRanges> determineComputedVarDataRanges(Object displayRangeMin, Object displayRangeMax) {
-    if (displayRangeMin == null && displayRangeMax == null)
+  private Optional<DataRanges> determineCustomVarDataRanges(LabeledValueRange range) {
+    if (range == null || (range.getMin() == null && range.getMax() == null))
       return Optional.empty();
-    if (displayRangeMin == null || displayRangeMax == null)
+    if (range.getMin() == null || range.getMax() == null)
       throw new RuntimeException("Computed variable display range must contain both min and max or neither.");
     return Optional.of(new DataRanges(
-        new DataRange(displayRangeMin.toString(), displayRangeMax.toString()),
-        new DataRange(displayRangeMin.toString(), displayRangeMax.toString())
+        new DataRange(range.getMin(), range.getMax()),
+        new DataRange(range.getMin(), range.getMax())
     ));
   }
 
-  // note: incoming list will be in dependency order; i.e. only later derived vars
-  //       will depend on earlier derived vars (plus no circular dependencies);
-  //       name will also be pre-validated for uniqueness within study
-  private void incorporateDerivedVariables(List<DerivedVariable> derivedVariables) {
+  /**
+   * Incorporates a derived variable into the reference metadata.
+   *
+   * Note: incoming derived vars must be in dependency order; i.e. only later derived vars
+   *       depend on earlier derived vars (plus no circular dependencies);
+   *       name will also be pre-validated for uniqueness within study
+   */
+  public void incorporateDerivedVariable(DerivedVariableMetadata derivedVariable) {
+
+    // set custom source; easier to look up DV instance later
+    VariableSource typedSource = switch(derivedVariable.getDerivationType()) {
+      case TRANSFORM -> VariableSource.DERIVED_TRANSFORM;
+      case REDUCTION -> VariableSource.DERIVED_REDUCTION;
+    };
+
+    // get this DR's entity and descendants and insert as available in all
+    EntityDef specEntity = getEntity(derivedVariable.getEntityId()).orElseThrow(() ->
+        new IllegalArgumentException("Derived variable entity '" + derivedVariable.getEntityId() +
+            "' does not exist in study '" + _studyId + "'."));
+
+    List<EntityDef> entities = new ArrayList<>();
+    entities.add(specEntity);
+    entities.addAll(getDescendants(specEntity));
+
     // add derived variables for this entity to itself and all children (who can inherit the derived var)
-    for (DerivedVariable derivedVariable: derivedVariables) {
-
-      // before adding to metadata, ask derived variable to validate its depended
-      //  variable defs against those already in metadata.  This is why the ordering
-      //  note above is important.
-      try {
-        derivedVariable.validateDependedVariables();
-      }
-      catch(ValidationException e) {
-        throw new BadRequestException(e.toString());
-      }
-
-      // set custom source; easier to look up DV instance later
-      VariableSource typedSource = derivedVariable instanceof Transform
-          ? VariableSource.DERIVED_TRANSFORM : VariableSource.DERIVED_REDUCTION;
-
-      // get this DR's entity and descendants and insert as available in all
-      List<EntityDef> entities = new ArrayList<>();
-      entities.add(derivedVariable.getEntity());
-      entities.addAll(getDescendants(derivedVariable.getEntity()));
-      for (EntityDef entity : entities) {
-        entity.addVariable(new VariableDef(
-            derivedVariable.getEntityId(),
-            derivedVariable.getVariableId(),
-            derivedVariable.getVariableType(),
-            derivedVariable.getVariableDataShape(),
-            false,
-            false,
-            derivedVariable.getDataRanges(),
-            derivedVariable.getUnits(),
-            null,
-            entity == derivedVariable.getEntity()
-              ? typedSource
-              : VariableSource.INHERITED
-        ));
-      }
+    for (EntityDef entity : entities) {
+      entity.addVariable(new VariableDef(
+          derivedVariable.getEntityId(),
+          derivedVariable.getVariableId(),
+          derivedVariable.getVariableType(),
+          derivedVariable.getDataShape(),
+          false,
+          false,
+          determineCustomVarDataRanges(derivedVariable.getDataRange()),
+          Optional.ofNullable(derivedVariable.getUnits()),
+          null,
+          entity.getId().equals(derivedVariable.getEntityId())
+            ? typedSource
+            : VariableSource.INHERITED
+      ));
     }
   }
 
@@ -273,10 +259,6 @@ public class ReferenceMetadata {
 
   public Optional<CollectionDef> getCollection(CollectionSpec colSpec) {
     return getEntity(colSpec.getEntityId()).flatMap(e -> e.getCollection(colSpec));
-  }
-
-  public DerivedVariableFactory getDerivedVariableFactory() {
-    return _derivedVariableFactory;
   }
 
   /**

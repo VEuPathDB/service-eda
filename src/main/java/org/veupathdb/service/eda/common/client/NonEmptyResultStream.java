@@ -41,7 +41,7 @@ public class NonEmptyResultStream extends BufferedInputStream {
   }
 
   @Override
-  public synchronized int read(byte b[], int off, int len) throws IOException {
+  public synchronized int read(byte[] b, int off, int len) throws IOException {
     int bytesRead = super.read(b, off, len);
     if (_continueChecking) {
       if (bytesRead == -1) throwException();

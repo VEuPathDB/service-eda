@@ -4,9 +4,9 @@ import java.util.Arrays;
 
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
-import org.veupathdb.service.eda.generated.model.VisualizationDataElementConstraintImpl;
+import org.veupathdb.service.eda.generated.model.DataElementConstraintImpl;
 
-public class VisualizationDataElement extends VisualizationDataElementConstraintImpl {
+public class VisualizationDataElement extends DataElementConstraintImpl {
 
   private final ConstraintPattern _parent;
 

@@ -1,13 +1,10 @@
 package org.veupathdb.service.eda;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.common.derivedvars.DerivedVariableFactory;
 import org.veupathdb.service.eda.common.model.VariableDef;

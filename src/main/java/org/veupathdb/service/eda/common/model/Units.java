@@ -1,74 +1,16 @@
-package org.veupathdb.service.eda.common.derivedvars.plugin.transforms;
+package org.veupathdb.service.eda.common.model;
 
-import org.gusdb.fgputil.validation.ValidationException;
-import org.veupathdb.service.eda.common.derivedvars.plugin.Transform;
-import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
-import org.veupathdb.service.eda.generated.model.APIVariableType;
-import org.veupathdb.service.eda.generated.model.UnitConversionConfig;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
-
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class UnitConversion extends Transform<UnitConversionConfig> {
+public class Units {
 
-  private VariableSpec _inputVariable;
-  private String _inputColumn;
-  private Unit _inputUnit;
-  private Unit _outputUnit;
+  // static class
+  private Units(){}
 
-  @Override
-  protected Class<UnitConversionConfig> getConfigClass() {
-    return UnitConversionConfig.class;
-  }
-
-  @Override
-  protected void acceptConfig(UnitConversionConfig config) throws ValidationException {
-    _inputVariable = config.getInputVariable();
-    _inputColumn = VariableDef.toDotNotation(_inputVariable);
-    _outputUnit = Unit.findUnit(config.getOutputUnits()).orElseThrow(() ->
-        new ValidationException("Output unit '" + config.getOutputUnits() + "' is not a valid unit"));
-  }
-
-  @Override
-  protected void performSupplementalDependedVariableValidation() throws ValidationException {
-    String varUnit = _metadata.getVariable(_inputVariable).orElseThrow().getUnits().orElseThrow(() ->
-        new ValidationException("Input variable must have convertible units to convert to a different units."));
-    _inputUnit = Unit.findUnit(varUnit).orElseThrow(() ->
-        new ValidationException("Variable '" + _inputColumn + "' has a unit '" + varUnit + "' that is not convertible to other units."));
-    if (!_inputUnit.isCompatibleWith(_outputUnit))
-      throw new ValidationException("Output unit " + _outputUnit + " is not compatible with input variable's unit " + _inputUnit);
-  }
-
-  @Override
-  public String getFunctionName() {
-    return "unitConversion";
-  }
-
-  @Override
-  public List<VariableSpec> getRequiredInputVars() {
-    return List.of(_inputVariable);
-  }
-
-  @Override
-  public APIVariableType getVariableType() {
-    return _metadata.getVariable(_inputVariable).orElseThrow().getType();
-  }
-
-  @Override
-  public APIVariableDataShape getVariableDataShape() {
-    return _metadata.getVariable(_inputVariable).orElseThrow().getDataShape();
-  }
-
-  @Override
-  public String getValue(Map<String, String> row) {
-    return String.valueOf(_inputUnit.convertTo(_outputUnit, Double.parseDouble(row.get(_inputColumn))));
-  }
-
-  private enum UnitType {
+  public enum UnitType {
     LENGTH,
     MASS,
     VOLUME,
@@ -80,7 +22,7 @@ public class UnitConversion extends Transform<UnitConversionConfig> {
     BIOLOGICAL_EFFECT_BY_VOLUME
   }
 
-  private enum Unit {
+  public enum Unit {
 
     // length units
     MILLIMETER (List.of("mm"),   UnitType.LENGTH, n -> n * 0.001, n -> n * 1000),
@@ -141,7 +83,7 @@ public class UnitConversion extends Transform<UnitConversionConfig> {
     private final Function<Double, Double> _fromBaseline;
 
     Unit(List<String> values, UnitType type, Function<Double, Double> toBaseline, Function<Double, Double> fromBaseline) {
-      _values = values;
+      _values = Collections.unmodifiableList(values);
       _type = type;
       _fromBaseline = fromBaseline;
       _toBaseline = toBaseline;
@@ -161,8 +103,21 @@ public class UnitConversion extends Transform<UnitConversionConfig> {
     }
 
     public double convertTo(Unit outputUnit, double value) {
-      // convert to baseline, then from baseline to output unit
+      // convert from this unit to baseline, then from baseline to output unit
       return outputUnit._fromBaseline.apply(_toBaseline.apply(value));
+    }
+
+    public double convertFrom(Unit inputUnit, double value) {
+      // convert from input unit to baseline, then from baseline to this unit
+      return _fromBaseline.apply(inputUnit._toBaseline.apply(value));
+    }
+
+    public UnitType getType() {
+      return _type;
+    }
+
+    public List<String> getValues() {
+      return _values;
     }
   }
 }

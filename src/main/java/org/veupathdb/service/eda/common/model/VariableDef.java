@@ -2,18 +2,15 @@ package org.veupathdb.service.eda.common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.gusdb.fgputil.json.JsonUtil;
-import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Wrapper containing only what a plugin would need to know about a variable for
@@ -129,7 +126,7 @@ public class VariableDef extends VariableSpecImpl {
   }
 
   public static <T extends VariableSpec> List<String> toDotNotation(List<T> vars) {
-    return vars.stream().map(var -> toDotNotation(var)).collect(Collectors.toList());
+    return vars.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
   }
 
   public static boolean isSameVariable(VariableSpec v1, VariableSpec v2) {

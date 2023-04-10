@@ -1,14 +1,12 @@
 package org.veupathdb.service.eda.common.auth;
 
+import jakarta.ws.rs.ForbiddenException;
+import org.json.JSONObject;
+import org.veupathdb.service.eda.common.client.DatasetAccessClient;
+
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import org.gusdb.fgputil.ImmutableEntry;
-import org.json.JSONObject;
-import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 
 /**
  * Represents a set of permissions a single user has for a single study.  Also provides

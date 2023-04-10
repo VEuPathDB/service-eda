@@ -1,21 +1,25 @@
 package org.veupathdb.service.eda.common.client;
 
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.core.MediaType;
 import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.web.MimeTypes;
 import org.veupathdb.service.eda.common.client.spec.EdaMergingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
-import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
+
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 public class EdaMergingClient extends StreamingDataClient {
 
@@ -37,6 +41,14 @@ public class EdaMergingClient extends StreamingDataClient {
   public ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
       List<APIFilter> subset,
+      StreamSpec spec) throws ProcessingException {
+    return getTabularDataStream(metadata, subset, Collections.emptyList(), Optional.empty(), spec);
+  }
+
+  public ResponseFuture getTabularDataStream(
+      ReferenceMetadata metadata,
+      List<APIFilter> subset,
+      List<DerivedVariableSpec> derivedVariableSpecs,
       Optional<Tuples.TwoTuple<String,Object>> computeInfoOpt,
       StreamSpec spec) throws ProcessingException {
 
@@ -45,7 +57,7 @@ public class EdaMergingClient extends StreamingDataClient {
     request.setStudyId(metadata.getStudyId());
     request.setFilters(spec.getFiltersOverride().orElse(subset));
     request.setEntityId(spec.getEntityId());
-    request.setDerivedVariables(metadata.getDerivedVariableFactory().getDerivedVariableSpecs());
+    request.setDerivedVariables(derivedVariableSpecs);
     request.setOutputVariables(spec);
 
     // if asked to include computed vars, do some validation before trying
@@ -69,6 +81,29 @@ public class EdaMergingClient extends StreamingDataClient {
     }
 
     // make request
-    return ClientUtil.makeAsyncPostRequest(getUrl("/query"), request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
+    return ClientUtil.makeAsyncPostRequest(getUrl("/merging-internal/query"), request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
   }
+
+  public List<DerivedVariableMetadata> getDerivedVariableMetadata(String studyId, List<DerivedVariableSpec> derivedVariableSpecs) {
+
+    // create the request
+    DerivedVariableBulkMetadataRequest request = new DerivedVariableBulkMetadataRequestImpl();
+    request.setStudyId(studyId);
+    request.setDerivedVariables(derivedVariableSpecs);
+
+    // submit the request
+    String url = "/merging-internal/derived-variables/metadata/variables";
+    ResponseFuture response = ClientUtil.makeAsyncPostRequest(getUrl(url), request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
+
+    // read and parse response
+    try (InputStream in = response.getInputStream()) {
+      ObjectMapper objectMapper = JsonUtil.Jackson;
+      return objectMapper.readValue(in, objectMapper.getTypeFactory()
+          .constructCollectionType(List.class, DerivedVariableMetadata.class));
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Unable to request derived variable metadata from merging service.", e);
+    }
+  }
+
 }

@@ -1,8 +1,8 @@
 package org.veupathdb.service.eda.common.plugin.constraint;
 
-import org.veupathdb.service.eda.generated.model.VisualizationDataElementConstraintPatternImpl;
+import org.veupathdb.service.eda.generated.model.DataElementConstraintPatternImpl;
 
-public class ConstraintPattern extends VisualizationDataElementConstraintPatternImpl {
+public class ConstraintPattern extends DataElementConstraintPatternImpl {
 
   private final ConstraintSpec _parent;
 

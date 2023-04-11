@@ -44,11 +44,17 @@ public interface VariableMapping {
   @JsonProperty("displayName")
   void setDisplayName(String displayName);
 
-  @JsonProperty("displayRange")
-  LabeledValueRange getDisplayRange();
+  @JsonProperty("displayRangeMin")
+  Object getDisplayRangeMin();
 
-  @JsonProperty("displayRange")
-  void setDisplayRange(LabeledValueRange displayRange);
+  @JsonProperty("displayRangeMin")
+  void setDisplayRangeMin(Object displayRangeMin);
+
+  @JsonProperty("displayRangeMax")
+  Object getDisplayRangeMax();
+
+  @JsonProperty("displayRangeMax")
+  void setDisplayRangeMax(Object displayRangeMax);
 
   @JsonProperty("vocabulary")
   List<String> getVocabulary();

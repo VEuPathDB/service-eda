@@ -39,7 +39,7 @@ public class DerivedVariableMetadataImpl implements DerivedVariableMetadata {
   private String units;
 
   @JsonProperty("dataRange")
-  private LabeledValueRange dataRange;
+  private Range dataRange;
 
   @JsonProperty("entityId")
   public String getEntityId() {
@@ -112,12 +112,12 @@ public class DerivedVariableMetadataImpl implements DerivedVariableMetadata {
   }
 
   @JsonProperty("dataRange")
-  public LabeledValueRange getDataRange() {
+  public Range getDataRange() {
     return this.dataRange;
   }
 
   @JsonProperty("dataRange")
-  public void setDataRange(LabeledValueRange dataRange) {
+  public void setDataRange(Range dataRange) {
     this.dataRange = dataRange;
   }
 }

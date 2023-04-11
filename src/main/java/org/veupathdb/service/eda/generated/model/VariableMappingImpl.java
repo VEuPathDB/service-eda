@@ -13,7 +13,8 @@ import java.util.List;
     "dataType",
     "dataShape",
     "displayName",
-    "displayRange",
+    "displayRangeMin",
+    "displayRangeMax",
     "vocabulary",
     "imputeZero",
     "isCollection",
@@ -38,8 +39,11 @@ public class VariableMappingImpl implements VariableMapping {
   @JsonProperty("displayName")
   private String displayName;
 
-  @JsonProperty("displayRange")
-  private LabeledValueRange displayRange;
+  @JsonProperty("displayRangeMin")
+  private Object displayRangeMin;
+
+  @JsonProperty("displayRangeMax")
+  private Object displayRangeMax;
 
   @JsonProperty("vocabulary")
   private List<String> vocabulary;
@@ -113,14 +117,24 @@ public class VariableMappingImpl implements VariableMapping {
     this.displayName = displayName;
   }
 
-  @JsonProperty("displayRange")
-  public LabeledValueRange getDisplayRange() {
-    return this.displayRange;
+  @JsonProperty("displayRangeMin")
+  public Object getDisplayRangeMin() {
+    return this.displayRangeMin;
   }
 
-  @JsonProperty("displayRange")
-  public void setDisplayRange(LabeledValueRange displayRange) {
-    this.displayRange = displayRange;
+  @JsonProperty("displayRangeMin")
+  public void setDisplayRangeMin(Object displayRangeMin) {
+    this.displayRangeMin = displayRangeMin;
+  }
+
+  @JsonProperty("displayRangeMax")
+  public Object getDisplayRangeMax() {
+    return this.displayRangeMax;
+  }
+
+  @JsonProperty("displayRangeMax")
+  public void setDisplayRangeMax(Object displayRangeMax) {
+    this.displayRangeMax = displayRangeMax;
   }
 
   @JsonProperty("vocabulary")

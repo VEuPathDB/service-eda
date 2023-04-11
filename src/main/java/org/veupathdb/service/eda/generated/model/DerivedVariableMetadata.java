@@ -51,8 +51,8 @@ public interface DerivedVariableMetadata extends VariableSpec {
   void setUnits(String units);
 
   @JsonProperty("dataRange")
-  LabeledValueRange getDataRange();
+  Range getDataRange();
 
   @JsonProperty("dataRange")
-  void setDataRange(LabeledValueRange dataRange);
+  void setDataRange(Range dataRange);
 }

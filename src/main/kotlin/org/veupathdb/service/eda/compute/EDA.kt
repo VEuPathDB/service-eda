@@ -113,12 +113,12 @@ object EDA {
   fun getMergeData(
     refMeta: ReferenceMetadata,
     filters: List<APIFilter>,
+    derivedVars: List<DerivedVariableSpec>,
     spec: StreamSpec,
     auth: TwoTuple<String, String>
   ): InputStream =
     EdaMergingClient(ServiceOptions.edaMergeHost, auth)
-      .getTabularDataStream(refMeta, filters, Optional.empty(), spec).inputStream
-
+      .getTabularDataStream(refMeta, filters, derivedVars, Optional.empty(), spec).inputStream
 
   /**
    * Submits a new compute job to the queue.

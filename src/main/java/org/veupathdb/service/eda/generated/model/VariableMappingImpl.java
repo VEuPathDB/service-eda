@@ -13,11 +13,10 @@ import java.util.List;
     "dataType",
     "dataShape",
     "displayName",
-    "displayRangeMin",
-    "displayRangeMax",
+    "displayRange",
     "vocabulary",
-    "isCollection",
     "imputeZero",
+    "isCollection",
     "members"
 })
 public class VariableMappingImpl implements VariableMapping {
@@ -39,20 +38,17 @@ public class VariableMappingImpl implements VariableMapping {
   @JsonProperty("displayName")
   private String displayName;
 
-  @JsonProperty("displayRangeMin")
-  private Object displayRangeMin;
-
-  @JsonProperty("displayRangeMax")
-  private Object displayRangeMax;
+  @JsonProperty("displayRange")
+  private LabeledValueRange displayRange;
 
   @JsonProperty("vocabulary")
   private List<String> vocabulary;
 
-  @JsonProperty("isCollection")
-  private Boolean isCollection;
-
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
+
+  @JsonProperty("isCollection")
+  private Boolean isCollection;
 
   @JsonProperty("members")
   private List<VariableSpec> members;
@@ -117,24 +113,14 @@ public class VariableMappingImpl implements VariableMapping {
     this.displayName = displayName;
   }
 
-  @JsonProperty("displayRangeMin")
-  public Object getDisplayRangeMin() {
-    return this.displayRangeMin;
+  @JsonProperty("displayRange")
+  public LabeledValueRange getDisplayRange() {
+    return this.displayRange;
   }
 
-  @JsonProperty("displayRangeMin")
-  public void setDisplayRangeMin(Object displayRangeMin) {
-    this.displayRangeMin = displayRangeMin;
-  }
-
-  @JsonProperty("displayRangeMax")
-  public Object getDisplayRangeMax() {
-    return this.displayRangeMax;
-  }
-
-  @JsonProperty("displayRangeMax")
-  public void setDisplayRangeMax(Object displayRangeMax) {
-    this.displayRangeMax = displayRangeMax;
+  @JsonProperty("displayRange")
+  public void setDisplayRange(LabeledValueRange displayRange) {
+    this.displayRange = displayRange;
   }
 
   @JsonProperty("vocabulary")
@@ -147,16 +133,6 @@ public class VariableMappingImpl implements VariableMapping {
     this.vocabulary = vocabulary;
   }
 
-  @JsonProperty("isCollection")
-  public Boolean getIsCollection() {
-    return this.isCollection;
-  }
-
-  @JsonProperty("isCollection")
-  public void setIsCollection(Boolean isCollection) {
-    this.isCollection = isCollection;
-  }
-
   @JsonProperty("imputeZero")
   public Boolean getImputeZero() {
     return this.imputeZero;
@@ -165,6 +141,16 @@ public class VariableMappingImpl implements VariableMapping {
   @JsonProperty("imputeZero")
   public void setImputeZero(Boolean imputeZero) {
     this.imputeZero = imputeZero;
+  }
+
+  @JsonProperty("isCollection")
+  public Boolean getIsCollection() {
+    return this.isCollection;
+  }
+
+  @JsonProperty("isCollection")
+  public void setIsCollection(Boolean isCollection) {
+    this.isCollection = isCollection;
   }
 
   @JsonProperty("members")

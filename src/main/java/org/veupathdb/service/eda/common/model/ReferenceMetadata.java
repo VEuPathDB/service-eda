@@ -55,7 +55,8 @@ public class ReferenceMetadata {
             computedVar.getDataShape(),
             false,
             computedVar.getImputeZero(),
-            determineCustomVarDataRanges(computedVar.getDisplayRange()),
+            // TODO: change VariableMapping have a single prop for range that contains a Range object (requires changes in R)
+            DataRange.fromBoundaryObjects(computedVar.getDisplayRangeMin(), computedVar.getDisplayRangeMax()).map(DataRanges::new),
             Optional.empty(),
             null,
             entityId.equals(treeEntity.getId())
@@ -64,17 +65,6 @@ public class ReferenceMetadata {
         ));
       }
     }
-  }
-
-  private Optional<DataRanges> determineCustomVarDataRanges(LabeledValueRange range) {
-    if (range == null || (range.getMin() == null && range.getMax() == null))
-      return Optional.empty();
-    if (range.getMin() == null || range.getMax() == null)
-      throw new RuntimeException("Computed variable display range must contain both min and max or neither.");
-    return Optional.of(new DataRanges(
-        new DataRange(range.getMin(), range.getMax()),
-        new DataRange(range.getMin(), range.getMax())
-    ));
   }
 
   /**
@@ -110,7 +100,7 @@ public class ReferenceMetadata {
           derivedVariable.getDataShape(),
           false,
           false,
-          determineCustomVarDataRanges(derivedVariable.getDataRange()),
+          DataRange.fromRange(derivedVariable.getDataRange()).map(DataRanges::new),
           Optional.ofNullable(derivedVariable.getUnits()),
           null,
           entity.getId().equals(derivedVariable.getEntityId())

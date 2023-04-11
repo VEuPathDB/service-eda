@@ -6,8 +6,13 @@ import org.veupathdb.service.eda.generated.model.*;
 import java.util.Optional;
 
 public class DataRanges extends Tuples.TwoTuple<DataRange, DataRange> {
+
   public DataRanges(DataRange dataRange, DataRange displayRange) {
     super(dataRange, displayRange);
+  }
+
+  public DataRanges(DataRange dataRange) {
+    super(dataRange, dataRange);
   }
 
   public DataRange getDataRange() {

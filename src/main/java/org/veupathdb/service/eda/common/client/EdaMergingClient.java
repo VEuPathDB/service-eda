@@ -86,6 +86,9 @@ public class EdaMergingClient extends StreamingDataClient {
 
   public List<DerivedVariableMetadata> getDerivedVariableMetadata(String studyId, List<DerivedVariableSpec> derivedVariableSpecs) {
 
+    // return empty if given empty
+    if (derivedVariableSpecs.isEmpty()) return Collections.emptyList();
+
     // create the request
     DerivedVariableBulkMetadataRequest request = new DerivedVariableBulkMetadataRequestImpl();
     request.setStudyId(studyId);

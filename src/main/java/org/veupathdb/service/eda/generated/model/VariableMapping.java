@@ -44,17 +44,11 @@ public interface VariableMapping {
   @JsonProperty("displayName")
   void setDisplayName(String displayName);
 
-  @JsonProperty("displayRangeMin")
-  Object getDisplayRangeMin();
+  @JsonProperty("displayRange")
+  LabeledValueRange getDisplayRange();
 
-  @JsonProperty("displayRangeMin")
-  void setDisplayRangeMin(Object displayRangeMin);
-
-  @JsonProperty("displayRangeMax")
-  Object getDisplayRangeMax();
-
-  @JsonProperty("displayRangeMax")
-  void setDisplayRangeMax(Object displayRangeMax);
+  @JsonProperty("displayRange")
+  void setDisplayRange(LabeledValueRange displayRange);
 
   @JsonProperty("vocabulary")
   List<String> getVocabulary();
@@ -62,17 +56,17 @@ public interface VariableMapping {
   @JsonProperty("vocabulary")
   void setVocabulary(List<String> vocabulary);
 
-  @JsonProperty("isCollection")
-  Boolean getIsCollection();
-
-  @JsonProperty("isCollection")
-  void setIsCollection(Boolean isCollection);
-
   @JsonProperty("imputeZero")
   Boolean getImputeZero();
 
   @JsonProperty("imputeZero")
   void setImputeZero(Boolean imputeZero);
+
+  @JsonProperty("isCollection")
+  Boolean getIsCollection();
+
+  @JsonProperty("isCollection")
+  void setIsCollection(Boolean isCollection);
 
   @JsonProperty("members")
   List<VariableSpec> getMembers();

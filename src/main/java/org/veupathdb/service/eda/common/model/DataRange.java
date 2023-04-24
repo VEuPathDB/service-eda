@@ -30,7 +30,12 @@ public class DataRange extends Tuples.TwoTuple<String, String> {
     Supplier<RuntimeException> ex = () -> new RuntimeException(
         "Computed variable display range must contain both min and max or neither.");
     // return empty if both null, range if neither null, and throw ex otherwise
-    return min == null ? max == null ? Optional.empty() : doThrow(ex)
-        : max == null ? doThrow(ex) : Optional.of(new DataRange(min.toString(), max.toString()));
+    return min == null
+        ? max == null
+            ? Optional.empty()
+            : doThrow(ex)
+        : max == null
+            ? doThrow(ex)
+            : Optional.of(new DataRange(min.toString(), max.toString()));
   }
 }

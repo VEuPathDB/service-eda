@@ -3,7 +3,6 @@ package org.veupathdb.service.eda.common.model;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
-import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.validation.ValidationBundle;
 import org.gusdb.fgputil.validation.ValidationException;
@@ -13,22 +12,39 @@ import org.veupathdb.service.eda.generated.model.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.gusdb.fgputil.functional.Functions.getMapFromList;
-
+/**
+ * Encapsulates EDA study metadata for a single study, to be used by various services.  This includes native, computed,
+ * and derived variables, which must be incorporated after the initial creating of an instance of this class.  The
+ * reason we do not take all of [ the basic study, derived vars, and computed var ] metadata in the constructor is that
+ * an instance of this class that does NOT contain the secondary types is necessary to create metadata for those types.
+ *
+ * Once created, this class provides both direct data access methods (e.g. to look up entities and variables by name or
+ * by variable spec (entityID + variableId), and convenience methods to e.g. gather the expected tabular column headers
+ * given an entity and a set of variables in a tabular request.
+ */
 public class ReferenceMetadata {
 
   private static final Logger LOG = LogManager.getLogger(ReferenceMetadata.class);
 
   private final String _studyId;
   private final TreeNode<EntityDef> _entityTree;
-  private final Map<String,EntityDef> _entityMap;
 
   public ReferenceMetadata(APIStudyDetail study) {
+
+    // set the study ID for this instance
     _studyId = study.getId();
+
+    // build an entity tree from the raw study metadata
     _entityTree = buildEntityTree(study.getRootEntity(), new ArrayList<>());
-    _entityMap = buildEntityMap(_entityTree);
+
   }
 
+  /**
+   * Incorporates raw computed variable metadata into this instance, converting the passed list of VariableMapping
+   * objects into VariableDefs and assigning them to entities.
+   *
+   * @param computedVariables raw metadata of computed variables to be incorporated
+   */
   public void incorporateComputedVariables(List<VariableMapping> computedVariables) {
     if (computedVariables.isEmpty()) return;
 
@@ -57,6 +73,7 @@ public class ReferenceMetadata {
             computedVar.getImputeZero(),
             // TODO: change VariableMapping have a single prop for range that contains a Range object (requires changes in R)
             DataRange.fromBoundaryObjects(computedVar.getDisplayRangeMin(), computedVar.getDisplayRangeMax()).map(DataRanges::new),
+            // TODO: do computed variables ever have units?  If so, then need to add to VariableMapping for addition here
             Optional.empty(),
             null,
             entityId.equals(treeEntity.getId())
@@ -68,7 +85,8 @@ public class ReferenceMetadata {
   }
 
   /**
-   * Incorporates a derived variable into the reference metadata.
+   * Incorporates raw derived variable metadata for a single derived variable into this instance, converting the passed
+   * object to a VariableDef and assigning it to its entity.
    *
    * Note: incoming derived vars must be in dependency order; i.e. only later derived vars
    *       depend on earlier derived vars (plus no circular dependencies);
@@ -76,7 +94,7 @@ public class ReferenceMetadata {
    */
   public void incorporateDerivedVariable(DerivedVariableMetadata derivedVariable) {
 
-    // set custom source; easier to look up DV instance later
+    // set source based on derived variable type; differentiated so merge service can more easily look up the plugin
     VariableSource typedSource = switch(derivedVariable.getDerivationType()) {
       case TRANSFORM -> VariableSource.DERIVED_TRANSFORM;
       case REDUCTION -> VariableSource.DERIVED_REDUCTION;
@@ -108,12 +126,6 @@ public class ReferenceMetadata {
             : VariableSource.INHERITED
       ));
     }
-  }
-
-  private static Map<String, EntityDef> buildEntityMap(TreeNode<EntityDef> entityTree) {
-    return getMapFromList(
-      entityTree.findAll(e -> true),
-      n -> new TwoTuple<>(n.getContents().getId(), n.getContents()));
   }
 
   /**
@@ -231,7 +243,10 @@ public class ReferenceMetadata {
   }
 
   public Optional<EntityDef> getEntity(String entityId) {
-    return Optional.ofNullable(_entityMap.get(entityId));
+    return Optional.ofNullable(
+        _entityTree.findFirst(null, e -> e.getId()
+            .equals(entityId)))
+        .map(TreeNode::getContents);
   }
 
   /**

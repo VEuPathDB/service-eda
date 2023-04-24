@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Wrapper containing only what a plugin would need to know about a variable for
- * the purposes of validation; its name, parent entity, and data type
- */
+// for logging purposes and if these are ever serialized by JSON, only want the VariableSpec fields
 @JsonPropertyOrder({
     "entityId",
     "variableId"
 })
+/**
+ * Encapsulates information about variables across all data types and sources (inherited, computed, and derived vars.
+ */
 public class VariableDef extends VariableSpecImpl {
 
   public static VariableSpec newVariableSpec(String entityId, String variableId) {

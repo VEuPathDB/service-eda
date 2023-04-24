@@ -5,11 +5,20 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Units metadata information, including (database) string values for various units, the type of unit (e.g. length), and
+ * conversion between units of the same type.  This class will need to be continually updated as new studies are loaded
+ * to incorporate more string values and possibly new unit types.  Last update was against live EDA in April 2023.
+ */
 public class Units {
 
   // static class
   private Units(){}
 
+  /**
+   * Represents the type of the unit.  Units can only be converted to other units of the same type.  e.g. a length
+   * unit cannot be converted to a mass unit.
+   */
   public enum UnitType {
     LENGTH,
     MASS,
@@ -22,6 +31,13 @@ public class Units {
     BIOLOGICAL_EFFECT_BY_VOLUME
   }
 
+  /**
+   * Allowed units, grouped by type.  To facilitate unit conversion, one unit of each type is selected to be the
+   * "baseline" unit for that type.  This is somewhat arbitrary and ultimately does not matter.  To convert from any
+   * unit of a given type to another unit, the input unit is first converted to the baseline unit, then converted again
+   * to the output unit.  Thus, we need only need n*2 conversion formulas within a type instead of n^2.  Baseline types
+   * are indicated by the identity functions below (no conversion necessary to convert baseline to baseline).
+   */
   public enum Unit {
 
     // length units

@@ -11,6 +11,7 @@ public enum VariableSource {
   public boolean isNativeOrId() {
     return equals(ID) || equals(NATIVE);
   }
+
   public boolean isResident() {
     return !equals(INHERITED);
   }

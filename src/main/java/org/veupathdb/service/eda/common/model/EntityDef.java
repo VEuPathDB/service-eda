@@ -18,6 +18,10 @@ import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
+/**
+ * Encapsulates entity information and holds VariableDefs representing variables of all data types, computed vars, and
+ * derived vars.  Provides methods to interrogate the data at an entity level.
+ */
 public class EntityDef {
 
   private static final Logger LOG = LogManager.getLogger(EntityDef.class);

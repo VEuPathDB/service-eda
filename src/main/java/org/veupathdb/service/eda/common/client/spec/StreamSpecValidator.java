@@ -34,12 +34,14 @@ public abstract class StreamSpecValidator {
 
       for (VariableSpec varSpec : streamSpec) {
         Optional<VariableDef> varOpt = requestedEntity.getVariable(varSpec);
-        if (varOpt.isEmpty()) {
+        if (varOpt.isPresent()) {
+          enforceServiceSpecificRequirements(streamSpec, varOpt.get(), validation);
+        }
+        else {
           validation.addError(streamSpec.getStreamName(),
               "Variable '" + JsonUtil.serializeObject(varSpec) +
               "' must be available on entity '" + streamSpec.getEntityId() + "'.");
         }
-        enforceServiceSpecificRequirements(streamSpec, varOpt.get(), validation);
       }
     }
     return validation.build();

@@ -100,8 +100,8 @@ public class StreamSpec extends ArrayList<VariableSpec> {
       .toString(2);
   }
 
-  public String toString(int indentSize) {
-      String indent = PluginUtil.getIndent(indentSize);
+  public String toString(int indentLength) {
+      String indent = " ".repeat(indentLength);
       return indent + "{" + NL +
           indent + "  name: " + getStreamName() + NL +
           indent + "  entityId: " + getEntityId() + NL +

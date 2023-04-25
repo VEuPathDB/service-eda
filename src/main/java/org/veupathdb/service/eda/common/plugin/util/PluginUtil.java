@@ -32,11 +32,6 @@ public class PluginUtil {
     _mergingClient = mergingClient;
   }
 
-  public static String getIndent(int indentSize) {
-    return IntStream.range(0, indentSize).mapToObj(i -> " ").collect(Collectors.joining());
-  }
-
-
   /*****************************************************************
    *** Metadata access utilities
    ****************************************************************/

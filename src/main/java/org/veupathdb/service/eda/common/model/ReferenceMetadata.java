@@ -14,9 +14,10 @@ import java.util.stream.Collectors;
 
 /**
  * Encapsulates EDA study metadata for a single study, to be used by various services.  This includes native, computed,
- * and derived variables, which must be incorporated after the initial creating of an instance of this class.  The
+ * and derived variables, which must be incorporated after the initial creation of an instance of this class.  The
  * reason we do not take all of [ the basic study, derived vars, and computed var ] metadata in the constructor is that
- * an instance of this class that does NOT contain the secondary types is necessary to create metadata for those types.
+ * an instance of this class that does NOT contain the non-native variables is required for the creation of metadata for
+ * those variables.
  *
  * Once created, this class provides both direct data access methods (e.g. to look up entities and variables by name or
  * by variable spec (entityID + variableId), and convenience methods to e.g. gather the expected tabular column headers
@@ -100,7 +101,7 @@ public class ReferenceMetadata {
       case REDUCTION -> VariableSource.DERIVED_REDUCTION;
     };
 
-    // get this DR's entity and descendants and insert as available in all
+    // get this DV's entity and descendants and insert as available in all
     EntityDef specEntity = getEntity(derivedVariable.getEntityId()).orElseThrow(() ->
         new IllegalArgumentException("Derived variable entity '" + derivedVariable.getEntityId() +
             "' does not exist in study '" + _studyId + "'."));

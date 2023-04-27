@@ -8,6 +8,7 @@ import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
+import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase;
 import org.veupathdb.service.eda.generated.model.PluginOverview;
 import org.veupathdb.service.eda.generated.model.PluginOverviewImpl;
@@ -45,7 +46,8 @@ public final class PluginRegistry {
       new ExamplePluginProvider(),
       new AlphaDivPluginProvider(),
       new BetaDivPluginProvider(),
-      new RankedAbundancePluginProvider()
+      new RankedAbundancePluginProvider(),
+      new DifferentialAbundancePluginProvider()
     );
 
     //

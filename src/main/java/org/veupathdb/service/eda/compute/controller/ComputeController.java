@@ -23,6 +23,7 @@ import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
+import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
@@ -107,6 +108,16 @@ public class ComputeController implements Computes {
   @Override
   public PostComputesRankedabundanceByFileResponse postComputesRankedabundanceByFile(String file, RankedAbundancePluginRequest entity) {
     return resultFile(new RankedAbundancePluginProvider(), file, entity, PostComputesRankedabundanceByFileResponse::respond200WithTextPlain);
+  }
+
+  @Override
+  public PostComputesDifferentialabundanceResponse postComputesDifferentialabundance(Boolean autostart, DifferentialAbundancePluginRequest entity) {
+    return PostComputesDifferentialabundanceResponse.respond200WithApplicationJson(submitJob(new DifferentialAbundancePluginProvider(), entity, autostart));
+  }
+
+  @Override
+  public PostComputesDifferentialabundanceByFileResponse postComputesDifferentialabundanceByFile(String file,DifferentialAbundancePluginRequest entity) {
+    return resultFile(new DifferentialAbundancePluginProvider(), file, entity, PostComputesDifferentialabundanceByFileResponse::respond200WithTextPlain);
   }
 
   // endregion Plugin Endpoints

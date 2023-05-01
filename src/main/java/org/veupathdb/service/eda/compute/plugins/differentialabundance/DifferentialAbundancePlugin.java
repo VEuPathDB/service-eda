@@ -32,8 +32,9 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
   @Override
   public List<StreamSpec> getStreamSpecs() {
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getChildrenVariables(getConfig().getCollectionVariable())
-      ));
+        .addVars(getUtil().getChildrenVariables(getConfig().getCollectionVariable()))
+        .addVar(getConfig().getComparisonVariable())
+      );
   }
 
   @Override
@@ -47,9 +48,14 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getDifferentialAbundanceMethod().getValue();
+    String groupA = "groupA";
+    String groupB = "groupB";
+    // String groupA = computeConfig.getDifferentialAbundanceGroupA() != null ? listToRVector(computeConfig.getDifferentialAbundanceGroupA()) : "NULL";
+    // String groupB = computeConfig.getDifferentialAbundanceGroupB() != null ? listToRVector(computeConfig.getDifferentialAbundanceGroupB()) : "NULL";
+
     // Needs to be in a dot notation... like comptueEntityIdColName prolly
-    // VariableDef comparisonVariableSpec = computeConfig.getComparisonVariable();
-    // String comparisonVariable = util.toColNameOrEmpty(comparisonVariableSpec);
+    VariableSpec comparisonVariableSpec = computeConfig.getComparisonVariable();
+    String comparisonVariable = util.toColNameOrEmpty(comparisonVariableSpec);
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     List<VariableDef> idColumns = new ArrayList<>();
@@ -60,10 +66,19 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting differential abundance computation')");
 
+      // Read in the abundance data
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+      connection.voidEval("absoluteAbundanceData <- " + INPUT_DATA); // Need to rename so we can go get the sampleMetadata later
+
+      // Read in the sample metadata
+      List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
+      sampleMetadataVars.addAll(idColumns);
+      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
+      connection.voidEval("sampleMetadata <- " + INPUT_DATA);
+
       // TODO make a helper for this i think
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
       String dotNotatedIdColumnsString = "c(";
@@ -78,17 +93,22 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-      connection.voidEval("diffabundDT <- microbiomeComputations::AbsoluteAbundanceData(data=" + INPUT_DATA + 
-                                                                          ",sampleMetadata=" + INPUT_DATA + 
-                                                                          ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
-                                                                          ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
-                                                                          ",imputeZero=TRUE)");
-      connection.voidEval("differentialabundanceDT <- differentialAbundance(data=diffabundDT, " +
-                                                          "comparisonVariable=" + INPUT_DATA +
-                                                          PluginUtil.singleQuote(method) + ")");
-      String dataCmd = "writeData(abundanceDT, NULL, TRUE)";
-      String metaCmd = "writeMeta(abundanceDT, NULL, TRUE)";
-      String statsCmd = "writeStats(abundanceDT, NULL, TRUE)";
+      connection.voidEval("diffabundDT <- microbiomeComputations::AbsoluteAbundanceData(data=absoluteAbundanceData" + 
+                                                                          ", sampleMetadata=sampleMetadata" +
+                                                                          ", recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
+                                                                          ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
+                                                                          ", imputeZero=TRUE)");
+
+      connection.voidEval("differentialabundanceDT <- differentialAbundance(data=diffabundDT" +
+                                                          ", comparisonVariable=" + INPUT_DATA +
+                                                          ", groupA=" + groupA +
+                                                          ", groupB=" + groupB + 
+                                                          ", method=" + PluginUtil.singleQuote(method) + 
+                                                          ", verbose=TRUE)");
+
+      String dataCmd = "writeData(differentialabundanceDT, NULL, TRUE)";
+      String metaCmd = "writeMeta(differentialabundanceDT, NULL, TRUE)";
+      String statsCmd = "writeStatistics(differentialabundanceDT, NULL, TRUE)";
 
       getWorkspace().writeDataResult(connection, dataCmd);
       getWorkspace().writeMetaResult(connection, metaCmd);

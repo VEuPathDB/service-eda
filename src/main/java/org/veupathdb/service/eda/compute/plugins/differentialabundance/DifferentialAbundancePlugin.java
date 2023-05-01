@@ -46,10 +46,12 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     String entityId = computeConfig.getCollectionVariable().getEntityId();
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
+    System.out.println(computeEntityIdVarSpec);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
+    System.out.println(computeEntityIdColName);
     String method = computeConfig.getDifferentialAbundanceMethod().getValue();
-    String groupA = "groupA";
-    String groupB = "groupB";
+    String groupA = "c('Female')";
+    String groupB = "c('Male')";
     // String groupA = computeConfig.getDifferentialAbundanceGroupA() != null ? listToRVector(computeConfig.getDifferentialAbundanceGroupA()) : "NULL";
     // String groupB = computeConfig.getDifferentialAbundanceGroupB() != null ? listToRVector(computeConfig.getDifferentialAbundanceGroupB()) : "NULL";
 
@@ -75,9 +77,11 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
 
       // Read in the sample metadata
       List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
-      sampleMetadataVars.addAll(idColumns);
+      sampleMetadataVars.add(computeEntityIdVarSpec);
+      System.out.println(sampleMetadataVars);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
       connection.voidEval("sampleMetadata <- " + INPUT_DATA);
+
 
       // TODO make a helper for this i think
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
@@ -93,18 +97,26 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
+      // TEMP FOR TESTING ONLY - REMOVE WHEN ABSOLUTE ABUNDANCES ARE HERE
+      connection.voidEval("taxaColNames <- names(absoluteAbundanceData[, -c('" + computeEntityIdColName + "', as.character(" + dotNotatedIdColumnsString + "))])");
+      connection.voidEval("absoluteAbundanceData[, (taxaColNames) := lapply(.SD,function(x) {round(x*1000)}), .SDcols=taxaColNames]");
+      // END OF TEMP FOR TESTING
+
       connection.voidEval("diffabundDT <- microbiomeComputations::AbsoluteAbundanceData(data=absoluteAbundanceData" + 
                                                                           ", sampleMetadata=sampleMetadata" +
-                                                                          ", recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
+                                                                          ", recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) + 
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ", imputeZero=TRUE)");
 
+
       connection.voidEval("differentialabundanceDT <- differentialAbundance(data=diffabundDT" +
-                                                          ", comparisonVariable=" + INPUT_DATA +
+                                                          ", comparisonVariable=" + PluginUtil.singleQuote(comparisonVariable) +
                                                           ", groupA=" + groupA +
                                                           ", groupB=" + groupB + 
                                                           ", method=" + PluginUtil.singleQuote(method) + 
                                                           ", verbose=TRUE)");
+
+
 
       String dataCmd = "writeData(differentialabundanceDT, NULL, TRUE)";
       String metaCmd = "writeMeta(differentialabundanceDT, NULL, TRUE)";

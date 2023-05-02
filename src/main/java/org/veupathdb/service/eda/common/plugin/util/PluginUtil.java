@@ -131,6 +131,15 @@ public class PluginUtil {
     return "\"" + unquotedString + "\"";
   }
 
+  public static String listToRVector(List<String> values) {
+    return
+        "c(" +
+        values.stream()
+            .map(PluginUtil::doubleQuote)
+            .collect(Collectors.joining(", ")) +
+        ")";
+  }
+
   public String getVoidEvalFreadCommand(String fileName, VariableSpec... vars) {
     return getVoidEvalFreadCommand(fileName, new ListBuilder<VariableSpec>().addAll(vars).toList());
   }

@@ -36,6 +36,11 @@ public class EdaComputeClient {
     }
   }
 
+  private static final String STATUS_SEGMENT = ""; // parent path returns status
+  private static final String META_FILE_SEGMENT = "/meta";
+  private static final String STATS_FILE_SEGMENT = "/statistics";
+  private static final String TABULAR_FILE_SEGMENT = "/tabular";
+
   private final String _baseComputesUrl;
   private final Map<String, String> _authHeader;
 
@@ -45,28 +50,33 @@ public class EdaComputeClient {
   }
 
   public boolean isJobResultsAvailable(String computeName, ComputeRequestBody requestBody) {
-    JobResponse response = readJsonResponse(computeName, requestBody, JobResponse.class);
+    JobResponse response = readJsonResponse(getResponseFuture(computeName, STATUS_SEGMENT, requestBody), JobResponse.class);
     return response.getStatus().equals(JobStatus.COMPLETE);
   }
 
   public ComputedVariableMetadata getJobVariableMetadata(String computeName, ComputeRequestBody requestBody) {
-    return readJsonResponse(computeName + "/meta", requestBody, ComputedVariableMetadataImpl.class);
+    return readJsonResponse(getResponseFuture(computeName, META_FILE_SEGMENT, requestBody), ComputedVariableMetadataImpl.class);
+  }
+
+  public ResponseFuture getJobStatistics(String computeName, ComputeRequestBody requestBody) {
+    return getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody);
   }
 
   public <T> T getJobStatistics(String computeName, ComputeRequestBody requestBody, Class<T> expectedStatsClass) {
-    return readJsonResponse(computeName + "/statistics", requestBody, expectedStatsClass);
+    return readJsonResponse(getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody), expectedStatsClass);
   }
 
   public ResponseFuture getJobTabularOutput(String computeName, ComputeRequestBody requestBody) {
-    return ClientUtil.makeAsyncPostRequest(
-        // note: need to use wildcard here since compute service serves all result files out at the same endpoint
-        _baseComputesUrl + computeName + "/tabular", requestBody, MediaType.MEDIA_TYPE_WILDCARD, _authHeader);
+    return getResponseFuture(computeName, TABULAR_FILE_SEGMENT, requestBody);
   }
 
-  private <T> T readJsonResponse(String pathSuffix, ComputeRequestBase computeConfig, Class<T> responseClass) {
-    ResponseFuture response = ClientUtil.makeAsyncPostRequest(
+  private ResponseFuture getResponseFuture(String computeName, String fileSegment, ComputeRequestBody requestBody) {
+    return ClientUtil.makeAsyncPostRequest(
         // note: need to use wildcard here since compute service serves all result files out at the same endpoint
-        _baseComputesUrl + pathSuffix, computeConfig, MediaType.MEDIA_TYPE_WILDCARD, _authHeader);
+        _baseComputesUrl + computeName + fileSegment, requestBody, MediaType.MEDIA_TYPE_WILDCARD, _authHeader);
+  }
+
+  private <T> T readJsonResponse(ResponseFuture response, Class<T> responseClass) {
     try (InputStream responseBody = response.getEither().leftOrElseThrowWithRight(f -> new RuntimeException(f.toString()))) {
       String json = IoUtil.readAllChars(new InputStreamReader(responseBody));
       return JsonUtil.Jackson.readValue(json, responseClass);

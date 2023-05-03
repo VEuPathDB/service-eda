@@ -1,11 +1,15 @@
 package org.veupathdb.service.eda.common.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.client.ClientUtil;
+import org.gusdb.fgputil.client.RequestFailure;
 import org.gusdb.fgputil.client.ResponseFuture;
+import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.web.MimeTypes;
 import org.veupathdb.service.eda.common.client.spec.EdaMergingSpecValidator;
@@ -20,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class EdaMergingClient extends StreamingDataClient {
 
@@ -96,13 +101,20 @@ public class EdaMergingClient extends StreamingDataClient {
 
     // submit the request
     String url = "/merging-internal/derived-variables/metadata/variables";
-    ResponseFuture response = ClientUtil.makeAsyncPostRequest(getUrl(url), request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
+    ResponseFuture responseFuture = ClientUtil.makeAsyncPostRequest(getUrl(url), request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
 
     // read and parse response
-    try (InputStream in = response.getInputStream()) {
-      ObjectMapper objectMapper = JsonUtil.Jackson;
-      return objectMapper.readValue(in, objectMapper.getTypeFactory()
-          .constructCollectionType(List.class, DerivedVariableMetadata.class));
+    try {
+      Either<InputStream, RequestFailure> response = responseFuture.getEither();
+      Function<RequestFailure,RuntimeException> failureHandler = fail ->
+        fail.getStatusType().getFamily().equals(Response.Status.Family.CLIENT_ERROR)
+            ? new BadRequestException(fail.getResponseBody())
+            : new RuntimeException("Failed to get derived variable metadata. " + fail.getResponseBody());
+      try (InputStream in = response.leftOrElseThrowWithRight(failureHandler)) {
+        ObjectMapper objectMapper = JsonUtil.Jackson;
+        return objectMapper.readValue(in, objectMapper.getTypeFactory()
+            .constructCollectionType(List.class, DerivedVariableMetadata.class));
+      }
     }
     catch (Exception e) {
       throw new RuntimeException("Unable to request derived variable metadata from merging service.", e);

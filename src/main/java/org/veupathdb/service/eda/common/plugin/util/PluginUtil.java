@@ -15,7 +15,6 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Shared plugin utilities
@@ -130,6 +129,15 @@ public class PluginUtil {
 
   public static String doubleQuote(String unquotedString) {
     return "\"" + unquotedString + "\"";
+  }
+
+  public static String listToRVector(List<String> values) {
+    return
+        "c(" +
+        values.stream()
+            .map(PluginUtil::doubleQuote)
+            .collect(Collectors.joining(", ")) +
+        ")";
   }
 
   public String getVoidEvalFreadCommand(String fileName, VariableSpec... vars) {

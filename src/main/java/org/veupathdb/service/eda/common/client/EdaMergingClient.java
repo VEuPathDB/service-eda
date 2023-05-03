@@ -116,6 +116,9 @@ public class EdaMergingClient extends StreamingDataClient {
             .constructCollectionType(List.class, DerivedVariableMetadata.class));
       }
     }
+    catch (RuntimeException e) {
+      throw e;
+    }
     catch (Exception e) {
       throw new RuntimeException("Unable to request derived variable metadata from merging service.", e);
     }

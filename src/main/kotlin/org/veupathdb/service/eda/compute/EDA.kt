@@ -154,6 +154,10 @@ object EDA {
         // Just return the job
         return existingJob.toJobResponse()
 
+    // If we made it here, the job either does not exist, or exists and is
+    // expired.
+
+    // If autostart is true then submit the job for (re)execution
     if (autostart) {
       Log.info("Submitting job {} to the queue", jobID)
 

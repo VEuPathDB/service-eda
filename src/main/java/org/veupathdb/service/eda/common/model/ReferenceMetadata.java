@@ -306,6 +306,18 @@ public class ReferenceMetadata {
   }
 
   /**
+   * @return whether the first entity is an ancestor of the second entity
+   */
+  public boolean isEntityAncestorOf(EntityDef first, EntityDef second) {
+    List<EntityDef> ancestorsOfSecond = getAncestors(second);
+    for (EntityDef ancestor : ancestorsOfSecond) {
+      if (first.getId().equals(ancestor.getId()))
+        return true;
+    }
+    return false;
+  }
+
+  /**
    * Returns the ID column names (headers) for the target entity and its ancestors.
    * Note this is NOT a dot notation with entity and variable names, but simply the
    * ID column defs as returned by the subsetting and compute services.

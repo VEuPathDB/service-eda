@@ -171,10 +171,7 @@ object EDA {
       }
 
       // Look up the job we just submitted
-      return JobResponseImpl().also {
-        it.jobID = jobID.string
-        it.status = JobStatus.QUEUED
-      }
+      return AsyncPlatform.getJob(jobID)!!.toJobResponse()
     }
 
     // Return the job ID with no-such-job status

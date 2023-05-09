@@ -103,14 +103,14 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       connection.voidEval("absoluteAbundanceData[, (taxaColNames) := lapply(.SD,function(x) {round(x*1000)}), .SDcols=taxaColNames]");
       // END OF TEMP FOR TESTING
 
-      connection.voidEval("diffabundDT <- microbiomeComputations::AbsoluteAbundanceData(data=absoluteAbundanceData" + 
+      connection.voidEval("inputData <- microbiomeComputations::AbsoluteAbundanceData(data=absoluteAbundanceData" + 
                                                                           ", sampleMetadata=sampleMetadata" +
                                                                           ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ", imputeZero=TRUE)");
 
 
-      connection.voidEval("differentialabundanceDT <- differentialAbundance(data=diffabundDT" +
+      connection.voidEval("computeResult <- differentialAbundance(data=inputData" +
                                                           ", comparisonVariable=" + singleQuote(comparisonVariable) +
                                                           ", groupA=" + groupA +
                                                           ", groupB=" + groupB + 
@@ -118,13 +118,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
                                                           ", verbose=TRUE)");
 
 
+      String statsCmd = "writeStatistics(computeResult, NULL, TRUE)";
 
-      String dataCmd = "writeData(differentialabundanceDT, NULL, TRUE)";
-      String metaCmd = "writeMeta(differentialabundanceDT, NULL, TRUE)";
-      String statsCmd = "writeStatistics(differentialabundanceDT, NULL, TRUE)";
-
-      getWorkspace().writeDataResult(connection, dataCmd);
-      getWorkspace().writeMetaResult(connection, metaCmd);
       getWorkspace().writeStatisticsResult(connection, statsCmd);
     });
   }

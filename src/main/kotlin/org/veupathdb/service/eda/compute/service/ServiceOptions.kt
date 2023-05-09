@@ -332,14 +332,14 @@ object ServiceOptions : Options() {
   \*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
 
   @Option(
-    names = ["--admin-auth-key"],
-    defaultValue = "\${env:ADMIN_AUTH_KEY}",
-    description = ["Special authorization key used to access admin endpoints."],
+    names = ["--admin-auth-token"],
+    defaultValue = "\${env:ADMIN_AUTH_TOKEN}",
+    description = ["Special authorization token used to access admin endpoints."],
     arity = "1",
     required = true
   )
   @JvmStatic
-  var adminAuthKey = UnconfiguredStringValue
+  var adminAuthToken = UnconfiguredStringValue
     private set
 
   // endregion Admin

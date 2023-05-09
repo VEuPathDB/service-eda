@@ -34,7 +34,7 @@ public class ExpirationController implements JobsExpiration {
 
   @Override
   public GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse getJobsExpirationByStudyIdAndPluginNameAndAdminAuthKey(String studyId, String pluginName, String adminAuthKey) {
-    if (adminAuthKey == null || !adminAuthKey.equals(ServiceOptions.getAdminAuthKey())) {
+    if (adminAuthKey == null || !adminAuthKey.equals(ServiceOptions.getAdminAuthToken())) {
       throw new ForbiddenException();
     }
     List<HashID> filteredJobIds = findJobs(Optional.ofNullable(studyId), Optional.ofNullable(pluginName));

@@ -33,15 +33,15 @@ public class ExpirationController implements JobsExpiration {
   private static Logger LOG = LogManager.getLogger(ExpirationController.class);
 
   @Override
-  public GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse getJobsExpirationByStudyIdAndPluginNameAndAdminAuthKey(String studyId, String pluginName, String adminAuthKey) {
-    if (adminAuthKey == null || !adminAuthKey.equals(ServiceOptions.getAdminAuthToken())) {
+  public GetJobsExpirationResponse getJobsExpiration(String studyId, String pluginName, String adminAuthToken) {
+    if (adminAuthToken == null || !adminAuthToken.equals(ServiceOptions.getAdminAuthToken())) {
       throw new ForbiddenException();
     }
     List<HashID> filteredJobIds = findJobs(Optional.ofNullable(studyId), Optional.ofNullable(pluginName));
     int numJobsExpired = manuallyExpireJobs(filteredJobIds);
     ExpiredJobsResponse response = new ExpiredJobsResponseImpl();
     response.setNumJobsExpired(numJobsExpired);
-    return GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse.respond200WithApplicationJson(response);
+    return GetJobsExpirationResponse.respond200WithApplicationJson(response);
   }
 
   private List<HashID> findJobs(Optional<String> studyIdOption, Optional<String> pluginNameOption) {

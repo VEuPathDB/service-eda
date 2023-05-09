@@ -2,8 +2,8 @@ package org.veupathdb.service.eda.generated.resources;
 
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponse;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
@@ -12,25 +12,24 @@ import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 public interface JobsExpiration {
   @GET
   @Produces("application/json")
-  GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse getJobsExpirationByStudyIdAndPluginNameAndAdminAuthKey(
-      @PathParam("study-id") String studyId, @PathParam("plugin-name") String pluginName,
-      @PathParam("admin-auth-key") String adminAuthKey);
+  GetJobsExpirationResponse getJobsExpiration(@QueryParam("study-id") String studyId,
+      @QueryParam("plugin-name") String pluginName,
+      @QueryParam("admin-auth-token") String adminAuthToken);
 
-  class GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse extends ResponseDelegate {
-    private GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse(Response response,
-        Object entity) {
+  class GetJobsExpirationResponse extends ResponseDelegate {
+    private GetJobsExpirationResponse(Response response, Object entity) {
       super(response, entity);
     }
 
-    private GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse(Response response) {
+    private GetJobsExpirationResponse(Response response) {
       super(response);
     }
 
-    public static GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse respond200WithApplicationJson(
+    public static GetJobsExpirationResponse respond200WithApplicationJson(
         ExpiredJobsResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
-      return new GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse(responseBuilder.build(), entity);
+      return new GetJobsExpirationResponse(responseBuilder.build(), entity);
     }
   }
 }

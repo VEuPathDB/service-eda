@@ -18,7 +18,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
 
 public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbundancePluginRequest, DifferentialAbundanceComputeConfig> {
 
@@ -84,15 +85,15 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
 
 
       // TODO make a helper for this i think
-      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
+      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedIdColumnsString = "c(";
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
         if (first) {
           first = false;
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + util.singleQuote(idCol);
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + singleQuote(idCol);
         } else {
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + singleQuote(idCol);
         }
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
@@ -104,16 +105,16 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
 
       connection.voidEval("diffabundDT <- microbiomeComputations::AbsoluteAbundanceData(data=absoluteAbundanceData" + 
                                                                           ", sampleMetadata=sampleMetadata" +
-                                                                          ", recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) + 
+                                                                          ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ", imputeZero=TRUE)");
 
 
       connection.voidEval("differentialabundanceDT <- differentialAbundance(data=diffabundDT" +
-                                                          ", comparisonVariable=" + PluginUtil.singleQuote(comparisonVariable) +
+                                                          ", comparisonVariable=" + singleQuote(comparisonVariable) +
                                                           ", groupA=" + groupA +
                                                           ", groupB=" + groupB + 
-                                                          ", method=" + PluginUtil.singleQuote(method) + 
+                                                          ", method=" + singleQuote(method) +
                                                           ", verbose=TRUE)");
 
 

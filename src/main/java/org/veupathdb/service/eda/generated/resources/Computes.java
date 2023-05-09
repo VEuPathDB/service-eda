@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
+import org.veupathdb.service.eda.generated.model.DifferentialAbundanceStatsResponse;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 import org.veupathdb.service.eda.generated.model.JobResponse;
 import org.veupathdb.service.eda.generated.model.PluginOverview;
@@ -95,11 +96,11 @@ public interface Computes {
       DifferentialAbundancePluginRequest entity);
 
   @POST
-  @Path("/differentialabundance/{file}")
-  @Produces("text/plain")
+  @Path("/differentialabundance/statistics")
+  @Produces("application/json")
   @Consumes("application/json")
-  PostComputesDifferentialabundanceByFileResponse postComputesDifferentialabundanceByFile(
-      @PathParam("file") String file, DifferentialAbundancePluginRequest entity);
+  PostComputesDifferentialabundanceStatisticsResponse postComputesDifferentialabundanceStatistics(
+      DifferentialAbundancePluginRequest entity);
 
   class GetComputesResponse extends ResponseDelegate {
     private GetComputesResponse(Response response, Object entity) {
@@ -264,20 +265,20 @@ public interface Computes {
     }
   }
 
-  class PostComputesDifferentialabundanceByFileResponse extends ResponseDelegate {
-    private PostComputesDifferentialabundanceByFileResponse(Response response, Object entity) {
+  class PostComputesDifferentialabundanceStatisticsResponse extends ResponseDelegate {
+    private PostComputesDifferentialabundanceStatisticsResponse(Response response, Object entity) {
       super(response, entity);
     }
 
-    private PostComputesDifferentialabundanceByFileResponse(Response response) {
+    private PostComputesDifferentialabundanceStatisticsResponse(Response response) {
       super(response);
     }
 
-    public static PostComputesDifferentialabundanceByFileResponse respond200WithTextPlain(
-        Object entity) {
-      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "text/plain");
+    public static PostComputesDifferentialabundanceStatisticsResponse respond200WithApplicationJson(
+        DifferentialAbundanceStatsResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
-      return new PostComputesDifferentialabundanceByFileResponse(responseBuilder.build(), entity);
+      return new PostComputesDifferentialabundanceStatisticsResponse(responseBuilder.build(), entity);
     }
   }
 }

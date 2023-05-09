@@ -324,4 +324,24 @@ object ServiceOptions : Options() {
     private set
 
   // endregion RServe
+
+  // region Admin
+
+  /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
+    ┃  Administration Configuration                                        ┃
+  \*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
+
+  @Option(
+    names = ["--admin-auth-key"],
+    defaultValue = "\${env:ADMIN_AUTH_KEY}",
+    description = ["Special authorization key used to access admin endpoints."],
+    arity = "1",
+    required = true
+  )
+  @JvmStatic
+  var adminAuthKey = UnconfiguredStringValue
+    private set
+
+  // endregion Admin
+
 }

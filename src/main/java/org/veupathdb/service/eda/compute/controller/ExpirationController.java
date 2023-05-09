@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.compute.controller;
 
+import jakarta.ws.rs.ForbiddenException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -9,6 +10,7 @@ import org.veupathdb.lib.compute.platform.job.JobStatus;
 import org.veupathdb.lib.compute.platform.model.JobReference;
 import org.veupathdb.lib.hash_id.HashID;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
+import org.veupathdb.service.eda.compute.service.ServiceOptions;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponse;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponseImpl;
 import org.veupathdb.service.eda.generated.resources.JobsExpiration;
@@ -31,12 +33,15 @@ public class ExpirationController implements JobsExpiration {
   private static Logger LOG = LogManager.getLogger(ExpirationController.class);
 
   @Override
-  public GetJobsExpirationByStudyIdAndPluginNameResponse getJobsExpirationByStudyIdAndPluginName(String studyId, String pluginName) {
+  public GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse getJobsExpirationByStudyIdAndPluginNameAndAdminAuthKey(String studyId, String pluginName, String adminAuthKey) {
+    if (adminAuthKey == null || !adminAuthKey.equals(ServiceOptions.getAdminAuthKey())) {
+      throw new ForbiddenException();
+    }
     List<HashID> filteredJobIds = findJobs(Optional.ofNullable(studyId), Optional.ofNullable(pluginName));
     int numJobsExpired = manuallyExpireJobs(filteredJobIds);
     ExpiredJobsResponse response = new ExpiredJobsResponseImpl();
     response.setNumJobsExpired(numJobsExpired);
-    return GetJobsExpirationByStudyIdAndPluginNameResponse.respond200WithApplicationJson(response);
+    return GetJobsExpirationByStudyIdAndPluginNameAndAdminAuthKeyResponse.respond200WithApplicationJson(response);
   }
 
   private List<HashID> findJobs(Optional<String> studyIdOption, Optional<String> pluginNameOption) {

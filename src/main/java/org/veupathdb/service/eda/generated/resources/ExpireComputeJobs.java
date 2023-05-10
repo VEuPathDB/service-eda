@@ -8,28 +8,28 @@ import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponse;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
-@Path("/jobs-expiration")
-public interface JobsExpiration {
+@Path("/expire-compute-jobs")
+public interface ExpireComputeJobs {
   @GET
   @Produces("application/json")
-  GetJobsExpirationResponse getJobsExpiration(@QueryParam("job-id") String jobId,
+  GetExpireComputeJobsResponse getExpireComputeJobs(@QueryParam("job-id") String jobId,
       @QueryParam("study-id") String studyId, @QueryParam("plugin-name") String pluginName,
       @QueryParam("admin-auth-token") String adminAuthToken);
 
-  class GetJobsExpirationResponse extends ResponseDelegate {
-    private GetJobsExpirationResponse(Response response, Object entity) {
+  class GetExpireComputeJobsResponse extends ResponseDelegate {
+    private GetExpireComputeJobsResponse(Response response, Object entity) {
       super(response, entity);
     }
 
-    private GetJobsExpirationResponse(Response response) {
+    private GetExpireComputeJobsResponse(Response response) {
       super(response);
     }
 
-    public static GetJobsExpirationResponse respond200WithApplicationJson(
+    public static GetExpireComputeJobsResponse respond200WithApplicationJson(
         ExpiredJobsResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
-      return new GetJobsExpirationResponse(responseBuilder.build(), entity);
+      return new GetExpireComputeJobsResponse(responseBuilder.build(), entity);
     }
   }
 }

@@ -14,7 +14,7 @@ import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
 import org.veupathdb.service.eda.compute.service.ServiceOptions;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponse;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponseImpl;
-import org.veupathdb.service.eda.generated.resources.JobsExpiration;
+import org.veupathdb.service.eda.generated.resources.ExpireComputeJobs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,12 +29,12 @@ import java.util.Optional;
  *
  * If neither argument is passed, a call to this endpoint will expire all job results
  */
-public class ExpirationController implements JobsExpiration {
+public class ExpirationController implements ExpireComputeJobs {
 
-  private static Logger LOG = LogManager.getLogger(ExpirationController.class);
+  private static final Logger LOG = LogManager.getLogger(ExpirationController.class);
 
   @Override
-  public GetJobsExpirationResponse getJobsExpiration(String jobId, String studyId, String pluginName, String adminAuthToken) {
+  public GetExpireComputeJobsResponse getExpireComputeJobs(String jobId, String studyId, String pluginName, String adminAuthToken) {
     if (adminAuthToken == null || !adminAuthToken.equals(ServiceOptions.getAdminAuthToken())) {
       throw new ForbiddenException();
     }
@@ -45,7 +45,7 @@ public class ExpirationController implements JobsExpiration {
     int numJobsExpired = manuallyExpireJobs(filteredJobIds);
     ExpiredJobsResponse response = new ExpiredJobsResponseImpl();
     response.setNumJobsExpired(numJobsExpired);
-    return GetJobsExpirationResponse.respond200WithApplicationJson(response);
+    return GetExpireComputeJobsResponse.respond200WithApplicationJson(response);
   }
 
   private List<HashID> findJobs(Optional<String> jobIdOption, Optional<String> studyIdOption, Optional<String> pluginNameOption) {
@@ -77,14 +77,13 @@ public class ExpirationController implements JobsExpiration {
 
   private boolean jobMatchesCriteria(HashID jobId, Optional<String> studyIdOption, Optional<String> pluginNameOption) {
     // find the config file
-    Optional<JobFileReference> configFile = AsyncPlatform.getJobFiles(jobId).stream()
-        .filter(fileRef -> fileRef.getName().equals(ReservedFiles.InputConfig)).findFirst();
-    if (configFile.isEmpty()) {
+    JobFileReference configFile = AsyncPlatform.INSTANCE.getJobFile(jobId, ReservedFiles.InputConfig);
+    if (configFile == null) {
       LOG.warn("Could not find job config file in non-expired job " + jobId);
       return false;
     }
     // read the config file
-    try (InputStream in = configFile.get().open()) {
+    try (InputStream in = configFile.open()) {
       JSONObject json = new JSONObject(new String(in.readAllBytes()));
       String pluginName = json.getString("plugin");
       String studyId = json.getJSONObject("request").getString("studyId");

@@ -173,7 +173,7 @@ object EDA {
       }
     }
 
-    // Return the job ID with no-such-job status
+    // Make a new job response and set values from the job just submitted.
     return JobResponseImpl().also {
       it.jobID = jobID.string
       it.status = JobStatus.NOSUCHJOB

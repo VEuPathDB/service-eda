@@ -12,8 +12,8 @@ import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 public interface JobsExpiration {
   @GET
   @Produces("application/json")
-  GetJobsExpirationResponse getJobsExpiration(@QueryParam("study-id") String studyId,
-      @QueryParam("plugin-name") String pluginName,
+  GetJobsExpirationResponse getJobsExpiration(@QueryParam("job-id") String jobId,
+      @QueryParam("study-id") String studyId, @QueryParam("plugin-name") String pluginName,
       @QueryParam("admin-auth-token") String adminAuthToken);
 
   class GetJobsExpirationResponse extends ResponseDelegate {

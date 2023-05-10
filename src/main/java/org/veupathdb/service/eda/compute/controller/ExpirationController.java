@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.compute.controller;
 
+import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,18 +34,21 @@ public class ExpirationController implements JobsExpiration {
   private static Logger LOG = LogManager.getLogger(ExpirationController.class);
 
   @Override
-  public GetJobsExpirationResponse getJobsExpiration(String studyId, String pluginName, String adminAuthToken) {
+  public GetJobsExpirationResponse getJobsExpiration(String jobId, String studyId, String pluginName, String adminAuthToken) {
     if (adminAuthToken == null || !adminAuthToken.equals(ServiceOptions.getAdminAuthToken())) {
       throw new ForbiddenException();
     }
-    List<HashID> filteredJobIds = findJobs(Optional.ofNullable(studyId), Optional.ofNullable(pluginName));
+    if (jobId != null && (studyId != null || pluginName != null)) {
+      throw new BadRequestException("If job-id param is specified, study-id and plugin-name are not allowed.");
+    }
+    List<HashID> filteredJobIds = findJobs(Optional.ofNullable(jobId), Optional.ofNullable(studyId), Optional.ofNullable(pluginName));
     int numJobsExpired = manuallyExpireJobs(filteredJobIds);
     ExpiredJobsResponse response = new ExpiredJobsResponseImpl();
     response.setNumJobsExpired(numJobsExpired);
     return GetJobsExpirationResponse.respond200WithApplicationJson(response);
   }
 
-  private List<HashID> findJobs(Optional<String> studyIdOption, Optional<String> pluginNameOption) {
+  private List<HashID> findJobs(Optional<String> jobIdOption, Optional<String> studyIdOption, Optional<String> pluginNameOption) {
     return AsyncPlatform.listJobReferences().stream()
 
         // can only expire owned jobs
@@ -58,9 +62,14 @@ public class ExpirationController implements JobsExpiration {
 
         // filter jobs by requested criteria
         .filter(jobId ->
+
+          // if job ID specified, then match exactly if job IDs match
+          jobIdOption.isPresent() ? jobId.getString().equals(jobIdOption.get()) :
+
           // only need to look up config if criteria specified
           (studyIdOption.isEmpty() && pluginNameOption.isEmpty()) ||
-              jobMatchesCriteria(jobId, studyIdOption, pluginNameOption))
+              jobMatchesCriteria(jobId, studyIdOption, pluginNameOption)
+        )
 
         // collect remaining job IDs
         .toList();

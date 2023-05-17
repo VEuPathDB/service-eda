@@ -34,7 +34,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
   public List<StreamSpec> getStreamSpecs() {
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
         .addVars(getUtil().getChildrenVariables(getConfig().getCollectionVariable()))
-        .addVar(getConfig().getComparisonVariable())
+        .addVar(getConfig().getComparator().getVariable())
       );
   }
 
@@ -51,13 +51,11 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     System.out.println(computeEntityIdColName);
     String method = computeConfig.getDifferentialAbundanceMethod().getValue();
-    String groupA = "c('Female')";
-    String groupB = "c('Male')";
-    // String groupA = computeConfig.getDifferentialAbundanceGroupA() != null ? listToRVector(computeConfig.getDifferentialAbundanceGroupA()) : "NULL";
-    // String groupB = computeConfig.getDifferentialAbundanceGroupB() != null ? listToRVector(computeConfig.getDifferentialAbundanceGroupB()) : "NULL";
+    String groupA = computeConfig.getComparator().getGroupA() != null ? util.listToRVector(computeConfig.getComparator().getGroupA()) : "NULL";
+    String groupB =  computeConfig.getComparator().getGroupB() != null ? util.listToRVector(computeConfig.getComparator().getGroupB()) : "NULL";
 
     // Needs to be in a dot notation... like comptueEntityIdColName prolly
-    VariableSpec comparisonVariableSpec = computeConfig.getComparisonVariable();
+    VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
     String comparisonVariable = util.toColNameOrEmpty(comparisonVariableSpec);
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));

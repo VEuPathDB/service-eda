@@ -44,25 +44,25 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     DifferentialAbundanceComputeConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
     ReferenceMetadata meta = getContext().getReferenceMetadata();
+
     String entityId = computeConfig.getCollectionVariable().getEntityId();
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
-    System.out.println(computeEntityIdVarSpec);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    System.out.println(computeEntityIdColName);
     String method = computeConfig.getDifferentialAbundanceMethod().getValue();
+    VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
+    String comparisonVariable = util.toColNameOrEmpty(comparisonVariableSpec);
     String groupA = computeConfig.getComparator().getGroupA() != null ? util.listToRVector(computeConfig.getComparator().getGroupA()) : "NULL";
     String groupB =  computeConfig.getComparator().getGroupB() != null ? util.listToRVector(computeConfig.getComparator().getGroupB()) : "NULL";
 
-    // Needs to be in a dot notation... like comptueEntityIdColName prolly
-    VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
-    String comparisonVariable = util.toColNameOrEmpty(comparisonVariableSpec);
-    HashMap<String, InputStream> dataStream = new HashMap<>();
-    dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
+    // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
     for (EntityDef ancestor : meta.getAncestors(entity)) {
       idColumns.add(ancestor.getIdColumnDef());
     }
+
+    HashMap<String, InputStream> dataStream = new HashMap<>();
+    dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting differential abundance computation')");
@@ -72,17 +72,16 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
-      connection.voidEval("absoluteAbundanceData <- " + INPUT_DATA); // Need to rename so we can go get the sampleMetadata later
+      connection.voidEval("absoluteAbundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
       // Read in the sample metadata
       List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
       sampleMetadataVars.add(computeEntityIdVarSpec);
-      System.out.println(sampleMetadataVars);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
       connection.voidEval("sampleMetadata <- " + INPUT_DATA);
 
 
-      // TODO make a helper for this i think
+      // Turn the list of id columns into an array of strings for R
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedIdColumnsString = "c(";
       boolean first = true;

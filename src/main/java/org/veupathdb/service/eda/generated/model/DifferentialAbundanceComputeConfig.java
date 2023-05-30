@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import java.util.List;
 import java.util.Map;
 
 @JsonDeserialize(
@@ -17,23 +16,11 @@ public interface DifferentialAbundanceComputeConfig {
   @JsonProperty("collectionVariable")
   void setCollectionVariable(VariableSpec collectionVariable);
 
-  @JsonProperty("comparisonVariable")
-  VariableSpec getComparisonVariable();
+  @JsonProperty("comparator")
+  ComparatorSpec getComparator();
 
-  @JsonProperty("comparisonVariable")
-  void setComparisonVariable(VariableSpec comparisonVariable);
-
-  @JsonProperty("differentialAbundanceGroupA")
-  List<String> getDifferentialAbundanceGroupA();
-
-  @JsonProperty("differentialAbundanceGroupA")
-  void setDifferentialAbundanceGroupA(List<String> differentialAbundanceGroupA);
-
-  @JsonProperty("differentialAbundanceGroupB")
-  List<String> getDifferentialAbundanceGroupB();
-
-  @JsonProperty("differentialAbundanceGroupB")
-  void setDifferentialAbundanceGroupB(List<String> differentialAbundanceGroupB);
+  @JsonProperty("comparator")
+  void setComparator(ComparatorSpec comparator);
 
   @JsonProperty("differentialAbundanceMethod")
   DifferentialAbundanceMethod getDifferentialAbundanceMethod();

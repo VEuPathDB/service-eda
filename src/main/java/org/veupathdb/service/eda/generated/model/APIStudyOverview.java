@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.Date;
 import java.util.Map;
 
 @JsonDeserialize(
@@ -45,6 +46,12 @@ public interface APIStudyOverview {
 
   @JsonProperty("shortDisplayName")
   void setShortDisplayName(String shortDisplayName);
+
+  @JsonProperty("lastModified")
+  Date getLastModified();
+
+  @JsonProperty("lastModified")
+  void setLastModified(Date lastModified);
 
   @JsonProperty("description")
   String getDescription();

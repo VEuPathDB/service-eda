@@ -2,10 +2,13 @@ package org.veupathdb.service.eda.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.Date;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -16,6 +19,7 @@ import java.util.Map;
     "sourceType",
     "displayName",
     "shortDisplayName",
+    "lastModified",
     "description"
 })
 public class APIStudyOverviewImpl implements APIStudyOverview {
@@ -36,6 +40,16 @@ public class APIStudyOverviewImpl implements APIStudyOverview {
 
   @JsonProperty("shortDisplayName")
   private String shortDisplayName;
+
+  @JsonProperty("lastModified")
+  @JsonFormat(
+      shape = JsonFormat.Shape.STRING,
+      pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+  )
+  @JsonDeserialize(
+      using = TimestampDeserializer.class
+  )
+  private Date lastModified;
 
   @JsonProperty("description")
   private String description;
@@ -101,6 +115,16 @@ public class APIStudyOverviewImpl implements APIStudyOverview {
   @JsonProperty("shortDisplayName")
   public void setShortDisplayName(String shortDisplayName) {
     this.shortDisplayName = shortDisplayName;
+  }
+
+  @JsonProperty("lastModified")
+  public Date getLastModified() {
+    return this.lastModified;
+  }
+
+  @JsonProperty("lastModified")
+  public void setLastModified(Date lastModified) {
+    this.lastModified = lastModified;
   }
 
   @JsonProperty("description")

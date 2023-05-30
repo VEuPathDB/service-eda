@@ -8,11 +8,11 @@ import java.util.function.Consumer;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 
-public class ConcatenationConfigStream extends ConcatenationConfigImpl implements StreamingOutput {
+public class DifferentialAbundanceComputeConfigStream extends DifferentialAbundanceComputeConfigImpl implements StreamingOutput {
 
   private final Consumer<OutputStream> _streamer;
 
-  public ConcatenationConfigStream(Consumer<OutputStream> streamer) {
+  public DifferentialAbundanceComputeConfigStream(Consumer<OutputStream> streamer) {
     _streamer = streamer;
   }
 

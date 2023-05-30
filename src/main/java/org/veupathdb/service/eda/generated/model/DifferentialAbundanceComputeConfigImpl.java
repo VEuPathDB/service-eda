@@ -6,29 +6,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.util.List;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "collectionVariable",
-    "comparisonVariable",
-    "differentialAbundanceGroupA",
-    "differentialAbundanceGroupB",
+    "comparator",
     "differentialAbundanceMethod"
 })
 public class DifferentialAbundanceComputeConfigImpl implements DifferentialAbundanceComputeConfig {
   @JsonProperty("collectionVariable")
   private VariableSpec collectionVariable;
 
-  @JsonProperty("comparisonVariable")
-  private VariableSpec comparisonVariable;
-
-  @JsonProperty("differentialAbundanceGroupA")
-  private List<String> differentialAbundanceGroupA;
-
-  @JsonProperty("differentialAbundanceGroupB")
-  private List<String> differentialAbundanceGroupB;
+  @JsonProperty("comparator")
+  private ComparatorSpec comparator;
 
   @JsonProperty("differentialAbundanceMethod")
   private DifferentialAbundanceMethod differentialAbundanceMethod;
@@ -46,34 +37,14 @@ public class DifferentialAbundanceComputeConfigImpl implements DifferentialAbund
     this.collectionVariable = collectionVariable;
   }
 
-  @JsonProperty("comparisonVariable")
-  public VariableSpec getComparisonVariable() {
-    return this.comparisonVariable;
+  @JsonProperty("comparator")
+  public ComparatorSpec getComparator() {
+    return this.comparator;
   }
 
-  @JsonProperty("comparisonVariable")
-  public void setComparisonVariable(VariableSpec comparisonVariable) {
-    this.comparisonVariable = comparisonVariable;
-  }
-
-  @JsonProperty("differentialAbundanceGroupA")
-  public List<String> getDifferentialAbundanceGroupA() {
-    return this.differentialAbundanceGroupA;
-  }
-
-  @JsonProperty("differentialAbundanceGroupA")
-  public void setDifferentialAbundanceGroupA(List<String> differentialAbundanceGroupA) {
-    this.differentialAbundanceGroupA = differentialAbundanceGroupA;
-  }
-
-  @JsonProperty("differentialAbundanceGroupB")
-  public List<String> getDifferentialAbundanceGroupB() {
-    return this.differentialAbundanceGroupB;
-  }
-
-  @JsonProperty("differentialAbundanceGroupB")
-  public void setDifferentialAbundanceGroupB(List<String> differentialAbundanceGroupB) {
-    this.differentialAbundanceGroupB = differentialAbundanceGroupB;
+  @JsonProperty("comparator")
+  public void setComparator(ComparatorSpec comparator) {
+    this.comparator = comparator;
   }
 
   @JsonProperty("differentialAbundanceMethod")

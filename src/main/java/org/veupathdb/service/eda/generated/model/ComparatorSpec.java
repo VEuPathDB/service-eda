@@ -4,17 +4,30 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.List;
 import java.util.Map;
 
 @JsonDeserialize(
-    as = SingleNumericVarReductionConfigImpl.class
+    as = ComparatorSpecImpl.class
 )
-public interface SingleNumericVarReductionConfig {
-  @JsonProperty("inputVariable")
-  VariableSpec getInputVariable();
+public interface ComparatorSpec {
+  @JsonProperty("variable")
+  VariableSpec getVariable();
 
-  @JsonProperty("inputVariable")
-  void setInputVariable(VariableSpec inputVariable);
+  @JsonProperty("variable")
+  void setVariable(VariableSpec variable);
+
+  @JsonProperty("groupA")
+  List<String> getGroupA();
+
+  @JsonProperty("groupA")
+  void setGroupA(List<String> groupA);
+
+  @JsonProperty("groupB")
+  List<String> getGroupB();
+
+  @JsonProperty("groupB")
+  void setGroupB(List<String> groupB);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

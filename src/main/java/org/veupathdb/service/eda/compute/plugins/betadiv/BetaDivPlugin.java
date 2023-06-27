@@ -62,6 +62,7 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+      computeInputVars.clear();
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedIdColumnsString = "c(";
       boolean first = true;

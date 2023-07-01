@@ -4,6 +4,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.StreamingOutput;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
@@ -28,10 +29,8 @@ import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -123,8 +122,14 @@ public class ComputeController implements Computes {
 
   @Override
   public PostComputesDifferentialabundanceStatisticsResponse postComputesDifferentialabundanceStatistics(DifferentialAbundancePluginRequest entity) {
-    return PostComputesDifferentialabundanceStatisticsResponse.respond200WithApplicationJson(new DifferentialAbundanceStatsResponseStream(
-        getResultFileStreamer(new DifferentialAbundancePluginProvider(), STATISTICS, entity)));
+    return PostComputesDifferentialabundanceStatisticsResponse.respond200WithApplicationJson(new DifferentialAbundanceStatsResponseStream(out -> {
+        try {
+          getResultFileStreamer(new DifferentialAbundancePluginProvider(), STATISTICS, entity).write(out);
+        }
+        catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }));
   }
 
 
@@ -219,7 +224,7 @@ public class ComputeController implements Computes {
    *
    * @param <P> Type of the job configuration request body.
    */
-  private <P extends ComputeRequestBase> Consumer<OutputStream> getResultFileStreamer(
+  private <P extends ComputeRequestBase> StreamingOutput getResultFileStreamer(
       PluginMeta<P> plugin,
       String file,
       ComputeRequestBase entity

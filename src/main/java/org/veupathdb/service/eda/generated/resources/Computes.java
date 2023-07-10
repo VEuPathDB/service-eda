@@ -13,6 +13,8 @@ import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
+import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
+import org.veupathdb.service.eda.generated.model.DifferentialAbundanceStatsResponse;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 import org.veupathdb.service.eda.generated.model.JobResponse;
 import org.veupathdb.service.eda.generated.model.PluginOverview;
@@ -84,6 +86,21 @@ public interface Computes {
   @Consumes("application/json")
   PostComputesRankedabundanceByFileResponse postComputesRankedabundanceByFile(
       @PathParam("file") String file, RankedAbundancePluginRequest entity);
+
+  @POST
+  @Path("/differentialabundance")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesDifferentialabundanceResponse postComputesDifferentialabundance(
+      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      DifferentialAbundancePluginRequest entity);
+
+  @POST
+  @Path("/differentialabundance/statistics")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesDifferentialabundanceStatisticsResponse postComputesDifferentialabundanceStatistics(
+      DifferentialAbundancePluginRequest entity);
 
   class GetComputesResponse extends ResponseDelegate {
     private GetComputesResponse(Response response, Object entity) {
@@ -228,6 +245,40 @@ public interface Computes {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "text/plain");
       responseBuilder.entity(entity);
       return new PostComputesRankedabundanceByFileResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesDifferentialabundanceResponse extends ResponseDelegate {
+    private PostComputesDifferentialabundanceResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesDifferentialabundanceResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesDifferentialabundanceResponse respond200WithApplicationJson(
+        JobResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostComputesDifferentialabundanceResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesDifferentialabundanceStatisticsResponse extends ResponseDelegate {
+    private PostComputesDifferentialabundanceStatisticsResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesDifferentialabundanceStatisticsResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesDifferentialabundanceStatisticsResponse respond200WithApplicationJson(
+        DifferentialAbundanceStatsResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostComputesDifferentialabundanceStatisticsResponse(responseBuilder.build(), entity);
     }
   }
 }

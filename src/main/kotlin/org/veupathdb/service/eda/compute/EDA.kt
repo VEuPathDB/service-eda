@@ -170,7 +170,7 @@ object EDA {
         this.config = Json.convert(jobPay)
       }
 
-      // Look up the job we just submitted
+      // Return the job ID with queued status (even though it may have moved to another status already)
       return JobResponseImpl().also {
         it.jobID = jobID.string
         it.status = JobStatus.QUEUED

@@ -43,6 +43,8 @@ public class ExpirationController implements ExpireComputeJobs {
     }
     List<HashID> filteredJobIds = findJobs(Optional.ofNullable(jobId), Optional.ofNullable(studyId), Optional.ofNullable(pluginName));
     int numJobsExpired = manuallyExpireJobs(filteredJobIds);
+    LOG.info("Expired " + numJobsExpired + " jobs in response to the following expiration request: " +
+        "jobId = " + jobId + ", studyId = " + studyId + ", pluginName = " + pluginName);
     ExpiredJobsResponse response = new ExpiredJobsResponseImpl();
     response.setNumJobsExpired(numJobsExpired);
     return GetExpireComputeJobsResponse.respond200WithApplicationJson(response);

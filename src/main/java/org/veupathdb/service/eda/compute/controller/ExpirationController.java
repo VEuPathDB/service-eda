@@ -49,7 +49,7 @@ public class ExpirationController implements ExpireComputeJobs {
   }
 
   private List<HashID> findJobs(Optional<String> jobIdOption, Optional<String> studyIdOption, Optional<String> pluginNameOption) {
-    return AsyncPlatform.listJobReferences().stream()
+    return AsyncPlatform.listJobReferences().parallelStream()
 
         // can only expire owned jobs
         .filter(JobReference::getOwned)

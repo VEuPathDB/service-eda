@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  * Responsible for expiring jobs on command.  Service takes two optional arguments:
@@ -49,7 +51,12 @@ public class ExpirationController implements ExpireComputeJobs {
   }
 
   private List<HashID> findJobs(Optional<String> jobIdOption, Optional<String> studyIdOption, Optional<String> pluginNameOption) {
-    return AsyncPlatform.listJobReferences().parallelStream()
+    ForkJoinPool customThreadPool = null;
+    try {
+      customThreadPool = new ForkJoinPool(10);
+      return customThreadPool.submit(() ->
+
+        AsyncPlatform.listJobReferences().parallelStream()
 
         // can only expire owned jobs
         .filter(JobReference::getOwned)
@@ -72,7 +79,18 @@ public class ExpirationController implements ExpireComputeJobs {
         )
 
         // collect remaining job IDs
-        .toList();
+        .toList()
+      ).get();
+    }
+    catch (ExecutionException e) {
+      throw new RuntimeException("Could not handle job expiration request", e);
+    }
+    catch (InterruptedException e) {
+      throw new RuntimeException("Expiration request interrupted before completion", e);
+    }
+    finally {
+      customThreadPool.shutdown();
+    }
   }
 
   private boolean jobMatchesCriteria(HashID jobId, Optional<String> studyIdOption, Optional<String> pluginNameOption) {

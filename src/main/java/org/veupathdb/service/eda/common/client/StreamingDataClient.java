@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import jakarta.ws.rs.ProcessingException;
 import org.gusdb.fgputil.AutoCloseableList;
-import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.FunctionalInterfaces;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -26,7 +25,6 @@ public abstract class StreamingDataClient extends ServiceClient {
   public abstract ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
       List<APIFilter> subset,
-      Optional<Tuples.TwoTuple<String,Object>> computeInfo,
       StreamSpec spec) throws ProcessingException;
 
   protected StreamingDataClient(String serviceBaseUrl, Entry<String, String> authHeader) {

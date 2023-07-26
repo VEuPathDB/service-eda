@@ -36,7 +36,9 @@ public class EdaComputeClient {
     }
   }
 
-  private static final String STATUS_SEGMENT = ""; // parent path returns status
+  // parent path returns status; flag indicates not to restart
+  private static final String STATUS_SEGMENT = "?autostart=false";
+
   private static final String META_FILE_SEGMENT = "/meta";
   private static final String STATS_FILE_SEGMENT = "/statistics";
   private static final String TABULAR_FILE_SEGMENT = "/tabular";

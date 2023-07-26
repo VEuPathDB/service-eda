@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.common.client;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.MediaType;
-import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.json.JsonUtil;
@@ -17,7 +16,6 @@ import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.InputStream;
-import java.sql.Ref;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,13 +71,12 @@ public class EdaSubsettingClient extends StreamingDataClient {
   @Override
   public ResponseFuture getTabularDataStream(
       ReferenceMetadata metadata,
-      List<APIFilter> subset,
-      Optional<Tuples.TwoTuple<String,Object>> computeInfo, // should always be null; will be ignored
+      List<APIFilter> defaultSubset,
       StreamSpec spec) throws ProcessingException {
 
     // build request object
     EntityTabularPostRequest request = new EntityTabularPostRequestImpl();
-    request.setFilters(subset);
+    request.setFilters(spec.getFiltersOverride().orElse(defaultSubset));
     request.setOutputVariableIds(spec.stream()
       // subsetting service only takes var IDs (must match entity requested, but should already be validated)
       .map(VariableSpec::getVariableId)

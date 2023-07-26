@@ -5,9 +5,18 @@ import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.Optional;
 
+/**
+ * Contains a pair of data ranges, one for full data range and one for display range.  This class takes the typed
+ * variable (or collection) metadata objects and extracts their type-specific data ranges for generic storage here.
+ */
 public class DataRanges extends Tuples.TwoTuple<DataRange, DataRange> {
+
   public DataRanges(DataRange dataRange, DataRange displayRange) {
     super(dataRange, displayRange);
+  }
+
+  public DataRanges(DataRange dataRange) {
+    super(dataRange, dataRange);
   }
 
   public DataRange getDataRange() {

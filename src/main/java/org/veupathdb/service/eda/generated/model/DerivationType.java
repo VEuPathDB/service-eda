@@ -9,7 +9,7 @@ public enum DerivationType {
   @JsonProperty("reduction")
   REDUCTION("reduction");
 
-  private final String value;
+  public final String value;
 
   public String getValue() {
     return this.value;

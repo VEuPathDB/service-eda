@@ -2,12 +2,12 @@ package org.veupathdb.service.eda.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public enum DataSourceType {
-  @JsonProperty("database")
-  DATABASE("database"),
+public enum DifferentialAbundanceMethod {
+  @JsonProperty("DESeq")
+  DESEQ("DESeq"),
 
-  @JsonProperty("file")
-  FILE("file");
+  @JsonProperty("ANCOMBC")
+  ANCOMBC("ANCOMBC");
 
   public final String value;
 
@@ -15,7 +15,7 @@ public enum DataSourceType {
     return this.value;
   }
 
-  DataSourceType(String name) {
+  DifferentialAbundanceMethod(String name) {
     this.value = name;
   }
 }

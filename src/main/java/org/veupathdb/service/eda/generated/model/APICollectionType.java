@@ -12,7 +12,7 @@ public enum APICollectionType {
   @JsonProperty("integer")
   INTEGER("integer");
 
-  private final String value;
+  public final String value;
 
   public String getValue() {
     return this.value;

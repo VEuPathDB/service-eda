@@ -21,6 +21,7 @@ import org.veupathdb.service.eda.compute.plugins.PluginProvider;
 import org.veupathdb.service.eda.compute.plugins.PluginRegistry;
 import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
+import org.veupathdb.service.eda.compute.plugins.correlation.CorrelationPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
@@ -125,6 +126,23 @@ public class ComputeController implements Computes {
     return PostComputesDifferentialabundanceStatisticsResponse.respond200WithApplicationJson(new DifferentialAbundanceStatsResponseStream(out -> {
         try {
           getResultFileStreamer(new DifferentialAbundancePluginProvider(), STATISTICS, entity).write(out);
+        }
+        catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }));
+  }
+
+  @Override
+  public PostComputesCorrelationResponse postComputesCorrelation(Boolean autostart, CorrelationPluginRequest entity) {
+    return PostComputesCorrelationResponse.respond200WithApplicationJson(submitJob(new CorrelationPluginProvider(), entity, autostart));
+  }
+
+  @Override
+  public PostComputesCorrelationStatisticsResponse postComputesCorrelationStatistics(CorrelationPluginRequest entity) {
+    return PostComputesCorrelationStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
+        try {
+          getResultFileStreamer(new CorrelationPluginProvider(), STATISTICS, entity).write(out);
         }
         catch (IOException e) {
           throw new RuntimeException(e);

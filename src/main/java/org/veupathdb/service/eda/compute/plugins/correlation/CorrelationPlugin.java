@@ -91,8 +91,9 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
+
       // Set up input assay data.
-      // TEMP until we have the continuous sample metadata, we're using the absolute data again as sample metadata
+      // TEMP until we have the continuous sample metadata, we're letting the abundance data sub for continuous sample metadata
       connection.voidEval("inputData <- microbiomeComputations::AbundanceData(data=abundanceData" + 
                                                                           ", sampleMetadata=abundanceData" +
                                                                           ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
@@ -100,7 +101,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
                                                                           ", imputeZero=TRUE)");
 
 
-      connection.voidEval("computeResult <- correlation(data=inputData" +
+      connection.voidEval("computeResult <- microbiomeComputations::correlation(data=inputData" +
                                                           ", method=" + singleQuote(method) +
                                                           ", verbose=TRUE)");
 

@@ -328,9 +328,8 @@ public interface Computes {
     public static PostComputesCorrelationStatisticsResponse respond200WithApplicationJson(
         CorrelationStatsResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
-      GenericEntity<CorrelationStatsResponse> wrappedEntity = new GenericEntity<CorrelationStatsResponse>(entity){};
-      responseBuilder.entity(wrappedEntity);
-      return new PostComputesCorrelationStatisticsResponse(responseBuilder.build(), wrappedEntity);
+      responseBuilder.entity(entity);
+      return new PostComputesCorrelationStatisticsResponse(responseBuilder.build(), entity);
     }
   }
 }

@@ -13,6 +13,8 @@ import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
+import org.veupathdb.service.eda.generated.model.CorrelationPluginRequest;
+import org.veupathdb.service.eda.generated.model.CorrelationStatsResponse;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceStatsResponse;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
@@ -101,6 +103,21 @@ public interface Computes {
   @Consumes("application/json")
   PostComputesDifferentialabundanceStatisticsResponse postComputesDifferentialabundanceStatistics(
       DifferentialAbundancePluginRequest entity);
+
+  @POST
+  @Path("/correlation")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesCorrelationResponse postComputesCorrelation(
+      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      CorrelationPluginRequest entity);
+
+  @POST
+  @Path("/correlation/statistics")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesCorrelationStatisticsResponse postComputesCorrelationStatistics(
+      CorrelationPluginRequest entity);
 
   class GetComputesResponse extends ResponseDelegate {
     private GetComputesResponse(Response response, Object entity) {
@@ -279,6 +296,41 @@ public interface Computes {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
       return new PostComputesDifferentialabundanceStatisticsResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesCorrelationResponse extends ResponseDelegate {
+    private PostComputesCorrelationResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesCorrelationResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesCorrelationResponse respond200WithApplicationJson(
+        JobResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostComputesCorrelationResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesCorrelationStatisticsResponse extends ResponseDelegate {
+    private PostComputesCorrelationStatisticsResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesCorrelationStatisticsResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesCorrelationStatisticsResponse respond200WithApplicationJson(
+        CorrelationStatsResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      GenericEntity<CorrelationStatsResponse> wrappedEntity = new GenericEntity<CorrelationStatsResponse>(entity){};
+      responseBuilder.entity(wrappedEntity);
+      return new PostComputesCorrelationStatisticsResponse(responseBuilder.build(), wrappedEntity);
     }
   }
 }

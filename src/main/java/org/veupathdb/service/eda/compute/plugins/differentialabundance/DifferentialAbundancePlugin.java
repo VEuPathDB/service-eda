@@ -52,7 +52,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getDifferentialAbundanceMethod().getValue();
     VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
-    String comparisonVariable = util.toColNameOrEmpty(comparisonVariableSpec);
+    String comparisonVariableDataShape = util.getVariableDataShape(comparisonVariableSpec);
     List<BinRange> groupA = computeConfig.getComparator().getGroupA();
     List<BinRange> groupB =  computeConfig.getComparator().getGroupB();
 
@@ -118,7 +118,6 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       }
   
       rGroupA += "))";
-      System.out.println(rGroupA);
 
       // ... for group B
       String rGroupB = "veupathUtils::BinList(S4Vectors::SimpleList(";
@@ -142,31 +141,19 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       }
   
       rGroupB += "))";
-      System.out.println(rGroupB);
 
       // TEMP FOR TESTING ONLY - REMOVE WHEN ABSOLUTE ABUNDANCES ARE HERE
       connection.voidEval("taxaColNames <- names(absoluteAbundanceData[, -c('" + computeEntityIdColName + "', as.character(" + dotNotatedIdColumnsString + "))])");
       connection.voidEval("absoluteAbundanceData[, (taxaColNames) := lapply(.SD,function(x) {round(x*1000)}), .SDcols=taxaColNames]");
       // END OF TEMP FOR TESTING
 
-      // Create the Comparator object. Combines a VariableMetadata object with two BinLists (groupA and groupB)
-      // connection.voidEval("variable <- ...");
-      System.out.println(comparisonVariableSpec.getVariableId());
-      // connection.voidEval("print('microbiomeComputations::Comparator(" +
-      //                           "variable = veupathUtils::VariableMetadata(" + 
-      //                             "variableSpec = veupathUtils::VariableSpec(" +
-      //                               "variableId=" + comparisonVariableSpec.getVariableId() +
-      //                               ", entityId=" + comparisonVariableSpec.getEntityId() +
-      //                             ")," +
-      //                             "dataShape = veupathUtils::DataShape(value = 'CATEGORICAL')" +
-      //                           ")))");
 
       connection.voidEval("comparator <- microbiomeComputations::Comparator(" +
                                 "variable=veupathUtils::VariableMetadata(" + 
                                   "variableSpec=veupathUtils::VariableSpec(" +
                                     "variableId='" + comparisonVariableSpec.getVariableId() + "'," +
                                     "entityId='" + comparisonVariableSpec.getEntityId() + "')," +
-                                  "dataShape = veupathUtils::DataShape(value = 'CATEGORICAL')" +
+                                  "dataShape = veupathUtils::DataShape(value = '" + comparisonVariableDataShape + "')" +
                                 ")," +
                                 "groupA=" + rGroupA + "," +
                                 "groupB=" + rGroupB +

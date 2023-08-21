@@ -151,4 +151,37 @@ public class EdaSubsettingClient extends StreamingDataClient {
       throw new RuntimeException("Unable to complete subset distribution request.", e);
     }
   }
+
+  // TODO move this raml type from the subset service to here?
+  public Optional<VocabByRootEntityPostResponse> getVocabByRootEntity(
+    ReferenceMetadata metadata,
+    VariableSpec varSpec,
+    List<APIFilter> subsetFilters
+  ) {
+    // check for annotations or throw
+    // VariableDef var = metadata.getVariable(varSpec).orElseThrow();
+    // if (!var.getHasStudyDependentVocabulary()) {
+    //   throw new IllegalArgumentException("Cannot call subsetting vocabulary by root entity endpoint with a variable that does not have a study dependent vocabulary: " + var);
+    // }
+    // TODO should i check other things?
+
+    // build request obj
+    VocabByRootEntityPostRequest request = new VocabByRootEntityPostRequestImpl();
+    request.setFilters(subsetFilters);
+
+    // build request url
+    // TODO understand the use of ss-internal vs not
+    String url = getUrl("/studies/" + metadata.getStudyId() + "/entities" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId() + "/root-vocab");
+
+    // make request
+    ResponseFuture response = ClientUtil.makeAsyncPostRequest(url, request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
+
+    // parse output and return
+    try (InputStream responseBody = response.getInputStream()) {
+      return JsonUtil.Jackson.readValue(responseBody, VocabByRootEntityPostResponse.class);
+    }
+    catch (Exception e) {
+      throw new RuntimeException("Unable to complete request for vocabulary by root entity.", e);
+    } 
+  }
 }

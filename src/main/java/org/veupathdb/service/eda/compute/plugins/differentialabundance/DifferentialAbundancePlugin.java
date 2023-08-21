@@ -10,6 +10,7 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
+import org.veupathdb.service.eda.generated.model.BinRange;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceComputeConfig;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
@@ -52,8 +53,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     String method = computeConfig.getDifferentialAbundanceMethod().getValue();
     VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
     String comparisonVariable = util.toColNameOrEmpty(comparisonVariableSpec);
-    String groupA = computeConfig.getComparator().getGroupA() != null ? util.listToRVector(computeConfig.getComparator().getGroupA()) : "NULL";
-    String groupB =  computeConfig.getComparator().getGroupB() != null ? util.listToRVector(computeConfig.getComparator().getGroupB()) : "NULL";
+    List<BinRange> groupA = computeConfig.getComparator().getGroupA();
+    List<BinRange> groupB =  computeConfig.getComparator().getGroupB();
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
@@ -95,10 +96,82 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
+      // Turn the comparator bin lists into a string for R
+      String rGroupA = "veupathUtils::BinList(S4Vectors::SimpleList(";
+
+      first = true;
+      for (int i = 0; i < groupA.size(); i++) {
+        System.out.println(groupA.get(i).getBinLabel());
+        String rBin = "veupathUtils::Bin(binLabel='" + groupA.get(i).getBinLabel() + "'";
+        if (groupA.get(i).getBinStart() != null) {
+          rBin += ",binStart=" + String.valueOf(groupA.get(i).getBinStart()) + 
+                  ",binEnd=" + String.valueOf(groupA.get(i).getBinEnd());
+        }
+        rBin += ")";
+  
+        if (first) {
+          rGroupA += rBin;
+          first = false;
+        } else {
+          rGroupA += "," + rBin;
+        }
+      }
+  
+      rGroupA += "))";
+      System.out.println(rGroupA);
+
+      // ... for group B
+      String rGroupB = "veupathUtils::BinList(S4Vectors::SimpleList(";
+
+      first = true;
+      for (int i = 0; i < groupB.size(); i++) {
+        System.out.println(groupB.get(i).getBinLabel());
+        String rBin = "veupathUtils::Bin(binLabel='" + groupB.get(i).getBinLabel() + "'";
+        if (groupB.get(i).getBinStart() != null) {
+          rBin += ",binStart=" + String.valueOf(groupB.get(i).getBinStart()) + 
+                  ",binEnd=" + String.valueOf(groupB.get(i).getBinEnd());
+        }
+        rBin += ")";
+  
+        if (first) {
+          rGroupB += rBin;
+          first = false;
+        } else {
+          rGroupB += "," + rBin;
+        }
+      }
+  
+      rGroupB += "))";
+      System.out.println(rGroupB);
+
       // TEMP FOR TESTING ONLY - REMOVE WHEN ABSOLUTE ABUNDANCES ARE HERE
       connection.voidEval("taxaColNames <- names(absoluteAbundanceData[, -c('" + computeEntityIdColName + "', as.character(" + dotNotatedIdColumnsString + "))])");
       connection.voidEval("absoluteAbundanceData[, (taxaColNames) := lapply(.SD,function(x) {round(x*1000)}), .SDcols=taxaColNames]");
       // END OF TEMP FOR TESTING
+
+      // Create the Comparator object. Combines a VariableMetadata object with two BinLists (groupA and groupB)
+      // connection.voidEval("variable <- ...");
+      System.out.println(comparisonVariableSpec.getVariableId());
+      // connection.voidEval("print('microbiomeComputations::Comparator(" +
+      //                           "variable = veupathUtils::VariableMetadata(" + 
+      //                             "variableSpec = veupathUtils::VariableSpec(" +
+      //                               "variableId=" + comparisonVariableSpec.getVariableId() +
+      //                               ", entityId=" + comparisonVariableSpec.getEntityId() +
+      //                             ")," +
+      //                             "dataShape = veupathUtils::DataShape(value = 'CATEGORICAL')" +
+      //                           ")))");
+
+      connection.voidEval("comparator <- microbiomeComputations::Comparator(" +
+                                "variable=veupathUtils::VariableMetadata(" + 
+                                  "variableSpec=veupathUtils::VariableSpec(" +
+                                    "variableId='" + comparisonVariableSpec.getVariableId() + "'," +
+                                    "entityId='" + comparisonVariableSpec.getEntityId() + "')," +
+                                  "dataShape = veupathUtils::DataShape(value = 'CATEGORICAL')" +
+                                ")," +
+                                "groupA=" + rGroupA + "," +
+                                "groupB=" + rGroupB +
+                              ")");
+
 
       connection.voidEval("inputData <- microbiomeComputations::AbsoluteAbundanceData(data=absoluteAbundanceData" + 
                                                                           ", sampleMetadata=sampleMetadata" +
@@ -107,10 +180,9 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
                                                                           ", imputeZero=TRUE)");
 
 
+
       connection.voidEval("computeResult <- differentialAbundance(data=inputData" +
-                                                          ", comparisonVariable=" + singleQuote(comparisonVariable) +
-                                                          ", groupA=" + groupA +
-                                                          ", groupB=" + groupB + 
+                                                          ", comparator=comparator" +
                                                           ", method=" + singleQuote(method) +
                                                           ", verbose=TRUE)");
 

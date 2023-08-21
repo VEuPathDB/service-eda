@@ -96,12 +96,11 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-      // Turn the comparator bin lists into a string for R
+      // Turn the comparator bin lists into a string for R (copied from data service!!! Utterly disgraceful!!)
       String rGroupA = "veupathUtils::BinList(S4Vectors::SimpleList(";
 
       first = true;
       for (int i = 0; i < groupA.size(); i++) {
-        System.out.println(groupA.get(i).getBinLabel());
         String rBin = "veupathUtils::Bin(binLabel='" + groupA.get(i).getBinLabel() + "'";
         if (groupA.get(i).getBinStart() != null) {
           rBin += ",binStart=" + String.valueOf(groupA.get(i).getBinStart()) + 
@@ -124,7 +123,6 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
 
       first = true;
       for (int i = 0; i < groupB.size(); i++) {
-        System.out.println(groupB.get(i).getBinLabel());
         String rBin = "veupathUtils::Bin(binLabel='" + groupB.get(i).getBinLabel() + "'";
         if (groupB.get(i).getBinStart() != null) {
           rBin += ",binStart=" + String.valueOf(groupB.get(i).getBinStart()) + 

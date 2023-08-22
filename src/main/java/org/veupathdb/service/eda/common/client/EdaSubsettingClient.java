@@ -170,18 +170,9 @@ public class EdaSubsettingClient extends StreamingDataClient {
     request.setFilters(subsetFilters);
 
     // build request url
-    // TODO understand the use of ss-internal vs not
     String url = getUrl("/studies/" + metadata.getStudyId() + "/entities" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId() + "/root-vocab");
 
     // make request
-    ResponseFuture response = ClientUtil.makeAsyncPostRequest(url, request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
-
-    // parse output and return
-    try (InputStream responseBody = response.getInputStream()) {
-      return JsonUtil.Jackson.readValue(responseBody, VocabByRootEntityPostResponse.class);
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Unable to complete request for vocabulary by root entity.", e);
-    } 
+    return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
   }
 }

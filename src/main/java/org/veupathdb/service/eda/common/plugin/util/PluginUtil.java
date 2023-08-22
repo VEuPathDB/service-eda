@@ -12,6 +12,7 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -175,4 +176,67 @@ public class PluginUtil {
         ", na.strings=c(''))";
   }
 
+  public String getDotNotatedIdColumnsAsRVectorString(List<String> dotNotatedIdColumns) {
+    String dotNotatedIdColumnsString = "c(";
+      boolean first = true;
+      for (String idCol : dotNotatedIdColumns) {
+        if (first) {
+          first = false;
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + singleQuote(idCol);
+        } else {
+          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + singleQuote(idCol);
+        }
+      }
+      dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
+
+    return dotNotatedIdColumnsString;
+  }
+  
+  public String getIdColumnSpecsAsRVectorString(List<VariableSpec> idColumnSpecs) {
+    List<String> dotNotatedIdColumns = idColumnSpecs.stream().map(VariableDef::toDotNotation).toList();
+  
+    return getDotNotatedIdColumnsAsRVectorString(dotNotatedIdColumns);
+  }
+
+  // this feels like it should be unnecessary.. what am i not getting?
+  public String getIdColumnDefsAsRVectorString(List<VariableDef> idColumnDefs) {
+    List<String> dotNotatedIdColumns = idColumnDefs.stream().map(VariableDef::toDotNotation).toList();
+  
+    return getDotNotatedIdColumnsAsRVectorString(dotNotatedIdColumns);
+  }
+
+  public String getEntityAncestorsAsRVectorString(EntityDef entity, ReferenceMetadata meta) {
+    List<VariableDef> idColumns = new ArrayList<>();
+    for (EntityDef ancestor : meta.getAncestors(entity)) {
+      idColumns.add(ancestor.getIdColumnDef());
+    }
+
+    return getIdColumnDefsAsRVectorString(idColumns);
+  }
+
+  public String getEntityAncestorsAsRVectorString(String entityId, ReferenceMetadata meta) {
+    EntityDef entity = meta.getEntity(entityId).orElseThrow();
+
+    return getEntityAncestorsAsRVectorString(entity, meta);
+  }
+
+  // TODO could be better named since this only deals w labels
+  public String getRBinListAsString(List<String> labels) {
+    String rBinList = "veupathUtils::BinList(S4Vectors::SimpleList(";
+
+    boolean first = true;
+    for (int i = 0; i < labels.size(); i++) {
+      String rBin = "veupathUtils::Bin(binLabel='" + labels.get(i) + "'";
+      rBin += ")";
+
+      if (first) {
+        rBinList += rBin;
+        first = false;
+      } else {
+        rBinList += "," + rBin;
+      }
+    }
+
+    return rBinList + "))";
+  }
 }

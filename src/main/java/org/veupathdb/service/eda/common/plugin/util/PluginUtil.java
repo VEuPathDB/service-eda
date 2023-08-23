@@ -98,6 +98,14 @@ public class PluginUtil {
     return getVariableImputeZero(getVariableSpecFromList(vars, index));
   }
 
+  public String getHasStudyDependentVocabulary(VariableSpec var) {
+    return getVariableAttribute(VariableDef::hasStudyDependentVocabulary, var);
+  }
+
+  public String getHasStudyDependentVocabulary(List<VariableSpec> vars, int index) {
+    return getHasStudyDependentVocabulary(getVariableSpecFromList(vars, index));
+  }
+
   public List<VariableDef> getCollectionMembers(CollectionSpec collection) {
     return collection == null ? null : _metadata.getCollection(collection).orElseThrow().getMemberVariables();
   }

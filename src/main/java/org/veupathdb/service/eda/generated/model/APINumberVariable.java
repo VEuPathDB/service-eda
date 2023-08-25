@@ -138,6 +138,12 @@ public interface APINumberVariable extends APIVariableWithValues {
   @JsonProperty("precision")
   void setPrecision(Number precision);
 
+  @JsonProperty("scale")
+  APIVariableScale getScale();
+
+  @JsonProperty("scale")
+  void setScale(APIVariableScale scale);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

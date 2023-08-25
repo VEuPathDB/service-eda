@@ -15,9 +15,10 @@ import java.util.Map;
     property = "type"
 )
 @JsonSubTypes({
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIDateCollection.class),
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIIntegerCollection.class),
     @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APINumberCollection.class),
+    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIDateCollection.class),
+    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIStringCollection.class),
+    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIIntegerCollection.class),
     @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APICollection.class)
 })
 @JsonDeserialize(

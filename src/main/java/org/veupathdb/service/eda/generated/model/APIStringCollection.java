@@ -3,29 +3,17 @@ package org.veupathdb.service.eda.generated.model;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.List;
 import java.util.Map;
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "type"
-)
-@JsonSubTypes({
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APINumberCollection.class),
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIDateCollection.class),
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIStringCollection.class),
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIIntegerCollection.class),
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APICollection.class)
-})
+@JsonTypeName("string")
 @JsonDeserialize(
-    as = APICollectionImpl.class
+    as = APIStringCollectionImpl.class
 )
-public interface APICollection {
-  APICollectionType _DISCRIMINATOR_TYPE_NAME = null;
+public interface APIStringCollection extends APICollection {
+  APICollectionType _DISCRIMINATOR_TYPE_NAME = APICollectionType.STRING;
 
   @JsonProperty("id")
   String getId();

@@ -9,7 +9,7 @@ public enum DifferentialAbundanceMethod {
   @JsonProperty("ANCOMBC")
   ANCOMBC("ANCOMBC");
 
-  private final String value;
+  public final String value;
 
   public String getValue() {
     return this.value;

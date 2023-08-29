@@ -99,7 +99,7 @@ public class PluginUtil {
   }
 
   public String getHasStudyDependentVocabulary(VariableSpec var) {
-    return getVariableAttribute(VariableDef::hasStudyDependentVocabulary, var);
+    return getVariableAttribute(VariableDef::getHasStudyDependentVocabulary, var);
   }
 
   public String getHasStudyDependentVocabulary(List<VariableSpec> vars, int index) {

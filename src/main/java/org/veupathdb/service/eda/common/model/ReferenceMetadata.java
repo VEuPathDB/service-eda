@@ -161,7 +161,9 @@ public class ReferenceMetadata {
             col.getDistinctValuesCount(),
             col.getVocabulary(),
             col.getMemberVariableIds(),
-            DataRanges.getDataRanges(col)
+            DataRanges.getDataRanges(col),
+            col.getHasStudyDependentVocabulary(),
+            col.getVariableSpecToImputeZeroesFor()
         )
     ).forEach(colDef -> entityDef.addCollection(colDef));
 

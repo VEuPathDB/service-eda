@@ -106,6 +106,10 @@ public class PluginUtil {
     return getHasStudyDependentVocabulary(getVariableSpecFromList(vars, index));
   }
 
+  public String getHasStudyDependentVocabulary(CollectionSpec collection) {
+    return getCollectionAttribute(CollectionDef::getHasStudyDependentVocabulary, collection);
+  }
+
   public List<VariableDef> getCollectionMembers(CollectionSpec collection) {
     return collection == null ? null : _metadata.getCollection(collection).orElseThrow().getMemberVariables();
   }

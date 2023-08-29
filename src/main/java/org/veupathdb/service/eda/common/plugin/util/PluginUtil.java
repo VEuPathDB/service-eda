@@ -206,7 +206,6 @@ public class PluginUtil {
     return getDotNotatedIdColumnsAsRVectorString(dotNotatedIdColumns);
   }
 
-  // this feels like it should be unnecessary.. what am i not getting?
   public String getIdColumnDefsAsRVectorString(List<VariableDef> idColumnDefs) {
     List<String> dotNotatedIdColumns = idColumnDefs.stream().map(VariableDef::toDotNotation).toList();
   
@@ -228,8 +227,7 @@ public class PluginUtil {
     return getEntityAncestorsAsRVectorString(entity, meta);
   }
 
-  // TODO could be better named since this only deals w labels
-  public String getRBinListAsString(List<String> labels) {
+  public String getRCategoricalBinListAsString(List<String> labels) {
     String rBinList = "veupathUtils::BinList(S4Vectors::SimpleList(";
 
     boolean first = true;

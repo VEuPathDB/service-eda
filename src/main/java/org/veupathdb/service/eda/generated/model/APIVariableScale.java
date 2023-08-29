@@ -2,12 +2,15 @@ package org.veupathdb.service.eda.generated.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public enum DataSourceType {
-  @JsonProperty("database")
-  DATABASE("database"),
+public enum APIVariableScale {
+  @JsonProperty("log")
+  LOG("log"),
 
-  @JsonProperty("file")
-  FILE("file");
+  @JsonProperty("log2")
+  LOG2("log2"),
+
+  @JsonProperty("ln")
+  LN("ln");
 
   public final String value;
 
@@ -15,7 +18,7 @@ public enum DataSourceType {
     return this.value;
   }
 
-  DataSourceType(String name) {
+  APIVariableScale(String name) {
     this.value = name;
   }
 }

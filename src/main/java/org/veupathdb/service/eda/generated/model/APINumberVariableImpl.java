@@ -33,7 +33,8 @@ import java.util.Map;
     "imputeZero",
     "distributionDefaults",
     "units",
-    "precision"
+    "precision",
+    "scale"
 })
 public class APINumberVariableImpl implements APINumberVariable {
   @JsonProperty("id")
@@ -98,6 +99,9 @@ public class APINumberVariableImpl implements APINumberVariable {
 
   @JsonProperty("precision")
   private Number precision;
+
+  @JsonProperty("scale")
+  private APIVariableScale scale;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -305,6 +309,16 @@ public class APINumberVariableImpl implements APINumberVariable {
   @JsonProperty("precision")
   public void setPrecision(Number precision) {
     this.precision = precision;
+  }
+
+  @JsonProperty("scale")
+  public APIVariableScale getScale() {
+    return this.scale;
+  }
+
+  @JsonProperty("scale")
+  public void setScale(APIVariableScale scale) {
+    this.scale = scale;
   }
 
   @JsonAnyGetter

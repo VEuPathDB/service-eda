@@ -97,48 +97,9 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
       // Turn the comparator bin lists into a string for R (copied from data service!!! Utterly disgraceful!!)
-      String rGroupA = "veupathUtils::BinList(S4Vectors::SimpleList(";
+      String rGroupA = utils.getRBinListAsString(groupA);
+      String rGroupB = utils.getRBinListAsString(groupB);
 
-      first = true;
-      for (int i = 0; i < groupA.size(); i++) {
-        String rBin = "veupathUtils::Bin(binLabel='" + groupA.get(i).getBinLabel() + "'";
-        if (groupA.get(i).getBinStart() != null) {
-          rBin += ",binStart=" + String.valueOf(groupA.get(i).getBinStart()) + 
-                  ",binEnd=" + String.valueOf(groupA.get(i).getBinEnd());
-        }
-        rBin += ")";
-  
-        if (first) {
-          rGroupA += rBin;
-          first = false;
-        } else {
-          rGroupA += "," + rBin;
-        }
-      }
-  
-      rGroupA += "))";
-
-      // ... for group B
-      String rGroupB = "veupathUtils::BinList(S4Vectors::SimpleList(";
-
-      first = true;
-      for (int i = 0; i < groupB.size(); i++) {
-        String rBin = "veupathUtils::Bin(binLabel='" + groupB.get(i).getBinLabel() + "'";
-        if (groupB.get(i).getBinStart() != null) {
-          rBin += ",binStart=" + String.valueOf(groupB.get(i).getBinStart()) + 
-                  ",binEnd=" + String.valueOf(groupB.get(i).getBinEnd());
-        }
-        rBin += ")";
-  
-        if (first) {
-          rGroupB += rBin;
-          first = false;
-        } else {
-          rGroupB += "," + rBin;
-        }
-      }
-  
-      rGroupB += "))";
 
       // TEMP FOR TESTING ONLY - REMOVE WHEN ABSOLUTE ABUNDANCES ARE HERE
       connection.voidEval("taxaColNames <- names(absoluteAbundanceData[, -c('" + computeEntityIdColName + "', as.character(" + dotNotatedIdColumnsString + "))])");

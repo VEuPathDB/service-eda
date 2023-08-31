@@ -8,15 +8,18 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "studyId",
+    "derivedVariables",
     "filters",
     "entityId",
     "outputVariables",
-    "derivedVariables",
     "computeSpec"
 })
 public class MergedEntityTabularPostRequestImpl implements MergedEntityTabularPostRequest {
   @JsonProperty("studyId")
   private String studyId;
+
+  @JsonProperty("derivedVariables")
+  private List<DerivedVariableSpec> derivedVariables;
 
   @JsonProperty("filters")
   private List<APIFilter> filters;
@@ -26,9 +29,6 @@ public class MergedEntityTabularPostRequestImpl implements MergedEntityTabularPo
 
   @JsonProperty("outputVariables")
   private List<VariableSpec> outputVariables;
-
-  @JsonProperty("derivedVariables")
-  private List<DerivedVariableSpec> derivedVariables;
 
   @JsonProperty("computeSpec")
   private ComputeSpecForMerging computeSpec;
@@ -41,6 +41,16 @@ public class MergedEntityTabularPostRequestImpl implements MergedEntityTabularPo
   @JsonProperty("studyId")
   public void setStudyId(String studyId) {
     this.studyId = studyId;
+  }
+
+  @JsonProperty("derivedVariables")
+  public List<DerivedVariableSpec> getDerivedVariables() {
+    return this.derivedVariables;
+  }
+
+  @JsonProperty("derivedVariables")
+  public void setDerivedVariables(List<DerivedVariableSpec> derivedVariables) {
+    this.derivedVariables = derivedVariables;
   }
 
   @JsonProperty("filters")
@@ -71,16 +81,6 @@ public class MergedEntityTabularPostRequestImpl implements MergedEntityTabularPo
   @JsonProperty("outputVariables")
   public void setOutputVariables(List<VariableSpec> outputVariables) {
     this.outputVariables = outputVariables;
-  }
-
-  @JsonProperty("derivedVariables")
-  public List<DerivedVariableSpec> getDerivedVariables() {
-    return this.derivedVariables;
-  }
-
-  @JsonProperty("derivedVariables")
-  public void setDerivedVariables(List<DerivedVariableSpec> derivedVariables) {
-    this.derivedVariables = derivedVariables;
   }
 
   @JsonProperty("computeSpec")

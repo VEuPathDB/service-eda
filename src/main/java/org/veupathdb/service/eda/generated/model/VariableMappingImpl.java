@@ -16,8 +16,8 @@ import java.util.List;
     "displayRangeMin",
     "displayRangeMax",
     "vocabulary",
-    "isCollection",
     "imputeZero",
+    "isCollection",
     "members"
 })
 public class VariableMappingImpl implements VariableMapping {
@@ -48,11 +48,11 @@ public class VariableMappingImpl implements VariableMapping {
   @JsonProperty("vocabulary")
   private List<String> vocabulary;
 
-  @JsonProperty("isCollection")
-  private Boolean isCollection;
-
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
+
+  @JsonProperty("isCollection")
+  private Boolean isCollection;
 
   @JsonProperty("members")
   private List<VariableSpec> members;
@@ -147,16 +147,6 @@ public class VariableMappingImpl implements VariableMapping {
     this.vocabulary = vocabulary;
   }
 
-  @JsonProperty("isCollection")
-  public Boolean getIsCollection() {
-    return this.isCollection;
-  }
-
-  @JsonProperty("isCollection")
-  public void setIsCollection(Boolean isCollection) {
-    this.isCollection = isCollection;
-  }
-
   @JsonProperty("imputeZero")
   public Boolean getImputeZero() {
     return this.imputeZero;
@@ -165,6 +155,16 @@ public class VariableMappingImpl implements VariableMapping {
   @JsonProperty("imputeZero")
   public void setImputeZero(Boolean imputeZero) {
     this.imputeZero = imputeZero;
+  }
+
+  @JsonProperty("isCollection")
+  public Boolean getIsCollection() {
+    return this.isCollection;
+  }
+
+  @JsonProperty("isCollection")
+  public void setIsCollection(Boolean isCollection) {
+    this.isCollection = isCollection;
   }
 
   @JsonProperty("members")

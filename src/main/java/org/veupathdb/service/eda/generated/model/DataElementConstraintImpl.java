@@ -17,7 +17,7 @@ import java.util.List;
     "allowedShapes",
     "description"
 })
-public class VisualizationDataElementConstraintImpl implements VisualizationDataElementConstraint {
+public class DataElementConstraintImpl implements DataElementConstraint {
   @JsonProperty("isRequired")
   private Boolean isRequired;
 

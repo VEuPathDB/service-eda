@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
+import org.veupathdb.service.eda.common.client.EdaMergingClient;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.compute.EDA;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
@@ -24,6 +25,7 @@ import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
+import org.veupathdb.service.eda.compute.service.ServiceOptions;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
@@ -31,6 +33,7 @@ import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -178,11 +181,20 @@ public class ComputeController implements Computes {
     requirePermissions(requestObject, auth);
 
     // Validate the request body
-    Supplier<ReferenceMetadata> referenceMetadata = () -> new ReferenceMetadata(
-        EDA.getAPIStudyDetail(requestObject.getStudyId(), auth)
-            .orElseThrow(() -> new BadRequestException("Invalid study ID: " + requestObject.getStudyId())),
-        Collections.emptyList(),
-        requestObject.getDerivedVariables());
+    Supplier<ReferenceMetadata> referenceMetadata = () -> {
+      var studyId = requestObject.getStudyId();
+      var meta = new ReferenceMetadata(
+          EDA.getAPIStudyDetail(studyId, auth)
+              .orElseThrow(() -> new BadRequestException("Invalid study ID: " + studyId)));
+      var derivedVars = Optional.ofNullable(requestObject.getDerivedVariables()).orElse(Collections.emptyList());
+      if (!derivedVars.isEmpty()) {
+        var mergeClient = new EdaMergingClient(ServiceOptions.INSTANCE.getEdaMergeHost(), auth);
+        for (var derivedVar : mergeClient.getDerivedVariableMetadata(studyId, derivedVars)) {
+          meta.incorporateDerivedVariable(derivedVar);
+        }
+      }
+      return meta;
+    };
 
     // make sure config property was submitted with non-null value
     try {

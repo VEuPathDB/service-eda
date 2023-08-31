@@ -8,11 +8,11 @@ import java.util.function.Consumer;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 
-public class VisualizationDataElementConstraintStream extends VisualizationDataElementConstraintImpl implements StreamingOutput {
+public class DerivedVariableBulkMetadataRequestStream extends DerivedVariableBulkMetadataRequestImpl implements StreamingOutput {
 
   private final Consumer<OutputStream> _streamer;
 
-  public VisualizationDataElementConstraintStream(Consumer<OutputStream> streamer) {
+  public DerivedVariableBulkMetadataRequestStream(Consumer<OutputStream> streamer) {
     _streamer = streamer;
   }
 

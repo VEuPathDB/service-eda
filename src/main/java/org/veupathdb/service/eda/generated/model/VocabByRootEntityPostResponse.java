@@ -8,9 +8,9 @@ import java.util.List;
     as = VocabByRootEntityPostResponseImpl.class
 )
 public interface VocabByRootEntityPostResponse extends EntityTabularPostResponse {
-  @JsonProperty("counts")
-  List<List<String>> getCounts();
+  @JsonProperty("tabular")
+  List<List<String>> getTabular();
 
-  @JsonProperty("counts")
-  void setCounts(List<List<String>> counts);
+  @JsonProperty("tabular")
+  void setTabular(List<List<String>> tabular);
 }

@@ -12,6 +12,7 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
+import java.lang.StringBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -193,19 +194,19 @@ public class PluginUtil {
   }
 
   public String getDotNotatedIdColumnsAsRVectorString(List<String> dotNotatedIdColumns) {
-    String dotNotatedIdColumnsString = "c(";
+    StringBuilder dotNotatedIdColumnsString = new StringBuilder("c(");
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
         if (first) {
           first = false;
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + singleQuote(idCol);
+          dotNotatedIdColumnsString.append(singleQuote(idCol));
         } else {
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + singleQuote(idCol);
+          dotNotatedIdColumnsString.append("," + singleQuote(idCol));
         }
       }
-      dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
+      dotNotatedIdColumnsString.append(")");
 
-    return dotNotatedIdColumnsString;
+    return dotNotatedIdColumnsString.toString();
   }
   
   public String getIdColumnSpecsAsRVectorString(List<VariableSpec> idColumnSpecs) {

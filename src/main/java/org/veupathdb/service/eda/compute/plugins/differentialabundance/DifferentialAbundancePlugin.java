@@ -10,7 +10,7 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
-import org.veupathdb.service.eda.generated.model.BinRange;
+import org.veupathdb.service.eda.generated.model.LabeledRange;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceComputeConfig;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
@@ -53,8 +53,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     String method = computeConfig.getDifferentialAbundanceMethod().getValue();
     VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
     String comparisonVariableDataShape = util.getVariableDataShape(comparisonVariableSpec);
-    List<BinRange> groupA = computeConfig.getComparator().getGroupA();
-    List<BinRange> groupB =  computeConfig.getComparator().getGroupB();
+    List<LabeledRange> groupA = computeConfig.getComparator().getGroupA();
+    List<LabeledRange> groupB =  computeConfig.getComparator().getGroupB();
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
@@ -97,8 +97,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
       // Turn the comparator bin lists into a string for R (copied from data service!!! Utterly disgraceful!!)
-      String rGroupA = utils.getRBinListAsString(groupA);
-      String rGroupB = utils.getRBinListAsString(groupB);
+      String rGroupA = util.getRBinListAsString(groupA);
+      String rGroupB = util.getRBinListAsString(groupB);
 
 
       // TEMP FOR TESTING ONLY - REMOVE WHEN ABSOLUTE ABUNDANCES ARE HERE

@@ -18,16 +18,16 @@ public interface ComparatorSpec {
   void setVariable(VariableSpec variable);
 
   @JsonProperty("groupA")
-  List<String> getGroupA();
+  List<LabeledRange> getGroupA();
 
   @JsonProperty("groupA")
-  void setGroupA(List<String> groupA);
+  void setGroupA(List<LabeledRange> groupA);
 
   @JsonProperty("groupB")
-  List<String> getGroupB();
+  List<LabeledRange> getGroupB();
 
   @JsonProperty("groupB")
-  void setGroupB(List<String> groupB);
+  void setGroupB(List<LabeledRange> groupB);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

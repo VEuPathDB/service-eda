@@ -6,18 +6,18 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder("counts")
+@JsonPropertyOrder("tabular")
 public class VocabByRootEntityPostResponseImpl implements VocabByRootEntityPostResponse {
-  @JsonProperty("counts")
-  private List<List<String>> counts;
+  @JsonProperty("tabular")
+  private List<List<String>> tabular;
 
-  @JsonProperty("counts")
-  public List<List<String>> getCounts() {
-    return this.counts;
+  @JsonProperty("tabular")
+  public List<List<String>> getTabular() {
+    return this.tabular;
   }
 
-  @JsonProperty("counts")
-  public void setCounts(List<List<String>> counts) {
-    this.counts = counts;
+  @JsonProperty("tabular")
+  public void setTabular(List<List<String>> tabular) {
+    this.tabular = tabular;
   }
 }

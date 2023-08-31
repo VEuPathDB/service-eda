@@ -15,8 +15,6 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.*;
 
-import com.oracle.truffle.api.impl.TruffleLocator.Response;
-
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;

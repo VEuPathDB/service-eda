@@ -98,16 +98,20 @@ public class PluginUtil {
     return getVariableImputeZero(getVariableSpecFromList(vars, index));
   }
 
-  public String getHasStudyDependentVocabulary(VariableSpec var) {
-    return getVariableAttribute(VariableDef::getHasStudyDependentVocabulary, var);
+  public boolean getHasStudyDependentVocabulary(VariableSpec var) {
+    boolean hasStudyDependentVocabulary = getVariableAttribute(VariableDef::getHasStudyDependentVocabulary, var).equals("true") ? true : false;
+
+    return hasStudyDependentVocabulary;
   }
 
-  public String getHasStudyDependentVocabulary(List<VariableSpec> vars, int index) {
+  public boolean getHasStudyDependentVocabulary(List<VariableSpec> vars, int index) {
     return getHasStudyDependentVocabulary(getVariableSpecFromList(vars, index));
   }
 
-  public String getHasStudyDependentVocabulary(CollectionSpec collection) {
-    return getCollectionAttribute(CollectionDef::getHasStudyDependentVocabulary, collection);
+  public boolean getHasStudyDependentVocabulary(CollectionSpec collection) {
+    boolean hasStudyDependentVocabulary = getCollectionAttribute(CollectionDef::getHasStudyDependentVocabulary, collection).equals("true") ? true : false;
+
+    return hasStudyDependentVocabulary;
   }
 
   public List<VariableDef> getCollectionMembers(CollectionSpec collection) {

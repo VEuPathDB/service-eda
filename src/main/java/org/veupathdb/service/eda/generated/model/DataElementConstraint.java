@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.List;
 
 @JsonDeserialize(
-    as = VisualizationDataElementConstraintImpl.class
+    as = DataElementConstraintImpl.class
 )
-public interface VisualizationDataElementConstraint {
+public interface DataElementConstraint {
   @JsonProperty("isRequired")
   Boolean getIsRequired();
 

@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Map;
 
 @JsonDeserialize(
-    as = VisualizationDataElementConstraintPatternImpl.class
+    as = DataElementConstraintPatternImpl.class
 )
-public interface VisualizationDataElementConstraintPattern {
+public interface DataElementConstraintPattern {
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

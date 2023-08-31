@@ -10,6 +10,7 @@ import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
+import org.veupathdb.service.eda.generated.model.LabeledRange;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.lang.StringBuilder;
@@ -254,4 +255,36 @@ public class PluginUtil {
 
     return rBinList + "))";
   }
+  
+  // Maps ranges in a LabeledRange to bins in an R veupathUtils::BinList object. Returns
+  // a string that should be evaluated in R.
+  public String getRBinListAsString(List<LabeledRange> labelledRangeList) {
+
+    String rString = "veupathUtils::BinList(S4Vectors::SimpleList(";
+
+    boolean first = true;
+    for (int i = 0; i < labelledRangeList.size(); i++) {
+      String rBin = "veupathUtils::Bin(binLabel='" + labelledRangeList.get(i).getLabel() + "'";
+
+      // All bins in R BinList objects must have labels, but not necessarily bin starts and ends
+      if (labelledRangeList.get(i).getMin() != null) {
+        rBin += ",binStart=" + String.valueOf(labelledRangeList.get(i).getMin()) + 
+                ",binEnd=" + String.valueOf(labelledRangeList.get(i).getMax());
+      }
+      rBin += ")";
+
+      if (first) {
+        rString += rBin;
+        first = false;
+      } else {
+        rString += "," + rBin;
+      }
+    }
+
+    rString += "))";
+
+    return rString;
+
+  }
+
 }

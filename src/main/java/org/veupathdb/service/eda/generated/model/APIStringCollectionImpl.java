@@ -20,7 +20,10 @@ import java.util.Map;
     "vocabulary",
     "distinctValuesCount",
     "memberVariableIds",
-    "imputeZero"
+    "imputeZero",
+    "normalizationMethod",
+    "isCompositional",
+    "isProportion"
 })
 public class APIStringCollectionImpl implements APIStringCollection {
   @JsonProperty("id")
@@ -46,6 +49,15 @@ public class APIStringCollectionImpl implements APIStringCollection {
 
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
+
+  @JsonProperty("normalizationMethod")
+  private String normalizationMethod;
+
+  @JsonProperty("isCompositional")
+  private Boolean isCompositional;
+
+  @JsonProperty("isProportion")
+  private Boolean isProportion;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -123,6 +135,36 @@ public class APIStringCollectionImpl implements APIStringCollection {
   @JsonProperty("imputeZero")
   public void setImputeZero(Boolean imputeZero) {
     this.imputeZero = imputeZero;
+  }
+
+  @JsonProperty("normalizationMethod")
+  public String getNormalizationMethod() {
+    return this.normalizationMethod;
+  }
+
+  @JsonProperty("normalizationMethod")
+  public void setNormalizationMethod(String normalizationMethod) {
+    this.normalizationMethod = normalizationMethod;
+  }
+
+  @JsonProperty("isCompositional")
+  public Boolean getIsCompositional() {
+    return this.isCompositional;
+  }
+
+  @JsonProperty("isCompositional")
+  public void setIsCompositional(Boolean isCompositional) {
+    this.isCompositional = isCompositional;
+  }
+
+  @JsonProperty("isProportion")
+  public Boolean getIsProportion() {
+    return this.isProportion;
+  }
+
+  @JsonProperty("isProportion")
+  public void setIsProportion(Boolean isProportion) {
+    this.isProportion = isProportion;
   }
 
   @JsonAnyGetter

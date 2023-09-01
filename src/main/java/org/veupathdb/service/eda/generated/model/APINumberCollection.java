@@ -60,6 +60,24 @@ public interface APINumberCollection extends APICollection {
   @JsonProperty("imputeZero")
   void setImputeZero(Boolean imputeZero);
 
+  @JsonProperty("normalizationMethod")
+  String getNormalizationMethod();
+
+  @JsonProperty("normalizationMethod")
+  void setNormalizationMethod(String normalizationMethod);
+
+  @JsonProperty("isCompositional")
+  Boolean getIsCompositional();
+
+  @JsonProperty("isCompositional")
+  void setIsCompositional(Boolean isCompositional);
+
+  @JsonProperty("isProportion")
+  Boolean getIsProportion();
+
+  @JsonProperty("isProportion")
+  void setIsProportion(Boolean isProportion);
+
   @JsonProperty("distributionDefaults")
   APINumberDistributionDefaults getDistributionDefaults();
 

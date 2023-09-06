@@ -96,17 +96,12 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-      // Turn the comparator bin lists into a string for R (copied from data service!!! Utterly disgraceful!!)
+      // Turn the comparator bin lists into a string for R
       String rGroupA = util.getRBinListAsString(groupA);
       String rGroupB = util.getRBinListAsString(groupB);
 
 
-      // TEMP FOR TESTING ONLY - REMOVE WHEN ABSOLUTE ABUNDANCES ARE HERE
-      connection.voidEval("taxaColNames <- names(absoluteAbundanceData[, -c('" + computeEntityIdColName + "', as.character(" + dotNotatedIdColumnsString + "))])");
-      connection.voidEval("absoluteAbundanceData[, (taxaColNames) := lapply(.SD,function(x) {round(x*1000)}), .SDcols=taxaColNames]");
-      // END OF TEMP FOR TESTING
-
-
+      // Create the comparator and input data objects
       connection.voidEval("comparator <- microbiomeComputations::Comparator(" +
                                 "variable=veupathUtils::VariableMetadata(" + 
                                   "variableSpec=veupathUtils::VariableSpec(" +

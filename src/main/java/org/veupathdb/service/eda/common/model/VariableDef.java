@@ -29,6 +29,20 @@ public class VariableDef extends VariableSpecImpl {
     return spec;
   }
 
+  public static VariableSpec newVariableSpecFromDotNotation(String dotNotation) {
+    if (dotNotation == null) {
+      return null;
+    }
+    String[] parts = dotNotation.split("\\.");
+    VariableSpec spec = new VariableSpecImpl();
+    if (parts.length != 2) {
+      throw new IllegalArgumentException("To convert dot notation to a VariableSpec, there must only be one \".\" in input.");
+    }
+    spec.setEntityId(parts[0]);
+    spec.setVariableId(parts[1]);
+    return spec;
+  }
+
   @JsonIgnore
   private final APIVariableType _type;
 
@@ -132,5 +146,4 @@ public class VariableDef extends VariableSpecImpl {
   public static boolean isSameVariable(VariableSpec v1, VariableSpec v2) {
     return v1.getEntityId().equals(v2.getEntityId()) && v1.getVariableId().equals(v2.getVariableId());
   }
-
 }

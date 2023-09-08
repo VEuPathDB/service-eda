@@ -181,6 +181,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
     List<APIFilter> subsetFilters
   ) {
     // TODO
+    return null;
   }
 
   public ResponseFuture getVocabByRootEntity(
@@ -188,9 +189,9 @@ public class EdaSubsettingClient extends StreamingDataClient {
     DynamicDataSpec dataSpec,
     List<APIFilter> subsetFilters
   ) {
-    if (dataSpec.isCollection()) {
+    if (dataSpec.isCollectionSpec()) {
       return getVocabByRootEntity(metadata, dataSpec.getCollectionSpec(), subsetFilters);
-    } else if (dataSpec.isVariable()) {
+    } else if (dataSpec.isVariableSpec()) {
       return getVocabByRootEntity(metadata, dataSpec.getVariableSpec(), subsetFilters);
     } else {
       return null;

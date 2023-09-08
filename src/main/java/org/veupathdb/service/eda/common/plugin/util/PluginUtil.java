@@ -10,6 +10,7 @@ import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
+import org.veupathdb.service.eda.generated.model.DynamicDataSpec;
 import org.veupathdb.service.eda.generated.model.LabeledRange;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -135,6 +136,17 @@ public class PluginUtil {
 
   public String toColNameOrEmpty(VariableSpec var) {
     return var == null ? "" : _mergingClient.varToColumnHeader(var);
+  }
+
+  public String toColNameOrEmpty(DynamicDataSpec data) {
+    if (data.isCollectionSpec()) {
+      // TODO and when we get there it might need an option to return either the dot notated collection spec directly vs a list of dot notated member var specs
+      return "";    
+    } else if (data.isVariableSpec()) {
+      return toColNameOrEmpty(data.getVariableSpec());
+    } else {
+      return "";
+    }
   }
 
   public String toColNameOrEmpty(List<VariableSpec> vars, int index) {

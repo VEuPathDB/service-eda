@@ -174,4 +174,27 @@ public class EdaSubsettingClient extends StreamingDataClient {
     // make request
     return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
   }
+
+  public ResponseFuture getVocabByRootEntity(
+    ReferenceMetadata metadata,
+    CollectionSpec collectionSpec,
+    List<APIFilter> subsetFilters
+  ) {
+    // TODO
+  }
+
+  public ResponseFuture getVocabByRootEntity(
+    ReferenceMetadata metadata,
+    DynamicDataSpec dataSpec,
+    List<APIFilter> subsetFilters
+  ) {
+    if (dataSpec.isCollection()) {
+      return getVocabByRootEntity(metadata, dataSpec.getCollectionSpec(), subsetFilters);
+    } else if (dataSpec.isVariable()) {
+      return getVocabByRootEntity(metadata, dataSpec.getVariableSpec(), subsetFilters);
+    } else {
+      return null;
+    }
+  }
+
 }

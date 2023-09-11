@@ -67,6 +67,10 @@ public class VariableDef extends VariableSpecImpl {
   @JsonIgnore
   private final String _parentId;
 
+  @JsonIgnore
+  private final boolean _hasStudySpecificVocabulary;
+
+
   public VariableDef(
       String entityId,
       String variableId,
@@ -77,7 +81,8 @@ public class VariableDef extends VariableSpecImpl {
       Optional<DataRanges> dataRanges,
       Optional<String> units,
       String parentId,
-      VariableSource source) {
+      VariableSource source,
+      boolean hasStudySpecificVocabulary) {
     setEntityId(entityId);
     setVariableId(variableId);
     _type = type;
@@ -88,6 +93,7 @@ public class VariableDef extends VariableSpecImpl {
     _units = units;
     _parentId = parentId;
     _source = source;
+    _hasStudySpecificVocabulary = hasStudySpecificVocabulary;
   }
 
   @JsonIgnore
@@ -123,6 +129,11 @@ public class VariableDef extends VariableSpecImpl {
   @JsonIgnore
   public VariableSource getSource() {
     return _source;
+  }
+
+  @JsonIgnore
+  public boolean hasStudyDependentVocabulary() {
+    return _hasStudySpecificVocabulary;
   }
 
   @JsonIgnore

@@ -79,7 +79,8 @@ public class ReferenceMetadata {
             null,
             entityId.equals(treeEntity.getId())
                 ? VariableSource.COMPUTED
-                : VariableSource.INHERITED
+                : VariableSource.INHERITED,
+            computedVar.getHasStudySpecificVocabulary()
         ));
       }
     }
@@ -124,7 +125,8 @@ public class ReferenceMetadata {
           null,
           entity.getId().equals(derivedVariable.getEntityId())
             ? typedSource
-            : VariableSource.INHERITED
+            : VariableSource.INHERITED,
+          false
       ));
     }
   }
@@ -164,16 +166,18 @@ public class ReferenceMetadata {
     // add inherited variables from parent
     ancestorVars.forEach(vd -> entityDef.addVariable(
         new VariableDef(
-          vd.getEntityId(),
-          vd.getVariableId(),
-          vd.getType(),
-          vd.getDataShape(),
-          vd.isMultiValue(),
-          vd.isImputeZero(),
-          vd.getDataRanges(),
-          vd.getUnits(),
-          vd.getParentId(),
-          VariableSource.INHERITED)));
+            vd.getEntityId(),
+            vd.getVariableId(),
+            vd.getType(),
+            vd.getDataShape(),
+            vd.isMultiValue(),
+            vd.isImputeZero(),
+            vd.getDataRanges(),
+            vd.getUnits(),
+            vd.getParentId(),
+            VariableSource.INHERITED,
+            vd.hasStudyDependentVocabulary())
+    ));
 
     // process category vars (may still have children!)
     entity.getVariables().stream()
@@ -189,7 +193,8 @@ public class ReferenceMetadata {
           Optional.empty(),
           Optional.empty(),
           var.getParentId(),
-          VariableSource.NATIVE))
+          VariableSource.NATIVE,
+          false))
       .forEach(cat -> {
         // add category vars for this entity
         entityDef.addCategory(cat);
@@ -209,7 +214,8 @@ public class ReferenceMetadata {
           DataRanges.getDataRanges(var),
           getUnits(var),
           var.getParentId(),
-          VariableSource.NATIVE))
+          VariableSource.NATIVE,
+          var.getHasStudySpecificVocabulary()))
       .forEach(vd -> {
         // add variables for this entity
         entityDef.addVariable(vd);

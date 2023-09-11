@@ -17,6 +17,7 @@ import java.util.List;
     "displayRangeMax",
     "vocabulary",
     "imputeZero",
+    "hasStudySpecificVocabulary",
     "isCollection",
     "members"
 })
@@ -50,6 +51,9 @@ public class VariableMappingImpl implements VariableMapping {
 
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
+
+  @JsonProperty("hasStudySpecificVocabulary")
+  private Boolean hasStudySpecificVocabulary;
 
   @JsonProperty("isCollection")
   private Boolean isCollection;
@@ -155,6 +159,16 @@ public class VariableMappingImpl implements VariableMapping {
   @JsonProperty("imputeZero")
   public void setImputeZero(Boolean imputeZero) {
     this.imputeZero = imputeZero;
+  }
+
+  @JsonProperty("hasStudySpecificVocabulary")
+  public Boolean getHasStudySpecificVocabulary() {
+    return this.hasStudySpecificVocabulary;
+  }
+
+  @JsonProperty("hasStudySpecificVocabulary")
+  public void setHasStudySpecificVocabulary(Boolean hasStudySpecificVocabulary) {
+    this.hasStudySpecificVocabulary = hasStudySpecificVocabulary;
   }
 
   @JsonProperty("isCollection")

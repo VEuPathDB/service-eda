@@ -80,7 +80,7 @@ public class ReferenceMetadata {
             entityId.equals(treeEntity.getId())
                 ? VariableSource.COMPUTED
                 : VariableSource.INHERITED,
-            computedVar.getHasStudySpecificVocabulary()
+            computedVar.getHasStudyDependentVocabulary()
         ));
       }
     }
@@ -215,7 +215,7 @@ public class ReferenceMetadata {
           getUnits(var),
           var.getParentId(),
           VariableSource.NATIVE,
-          var.getHasStudySpecificVocabulary()))
+          var.getHasStudyDependentVocabulary()))
       .forEach(vd -> {
         // add variables for this entity
         entityDef.addVariable(vd);

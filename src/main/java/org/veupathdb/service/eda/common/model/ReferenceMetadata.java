@@ -77,6 +77,7 @@ public class ReferenceMetadata {
             // TODO: do computed variables ever have units?  If so, then need to add to VariableMapping for addition here
             Optional.empty(),
             null,
+            computedVar.getVocabulary(),
             entityId.equals(treeEntity.getId())
                 ? VariableSource.COMPUTED
                 : VariableSource.INHERITED,
@@ -123,6 +124,7 @@ public class ReferenceMetadata {
           DataRange.fromRange(derivedVariable.getDataRange()).map(DataRanges::new),
           Optional.ofNullable(derivedVariable.getUnits()),
           null,
+          derivedVariable.getVocabulary(),
           entity.getId().equals(derivedVariable.getEntityId())
             ? typedSource
             : VariableSource.INHERITED,
@@ -175,6 +177,7 @@ public class ReferenceMetadata {
             vd.getDataRanges(),
             vd.getUnits(),
             vd.getParentId(),
+            vd.getVocabulary(),
             VariableSource.INHERITED,
             vd.hasStudyDependentVocabulary())
     ));
@@ -193,6 +196,7 @@ public class ReferenceMetadata {
           Optional.empty(),
           Optional.empty(),
           var.getParentId(),
+          null,
           VariableSource.NATIVE,
           false))
       .forEach(cat -> {
@@ -214,6 +218,7 @@ public class ReferenceMetadata {
           DataRanges.getDataRanges(var),
           getUnits(var),
           var.getParentId(),
+          var.getVocabulary(),
           VariableSource.NATIVE,
           var.getHasStudyDependentVocabulary()))
       .forEach(vd -> {

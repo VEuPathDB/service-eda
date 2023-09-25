@@ -13,6 +13,7 @@ import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.LabeledRange;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceComputeConfig;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
+import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.io.InputStream;
@@ -34,7 +35,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
   @Override
   public List<StreamSpec> getStreamSpecs() {
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getChildrenVariables(getConfig().getCollectionVariable()))
+        .addVars(getUtil().getCollectionMembers(getConfig().getCollectionVariable()))
         .addVar(getConfig().getComparator().getVariable())
       );
   }
@@ -46,7 +47,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     PluginUtil util = getUtil();
     ReferenceMetadata meta = getContext().getReferenceMetadata();
 
-    String entityId = computeConfig.getCollectionVariable().getEntityId();
+    CollectionSpec collectionSpec = computeConfig.getCollectionVariable();
+    String entityId = collectionSpec.getEntityId();
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
@@ -70,10 +72,10 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
 
       // Read in the abundance data
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
+      computeInputVars.addAll(util.getCollectionMembers(collectionSpec));
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
-      connection.voidEval("absoluteAbundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
+      connection.voidEval("abundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
       // Read in the sample metadata
       List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
@@ -112,9 +114,15 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
                                 "groupA=" + rGroupA + "," +
                                 "groupB=" + rGroupB +
                               ")");
-
-
-      connection.voidEval("inputData <- microbiomeComputations::AbsoluteAbundanceData(data=absoluteAbundanceData" + 
+      
+      String abundanceDataClass = "AbundanceData"; 
+      if (util.getCollectionNormalizationMethod(collectionSpec) == null &&
+          util.getCollectionIsCompositional(collectionSpec) == true &&
+          util.getCollectionIsProportion(collectionSpec) == false) 
+      {
+        abundanceDataClass = "AbsoluteAbundanceData";
+      }
+      connection.voidEval("inputData <- microbiomeComputations::" + abundanceDataClass + "(data=abundanceData" + 
                                                                           ", sampleMetadata=sampleMetadata" +
                                                                           ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +

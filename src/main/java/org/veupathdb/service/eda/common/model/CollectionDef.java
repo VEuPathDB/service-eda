@@ -31,6 +31,15 @@ public class CollectionDef extends CollectionSpecImpl {
   private final List<String> _vocabulary;
 
   @JsonIgnore
+  private final boolean _isCompositional;
+
+  @JsonIgnore
+  private final boolean _isProportion;
+
+  @JsonIgnore
+  private final String _normalizationMethod;
+
+  @JsonIgnore
   private final List<String> _memberVariableIds;
 
   @JsonIgnore
@@ -45,6 +54,9 @@ public class CollectionDef extends CollectionSpecImpl {
       boolean isImputeZero,
       Long distinctValuesCount,
       List<String> vocabulary,
+      boolean isCompositional,
+      boolean isProportion,
+      String normalizationMethod,
       List<String> memberVariableIds,
       Optional<DataRanges> dataRanges) {
     setEntityId(entity.getId());
@@ -56,6 +68,9 @@ public class CollectionDef extends CollectionSpecImpl {
     _isImputeZero = isImputeZero;
     _distinctValuesCount = distinctValuesCount;
     _vocabulary = vocabulary;
+    _isCompositional = isCompositional;
+    _isProportion = isProportion;
+    _normalizationMethod = normalizationMethod;
     _memberVariableIds = memberVariableIds;
     _dataRanges = dataRanges;
   }
@@ -88,6 +103,22 @@ public class CollectionDef extends CollectionSpecImpl {
   @JsonIgnore
   public List<String> getVocabulary() {
     return _vocabulary;
+  }
+
+  @JsonIgnore
+  public boolean isCompositional() {
+    return _isCompositional;
+  }
+
+  @JsonIgnore
+  public boolean isProportion() {
+    return _isProportion;
+  }
+
+
+  @JsonIgnore
+  public String getNormalizationMethod() {
+    return _normalizationMethod;
   }
 
   @JsonIgnore

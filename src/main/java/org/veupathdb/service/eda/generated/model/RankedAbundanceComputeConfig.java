@@ -11,10 +11,10 @@ import java.util.Map;
 )
 public interface RankedAbundanceComputeConfig {
   @JsonProperty("collectionVariable")
-  VariableSpec getCollectionVariable();
+  CollectionSpec getCollectionVariable();
 
   @JsonProperty("collectionVariable")
-  void setCollectionVariable(VariableSpec collectionVariable);
+  void setCollectionVariable(CollectionSpec collectionVariable);
 
   @JsonProperty("rankingMethod")
   RankingMethod getRankingMethod();

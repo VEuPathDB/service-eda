@@ -77,6 +77,7 @@ public class ReferenceMetadata {
             // TODO: do computed variables ever have units?  If so, then need to add to VariableMapping for addition here
             Optional.empty(),
             null,
+            computedVar.getVocabulary(),  
             false,
             null,
             entityId.equals(treeEntity.getId())
@@ -124,6 +125,7 @@ public class ReferenceMetadata {
           DataRange.fromRange(derivedVariable.getDataRange()).map(DataRanges::new),
           Optional.ofNullable(derivedVariable.getUnits()),
           null,
+          derivedVariable.getVocabulary(),
           false,
           null,
           entity.getId().equals(derivedVariable.getEntityId())
@@ -160,6 +162,9 @@ public class ReferenceMetadata {
             col.getImputeZero(),
             col.getDistinctValuesCount(),
             col.getVocabulary(),
+            col.getIsCompositional(),
+            col.getIsProportion(),
+            col.getNormalizationMethod(),
             col.getMemberVariableIds(),
             DataRanges.getDataRanges(col),
             col.getHasStudyDependentVocabulary(),
@@ -179,6 +184,7 @@ public class ReferenceMetadata {
           vd.getDataRanges(),
           vd.getUnits(),
           vd.getParentId(),
+          vd.getVocabulary(),
           vd.getHasStudyDependentVocabulary(),
           vd.getVariableSpecToImputeZeroesFor(),
           VariableSource.INHERITED)));
@@ -197,9 +203,11 @@ public class ReferenceMetadata {
           Optional.empty(),
           Optional.empty(),
           var.getParentId(),
+          null,
           false,
           null,
           VariableSource.NATIVE))
+
       .forEach(cat -> {
         // add category vars for this entity
         entityDef.addCategory(cat);
@@ -219,6 +227,7 @@ public class ReferenceMetadata {
           DataRanges.getDataRanges(var),
           getUnits(var),
           var.getParentId(),
+          var.getVocabulary(),
           var.getHasStudyDependentVocabulary(),
           var.getVariableSpecToImputeZeroesFor(),
           VariableSource.NATIVE))

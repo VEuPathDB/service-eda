@@ -121,6 +121,11 @@ public class PluginUtil {
     return collection == null ? null : _metadata.getCollection(collection).orElseThrow().getMemberVariables();
   }
 
+  public List<String> getCollectionVocabulary(CollectionSpec collection) {
+    return collection == null ? null : _metadata.getCollection(collection).orElseThrow().getVocabulary();
+
+  }
+
   //deprecated
   public List<VariableDef> getChildrenVariables(VariableSpec collectionVar) {
     EntityDef collectionVarEntityDef = _metadata.getEntity(collectionVar.getEntityId()).orElseThrow();
@@ -129,6 +134,9 @@ public class PluginUtil {
     return childVarsTree.findAndMap(TreeNode::isLeaf, v -> true, v -> v);
   }
 
+  public List<String> getVocabulary(VariableSpec var) {
+    return var == null ? null :_metadata.getVariable(var).map(VariableDef::getVocabulary).orElseThrow();
+  }
 
   /*****************************************************************
    *** Utilities to ease calls to RServe

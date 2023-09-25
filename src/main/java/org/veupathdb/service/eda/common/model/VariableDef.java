@@ -73,6 +73,8 @@ public class VariableDef extends VariableSpecImpl {
   @JsonIgnore
   private final VariableSpec _variableSpecToImputeZeroesFor;
 
+  private final List<String> _vocabulary;
+
   public VariableDef(
       String entityId,
       String variableId,
@@ -83,6 +85,7 @@ public class VariableDef extends VariableSpecImpl {
       Optional<DataRanges> dataRanges,
       Optional<String> units,
       String parentId,
+      List<String> vocabulary,
       boolean hasStudyDependentVocabulary,
       VariableSpec variableSpecToImputeZeroesFor,
       VariableSource source) {
@@ -95,6 +98,7 @@ public class VariableDef extends VariableSpecImpl {
     _dataRanges = dataRanges;
     _units = units;
     _parentId = parentId;
+    _vocabulary = vocabulary;
     _hasStudyDependentVocabulary = hasStudyDependentVocabulary;
     _variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
     _source = source;
@@ -136,6 +140,11 @@ public class VariableDef extends VariableSpecImpl {
   }
 
   @JsonIgnore
+  public boolean hasStudyDependentVocabulary() {
+    return _hasStudySpecificVocabulary;
+  }
+
+  @JsonIgnore
   public String getParentId() {
     return _parentId;
   }
@@ -148,6 +157,9 @@ public class VariableDef extends VariableSpecImpl {
   @JsonIgnore
   public VariableSpec getVariableSpecToImputeZeroesFor() {
     return _variableSpecToImputeZeroesFor;
+
+  public List<String> getVocabulary() {
+    return _vocabulary;
   }
 
   @Override

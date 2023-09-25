@@ -15,7 +15,7 @@ import java.util.Map;
 })
 public class BetaDivComputeConfigImpl implements BetaDivComputeConfig {
   @JsonProperty("collectionVariable")
-  private VariableSpec collectionVariable;
+  private CollectionSpec collectionVariable;
 
   @JsonProperty("betaDivDissimilarityMethod")
   private BetaDivDissimilarityMethod betaDivDissimilarityMethod;
@@ -24,12 +24,12 @@ public class BetaDivComputeConfigImpl implements BetaDivComputeConfig {
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
   @JsonProperty("collectionVariable")
-  public VariableSpec getCollectionVariable() {
+  public CollectionSpec getCollectionVariable() {
     return this.collectionVariable;
   }
 
   @JsonProperty("collectionVariable")
-  public void setCollectionVariable(VariableSpec collectionVariable) {
+  public void setCollectionVariable(CollectionSpec collectionVariable) {
     this.collectionVariable = collectionVariable;
   }
 

@@ -90,12 +90,12 @@ public class PluginUtil {
     return getCollectionAttribute(CollectionDef::isImputeZero, collection);
   }
 
-  public String getCollectionIsCompositional(CollectionSpec collection) {
-    return getCollectionAttribute(CollectionDef::isCompositional, collection);
+  public boolean getCollectionIsCompositional(CollectionSpec collection) {
+    return getCollectionAttribute(CollectionDef::isCompositional, collection).equals("true");
   }
 
-  public String getCollectionIsProportion(CollectionSpec collection) {
-    return getCollectionAttribute(CollectionDef::isProportion, collection);
+  public boolean getCollectionIsProportion(CollectionSpec collection) {
+    return getCollectionAttribute(CollectionDef::isProportion, collection).equals("true");
   }
 
   public String getCollectionNormalizationMethod(CollectionSpec collection) {

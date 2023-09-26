@@ -117,8 +117,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       
       String abundanceDataClass = "AbundanceData"; 
       if (util.getCollectionNormalizationMethod(collectionSpec) == null &&
-          util.getCollectionIsCompositional(collectionSpec) == true &&
-          util.getCollectionIsProportion(collectionSpec) == false) 
+          util.getCollectionIsCompositional(collectionSpec) &&
+          !util.getCollectionIsProportion(collectionSpec))
       {
         abundanceDataClass = "AbsoluteAbundanceData";
       }

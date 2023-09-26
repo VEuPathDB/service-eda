@@ -93,6 +93,18 @@ public class PluginUtil {
     return getCollectionAttribute(CollectionDef::isImputeZero, collection);
   }
 
+  public String getCollectionIsCompositional(CollectionSpec collection) {
+    return getCollectionAttribute(CollectionDef::isCompositional, collection);
+  }
+
+  public String getCollectionIsProportion(CollectionSpec collection) {
+    return getCollectionAttribute(CollectionDef::isProportion, collection);
+  }
+
+  public String getCollectionNormalizationMethod(CollectionSpec collection) {
+    return getCollectionAttribute(CollectionDef::getNormalizationMethod, collection);
+  }
+
   public String getVariableImputeZero(VariableSpec var) {
     return getVariableAttribute(VariableDef::isImputeZero, var);
   }

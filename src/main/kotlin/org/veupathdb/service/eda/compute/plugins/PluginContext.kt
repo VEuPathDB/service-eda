@@ -167,10 +167,17 @@ private class PluginContextImpl<R : ComputeRequestBase, C>(
       .call(request) as C
   }
 
-  override val referenceMetadata
+  override val referenceMetadata: ReferenceMetadata by lazy {
     // IDE may show this line as a compile error, but it is not, the generated
     // classes are resolved at compile time.
-    get() = ReferenceMetadata(studyDetail, emptyList(), request.derivedVariables ?: emptyList())
+    val meta = ReferenceMetadata(this.studyDetail)
+    val derivedVars = request.derivedVariables ?: emptyList()
+    if (derivedVars.isNotEmpty())
+      this.mergingClient.getDerivedVariableMetadata(meta.studyId, derivedVars).forEach {
+        meta.incorporateDerivedVariable(it)
+      }
+    meta
+  }
 
   override fun processBuilder(command: String, vararg args: String) =
     ComputeProcessBuilder(command, workspace.path)

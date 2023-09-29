@@ -21,6 +21,9 @@ import java.util.Map;
     "distinctValuesCount",
     "memberVariableIds",
     "imputeZero",
+    "normalizationMethod",
+    "isCompositional",
+    "isProportion",
     "distributionDefaults"
 })
 public class APIDateCollectionImpl implements APIDateCollection {
@@ -47,6 +50,15 @@ public class APIDateCollectionImpl implements APIDateCollection {
 
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
+
+  @JsonProperty("normalizationMethod")
+  private String normalizationMethod;
+
+  @JsonProperty("isCompositional")
+  private Boolean isCompositional;
+
+  @JsonProperty("isProportion")
+  private Boolean isProportion;
 
   @JsonProperty("distributionDefaults")
   private APIDateDistributionDefaults distributionDefaults;
@@ -127,6 +139,36 @@ public class APIDateCollectionImpl implements APIDateCollection {
   @JsonProperty("imputeZero")
   public void setImputeZero(Boolean imputeZero) {
     this.imputeZero = imputeZero;
+  }
+
+  @JsonProperty("normalizationMethod")
+  public String getNormalizationMethod() {
+    return this.normalizationMethod;
+  }
+
+  @JsonProperty("normalizationMethod")
+  public void setNormalizationMethod(String normalizationMethod) {
+    this.normalizationMethod = normalizationMethod;
+  }
+
+  @JsonProperty("isCompositional")
+  public Boolean getIsCompositional() {
+    return this.isCompositional;
+  }
+
+  @JsonProperty("isCompositional")
+  public void setIsCompositional(Boolean isCompositional) {
+    this.isCompositional = isCompositional;
+  }
+
+  @JsonProperty("isProportion")
+  public Boolean getIsProportion() {
+    return this.isProportion;
+  }
+
+  @JsonProperty("isProportion")
+  public void setIsProportion(Boolean isProportion) {
+    this.isProportion = isProportion;
   }
 
   @JsonProperty("distributionDefaults")

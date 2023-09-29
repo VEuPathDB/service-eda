@@ -30,7 +30,9 @@ import java.util.Map;
     "isFeatured",
     "isMergeKey",
     "isMultiValued",
-    "imputeZero"
+    "imputeZero",
+    "hasStudyDependentVocabulary",
+    "variableSpecToImputeZeroesFor"
 })
 public class APIStringVariableImpl implements APIStringVariable {
   @JsonProperty("id")
@@ -86,6 +88,12 @@ public class APIStringVariableImpl implements APIStringVariable {
 
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
+
+  @JsonProperty("hasStudyDependentVocabulary")
+  private Boolean hasStudyDependentVocabulary;
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  private VariableSpec variableSpecToImputeZeroesFor;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -263,6 +271,26 @@ public class APIStringVariableImpl implements APIStringVariable {
   @JsonProperty("imputeZero")
   public void setImputeZero(Boolean imputeZero) {
     this.imputeZero = imputeZero;
+  }
+
+  @JsonProperty("hasStudyDependentVocabulary")
+  public Boolean getHasStudyDependentVocabulary() {
+    return this.hasStudyDependentVocabulary;
+  }
+
+  @JsonProperty("hasStudyDependentVocabulary")
+  public void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary) {
+    this.hasStudyDependentVocabulary = hasStudyDependentVocabulary;
+  }
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  public VariableSpec getVariableSpecToImputeZeroesFor() {
+    return this.variableSpecToImputeZeroesFor;
+  }
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  public void setVariableSpecToImputeZeroesFor(VariableSpec variableSpecToImputeZeroesFor) {
+    this.variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
   }
 
   @JsonAnyGetter

@@ -120,6 +120,18 @@ public interface APIStringVariable extends APIVariableWithValues {
   @JsonProperty("imputeZero")
   void setImputeZero(Boolean imputeZero);
 
+  @JsonProperty("hasStudyDependentVocabulary")
+  Boolean getHasStudyDependentVocabulary();
+
+  @JsonProperty("hasStudyDependentVocabulary")
+  void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary);
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  VariableSpec getVariableSpecToImputeZeroesFor();
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  void setVariableSpecToImputeZeroesFor(VariableSpec variableSpecToImputeZeroesFor);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

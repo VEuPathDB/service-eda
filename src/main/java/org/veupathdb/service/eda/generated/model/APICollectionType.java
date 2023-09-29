@@ -10,9 +10,12 @@ public enum APICollectionType {
   DATE("date"),
 
   @JsonProperty("integer")
-  INTEGER("integer");
+  INTEGER("integer"),
 
-  private final String value;
+  @JsonProperty("string")
+  STRING("string");
+
+  public final String value;
 
   public String getValue() {
     return this.value;

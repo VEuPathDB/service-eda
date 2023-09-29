@@ -12,7 +12,7 @@ public enum BetaDivDissimilarityMethod {
   @JsonProperty("jsd")
   JSD("jsd");
 
-  private final String value;
+  public final String value;
 
   public String getValue() {
     return this.value;

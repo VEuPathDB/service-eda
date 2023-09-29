@@ -157,6 +157,7 @@ class PluginExecutor : JobExecutor {
           spec.streamName, EDA.getMergeData(
             context.referenceMetadata,
             request.filters,
+            request.derivedVariables,
             spec,
             authHeader
           )

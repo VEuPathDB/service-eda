@@ -62,17 +62,23 @@ public interface VariableMapping {
   @JsonProperty("vocabulary")
   void setVocabulary(List<String> vocabulary);
 
-  @JsonProperty("isCollection")
-  Boolean getIsCollection();
-
-  @JsonProperty("isCollection")
-  void setIsCollection(Boolean isCollection);
-
   @JsonProperty("imputeZero")
   Boolean getImputeZero();
 
   @JsonProperty("imputeZero")
   void setImputeZero(Boolean imputeZero);
+
+  @JsonProperty("hasStudyDependentVocabulary")
+  Boolean getHasStudyDependentVocabulary();
+
+  @JsonProperty("hasStudyDependentVocabulary")
+  void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary);
+
+  @JsonProperty("isCollection")
+  Boolean getIsCollection();
+
+  @JsonProperty("isCollection")
+  void setIsCollection(Boolean isCollection);
 
   @JsonProperty("members")
   List<VariableSpec> getMembers();

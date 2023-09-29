@@ -15,9 +15,10 @@ import java.util.Map;
     property = "type"
 )
 @JsonSubTypes({
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIDateCollection.class),
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIIntegerCollection.class),
     @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APINumberCollection.class),
+    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIDateCollection.class),
+    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIStringCollection.class),
+    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APIIntegerCollection.class),
     @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.APICollection.class)
 })
 @JsonDeserialize(
@@ -70,6 +71,24 @@ public interface APICollection {
 
   @JsonProperty("imputeZero")
   void setImputeZero(Boolean imputeZero);
+
+  @JsonProperty("normalizationMethod")
+  String getNormalizationMethod();
+
+  @JsonProperty("normalizationMethod")
+  void setNormalizationMethod(String normalizationMethod);
+
+  @JsonProperty("isCompositional")
+  Boolean getIsCompositional();
+
+  @JsonProperty("isCompositional")
+  void setIsCompositional(Boolean isCompositional);
+
+  @JsonProperty("isProportion")
+  Boolean getIsProportion();
+
+  @JsonProperty("isProportion")
+  void setIsProportion(Boolean isProportion);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

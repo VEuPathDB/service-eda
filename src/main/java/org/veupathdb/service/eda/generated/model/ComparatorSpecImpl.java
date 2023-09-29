@@ -20,10 +20,10 @@ public class ComparatorSpecImpl implements ComparatorSpec {
   private VariableSpec variable;
 
   @JsonProperty("groupA")
-  private List<String> groupA;
+  private List<LabeledRange> groupA;
 
   @JsonProperty("groupB")
-  private List<String> groupB;
+  private List<LabeledRange> groupB;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -39,22 +39,22 @@ public class ComparatorSpecImpl implements ComparatorSpec {
   }
 
   @JsonProperty("groupA")
-  public List<String> getGroupA() {
+  public List<LabeledRange> getGroupA() {
     return this.groupA;
   }
 
   @JsonProperty("groupA")
-  public void setGroupA(List<String> groupA) {
+  public void setGroupA(List<LabeledRange> groupA) {
     this.groupA = groupA;
   }
 
   @JsonProperty("groupB")
-  public List<String> getGroupB() {
+  public List<LabeledRange> getGroupB() {
     return this.groupB;
   }
 
   @JsonProperty("groupB")
-  public void setGroupB(List<String> groupB) {
+  public void setGroupB(List<LabeledRange> groupB) {
     this.groupB = groupB;
   }
 

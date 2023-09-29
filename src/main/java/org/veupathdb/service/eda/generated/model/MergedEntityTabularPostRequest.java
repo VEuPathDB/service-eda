@@ -7,12 +7,18 @@ import java.util.List;
 @JsonDeserialize(
     as = MergedEntityTabularPostRequestImpl.class
 )
-public interface MergedEntityTabularPostRequest {
+public interface MergedEntityTabularPostRequest extends DerivedVariableBulkMetadataRequest {
   @JsonProperty("studyId")
   String getStudyId();
 
   @JsonProperty("studyId")
   void setStudyId(String studyId);
+
+  @JsonProperty("derivedVariables")
+  List<DerivedVariableSpec> getDerivedVariables();
+
+  @JsonProperty("derivedVariables")
+  void setDerivedVariables(List<DerivedVariableSpec> derivedVariables);
 
   @JsonProperty("filters")
   List<APIFilter> getFilters();
@@ -31,12 +37,6 @@ public interface MergedEntityTabularPostRequest {
 
   @JsonProperty("outputVariables")
   void setOutputVariables(List<VariableSpec> outputVariables);
-
-  @JsonProperty("derivedVariables")
-  List<DerivedVariableSpec> getDerivedVariables();
-
-  @JsonProperty("derivedVariables")
-  void setDerivedVariables(List<DerivedVariableSpec> derivedVariables);
 
   @JsonProperty("computeSpec")
   ComputeSpecForMerging getComputeSpec();

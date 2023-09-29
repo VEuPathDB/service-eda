@@ -15,7 +15,7 @@ public enum APIVariableDataShape {
   @JsonProperty("binary")
   BINARY("binary");
 
-  private final String value;
+  public final String value;
 
   public String getValue() {
     return this.value;

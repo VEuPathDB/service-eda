@@ -120,6 +120,18 @@ public interface APINumberVariable extends APIVariableWithValues {
   @JsonProperty("imputeZero")
   void setImputeZero(Boolean imputeZero);
 
+  @JsonProperty("hasStudyDependentVocabulary")
+  Boolean getHasStudyDependentVocabulary();
+
+  @JsonProperty("hasStudyDependentVocabulary")
+  void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary);
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  VariableSpec getVariableSpecToImputeZeroesFor();
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  void setVariableSpecToImputeZeroesFor(VariableSpec variableSpecToImputeZeroesFor);
+
   @JsonProperty("distributionDefaults")
   APINumberDistributionDefaults getDistributionDefaults();
 
@@ -137,6 +149,12 @@ public interface APINumberVariable extends APIVariableWithValues {
 
   @JsonProperty("precision")
   void setPrecision(Number precision);
+
+  @JsonProperty("scale")
+  APIVariableScale getScale();
+
+  @JsonProperty("scale")
+  void setScale(APIVariableScale scale);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

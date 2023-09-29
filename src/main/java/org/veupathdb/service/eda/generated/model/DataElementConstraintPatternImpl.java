@@ -9,7 +9,7 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder
-public class VisualizationDataElementConstraintPatternImpl implements VisualizationDataElementConstraintPattern {
+public class DataElementConstraintPatternImpl implements DataElementConstraintPattern {
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
 

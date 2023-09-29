@@ -31,9 +31,12 @@ import java.util.Map;
     "isMergeKey",
     "isMultiValued",
     "imputeZero",
+    "hasStudyDependentVocabulary",
+    "variableSpecToImputeZeroesFor",
     "distributionDefaults",
     "units",
-    "precision"
+    "precision",
+    "scale"
 })
 public class APINumberVariableImpl implements APINumberVariable {
   @JsonProperty("id")
@@ -90,6 +93,12 @@ public class APINumberVariableImpl implements APINumberVariable {
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
 
+  @JsonProperty("hasStudyDependentVocabulary")
+  private Boolean hasStudyDependentVocabulary;
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  private VariableSpec variableSpecToImputeZeroesFor;
+
   @JsonProperty("distributionDefaults")
   private APINumberDistributionDefaults distributionDefaults;
 
@@ -98,6 +107,9 @@ public class APINumberVariableImpl implements APINumberVariable {
 
   @JsonProperty("precision")
   private Number precision;
+
+  @JsonProperty("scale")
+  private APIVariableScale scale;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -277,6 +289,26 @@ public class APINumberVariableImpl implements APINumberVariable {
     this.imputeZero = imputeZero;
   }
 
+  @JsonProperty("hasStudyDependentVocabulary")
+  public Boolean getHasStudyDependentVocabulary() {
+    return this.hasStudyDependentVocabulary;
+  }
+
+  @JsonProperty("hasStudyDependentVocabulary")
+  public void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary) {
+    this.hasStudyDependentVocabulary = hasStudyDependentVocabulary;
+  }
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  public VariableSpec getVariableSpecToImputeZeroesFor() {
+    return this.variableSpecToImputeZeroesFor;
+  }
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  public void setVariableSpecToImputeZeroesFor(VariableSpec variableSpecToImputeZeroesFor) {
+    this.variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
+  }
+
   @JsonProperty("distributionDefaults")
   public APINumberDistributionDefaults getDistributionDefaults() {
     return this.distributionDefaults;
@@ -305,6 +337,16 @@ public class APINumberVariableImpl implements APINumberVariable {
   @JsonProperty("precision")
   public void setPrecision(Number precision) {
     this.precision = precision;
+  }
+
+  @JsonProperty("scale")
+  public APIVariableScale getScale() {
+    return this.scale;
+  }
+
+  @JsonProperty("scale")
+  public void setScale(APIVariableScale scale) {
+    this.scale = scale;
   }
 
   @JsonAnyGetter

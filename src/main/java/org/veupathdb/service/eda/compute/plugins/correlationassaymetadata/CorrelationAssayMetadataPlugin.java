@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.compute.plugins.correlation;
+package org.veupathdb.service.eda.compute.plugins.correlationassaymetadata;
 
 import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -21,19 +21,19 @@ import java.util.List;
 
 import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
 
-public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, CorrelationComputeConfig> {
+public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPluginRequest, CorrelationComputeConfig> {
 
   private static final String INPUT_DATA = "correlation_input";
 
-  public CorrelationPlugin(@NotNull PluginContext<CorrelationPluginRequest, CorrelationComputeConfig> context) {
+  public CorrelationAssayMetadataPlugin(@NotNull PluginContext<CorrelationPluginRequest, CorrelationComputeConfig> context) {
     super(context);
   }
 
   @NotNull
   @Override
   public List<StreamSpec> getStreamSpecs() {
-    return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getChildrenVariables(getConfig().getCollectionVariable()))
+    return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable1().getEntityId())
+        .addVars(getUtil().getChildrenVariables(getConfig().getCollectionVariable1()))
       );
   }
 
@@ -44,7 +44,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     PluginUtil util = getUtil();
     ReferenceMetadata meta = getContext().getReferenceMetadata();
 
-    String entityId = computeConfig.getCollectionVariable().getEntityId();
+    String entityId = computeConfig.getCollectionVariable1().getEntityId();
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
@@ -64,7 +64,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
 
       // Read in the abundance data
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
+      computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable1()));
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
       connection.voidEval("abundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
@@ -75,6 +75,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       // sampleMetadataVars.add(computeEntityIdVarSpec);
       // connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
       // connection.voidEval("sampleMetadata <- " + INPUT_DATA);
+      // connection.voidEval("print(head(sampleMetadata))");
 
 
       // Turn the list of id columns into an array of strings for R
@@ -94,14 +95,18 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
 
       // Set up input assay data.
       // TEMP until we have the continuous sample metadata, we're letting the abundance data sub for continuous sample metadata
-      connection.voidEval("inputData <- microbiomeComputations::AbundanceData(data=abundanceData" + 
-                                                                          ", sampleMetadata=abundanceData" +
-                                                                          ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                                                          ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
-                                                                          ", imputeZero=TRUE)");
+      connection.voidEval("data1 <- AbundanceData(data=abundanceData" + 
+                                                ", sampleMetadata=abundanceData" +
+                                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
+                                                ", imputeZero=TRUE)");
+
+      connection.voidEval("data2 <- SampleMetadata(data = abundanceData[, 1:10]" +
+                                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
 
 
-      connection.voidEval("computeResult <- microbiomeComputations::correlation(data=inputData" +
+      connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=data1, data2=data2" +
                                                           ", method=" + singleQuote(method) +
                                                           ", verbose=TRUE)");
 

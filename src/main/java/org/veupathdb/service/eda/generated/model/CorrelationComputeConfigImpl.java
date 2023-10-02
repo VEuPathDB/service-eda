@@ -10,12 +10,16 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "collectionVariable",
+    "collectionVariable1",
+    "collectionVariable2",
     "correlationMethod"
 })
 public class CorrelationComputeConfigImpl implements CorrelationComputeConfig {
-  @JsonProperty("collectionVariable")
-  private VariableSpec collectionVariable;
+  @JsonProperty("collectionVariable1")
+  private VariableSpec collectionVariable1;
+
+  @JsonProperty("collectionVariable2")
+  private VariableSpec collectionVariable2;
 
   @JsonProperty("correlationMethod")
   private CorrelationMethod correlationMethod;
@@ -23,14 +27,24 @@ public class CorrelationComputeConfigImpl implements CorrelationComputeConfig {
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
-  @JsonProperty("collectionVariable")
-  public VariableSpec getCollectionVariable() {
-    return this.collectionVariable;
+  @JsonProperty("collectionVariable1")
+  public VariableSpec getCollectionVariable1() {
+    return this.collectionVariable1;
   }
 
-  @JsonProperty("collectionVariable")
-  public void setCollectionVariable(VariableSpec collectionVariable) {
-    this.collectionVariable = collectionVariable;
+  @JsonProperty("collectionVariable1")
+  public void setCollectionVariable1(VariableSpec collectionVariable1) {
+    this.collectionVariable1 = collectionVariable1;
+  }
+
+  @JsonProperty("collectionVariable2")
+  public VariableSpec getCollectionVariable2() {
+    return this.collectionVariable2;
+  }
+
+  @JsonProperty("collectionVariable2")
+  public void setCollectionVariable2(VariableSpec collectionVariable2) {
+    this.collectionVariable2 = collectionVariable2;
   }
 
   @JsonProperty("correlationMethod")

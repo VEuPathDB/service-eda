@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.compute.plugins.correlation;
+package org.veupathdb.service.eda.compute.plugins.correlationassaymetadata;
 
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
@@ -8,7 +8,7 @@ import org.veupathdb.service.eda.generated.model.CorrelationComputeConfig;
 import org.veupathdb.service.eda.generated.model.CorrelationPluginRequest;
 import org.veupathdb.service.eda.generated.model.CorrelationPluginRequestImpl;
 
-public class CorrelationPluginProvider implements PluginProvider<CorrelationPluginRequest, CorrelationComputeConfig> {
+public class CorrelationAssayMetadataPluginProvider implements PluginProvider<CorrelationPluginRequest, CorrelationComputeConfig> {
   @NotNull
   @Override
   public String getUrlSegment() {
@@ -35,7 +35,7 @@ public class CorrelationPluginProvider implements PluginProvider<CorrelationPlug
 
   @NotNull
   @Override
-  public CorrelationPlugin createPlugin(@NotNull PluginContext<CorrelationPluginRequest, CorrelationComputeConfig> context) {
-    return new CorrelationPlugin(context);
+  public CorrelationAssayMetadataPlugin createPlugin(@NotNull PluginContext<CorrelationPluginRequest, CorrelationComputeConfig> context) {
+    return new CorrelationAssayMetadataPlugin(context);
   }
 }

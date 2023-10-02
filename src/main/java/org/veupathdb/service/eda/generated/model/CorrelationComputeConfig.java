@@ -10,11 +10,17 @@ import java.util.Map;
     as = CorrelationComputeConfigImpl.class
 )
 public interface CorrelationComputeConfig {
-  @JsonProperty("collectionVariable")
-  VariableSpec getCollectionVariable();
+  @JsonProperty("collectionVariable1")
+  VariableSpec getCollectionVariable1();
 
-  @JsonProperty("collectionVariable")
-  void setCollectionVariable(VariableSpec collectionVariable);
+  @JsonProperty("collectionVariable1")
+  void setCollectionVariable1(VariableSpec collectionVariable1);
+
+  @JsonProperty("collectionVariable2")
+  VariableSpec getCollectionVariable2();
+
+  @JsonProperty("collectionVariable2")
+  void setCollectionVariable2(VariableSpec collectionVariable2);
 
   @JsonProperty("correlationMethod")
   CorrelationMethod getCorrelationMethod();

@@ -11,18 +11,18 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "var1",
-    "var2",
+    "data1",
+    "data2",
     "correlationCoef",
     "pValue",
     "adjustedPValue"
 })
 public class CorrelationStatsResponseImpl implements CorrelationStatsResponse {
-  @JsonProperty("var1")
-  private List<String> var1;
+  @JsonProperty("data1")
+  private List<String> data1;
 
-  @JsonProperty("var2")
-  private List<String> var2;
+  @JsonProperty("data2")
+  private List<String> data2;
 
   @JsonProperty("correlationCoef")
   private List<String> correlationCoef;
@@ -36,24 +36,24 @@ public class CorrelationStatsResponseImpl implements CorrelationStatsResponse {
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
-  @JsonProperty("var1")
-  public List<String> getVar1() {
-    return this.var1;
+  @JsonProperty("data1")
+  public List<String> getData1() {
+    return this.data1;
   }
 
-  @JsonProperty("var1")
-  public void setVar1(List<String> var1) {
-    this.var1 = var1;
+  @JsonProperty("data1")
+  public void setData1(List<String> data1) {
+    this.data1 = data1;
   }
 
-  @JsonProperty("var2")
-  public List<String> getVar2() {
-    return this.var2;
+  @JsonProperty("data2")
+  public List<String> getData2() {
+    return this.data2;
   }
 
-  @JsonProperty("var2")
-  public void setVar2(List<String> var2) {
-    this.var2 = var2;
+  @JsonProperty("data2")
+  public void setData2(List<String> data2) {
+    this.data2 = data2;
   }
 
   @JsonProperty("correlationCoef")

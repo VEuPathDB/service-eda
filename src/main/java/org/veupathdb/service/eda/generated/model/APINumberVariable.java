@@ -120,11 +120,11 @@ public interface APINumberVariable extends APIVariableWithValues {
   @JsonProperty("imputeZero")
   void setImputeZero(Boolean imputeZero);
 
-  @JsonProperty("hasStudyDependentVocabulary")
-  Boolean getHasStudyDependentVocabulary();
+  @JsonProperty("hasStudySpecificVocabulary")
+  Boolean getHasStudySpecificVocabulary();
 
-  @JsonProperty("hasStudyDependentVocabulary")
-  void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary);
+  @JsonProperty("hasStudySpecificVocabulary")
+  void setHasStudySpecificVocabulary(Boolean hasStudySpecificVocabulary);
 
   @JsonProperty("variableSpecToImputeZeroesFor")
   VariableSpec getVariableSpecToImputeZeroesFor();

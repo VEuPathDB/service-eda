@@ -17,7 +17,7 @@ import java.util.List;
     "displayRangeMax",
     "vocabulary",
     "imputeZero",
-    "hasStudyDependentVocabulary",
+    "hasStudySpecificVocabulary",
     "isCollection",
     "members"
 })
@@ -52,8 +52,8 @@ public class VariableMappingImpl implements VariableMapping {
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
 
-  @JsonProperty("hasStudyDependentVocabulary")
-  private Boolean hasStudyDependentVocabulary;
+  @JsonProperty("hasStudySpecificVocabulary")
+  private Boolean hasStudySpecificVocabulary;
 
   @JsonProperty("isCollection")
   private Boolean isCollection;
@@ -161,14 +161,14 @@ public class VariableMappingImpl implements VariableMapping {
     this.imputeZero = imputeZero;
   }
 
-  @JsonProperty("hasStudyDependentVocabulary")
-  public Boolean getHasStudyDependentVocabulary() {
-    return this.hasStudyDependentVocabulary;
+  @JsonProperty("hasStudySpecificVocabulary")
+  public Boolean getHasStudySpecificVocabulary() {
+    return this.hasStudySpecificVocabulary;
   }
 
-  @JsonProperty("hasStudyDependentVocabulary")
-  public void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary) {
-    this.hasStudyDependentVocabulary = hasStudyDependentVocabulary;
+  @JsonProperty("hasStudySpecificVocabulary")
+  public void setHasStudySpecificVocabulary(Boolean hasStudySpecificVocabulary) {
+    this.hasStudySpecificVocabulary = hasStudySpecificVocabulary;
   }
 
   @JsonProperty("isCollection")

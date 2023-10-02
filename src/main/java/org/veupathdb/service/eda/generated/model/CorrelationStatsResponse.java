@@ -11,17 +11,17 @@ import java.util.Map;
     as = CorrelationStatsResponseImpl.class
 )
 public interface CorrelationStatsResponse {
-  @JsonProperty("var1")
-  List<String> getVar1();
+  @JsonProperty("data1")
+  List<String> getData1();
 
-  @JsonProperty("var1")
-  void setVar1(List<String> var1);
+  @JsonProperty("data1")
+  void setData1(List<String> data1);
 
-  @JsonProperty("var2")
-  List<String> getVar2();
+  @JsonProperty("data2")
+  List<String> getData2();
 
-  @JsonProperty("var2")
-  void setVar2(List<String> var2);
+  @JsonProperty("data2")
+  void setData2(List<String> data2);
 
   @JsonProperty("correlationCoef")
   List<String> getCorrelationCoef();

@@ -105,18 +105,18 @@ public interface Computes {
       DifferentialAbundancePluginRequest entity);
 
   @POST
-  @Path("/correlation")
+  @Path("/correlationassaymetadata")
   @Produces("application/json")
   @Consumes("application/json")
-  PostComputesCorrelationResponse postComputesCorrelation(
+  PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(
       @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
       CorrelationPluginRequest entity);
 
   @POST
-  @Path("/correlation/statistics")
+  @Path("/correlationassaymetadata/statistics")
   @Produces("application/json")
   @Consumes("application/json")
-  PostComputesCorrelationStatisticsResponse postComputesCorrelationStatistics(
+  PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(
       CorrelationPluginRequest entity);
 
   class GetComputesResponse extends ResponseDelegate {
@@ -299,37 +299,38 @@ public interface Computes {
     }
   }
 
-  class PostComputesCorrelationResponse extends ResponseDelegate {
-    private PostComputesCorrelationResponse(Response response, Object entity) {
+  class PostComputesCorrelationassaymetadataResponse extends ResponseDelegate {
+    private PostComputesCorrelationassaymetadataResponse(Response response, Object entity) {
       super(response, entity);
     }
 
-    private PostComputesCorrelationResponse(Response response) {
+    private PostComputesCorrelationassaymetadataResponse(Response response) {
       super(response);
     }
 
-    public static PostComputesCorrelationResponse respond200WithApplicationJson(
+    public static PostComputesCorrelationassaymetadataResponse respond200WithApplicationJson(
         JobResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
-      return new PostComputesCorrelationResponse(responseBuilder.build(), entity);
+      return new PostComputesCorrelationassaymetadataResponse(responseBuilder.build(), entity);
     }
   }
 
-  class PostComputesCorrelationStatisticsResponse extends ResponseDelegate {
-    private PostComputesCorrelationStatisticsResponse(Response response, Object entity) {
+  class PostComputesCorrelationassaymetadataStatisticsResponse extends ResponseDelegate {
+    private PostComputesCorrelationassaymetadataStatisticsResponse(Response response,
+        Object entity) {
       super(response, entity);
     }
 
-    private PostComputesCorrelationStatisticsResponse(Response response) {
+    private PostComputesCorrelationassaymetadataStatisticsResponse(Response response) {
       super(response);
     }
 
-    public static PostComputesCorrelationStatisticsResponse respond200WithApplicationJson(
+    public static PostComputesCorrelationassaymetadataStatisticsResponse respond200WithApplicationJson(
         CorrelationStatsResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
-      return new PostComputesCorrelationStatisticsResponse(responseBuilder.build(), entity);
+      return new PostComputesCorrelationassaymetadataStatisticsResponse(responseBuilder.build(), entity);
     }
   }
 }

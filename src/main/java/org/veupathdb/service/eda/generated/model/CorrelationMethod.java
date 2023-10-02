@@ -9,7 +9,7 @@ public enum CorrelationMethod {
   @JsonProperty("pearson")
   PEARSON("pearson");
 
-  private final String value;
+  public final String value;
 
   public String getValue() {
     return this.value;

@@ -32,7 +32,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
   @Override
   public List<StreamSpec> getStreamSpecs() {
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getChildrenVariables(getConfig().getCollectionVariable())
+        .addVars(getUtil().getCollectionMembers(getConfig().getCollectionVariable())
       ));
   }
 
@@ -58,7 +58,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       connection.voidEval("print('starting ranked abundance computation')");
 
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable()));
+      computeInputVars.addAll(util.getCollectionMembers(computeConfig.getCollectionVariable()));
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
       // TODO make a helper for this i think

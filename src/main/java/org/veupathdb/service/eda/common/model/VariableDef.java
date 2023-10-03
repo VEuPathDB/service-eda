@@ -141,7 +141,7 @@ public class VariableDef extends VariableSpecImpl {
 
   @JsonIgnore
   public boolean hasStudyDependentVocabulary() {
-    return _hasStudySpecificVocabulary;
+    return _hasStudyDependentVocabulary;
   }
 
   @JsonIgnore
@@ -157,6 +157,7 @@ public class VariableDef extends VariableSpecImpl {
   @JsonIgnore
   public VariableSpec getVariableSpecToImputeZeroesFor() {
     return _variableSpecToImputeZeroesFor;
+  }
 
   public List<String> getVocabulary() {
     return _vocabulary;

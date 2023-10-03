@@ -38,7 +38,7 @@ public class EntityDef {
     _id = id;
     _displayName = displayName;
     _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING,
-        APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), Optional.empty(), null, nul, false, null, VariableSource.ID);
+        APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), Optional.empty(), null, null, false, null, VariableSource.ID);
     _variables = new ArrayList<>();
     _variables.add(_idColumnDef);
     _categories = new ArrayList<>();

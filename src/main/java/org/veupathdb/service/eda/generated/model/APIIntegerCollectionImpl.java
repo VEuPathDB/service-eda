@@ -21,8 +21,6 @@ import java.util.Map;
     "distinctValuesCount",
     "memberVariableIds",
     "imputeZero",
-    "hasStudyDependentVocabulary",
-    "variableSpecToImputeZeroesFor",
     "normalizationMethod",
     "isCompositional",
     "isProportion",
@@ -53,12 +51,6 @@ public class APIIntegerCollectionImpl implements APIIntegerCollection {
 
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
-
-  @JsonProperty("hasStudyDependentVocabulary")
-  private Boolean hasStudyDependentVocabulary;
-
-  @JsonProperty("variableSpecToImputeZeroesFor")
-  private VariableSpec variableSpecToImputeZeroesFor;
 
   @JsonProperty("normalizationMethod")
   private String normalizationMethod;
@@ -151,26 +143,6 @@ public class APIIntegerCollectionImpl implements APIIntegerCollection {
   @JsonProperty("imputeZero")
   public void setImputeZero(Boolean imputeZero) {
     this.imputeZero = imputeZero;
-  }
-
-  @JsonProperty("hasStudyDependentVocabulary")
-  public Boolean getHasStudyDependentVocabulary() {
-    return this.hasStudyDependentVocabulary;
-  }
-
-  @JsonProperty("hasStudyDependentVocabulary")
-  public void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary) {
-    this.hasStudyDependentVocabulary = hasStudyDependentVocabulary;
-  }
-
-  @JsonProperty("variableSpecToImputeZeroesFor")
-  public VariableSpec getVariableSpecToImputeZeroesFor() {
-    return this.variableSpecToImputeZeroesFor;
-  }
-
-  @JsonProperty("variableSpecToImputeZeroesFor")
-  public void setVariableSpecToImputeZeroesFor(VariableSpec variableSpecToImputeZeroesFor) {
-    this.variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
   }
 
   @JsonProperty("normalizationMethod")

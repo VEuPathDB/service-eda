@@ -41,7 +41,6 @@ public class APIStudyOverviewImpl implements APIStudyOverview {
   @JsonProperty("shortDisplayName")
   private String shortDisplayName;
 
-  @JsonProperty("lastModified")
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
       pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
@@ -49,6 +48,7 @@ public class APIStudyOverviewImpl implements APIStudyOverview {
   @JsonDeserialize(
       using = TimestampDeserializer.class
   )
+  @JsonProperty("lastModified")
   private Date lastModified;
 
   @JsonProperty("description")

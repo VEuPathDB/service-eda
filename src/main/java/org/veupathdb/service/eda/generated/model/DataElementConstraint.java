@@ -20,6 +20,30 @@ public interface DataElementConstraint {
   @JsonProperty("isTemporal")
   void setIsTemporal(Boolean isTemporal);
 
+  @JsonProperty("isCollection")
+  Boolean getIsCollection();
+
+  @JsonProperty("isCollection")
+  void setIsCollection(Boolean isCollection);
+
+  @JsonProperty("isCompositional")
+  Boolean getIsCompositional();
+
+  @JsonProperty("isCompositional")
+  void setIsCompositional(Boolean isCompositional);
+
+  @JsonProperty("isProportion")
+  Boolean getIsProportion();
+
+  @JsonProperty("isProportion")
+  void setIsProportion(Boolean isProportion);
+
+  @JsonProperty("allowedNormalizationMethods")
+  List<String> getAllowedNormalizationMethods();
+
+  @JsonProperty("allowedNormalizationMethods")
+  void setAllowedNormalizationMethods(List<String> allowedNormalizationMethods);
+
   @JsonProperty("minNumVars")
   Number getMinNumVars();
 

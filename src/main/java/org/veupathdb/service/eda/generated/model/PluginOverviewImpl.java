@@ -3,12 +3,14 @@ package org.veupathdb.service.eda.generated.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "name",
     "displayName",
-    "description"
+    "description",
+    "dataElementConstraints"
 })
 public class PluginOverviewImpl implements PluginOverview {
   @JsonProperty("name")
@@ -19,6 +21,9 @@ public class PluginOverviewImpl implements PluginOverview {
 
   @JsonProperty("description")
   private String description;
+
+  @JsonProperty("dataElementConstraints")
+  private List<DataElementConstraintPattern> dataElementConstraints;
 
   @JsonProperty("name")
   public String getName() {
@@ -48,5 +53,15 @@ public class PluginOverviewImpl implements PluginOverview {
   @JsonProperty("description")
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  @JsonProperty("dataElementConstraints")
+  public List<DataElementConstraintPattern> getDataElementConstraints() {
+    return this.dataElementConstraints;
+  }
+
+  @JsonProperty("dataElementConstraints")
+  public void setDataElementConstraints(List<DataElementConstraintPattern> dataElementConstraints) {
+    this.dataElementConstraints = dataElementConstraints;
   }
 }

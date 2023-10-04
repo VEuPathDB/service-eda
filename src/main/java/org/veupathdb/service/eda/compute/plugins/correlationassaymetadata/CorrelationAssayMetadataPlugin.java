@@ -74,8 +74,6 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
       // List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
       // sampleMetadataVars.add(computeEntityIdVarSpec);
       // connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
-      // connection.voidEval("sampleMetadata <- " + INPUT_DATA);
-      // connection.voidEval("print(head(sampleMetadata))");
 
 
       // Turn the list of id columns into an array of strings for R
@@ -96,7 +94,6 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
       // Set up input assay data.
       // TEMP until we have the continuous sample metadata, we're letting the abundance data sub for continuous sample metadata
       connection.voidEval("data1 <- AbundanceData(data=abundanceData" + 
-                                                ", sampleMetadata=abundanceData" +
                                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                 ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                 ", imputeZero=TRUE)");

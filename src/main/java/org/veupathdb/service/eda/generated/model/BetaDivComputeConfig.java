@@ -11,10 +11,10 @@ import java.util.Map;
 )
 public interface BetaDivComputeConfig {
   @JsonProperty("collectionVariable")
-  VariableSpec getCollectionVariable();
+  CollectionSpec getCollectionVariable();
 
   @JsonProperty("collectionVariable")
-  void setCollectionVariable(VariableSpec collectionVariable);
+  void setCollectionVariable(CollectionSpec collectionVariable);
 
   @JsonProperty("betaDivDissimilarityMethod")
   BetaDivDissimilarityMethod getBetaDivDissimilarityMethod();

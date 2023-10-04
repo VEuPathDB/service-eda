@@ -7,7 +7,10 @@ public enum DifferentialAbundanceMethod {
   DESEQ("DESeq"),
 
   @JsonProperty("ANCOMBC")
-  ANCOMBC("ANCOMBC");
+  ANCOMBC("ANCOMBC"),
+
+  @JsonProperty("Maaslin")
+  MAASLIN("Maaslin");
 
   public final String value;
 

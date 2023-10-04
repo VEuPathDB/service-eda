@@ -29,6 +29,26 @@ public class VisualizationDataElement extends DataElementConstraintImpl {
     return this;
   }
 
+  public VisualizationDataElement isCollection(boolean isCollection) {
+    setIsCollection(isCollection);
+    return this;
+  }
+
+  public VisualizationDataElement isCompositional(boolean isCompositional) {
+    setIsCompositional(isCompositional);
+    return this;
+  }
+
+  public VisualizationDataElement isProportion(boolean isProportion) {
+    setIsProportion(isProportion);
+    return this;
+  }
+
+  public VisualizationDataElement normalizationMethods(String... allowedNormalizationMethods) {
+    setAllowedNormalizationMethods(Arrays.asList(allowedNormalizationMethods));
+    return this;
+  }
+
   public VisualizationDataElement temporal(boolean isTemporal) {
     setIsTemporal(isTemporal);
     return this;

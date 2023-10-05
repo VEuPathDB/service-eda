@@ -169,7 +169,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
     request.setFilters(subsetFilters);
 
     // build request url
-    String url = getUrl("/studies/" + metadata.getStudyId() + "/entities" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId() + "/root-vocab");
+    String url = getUrl("/studies/" + metadata.getStudyId() + "/entities/" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId() + "/root-vocab");
 
     // make request
     return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());

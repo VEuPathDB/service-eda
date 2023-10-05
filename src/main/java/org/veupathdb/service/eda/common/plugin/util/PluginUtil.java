@@ -255,6 +255,9 @@ public class PluginUtil {
   }
 
   public String getEntityAncestorsAsRVectorString(EntityDef entity, ReferenceMetadata meta) {
+    if (entity == null) {
+      return "c()";
+    }
     List<VariableDef> idColumns = new ArrayList<>();
     for (EntityDef ancestor : meta.getAncestors(entity)) {
       idColumns.add(ancestor.getIdColumnDef());

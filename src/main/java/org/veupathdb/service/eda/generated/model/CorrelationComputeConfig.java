@@ -11,16 +11,16 @@ import java.util.Map;
 )
 public interface CorrelationComputeConfig {
   @JsonProperty("collectionVariable1")
-  VariableSpec getCollectionVariable1();
+  CollectionSpec getCollectionVariable1();
 
   @JsonProperty("collectionVariable1")
-  void setCollectionVariable1(VariableSpec collectionVariable1);
+  void setCollectionVariable1(CollectionSpec collectionVariable1);
 
   @JsonProperty("collectionVariable2")
-  VariableSpec getCollectionVariable2();
+  CollectionSpec getCollectionVariable2();
 
   @JsonProperty("collectionVariable2")
-  void setCollectionVariable2(VariableSpec collectionVariable2);
+  void setCollectionVariable2(CollectionSpec collectionVariable2);
 
   @JsonProperty("correlationMethod")
   CorrelationMethod getCorrelationMethod();

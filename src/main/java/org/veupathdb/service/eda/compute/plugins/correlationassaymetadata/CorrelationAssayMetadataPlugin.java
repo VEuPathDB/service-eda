@@ -13,6 +13,7 @@ import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.CorrelationComputeConfig;
 import org.veupathdb.service.eda.generated.model.CorrelationPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.CollectionSpec;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -32,8 +33,11 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
   @NotNull
   @Override
   public List<StreamSpec> getStreamSpecs() {
+    CorrelationComputeConfig computeConfig = getConfig();
+    CollectionSpec collectionVariable1 = computeConfig.getCollectionVariable1();
+    VariableSpec collectionVariable1VarSpec = VariableDef.newVariableSpec(collectionVariable1.getEntityId(), collectionVariable1.getCollectionId());
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable1().getEntityId())
-        .addVars(getUtil().getChildrenVariables(getConfig().getCollectionVariable1()))
+        .addVars(getUtil().getChildrenVariables(collectionVariable1VarSpec))
       );
   }
 
@@ -46,6 +50,8 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
 
     String entityId = computeConfig.getCollectionVariable1().getEntityId();
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
+    // Boolean check = entity.getIsManyToOneWithParent();
+    // System.out.println(check);
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getCorrelationMethod().getValue();
@@ -64,7 +70,10 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
 
       // Read in the abundance data
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable1()));
+      CollectionSpec collectionVariable1 = computeConfig.getCollectionVariable1();
+      VariableSpec collectionVariable1VarSpec = VariableDef.newVariableSpec(entityId, collectionVariable1.getCollectionId());
+      computeInputVars.addAll(util.getChildrenVariables(collectionVariable1VarSpec));
+      // computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable1()));
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
       connection.voidEval("abundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
@@ -90,17 +99,24 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-
+      
+      
       // Set up input assay data.
       // TEMP until we have the continuous sample metadata, we're letting the abundance data sub for continuous sample metadata
       connection.voidEval("data1 <- AbundanceData(data=abundanceData" + 
-                                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
-                                                ", imputeZero=TRUE)");
-
+                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
+                                ", imputeZero=TRUE)");
+      
       connection.voidEval("data2 <- SampleMetadata(data = abundanceData[, 1:10]" +
-                                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
+                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
+      
+      // Why do we have empty correlations?? I think because row sums are 0?
+      connection.voidEval("print(abundanceData[,c('EUPATH_0000813.EUPATH_0009252_Bacteria_Acidobacteriota','EUPATH_0000813.EUPATH_0009252_Bacteria_Desulfobacterota')])");
+      connection.voidEval("testAbund <- getAbundances(data1, FALSE)");
+      connection.voidEval("print(testAbund[,c('EUPATH_0000813.EUPATH_0009252_Bacteria_Acidobacteriota','EUPATH_0000813.EUPATH_0009252_Bacteria_Desulfobacterota')])");
+      connection.voidEval("print(sum(testAbund[,'EUPATH_0000813.EUPATH_0009252_Bacteria_Desulfobacterota']))");
 
 
       connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=data1, data2=data2" +

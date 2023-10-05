@@ -16,10 +16,10 @@ import java.util.Map;
 })
 public class CorrelationComputeConfigImpl implements CorrelationComputeConfig {
   @JsonProperty("collectionVariable1")
-  private VariableSpec collectionVariable1;
+  private CollectionSpec collectionVariable1;
 
   @JsonProperty("collectionVariable2")
-  private VariableSpec collectionVariable2;
+  private CollectionSpec collectionVariable2;
 
   @JsonProperty("correlationMethod")
   private CorrelationMethod correlationMethod;
@@ -28,22 +28,22 @@ public class CorrelationComputeConfigImpl implements CorrelationComputeConfig {
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
   @JsonProperty("collectionVariable1")
-  public VariableSpec getCollectionVariable1() {
+  public CollectionSpec getCollectionVariable1() {
     return this.collectionVariable1;
   }
 
   @JsonProperty("collectionVariable1")
-  public void setCollectionVariable1(VariableSpec collectionVariable1) {
+  public void setCollectionVariable1(CollectionSpec collectionVariable1) {
     this.collectionVariable1 = collectionVariable1;
   }
 
   @JsonProperty("collectionVariable2")
-  public VariableSpec getCollectionVariable2() {
+  public CollectionSpec getCollectionVariable2() {
     return this.collectionVariable2;
   }
 
   @JsonProperty("collectionVariable2")
-  public void setCollectionVariable2(VariableSpec collectionVariable2) {
+  public void setCollectionVariable2(CollectionSpec collectionVariable2) {
     this.collectionVariable2 = collectionVariable2;
   }
 

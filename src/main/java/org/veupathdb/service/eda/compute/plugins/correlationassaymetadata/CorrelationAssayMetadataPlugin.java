@@ -13,9 +13,11 @@ import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.CorrelationComputeConfig;
 import org.veupathdb.service.eda.generated.model.CorrelationPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
 
 import java.io.InputStream;
+import java.util.stream.Stream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,8 +38,22 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
     CorrelationComputeConfig computeConfig = getConfig();
     CollectionSpec collectionVariable1 = computeConfig.getCollectionVariable1();
     VariableSpec collectionVariable1VarSpec = VariableDef.newVariableSpec(collectionVariable1.getEntityId(), collectionVariable1.getCollectionId());
+    String entityId = computeConfig.getCollectionVariable1().getEntityId();
+    EntityDef entity = getContext().getReferenceMetadata().getEntity(entityId).orElseThrow();
+
+    // Also metadata
+    // Stream<VariableDef> descendantVariableStream = getContext().getReferenceMetadata().getAncestors(entity).stream()
+    //   .flatMap(ancestor -> ancestor.getVariables().stream());
+    Stream<VariableDef> descendantVariableStream = getContext().getReferenceMetadata().getAncestors(entity).get(1).getVariables().stream();
+    List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).filter(var -> !var.getVariableId().contains("_stable_id")).toList();
+    System.out.println("oh hello2");
+    // List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).toList();
+    System.out.println(metadataVariables);
+    System.out.println("hi ann");
+
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable1().getEntityId())
         .addVars(getUtil().getChildrenVariables(collectionVariable1VarSpec))
+        .addVars(metadataVariables)
       );
   }
 
@@ -50,8 +66,8 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
 
     String entityId = computeConfig.getCollectionVariable1().getEntityId();
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
-    // Boolean check = entity.getIsManyToOneWithParent();
-    // System.out.println(check);
+    Boolean check = entity.isManyToOneWithParent();
+    System.out.println(check);
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getCorrelationMethod().getValue();
@@ -64,6 +80,12 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
 
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
+
+
+    // Get stream of all ancestors and their variables
+    Stream<VariableDef> descendantVariableStream = meta.getAncestors(entity).stream()
+        .flatMap(ancestor -> ancestor.getVariables().stream());
+    List<VariableSpec> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).map(var -> VariableDef.newVariableSpec(entityId, var.getVariableId())).toList();
     
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
@@ -79,11 +101,9 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
       connection.voidEval("abundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
       // Read in the sample metadata
-      // TO DO get only the continuous sample metadata!!
-      // List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
-      // sampleMetadataVars.add(computeEntityIdVarSpec);
-      // connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
-
+      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataVariables));
+      connection.voidEval("sampleMetadata <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
+      connection.voidEval("head(sampleMetadata)");
 
       // Turn the list of id columns into an array of strings for R
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();

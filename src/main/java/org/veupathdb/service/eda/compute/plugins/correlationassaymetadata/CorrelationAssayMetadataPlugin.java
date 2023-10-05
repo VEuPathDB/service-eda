@@ -66,8 +66,6 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
 
     String entityId = computeConfig.getCollectionVariable1().getEntityId();
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
-    Boolean check = entity.isManyToOneWithParent();
-    System.out.println(check);
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getCorrelationMethod().getValue();
@@ -83,10 +81,10 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
 
 
     // Get stream of all ancestors and their variables
-    Stream<VariableDef> descendantVariableStream = meta.getAncestors(entity).stream()
-        .flatMap(ancestor -> ancestor.getVariables().stream());
-    List<VariableSpec> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).map(var -> VariableDef.newVariableSpec(entityId, var.getVariableId())).toList();
-    
+    Stream<VariableDef> descendantVariableStream = getContext().getReferenceMetadata().getAncestors(entity).get(1).getVariables().stream();
+    List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).filter(var -> !var.getVariableId().contains("_stable_id")).toList();
+
+
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
 
@@ -101,8 +99,11 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
       connection.voidEval("abundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
       // Read in the sample metadata
-      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataVariables));
-      connection.voidEval("sampleMetadata <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
+      List <VariableSpec> metadataInputVars = ListBuilder.asList(computeEntityIdVarSpec);
+      metadataInputVars.addAll(metadataVariables);
+      metadataInputVars.addAll(idColumns);
+      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataInputVars));
+      connection.voidEval("sampleMetadata <- " + INPUT_DATA); 
       connection.voidEval("head(sampleMetadata)");
 
       // Turn the list of id columns into an array of strings for R
@@ -128,7 +129,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
                                 ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                 ", imputeZero=TRUE)");
       
-      connection.voidEval("data2 <- SampleMetadata(data = abundanceData[, 1:10]" +
+      connection.voidEval("data2 <- SampleMetadata(data = sampleMetadata" +
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                 ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
       

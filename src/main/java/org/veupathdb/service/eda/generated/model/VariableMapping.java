@@ -68,11 +68,11 @@ public interface VariableMapping {
   @JsonProperty("imputeZero")
   void setImputeZero(Boolean imputeZero);
 
-  @JsonProperty("hasStudySpecificVocabulary")
-  Boolean getHasStudySpecificVocabulary();
+  @JsonProperty("hasStudyDependentVocabulary")
+  Boolean getHasStudyDependentVocabulary();
 
-  @JsonProperty("hasStudySpecificVocabulary")
-  void setHasStudySpecificVocabulary(Boolean hasStudySpecificVocabulary);
+  @JsonProperty("hasStudyDependentVocabulary")
+  void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary);
 
   @JsonProperty("isCollection")
   Boolean getIsCollection();

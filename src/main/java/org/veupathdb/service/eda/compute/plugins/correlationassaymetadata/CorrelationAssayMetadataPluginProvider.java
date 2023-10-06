@@ -12,13 +12,13 @@ public class CorrelationAssayMetadataPluginProvider implements PluginProvider<Co
   @NotNull
   @Override
   public String getUrlSegment() {
-    return "correlation";
+    return "correlationassaymetadata";
   }
 
   @NotNull
   @Override
   public String getDisplayName() {
-    return "Correlation Plugin";
+    return "Correlation Assay Metadata Plugin";
   }
 
   @NotNull

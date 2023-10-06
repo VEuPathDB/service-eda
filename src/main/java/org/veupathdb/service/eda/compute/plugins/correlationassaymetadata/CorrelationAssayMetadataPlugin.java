@@ -35,21 +35,25 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
   @NotNull
   @Override
   public List<StreamSpec> getStreamSpecs() {
+    // Get the collection variable and its entity
     CorrelationComputeConfig computeConfig = getConfig();
     CollectionSpec collectionVariable1 = computeConfig.getCollectionVariable1();
-    VariableSpec collectionVariable1VarSpec = VariableDef.newVariableSpec(collectionVariable1.getEntityId(), collectionVariable1.getCollectionId());
-    String entityId = computeConfig.getCollectionVariable1().getEntityId();
-    EntityDef entity = getContext().getReferenceMetadata().getEntity(entityId).orElseThrow();
+    String entityId = collectionVariable1.getEntityId();
 
-    // Also metadata
-    // Stream<VariableDef> descendantVariableStream = getContext().getReferenceMetadata().getAncestors(entity).stream()
-    //   .flatMap(ancestor -> ancestor.getVariables().stream());
+    // Wrangle into correct types for what follows
+    EntityDef entity = getContext().getReferenceMetadata().getEntity(entityId).orElseThrow();
+    VariableSpec collectionVariable1VarSpec = VariableDef.newVariableSpec(entityId, collectionVariable1.getCollectionId());
+
+
+    // Grab all continuous variabls from ancestors
+    // The next line only grabs the second-up ancestor instead of all of them, because when i grabbed them all
+    // the variables wold be duplicated in the output. I tried distinct() but that didn't work. Any ideas?
+    // I also noticed we were receiving stable ids in the oriringal request, so i've filtered them out below. There 
+    // is probably a nicer way to do this.
+    // This at least works for now!
     Stream<VariableDef> descendantVariableStream = getContext().getReferenceMetadata().getAncestors(entity).get(1).getVariables().stream();
     List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).filter(var -> !var.getVariableId().contains("_stable_id")).toList();
-    System.out.println("oh hello2");
-    // List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).toList();
-    System.out.println(metadataVariables);
-    System.out.println("hi ann");
+
 
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable1().getEntityId())
         .addVars(getUtil().getChildrenVariables(collectionVariable1VarSpec))
@@ -64,11 +68,16 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
     PluginUtil util = getUtil();
     ReferenceMetadata meta = getContext().getReferenceMetadata();
 
-    String entityId = computeConfig.getCollectionVariable1().getEntityId();
+    // Get compute parameters
+    String method = computeConfig.getCorrelationMethod().getValue();
+    CollectionSpec collectionVariable1 = computeConfig.getCollectionVariable1();
+    String entityId = collectionVariable1.getEntityId();
+
+    // Wrangle into helpful types
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    String method = computeConfig.getCorrelationMethod().getValue();
+    VariableSpec collectionVariable1VarSpec = VariableDef.newVariableSpec(entityId, collectionVariable1.getCollectionId());
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
@@ -81,7 +90,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
 
 
     // Get stream of all ancestors and their variables
-    Stream<VariableDef> descendantVariableStream = getContext().getReferenceMetadata().getAncestors(entity).get(1).getVariables().stream();
+    Stream<VariableDef> descendantVariableStream = meta.getAncestors(entity).get(1).getVariables().stream();
     List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).filter(var -> !var.getVariableId().contains("_stable_id")).toList();
 
 
@@ -89,13 +98,10 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
       connection.voidEval("print('starting correlation computation')");
 
       // Read in the abundance data
-      List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      CollectionSpec collectionVariable1 = computeConfig.getCollectionVariable1();
-      VariableSpec collectionVariable1VarSpec = VariableDef.newVariableSpec(entityId, collectionVariable1.getCollectionId());
-      computeInputVars.addAll(util.getChildrenVariables(collectionVariable1VarSpec));
-      // computeInputVars.addAll(util.getChildrenVariables(computeConfig.getCollectionVariable1()));
-      computeInputVars.addAll(idColumns);
-      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+      List<VariableSpec> abundanceInputVars = ListBuilder.asList(computeEntityIdVarSpec);
+      abundanceInputVars.addAll(util.getChildrenVariables(collectionVariable1VarSpec));
+      abundanceInputVars.addAll(idColumns);
+      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, abundanceInputVars));
       connection.voidEval("abundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
       // Read in the sample metadata
@@ -104,7 +110,6 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
       metadataInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataInputVars));
       connection.voidEval("sampleMetadata <- " + INPUT_DATA); 
-      connection.voidEval("head(sampleMetadata)");
 
       // Turn the list of id columns into an array of strings for R
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
@@ -122,8 +127,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
 
       
       
-      // Set up input assay data.
-      // TEMP until we have the continuous sample metadata, we're letting the abundance data sub for continuous sample metadata
+      // Format inputs for R
       connection.voidEval("data1 <- AbundanceData(data=abundanceData" + 
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                 ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
@@ -133,13 +137,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                 ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
       
-      // Why do we have empty correlations?? I think because row sums are 0?
-      connection.voidEval("print(abundanceData[,c('EUPATH_0000813.EUPATH_0009252_Bacteria_Acidobacteriota','EUPATH_0000813.EUPATH_0009252_Bacteria_Desulfobacterota')])");
-      connection.voidEval("testAbund <- getAbundances(data1, FALSE)");
-      connection.voidEval("print(testAbund[,c('EUPATH_0000813.EUPATH_0009252_Bacteria_Acidobacteriota','EUPATH_0000813.EUPATH_0009252_Bacteria_Desulfobacterota')])");
-      connection.voidEval("print(sum(testAbund[,'EUPATH_0000813.EUPATH_0009252_Bacteria_Desulfobacterota']))");
-
-
+      // Run correlation!
       connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=data1, data2=data2" +
                                                           ", method=" + singleQuote(method) +
                                                           ", verbose=TRUE)");

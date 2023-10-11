@@ -29,16 +29,18 @@ public class EntityDef {
 
   private final String _id;
   private final String _displayName;
+  private final Boolean _isManyToOneWithParent;
   private final VariableDef _idColumnDef;
   private final List<VariableDef> _variables;
   private final List<VariableDef> _categories;
   private final List<CollectionDef> _collections;
 
-  public EntityDef(String id, String displayName, String idColumnName) {
+  public EntityDef(String id, String displayName, String idColumnName, Boolean isManyToOneWithParent) {
     _id = id;
     _displayName = displayName;
     _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING,
         APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), Optional.empty(), null, null, false, null, VariableSource.ID);
+    _isManyToOneWithParent = isManyToOneWithParent;
     _variables = new ArrayList<>();
     _variables.add(_idColumnDef);
     _categories = new ArrayList<>();
@@ -51,6 +53,10 @@ public class EntityDef {
 
   public VariableDef getIdColumnDef() {
     return _idColumnDef;
+  }
+
+  public Boolean isManyToOneWithParent() {
+    return _isManyToOneWithParent;
   }
 
   public List<VariableDef> getVariables() {

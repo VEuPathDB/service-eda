@@ -149,7 +149,8 @@ public class ReferenceMetadata {
     EntityDef entityDef = new EntityDef(
         entity.getId(),
         entity.getDisplayName(),
-        entity.getIdColumnName()
+        entity.getIdColumnName(),
+        entity.getIsManyToOneWithParent()
     );
 
     entity.getCollections().stream().map(col ->

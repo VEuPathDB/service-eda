@@ -221,7 +221,7 @@ public class PluginUtil {
     }
 
     return fileName +
-        " <- fread(" + singleQuote(fileName) +
+        " <- data.table::fread(" + singleQuote(fileName) +
         ", select=c(" + namedTypes + ")" +
         ", na.strings=c(''))";
   }

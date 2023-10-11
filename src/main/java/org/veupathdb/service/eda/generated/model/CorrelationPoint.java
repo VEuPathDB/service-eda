@@ -4,42 +4,41 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import java.util.List;
 import java.util.Map;
 
 @JsonDeserialize(
-    as = CorrelationStatsResponseImpl.class
+    as = CorrelationPointImpl.class
 )
-public interface CorrelationStatsResponse {
+public interface CorrelationPoint {
   @JsonProperty("data1")
-  List<String> getData1();
+  String getData1();
 
   @JsonProperty("data1")
-  void setData1(List<String> data1);
+  void setData1(String data1);
 
   @JsonProperty("data2")
-  List<String> getData2();
+  String getData2();
 
   @JsonProperty("data2")
-  void setData2(List<String> data2);
+  void setData2(String data2);
 
   @JsonProperty("correlationCoef")
-  List<String> getCorrelationCoef();
+  String getCorrelationCoef();
 
   @JsonProperty("correlationCoef")
-  void setCorrelationCoef(List<String> correlationCoef);
+  void setCorrelationCoef(String correlationCoef);
 
   @JsonProperty("pValue")
-  List<String> getPValue();
+  String getPValue();
 
   @JsonProperty("pValue")
-  void setPValue(List<String> pValue);
+  void setPValue(String pValue);
 
   @JsonProperty("adjustedPValue")
-  List<String> getAdjustedPValue();
+  String getAdjustedPValue();
 
   @JsonProperty("adjustedPValue")
-  void setAdjustedPValue(List<String> adjustedPValue);
+  void setAdjustedPValue(String adjustedPValue);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

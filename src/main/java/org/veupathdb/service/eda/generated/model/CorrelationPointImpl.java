@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.util.List;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -17,72 +16,72 @@ import java.util.Map;
     "pValue",
     "adjustedPValue"
 })
-public class CorrelationStatsResponseImpl implements CorrelationStatsResponse {
+public class CorrelationPointImpl implements CorrelationPoint {
   @JsonProperty("data1")
-  private List<String> data1;
+  private String data1;
 
   @JsonProperty("data2")
-  private List<String> data2;
+  private String data2;
 
   @JsonProperty("correlationCoef")
-  private List<String> correlationCoef;
+  private String correlationCoef;
 
   @JsonProperty("pValue")
-  private List<String> pValue;
+  private String pValue;
 
   @JsonProperty("adjustedPValue")
-  private List<String> adjustedPValue;
+  private String adjustedPValue;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
   @JsonProperty("data1")
-  public List<String> getData1() {
+  public String getData1() {
     return this.data1;
   }
 
   @JsonProperty("data1")
-  public void setData1(List<String> data1) {
+  public void setData1(String data1) {
     this.data1 = data1;
   }
 
   @JsonProperty("data2")
-  public List<String> getData2() {
+  public String getData2() {
     return this.data2;
   }
 
   @JsonProperty("data2")
-  public void setData2(List<String> data2) {
+  public void setData2(String data2) {
     this.data2 = data2;
   }
 
   @JsonProperty("correlationCoef")
-  public List<String> getCorrelationCoef() {
+  public String getCorrelationCoef() {
     return this.correlationCoef;
   }
 
   @JsonProperty("correlationCoef")
-  public void setCorrelationCoef(List<String> correlationCoef) {
+  public void setCorrelationCoef(String correlationCoef) {
     this.correlationCoef = correlationCoef;
   }
 
   @JsonProperty("pValue")
-  public List<String> getPValue() {
+  public String getPValue() {
     return this.pValue;
   }
 
   @JsonProperty("pValue")
-  public void setPValue(List<String> pValue) {
+  public void setPValue(String pValue) {
     this.pValue = pValue;
   }
 
   @JsonProperty("adjustedPValue")
-  public List<String> getAdjustedPValue() {
+  public String getAdjustedPValue() {
     return this.adjustedPValue;
   }
 
   @JsonProperty("adjustedPValue")
-  public void setAdjustedPValue(List<String> adjustedPValue) {
+  public void setAdjustedPValue(String adjustedPValue) {
     this.adjustedPValue = adjustedPValue;
   }
 

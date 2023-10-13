@@ -68,11 +68,12 @@ public class VariableDef extends VariableSpecImpl {
   private final String _parentId;
 
   @JsonIgnore
-  private final List<String> _vocabulary;
+  private final boolean _hasStudyDependentVocabulary;
 
   @JsonIgnore
-  private final boolean _hasStudySpecificVocabulary;
+  private final VariableSpec _variableSpecToImputeZeroesFor;
 
+  private final List<String> _vocabulary;
 
   public VariableDef(
       String entityId,
@@ -85,8 +86,9 @@ public class VariableDef extends VariableSpecImpl {
       Optional<String> units,
       String parentId,
       List<String> vocabulary,
-      VariableSource source,
-      boolean hasStudySpecificVocabulary) {
+      boolean hasStudyDependentVocabulary,
+      VariableSpec variableSpecToImputeZeroesFor,
+      VariableSource source) {
     setEntityId(entityId);
     setVariableId(variableId);
     _type = type;
@@ -97,8 +99,9 @@ public class VariableDef extends VariableSpecImpl {
     _units = units;
     _parentId = parentId;
     _vocabulary = vocabulary;
+    _hasStudyDependentVocabulary = hasStudyDependentVocabulary;
+    _variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
     _source = source;
-    _hasStudySpecificVocabulary = hasStudySpecificVocabulary;
   }
 
   @JsonIgnore
@@ -138,7 +141,7 @@ public class VariableDef extends VariableSpecImpl {
 
   @JsonIgnore
   public boolean hasStudyDependentVocabulary() {
-    return _hasStudySpecificVocabulary;
+    return _hasStudyDependentVocabulary;
   }
 
   @JsonIgnore
@@ -147,6 +150,15 @@ public class VariableDef extends VariableSpecImpl {
   }
 
   @JsonIgnore
+  public boolean getHasStudyDependentVocabulary() {
+    return _hasStudyDependentVocabulary;
+  }
+
+  @JsonIgnore
+  public VariableSpec getVariableSpecToImputeZeroesFor() {
+    return _variableSpecToImputeZeroesFor;
+  }
+
   public List<String> getVocabulary() {
     return _vocabulary;
   }

@@ -45,6 +45,12 @@ public class CollectionDef extends CollectionSpecImpl {
   @JsonIgnore
   private final Optional<DataRanges> _dataRanges;
 
+  @JsonIgnore
+  private final boolean _hasStudyDependentVocabulary;
+
+  @JsonIgnore
+  private final VariableSpec _variableSpecToImputeZeroesFor;
+
   public CollectionDef(
       EntityDef entity,
       String id,
@@ -58,7 +64,9 @@ public class CollectionDef extends CollectionSpecImpl {
       boolean isProportion,
       String normalizationMethod,
       List<String> memberVariableIds,
-      Optional<DataRanges> dataRanges) {
+      Optional<DataRanges> dataRanges,
+      boolean hasStudyDependentVocabulary,
+      VariableSpec variableSpecToImputeZeroesFor) {
     setEntityId(entity.getId());
     setCollectionId(id);
     _entity = entity;
@@ -73,6 +81,8 @@ public class CollectionDef extends CollectionSpecImpl {
     _normalizationMethod = normalizationMethod;
     _memberVariableIds = memberVariableIds;
     _dataRanges = dataRanges;
+    _hasStudyDependentVocabulary = hasStudyDependentVocabulary;
+    _variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
   }
 
   @JsonIgnore
@@ -124,6 +134,16 @@ public class CollectionDef extends CollectionSpecImpl {
   @JsonIgnore
   public Optional<DataRanges> getDataRanges() {
     return _dataRanges;
+  }
+
+  @JsonIgnore
+  public boolean getHasStudyDependentVocabulary() {
+    return _hasStudyDependentVocabulary;
+  }
+
+  @JsonIgnore
+  public VariableSpec getVariableSpecToImputeZeroesFor() {
+    return _variableSpecToImputeZeroesFor;
   }
 
   @JsonIgnore

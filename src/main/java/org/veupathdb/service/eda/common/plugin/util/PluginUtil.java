@@ -10,9 +10,12 @@ import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
+import org.veupathdb.service.eda.generated.model.DynamicDataSpec;
 import org.veupathdb.service.eda.generated.model.LabeledRange;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
+import java.lang.StringBuilder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -110,6 +113,22 @@ public class PluginUtil {
     return getVariableImputeZero(getVariableSpecFromList(vars, index));
   }
 
+  public boolean getHasStudyDependentVocabulary(VariableSpec var) {
+    boolean hasStudyDependentVocabulary = getVariableAttribute(VariableDef::getHasStudyDependentVocabulary, var).equals("true") ? true : false;
+
+    return hasStudyDependentVocabulary;
+  }
+
+  public boolean getHasStudyDependentVocabulary(List<VariableSpec> vars, int index) {
+    return getHasStudyDependentVocabulary(getVariableSpecFromList(vars, index));
+  }
+
+  public boolean getHasStudyDependentVocabulary(CollectionSpec collection) {
+    boolean hasStudyDependentVocabulary = getCollectionAttribute(CollectionDef::getHasStudyDependentVocabulary, collection).equals("true") ? true : false;
+
+    return hasStudyDependentVocabulary;
+  }
+
   public List<VariableDef> getCollectionMembers(CollectionSpec collection) {
     return collection == null ? null : _metadata.getCollection(collection).orElseThrow().getMemberVariables();
   }
@@ -137,6 +156,17 @@ public class PluginUtil {
 
   public String toColNameOrEmpty(VariableSpec var) {
     return var == null ? "" : _mergingClient.varToColumnHeader(var);
+  }
+
+  public String toColNameOrEmpty(DynamicDataSpec data) {
+    if (data.isCollectionSpec()) {
+      // TODO and when we get there it might need an option to return either the dot notated collection spec directly vs a list of dot notated member var specs
+      return "";    
+    } else if (data.isVariableSpec()) {
+      return toColNameOrEmpty(data.getVariableSpec());
+    } else {
+      return "";
+    }
   }
 
   public String toColNameOrEmpty(List<VariableSpec> vars, int index) {
@@ -191,11 +221,76 @@ public class PluginUtil {
     }
 
     return fileName +
-        " <- fread(" + singleQuote(fileName) +
+        " <- data.table::fread(" + singleQuote(fileName) +
         ", select=c(" + namedTypes + ")" +
         ", na.strings=c(''))";
   }
 
+  public String getDotNotatedIdColumnsAsRVectorString(List<String> dotNotatedIdColumns) {
+    StringBuilder dotNotatedIdColumnsString = new StringBuilder("c(");
+      boolean first = true;
+      for (String idCol : dotNotatedIdColumns) {
+        if (first) {
+          first = false;
+          dotNotatedIdColumnsString.append(singleQuote(idCol));
+        } else {
+          dotNotatedIdColumnsString.append("," + singleQuote(idCol));
+        }
+      }
+      dotNotatedIdColumnsString.append(")");
+
+    return dotNotatedIdColumnsString.toString();
+  }
+  
+  public String getIdColumnSpecsAsRVectorString(List<VariableSpec> idColumnSpecs) {
+    List<String> dotNotatedIdColumns = idColumnSpecs.stream().map(VariableDef::toDotNotation).toList();
+  
+    return getDotNotatedIdColumnsAsRVectorString(dotNotatedIdColumns);
+  }
+
+  public String getIdColumnDefsAsRVectorString(List<VariableDef> idColumnDefs) {
+    List<String> dotNotatedIdColumns = idColumnDefs.stream().map(VariableDef::toDotNotation).toList();
+  
+    return getDotNotatedIdColumnsAsRVectorString(dotNotatedIdColumns);
+  }
+
+  public String getEntityAncestorsAsRVectorString(EntityDef entity, ReferenceMetadata meta) {
+    if (entity == null) {
+      return "c()";
+    }
+    List<VariableDef> idColumns = new ArrayList<>();
+    for (EntityDef ancestor : meta.getAncestors(entity)) {
+      idColumns.add(ancestor.getIdColumnDef());
+    }
+
+    return getIdColumnDefsAsRVectorString(idColumns);
+  }
+
+  public String getEntityAncestorsAsRVectorString(String entityId, ReferenceMetadata meta) {
+    EntityDef entity = meta.getEntity(entityId).orElseThrow();
+
+    return getEntityAncestorsAsRVectorString(entity, meta);
+  }
+
+  public String getRCategoricalBinListAsString(List<String> labels) {
+    String rBinList = "veupathUtils::BinList(S4Vectors::SimpleList(";
+
+    boolean first = true;
+    for (int i = 0; i < labels.size(); i++) {
+      String rBin = "veupathUtils::Bin(binLabel='" + labels.get(i) + "'";
+      rBin += ")";
+
+      if (first) {
+        rBinList += rBin;
+        first = false;
+      } else {
+        rBinList += "," + rBin;
+      }
+    }
+
+    return rBinList + "))";
+  }
+  
   // Maps ranges in a LabeledRange to bins in an R veupathUtils::BinList object. Returns
   // a string that should be evaluated in R.
   public String getRBinListAsString(List<LabeledRange> labelledRangeList) {

@@ -151,4 +151,51 @@ public class EdaSubsettingClient extends StreamingDataClient {
       throw new RuntimeException("Unable to complete subset distribution request.", e);
     }
   }
+
+  public ResponseFuture getVocabByRootEntity(
+    ReferenceMetadata metadata,
+    VariableSpec varSpec,
+    List<APIFilter> subsetFilters
+  ) {
+    // check for annotations or throw
+    // VariableDef var = metadata.getVariable(varSpec).orElseThrow();
+    // if (!var.getHasStudyDependentVocabulary()) {
+    //   throw new IllegalArgumentException("Cannot call subsetting vocabulary by root entity endpoint with a variable that does not have a study dependent vocabulary: " + var);
+    // }
+    // TODO should i check other things?
+
+    // build request obj
+    VocabByRootEntityPostRequest request = new VocabByRootEntityPostRequestImpl();
+    request.setFilters(subsetFilters);
+
+    // build request url
+    String url = getUrl("/studies/" + metadata.getStudyId() + "/entities/" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId() + "/root-vocab");
+
+    // make request
+    return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
+  }
+
+  public ResponseFuture getVocabByRootEntity(
+    ReferenceMetadata metadata,
+    CollectionSpec collectionSpec,
+    List<APIFilter> subsetFilters
+  ) {
+    // TODO
+    return null;
+  }
+
+  public ResponseFuture getVocabByRootEntity(
+    ReferenceMetadata metadata,
+    DynamicDataSpec dataSpec,
+    List<APIFilter> subsetFilters
+  ) {
+    if (dataSpec.isCollectionSpec()) {
+      return getVocabByRootEntity(metadata, dataSpec.getCollectionSpec(), subsetFilters);
+    } else if (dataSpec.isVariableSpec()) {
+      return getVocabByRootEntity(metadata, dataSpec.getVariableSpec(), subsetFilters);
+    } else {
+      return null;
+    }
+  }
+
 }

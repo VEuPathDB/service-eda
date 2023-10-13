@@ -77,11 +77,12 @@ public class ReferenceMetadata {
             // TODO: do computed variables ever have units?  If so, then need to add to VariableMapping for addition here
             Optional.empty(),
             null,
-            computedVar.getVocabulary(),
+            computedVar.getVocabulary(),  
+            false,
+            null,
             entityId.equals(treeEntity.getId())
                 ? VariableSource.COMPUTED
-                : VariableSource.INHERITED,
-            computedVar.getHasStudyDependentVocabulary()
+                : VariableSource.INHERITED
         ));
       }
     }
@@ -125,10 +126,11 @@ public class ReferenceMetadata {
           Optional.ofNullable(derivedVariable.getUnits()),
           null,
           derivedVariable.getVocabulary(),
+          false,
+          null,
           entity.getId().equals(derivedVariable.getEntityId())
             ? typedSource
-            : VariableSource.INHERITED,
-          false
+            : VariableSource.INHERITED
       ));
     }
   }
@@ -165,26 +167,28 @@ public class ReferenceMetadata {
             col.getIsProportion(),
             col.getNormalizationMethod(),
             col.getMemberVariableIds(),
-            DataRanges.getDataRanges(col)
+            DataRanges.getDataRanges(col),
+            col.getHasStudyDependentVocabulary(),
+            col.getVariableSpecToImputeZeroesFor()
         )
     ).forEach(colDef -> entityDef.addCollection(colDef));
 
     // add inherited variables from parent
     ancestorVars.forEach(vd -> entityDef.addVariable(
         new VariableDef(
-            vd.getEntityId(),
-            vd.getVariableId(),
-            vd.getType(),
-            vd.getDataShape(),
-            vd.isMultiValue(),
-            vd.isImputeZero(),
-            vd.getDataRanges(),
-            vd.getUnits(),
-            vd.getParentId(),
-            vd.getVocabulary(),
-            VariableSource.INHERITED,
-            vd.hasStudyDependentVocabulary())
-    ));
+          vd.getEntityId(),
+          vd.getVariableId(),
+          vd.getType(),
+          vd.getDataShape(),
+          vd.isMultiValue(),
+          vd.isImputeZero(),
+          vd.getDataRanges(),
+          vd.getUnits(),
+          vd.getParentId(),
+          vd.getVocabulary(),
+          vd.getHasStudyDependentVocabulary(),
+          vd.getVariableSpecToImputeZeroesFor(),
+          VariableSource.INHERITED)));
 
     // process category vars (may still have children!)
     entity.getVariables().stream()
@@ -201,8 +205,10 @@ public class ReferenceMetadata {
           Optional.empty(),
           var.getParentId(),
           null,
-          VariableSource.NATIVE,
-          false))
+          false,
+          null,
+          VariableSource.NATIVE))
+
       .forEach(cat -> {
         // add category vars for this entity
         entityDef.addCategory(cat);
@@ -223,8 +229,9 @@ public class ReferenceMetadata {
           getUnits(var),
           var.getParentId(),
           var.getVocabulary(),
-          VariableSource.NATIVE,
-          var.getHasStudyDependentVocabulary()))
+          var.getHasStudyDependentVocabulary(),
+          var.getVariableSpecToImputeZeroesFor(),
+          VariableSource.NATIVE))
       .forEach(vd -> {
         // add variables for this entity
         entityDef.addVariable(vd);

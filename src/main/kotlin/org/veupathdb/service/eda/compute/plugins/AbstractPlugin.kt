@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.compute.plugins
 
 import org.apache.logging.log4j.LogManager
+import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles
 import org.veupathdb.service.eda.compute.metrics.PluginMetrics
@@ -107,7 +108,7 @@ abstract class AbstractPlugin<R : ComputeRequestBase, C>(
    * EDA Common [PluginUtil] Instance
    */
   protected val util
-    get() =  PluginUtil(context.referenceMetadata, context.mergingClient)
+    get() = PluginUtil(context.referenceMetadata, context.mergingClient)
 
   // ╔════════════════════════════════════════════════════════════════════╗ //
   // ║                                                                    ║ //

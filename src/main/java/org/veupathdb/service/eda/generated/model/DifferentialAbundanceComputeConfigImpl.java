@@ -16,7 +16,7 @@ import java.util.Map;
 })
 public class DifferentialAbundanceComputeConfigImpl implements DifferentialAbundanceComputeConfig {
   @JsonProperty("collectionVariable")
-  private VariableSpec collectionVariable;
+  private CollectionSpec collectionVariable;
 
   @JsonProperty("comparator")
   private ComparatorSpec comparator;
@@ -28,12 +28,12 @@ public class DifferentialAbundanceComputeConfigImpl implements DifferentialAbund
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
   @JsonProperty("collectionVariable")
-  public VariableSpec getCollectionVariable() {
+  public CollectionSpec getCollectionVariable() {
     return this.collectionVariable;
   }
 
   @JsonProperty("collectionVariable")
-  public void setCollectionVariable(VariableSpec collectionVariable) {
+  public void setCollectionVariable(CollectionSpec collectionVariable) {
     this.collectionVariable = collectionVariable;
   }
 

@@ -15,7 +15,7 @@ import java.util.Map;
 })
 public class AlphaDivComputeConfigImpl implements AlphaDivComputeConfig {
   @JsonProperty("collectionVariable")
-  private VariableSpec collectionVariable;
+  private CollectionSpec collectionVariable;
 
   @JsonProperty("alphaDivMethod")
   private AlphaDivMethod alphaDivMethod;
@@ -24,12 +24,12 @@ public class AlphaDivComputeConfigImpl implements AlphaDivComputeConfig {
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
   @JsonProperty("collectionVariable")
-  public VariableSpec getCollectionVariable() {
+  public CollectionSpec getCollectionVariable() {
     return this.collectionVariable;
   }
 
   @JsonProperty("collectionVariable")
-  public void setCollectionVariable(VariableSpec collectionVariable) {
+  public void setCollectionVariable(CollectionSpec collectionVariable) {
     this.collectionVariable = collectionVariable;
   }
 

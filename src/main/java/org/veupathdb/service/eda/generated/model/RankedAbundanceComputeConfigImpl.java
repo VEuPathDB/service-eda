@@ -15,7 +15,7 @@ import java.util.Map;
 })
 public class RankedAbundanceComputeConfigImpl implements RankedAbundanceComputeConfig {
   @JsonProperty("collectionVariable")
-  private VariableSpec collectionVariable;
+  private CollectionSpec collectionVariable;
 
   @JsonProperty("rankingMethod")
   private RankingMethod rankingMethod;
@@ -24,12 +24,12 @@ public class RankedAbundanceComputeConfigImpl implements RankedAbundanceComputeC
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
   @JsonProperty("collectionVariable")
-  public VariableSpec getCollectionVariable() {
+  public CollectionSpec getCollectionVariable() {
     return this.collectionVariable;
   }
 
   @JsonProperty("collectionVariable")
-  public void setCollectionVariable(VariableSpec collectionVariable) {
+  public void setCollectionVariable(CollectionSpec collectionVariable) {
     this.collectionVariable = collectionVariable;
   }
 

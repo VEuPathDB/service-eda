@@ -9,6 +9,10 @@ import java.util.List;
 @JsonPropertyOrder({
     "isRequired",
     "isTemporal",
+    "isCollection",
+    "isCompositional",
+    "isProportion",
+    "allowedNormalizationMethods",
     "minNumVars",
     "maxNumVars",
     "minNumValues",
@@ -23,6 +27,18 @@ public class DataElementConstraintImpl implements DataElementConstraint {
 
   @JsonProperty("isTemporal")
   private Boolean isTemporal;
+
+  @JsonProperty("isCollection")
+  private Boolean isCollection;
+
+  @JsonProperty("isCompositional")
+  private Boolean isCompositional;
+
+  @JsonProperty("isProportion")
+  private Boolean isProportion;
+
+  @JsonProperty("allowedNormalizationMethods")
+  private List<String> allowedNormalizationMethods;
 
   @JsonProperty("minNumVars")
   private Number minNumVars;
@@ -63,6 +79,46 @@ public class DataElementConstraintImpl implements DataElementConstraint {
   @JsonProperty("isTemporal")
   public void setIsTemporal(Boolean isTemporal) {
     this.isTemporal = isTemporal;
+  }
+
+  @JsonProperty("isCollection")
+  public Boolean getIsCollection() {
+    return this.isCollection;
+  }
+
+  @JsonProperty("isCollection")
+  public void setIsCollection(Boolean isCollection) {
+    this.isCollection = isCollection;
+  }
+
+  @JsonProperty("isCompositional")
+  public Boolean getIsCompositional() {
+    return this.isCompositional;
+  }
+
+  @JsonProperty("isCompositional")
+  public void setIsCompositional(Boolean isCompositional) {
+    this.isCompositional = isCompositional;
+  }
+
+  @JsonProperty("isProportion")
+  public Boolean getIsProportion() {
+    return this.isProportion;
+  }
+
+  @JsonProperty("isProportion")
+  public void setIsProportion(Boolean isProportion) {
+    this.isProportion = isProportion;
+  }
+
+  @JsonProperty("allowedNormalizationMethods")
+  public List<String> getAllowedNormalizationMethods() {
+    return this.allowedNormalizationMethods;
+  }
+
+  @JsonProperty("allowedNormalizationMethods")
+  public void setAllowedNormalizationMethods(List<String> allowedNormalizationMethods) {
+    this.allowedNormalizationMethods = allowedNormalizationMethods;
   }
 
   @JsonProperty("minNumVars")

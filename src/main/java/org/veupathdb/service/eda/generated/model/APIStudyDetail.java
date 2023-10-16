@@ -22,6 +22,12 @@ public interface APIStudyDetail {
   @JsonProperty("isUserStudy")
   void setIsUserStudy(Boolean isUserStudy);
 
+  @JsonProperty("hasMap")
+  Boolean getHasMap();
+
+  @JsonProperty("hasMap")
+  void setHasMap(Boolean hasMap);
+
   @JsonProperty("rootEntity")
   APIEntity getRootEntity();
 

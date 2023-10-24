@@ -57,6 +57,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     String comparisonVariableDataShape = util.getVariableDataShape(comparisonVariableSpec);
     List<LabeledRange> groupA = computeConfig.getComparator().getGroupA();
     List<LabeledRange> groupB =  computeConfig.getComparator().getGroupB();
+    String pValueFloor = computeConfig.getPValueFloor();
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
@@ -133,6 +134,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       connection.voidEval("computeResult <- differentialAbundance(data=inputData" +
                                                           ", comparator=comparator" +
                                                           ", method=" + singleQuote(method) +
+                                                          ", pValueFloor=as.numeric(" + singleQuote(pValueFloor) + ")" +
                                                           ", verbose=TRUE)");
 
 

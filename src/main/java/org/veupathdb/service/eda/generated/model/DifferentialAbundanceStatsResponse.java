@@ -22,6 +22,18 @@ public interface DifferentialAbundanceStatsResponse {
   @JsonProperty("statistics")
   void setStatistics(DifferentialAbundanceStats statistics);
 
+  @JsonProperty("pvalueFloor")
+  String getPvalueFloor();
+
+  @JsonProperty("pvalueFloor")
+  void setPvalueFloor(String pvalueFloor);
+
+  @JsonProperty("adjustedPValueFloor")
+  String getAdjustedPValueFloor();
+
+  @JsonProperty("adjustedPValueFloor")
+  void setAdjustedPValueFloor(String adjustedPValueFloor);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

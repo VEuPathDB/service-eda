@@ -153,6 +153,8 @@ public class ReferenceMetadata {
         entity.getIsManyToOneWithParent()
     );
 
+    // someday we might have studyDependentVocabs for collections, 
+    // but for now and the near- to mid-term we dont.
     entity.getCollections().stream().map(col ->
         new CollectionDef(
             entityDef,
@@ -168,7 +170,7 @@ public class ReferenceMetadata {
             col.getNormalizationMethod(),
             col.getMemberVariableIds(),
             DataRanges.getDataRanges(col),
-            col.getHasStudyDependentVocabulary(),
+            false,
             col.getVariableSpecToImputeZeroesFor()
         )
     ).forEach(colDef -> entityDef.addCollection(colDef));

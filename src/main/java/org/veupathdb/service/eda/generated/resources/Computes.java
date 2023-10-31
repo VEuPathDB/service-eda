@@ -13,7 +13,7 @@ import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
-import org.veupathdb.service.eda.generated.model.CorrelationPluginRequest;
+import org.veupathdb.service.eda.generated.model.CorrelationAssayMetadataPluginRequest;
 import org.veupathdb.service.eda.generated.model.CorrelationStatsResponse;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceStatsResponse;
@@ -110,14 +110,14 @@ public interface Computes {
   @Consumes("application/json")
   PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(
       @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
-      CorrelationPluginRequest entity);
+      CorrelationAssayMetadataPluginRequest entity);
 
   @POST
   @Path("/correlationassaymetadata/statistics")
   @Produces("application/json")
   @Consumes("application/json")
   PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(
-      CorrelationPluginRequest entity);
+      CorrelationAssayMetadataPluginRequest entity);
 
   class GetComputesResponse extends ResponseDelegate {
     private GetComputesResponse(Response response, Object entity) {
@@ -329,9 +329,8 @@ public interface Computes {
     public static PostComputesCorrelationassaymetadataStatisticsResponse respond200WithApplicationJson(
         CorrelationStatsResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
-      GenericEntity<CorrelationStatsResponse> wrappedEntity = new GenericEntity<CorrelationStatsResponse>(entity){};
-      responseBuilder.entity(wrappedEntity);
-      return new PostComputesCorrelationassaymetadataStatisticsResponse(responseBuilder.build(), wrappedEntity);
+      responseBuilder.entity(entity);
+      return new PostComputesCorrelationassaymetadataStatisticsResponse(responseBuilder.build(), entity);
     }
   }
 }

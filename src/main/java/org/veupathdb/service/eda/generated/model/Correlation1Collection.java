@@ -7,14 +7,20 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Map;
 
 @JsonDeserialize(
-    as = CorrelationComputeConfigImpl.class
+    as = Correlation1CollectionImpl.class
 )
-public interface CorrelationComputeConfig {
+public interface Correlation1Collection extends CorrelationComputeConfig {
   @JsonProperty("correlationMethod")
   CorrelationMethod getCorrelationMethod();
 
   @JsonProperty("correlationMethod")
   void setCorrelationMethod(CorrelationMethod correlationMethod);
+
+  @JsonProperty("collectionVariable")
+  CollectionSpec getCollectionVariable();
+
+  @JsonProperty("collectionVariable")
+  void setCollectionVariable(CollectionSpec collectionVariable);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

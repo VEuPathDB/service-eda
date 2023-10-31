@@ -137,12 +137,12 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(Boolean autostart, CorrelationPluginRequest entity) {
+  public PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(Boolean autostart, CorrelationAssayMetadataPluginRequest entity) {
     return PostComputesCorrelationassaymetadataResponse.respond200WithApplicationJson(submitJob(new CorrelationAssayMetadataPluginProvider(), entity, autostart));
   }
 
   @Override
-  public PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(CorrelationPluginRequest entity) {
+  public PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(CorrelationAssayMetadataPluginRequest entity) {
     return PostComputesCorrelationassaymetadataStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
         try {
           getResultFileStreamer(new CorrelationAssayMetadataPluginProvider(), STATISTICS, entity).write(out);

@@ -10,8 +10,9 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
+import org.veupathdb.service.eda.generated.model.Correlation1Collection;
 import org.veupathdb.service.eda.generated.model.CorrelationComputeConfig;
-import org.veupathdb.service.eda.generated.model.CorrelationPluginRequest;
+import org.veupathdb.service.eda.generated.model.CorrelationAssayMetadataPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
@@ -24,11 +25,11 @@ import java.util.List;
 
 import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
 
-public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPluginRequest, CorrelationComputeConfig> {
+public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAssayMetadataPluginRequest, Correlation1Collection> {
 
   private static final String INPUT_DATA = "correlation_input";
 
-  public CorrelationAssayMetadataPlugin(@NotNull PluginContext<CorrelationPluginRequest, CorrelationComputeConfig> context) {
+  public CorrelationAssayMetadataPlugin(@NotNull PluginContext<CorrelationAssayMetadataPluginRequest, Correlation1Collection> context) {
     super(context);
   }
 
@@ -36,13 +37,13 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
   @Override
   public List<StreamSpec> getStreamSpecs() {
     // Get the collection variable and its entity
-    CorrelationComputeConfig computeConfig = getConfig();
-    CollectionSpec collectionVariable1 = computeConfig.getCollectionVariable1();
-    String entityId = collectionVariable1.getEntityId();
+    Correlation1Collection computeConfig = getConfig();
+    CollectionSpec collectionVariable = computeConfig.getCollectionVariable();
+    String entityId = collectionVariable.getEntityId();
 
     // Wrangle into correct types for what follows
     EntityDef entity = getContext().getReferenceMetadata().getEntity(entityId).orElseThrow();
-    VariableSpec collectionVariable1VarSpec = VariableDef.newVariableSpec(entityId, collectionVariable1.getCollectionId());
+    VariableSpec collectionVariableVarSpec = VariableDef.newVariableSpec(entityId, collectionVariable.getCollectionId());
 
 
     // Grab all continuous variabls from ancestors
@@ -55,8 +56,8 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
     List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).filter(var -> !var.getVariableId().contains("_stable_id")).toList();
 
 
-    return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable1().getEntityId())
-        .addVars(getUtil().getChildrenVariables(collectionVariable1VarSpec))
+    return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
+        .addVars(getUtil().getCollectionMembers(collectionVariable))
         .addVars(metadataVariables)
       );
   }
@@ -64,20 +65,20 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
   @Override
   protected void execute() {
 
-    CorrelationComputeConfig computeConfig = getConfig();
+    Correlation1Collection computeConfig = getConfig();
     PluginUtil util = getUtil();
     ReferenceMetadata meta = getContext().getReferenceMetadata();
 
     // Get compute parameters
     String method = computeConfig.getCorrelationMethod().getValue();
-    CollectionSpec collectionVariable1 = computeConfig.getCollectionVariable1();
-    String entityId = collectionVariable1.getEntityId();
+    CollectionSpec collectionVariable = computeConfig.getCollectionVariable();
+    String entityId = collectionVariable.getEntityId();
 
     // Wrangle into helpful types
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    VariableSpec collectionVariable1VarSpec = VariableDef.newVariableSpec(entityId, collectionVariable1.getCollectionId());
+    // VariableSpec collectionVariableVarSpec = VariableDef.newVariableSpec(entityId, collectionVariable.getCollectionId());
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
@@ -99,7 +100,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationPl
 
       // Read in the abundance data
       List<VariableSpec> abundanceInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      abundanceInputVars.addAll(util.getChildrenVariables(collectionVariable1VarSpec));
+      abundanceInputVars.addAll(util.getCollectionMembers(collectionVariable));
       abundanceInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, abundanceInputVars));
       connection.voidEval("abundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later

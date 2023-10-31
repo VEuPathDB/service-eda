@@ -43,8 +43,6 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
 
     // Wrangle into correct types for what follows
     EntityDef entity = getContext().getReferenceMetadata().getEntity(entityId).orElseThrow();
-    VariableSpec collectionVariableVarSpec = VariableDef.newVariableSpec(entityId, collectionVariable.getCollectionId());
-
 
     // Grab all continuous variabls from ancestors
     // The next line only grabs the second-up ancestor instead of all of them, because when i grabbed them all
@@ -78,7 +76,6 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    // VariableSpec collectionVariableVarSpec = VariableDef.newVariableSpec(entityId, collectionVariable.getCollectionId());
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
@@ -114,17 +111,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
 
       // Turn the list of id columns into an array of strings for R
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
-      String dotNotatedIdColumnsString = "c(";
-      boolean first = true;
-      for (String idCol : dotNotatedIdColumns) {
-        if (first) {
-          first = false;
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + singleQuote(idCol);
-        } else {
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + singleQuote(idCol);
-        }
-      }
-      dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
+      String dotNotatedIdColumnsString = util.listToRVector(dotNotatedIdColumns);
 
       
       

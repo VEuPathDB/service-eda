@@ -12,6 +12,7 @@ import java.util.Map;
 @JsonPropertyOrder({
     "id",
     "isUserStudy",
+    "hasMap",
     "rootEntity"
 })
 public class APIStudyDetailImpl implements APIStudyDetail {
@@ -20,6 +21,9 @@ public class APIStudyDetailImpl implements APIStudyDetail {
 
   @JsonProperty("isUserStudy")
   private Boolean isUserStudy;
+
+  @JsonProperty("hasMap")
+  private Boolean hasMap;
 
   @JsonProperty("rootEntity")
   private APIEntity rootEntity;
@@ -45,6 +49,16 @@ public class APIStudyDetailImpl implements APIStudyDetail {
   @JsonProperty("isUserStudy")
   public void setIsUserStudy(Boolean isUserStudy) {
     this.isUserStudy = isUserStudy;
+  }
+
+  @JsonProperty("hasMap")
+  public Boolean getHasMap() {
+    return this.hasMap;
+  }
+
+  @JsonProperty("hasMap")
+  public void setHasMap(Boolean hasMap) {
+    this.hasMap = hasMap;
   }
 
   @JsonProperty("rootEntity")

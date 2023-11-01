@@ -57,6 +57,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     String comparisonVariableDataShape = util.getVariableDataShape(comparisonVariableSpec);
     List<LabeledRange> groupA = computeConfig.getComparator().getGroupA();
     List<LabeledRange> groupB =  computeConfig.getComparator().getGroupB();
+    String pValueFloor = computeConfig.getPValueFloor() != null ? computeConfig.getPValueFloor() : "1e-200"; // Same default as set in the frontend and microbiomeComputations
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
@@ -81,7 +82,9 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
       sampleMetadataVars.add(computeEntityIdVarSpec);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
-      connection.voidEval("sampleMetadata <- " + INPUT_DATA);
+      connection.voidEval("sampleMetadata <- SampleMetadata(data = " + INPUT_DATA 
+                                + ", recordIdColumn = " + singleQuote(computeEntityIdColName)
+                                + ")");
 
 
       // Turn the list of id columns into an array of strings for R
@@ -133,6 +136,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       connection.voidEval("computeResult <- differentialAbundance(data=inputData" +
                                                           ", comparator=comparator" +
                                                           ", method=" + singleQuote(method) +
+                                                          ", pValueFloor=as.numeric(" + singleQuote(pValueFloor) + ")" +
                                                           ", verbose=TRUE)");
 
 

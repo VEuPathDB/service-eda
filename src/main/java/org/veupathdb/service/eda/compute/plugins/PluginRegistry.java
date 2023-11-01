@@ -101,6 +101,7 @@ public final class PluginRegistry {
       impl.setName(it.getUrlSegment());
       impl.setDisplayName(it.getDisplayName());
       impl.setDescription(it.getDescription());
+      impl.setDataElementConstraints(it.getConstraintSpec().stream().toList());
       out.add(impl);
     }
 

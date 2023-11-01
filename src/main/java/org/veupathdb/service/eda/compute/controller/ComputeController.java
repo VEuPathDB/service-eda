@@ -22,6 +22,7 @@ import org.veupathdb.service.eda.compute.plugins.PluginProvider;
 import org.veupathdb.service.eda.compute.plugins.PluginRegistry;
 import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
+import org.veupathdb.service.eda.compute.plugins.correlationassaymetadata.CorrelationAssayMetadataPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
@@ -128,6 +129,23 @@ public class ComputeController implements Computes {
     return PostComputesDifferentialabundanceStatisticsResponse.respond200WithApplicationJson(new DifferentialAbundanceStatsResponseStream(out -> {
         try {
           getResultFileStreamer(new DifferentialAbundancePluginProvider(), STATISTICS, entity).write(out);
+        }
+        catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }));
+  }
+
+  @Override
+  public PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(Boolean autostart, CorrelationAssayMetadataPluginRequest entity) {
+    return PostComputesCorrelationassaymetadataResponse.respond200WithApplicationJson(submitJob(new CorrelationAssayMetadataPluginProvider(), entity, autostart));
+  }
+
+  @Override
+  public PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(CorrelationAssayMetadataPluginRequest entity) {
+    return PostComputesCorrelationassaymetadataStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
+        try {
+          getResultFileStreamer(new CorrelationAssayMetadataPluginProvider(), STATISTICS, entity).write(out);
         }
         catch (IOException e) {
           throw new RuntimeException(e);

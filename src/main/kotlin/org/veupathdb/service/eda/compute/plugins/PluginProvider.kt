@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.compute.plugins
 
+import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase
 
 /**
@@ -43,4 +44,10 @@ interface PluginProvider<R : ComputeRequestBase, C> : PluginMeta<R> {
    */
   fun getContextBuilder(): PluginContextBuilder<R, C> =
     PluginContextBuilder()
+
+  /**
+   * Override this method to add variable and collection constraints to your plugin's input.
+   */
+  fun getConstraintSpec(): ConstraintSpec = ConstraintSpec()
+
 }

@@ -11,7 +11,9 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "effectSizeLabel",
-    "statistics"
+    "statistics",
+    "pvalueFloor",
+    "adjustedPValueFloor"
 })
 public class DifferentialAbundanceStatsResponseImpl implements DifferentialAbundanceStatsResponse {
   @JsonProperty("effectSizeLabel")
@@ -19,6 +21,12 @@ public class DifferentialAbundanceStatsResponseImpl implements DifferentialAbund
 
   @JsonProperty("statistics")
   private DifferentialAbundanceStats statistics;
+
+  @JsonProperty("pvalueFloor")
+  private String pvalueFloor;
+
+  @JsonProperty("adjustedPValueFloor")
+  private String adjustedPValueFloor;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -41,6 +49,26 @@ public class DifferentialAbundanceStatsResponseImpl implements DifferentialAbund
   @JsonProperty("statistics")
   public void setStatistics(DifferentialAbundanceStats statistics) {
     this.statistics = statistics;
+  }
+
+  @JsonProperty("pvalueFloor")
+  public String getPvalueFloor() {
+    return this.pvalueFloor;
+  }
+
+  @JsonProperty("pvalueFloor")
+  public void setPvalueFloor(String pvalueFloor) {
+    this.pvalueFloor = pvalueFloor;
+  }
+
+  @JsonProperty("adjustedPValueFloor")
+  public String getAdjustedPValueFloor() {
+    return this.adjustedPValueFloor;
+  }
+
+  @JsonProperty("adjustedPValueFloor")
+  public void setAdjustedPValueFloor(String adjustedPValueFloor) {
+    this.adjustedPValueFloor = adjustedPValueFloor;
   }
 
   @JsonAnyGetter

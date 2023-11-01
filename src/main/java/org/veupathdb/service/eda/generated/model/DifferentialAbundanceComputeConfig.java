@@ -28,6 +28,12 @@ public interface DifferentialAbundanceComputeConfig {
   @JsonProperty("differentialAbundanceMethod")
   void setDifferentialAbundanceMethod(DifferentialAbundanceMethod differentialAbundanceMethod);
 
+  @JsonProperty("pValueFloor")
+  String getPValueFloor();
+
+  @JsonProperty("pValueFloor")
+  void setPValueFloor(String pValueFloor);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

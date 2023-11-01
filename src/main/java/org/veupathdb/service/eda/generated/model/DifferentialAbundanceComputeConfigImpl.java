@@ -12,7 +12,8 @@ import java.util.Map;
 @JsonPropertyOrder({
     "collectionVariable",
     "comparator",
-    "differentialAbundanceMethod"
+    "differentialAbundanceMethod",
+    "pValueFloor"
 })
 public class DifferentialAbundanceComputeConfigImpl implements DifferentialAbundanceComputeConfig {
   @JsonProperty("collectionVariable")
@@ -23,6 +24,9 @@ public class DifferentialAbundanceComputeConfigImpl implements DifferentialAbund
 
   @JsonProperty("differentialAbundanceMethod")
   private DifferentialAbundanceMethod differentialAbundanceMethod;
+
+  @JsonProperty("pValueFloor")
+  private String pValueFloor;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -56,6 +60,16 @@ public class DifferentialAbundanceComputeConfigImpl implements DifferentialAbund
   public void setDifferentialAbundanceMethod(
       DifferentialAbundanceMethod differentialAbundanceMethod) {
     this.differentialAbundanceMethod = differentialAbundanceMethod;
+  }
+
+  @JsonProperty("pValueFloor")
+  public String getPValueFloor() {
+    return this.pValueFloor;
+  }
+
+  @JsonProperty("pValueFloor")
+  public void setPValueFloor(String pValueFloor) {
+    this.pValueFloor = pValueFloor;
   }
 
   @JsonAnyGetter

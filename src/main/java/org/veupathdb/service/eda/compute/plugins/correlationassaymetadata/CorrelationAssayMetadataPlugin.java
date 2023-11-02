@@ -1,6 +1,9 @@
 package org.veupathdb.service.eda.compute.plugins.correlationassaymetadata;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.EntityDef;
@@ -11,13 +14,13 @@ import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.Correlation1Collection;
-import org.veupathdb.service.eda.generated.model.CorrelationComputeConfig;
 import org.veupathdb.service.eda.generated.model.CorrelationAssayMetadataPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
 
 import java.io.InputStream;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +29,7 @@ import java.util.List;
 import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
 
 public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAssayMetadataPluginRequest, Correlation1Collection> {
+  private static final Logger LOG = LogManager.getLogger(CorrelationAssayMetadataPlugin.class);
 
   private static final String INPUT_DATA = "correlation_input";
 
@@ -50,9 +54,16 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     // I also noticed we were receiving stable ids in the oriringal request, so i've filtered them out below. There 
     // is probably a nicer way to do this.
     // This at least works for now!
-    Stream<VariableDef> descendantVariableStream = getContext().getReferenceMetadata().getAncestors(entity).get(1).getVariables().stream();
-    List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).filter(var -> !var.getVariableId().contains("_stable_id")).toList();
+//    Stream<VariableDef> descendantVariableStream = getContext().getReferenceMetadata().getAncestors(entity).get(1).getVariables().stream();
+    List<VariableDef> metadataVariables = getContext().getReferenceMetadata().getAncestors(entity).stream()
+        .skip(1)
+        .filter(entityDef -> !entityDef.isManyToOneWithParent())
+        .flatMap(entityDef -> entityDef.getVariables().stream())
+        .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS)
+        .collect(Collectors.toList());
 
+    LOG.info("Metadata variables that are one-to-one with parent for ancestors of entity ID: {} -- {}", entity.getId(),
+        JsonUtil.serializeObject(metadataVariables));
 
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
         .addVars(getUtil().getCollectionMembers(collectionVariable))

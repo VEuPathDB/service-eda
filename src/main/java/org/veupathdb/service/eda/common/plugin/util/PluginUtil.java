@@ -113,6 +113,14 @@ public class PluginUtil {
     return getVariableImputeZero(getVariableSpecFromList(vars, index));
   }
 
+  public String getVariableSpecToImputeZeroesFor(VariableSpec var) {
+    return getVariableAttribute(VariableDef::getVariableSpecToImputeZeroesFor, var);
+  }
+
+  public String getVariableSpecToImputeZeroesFor(List<VariableSpec> vars, int index) {
+    return getVariableSpecToImputeZeroesFor(getVariableSpecFromList(vars, index));
+  }
+
   public boolean getHasStudyDependentVocabulary(VariableSpec var) {
     boolean hasStudyDependentVocabulary = getVariableAttribute(VariableDef::getHasStudyDependentVocabulary, var).equals("true") ? true : false;
 

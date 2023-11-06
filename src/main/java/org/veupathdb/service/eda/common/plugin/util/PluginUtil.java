@@ -113,11 +113,12 @@ public class PluginUtil {
     return getVariableImputeZero(getVariableSpecFromList(vars, index));
   }
 
-  public String getVariableSpecToImputeZeroesFor(VariableSpec var) {
-    return getVariableAttribute(VariableDef::getVariableSpecToImputeZeroesFor, var);
+  public VariableSpec getVariableSpecToImputeZeroesFor(VariableSpec var) {
+    VariableDef varDef = _metadata.getVariable(var).orElseThrow();
+    return varDef.getVariableSpecToImputeZeroesFor();
   }
 
-  public String getVariableSpecToImputeZeroesFor(List<VariableSpec> vars, int index) {
+  public VariableSpec getVariableSpecToImputeZeroesFor(List<VariableSpec> vars, int index) {
     return getVariableSpecToImputeZeroesFor(getVariableSpecFromList(vars, index));
   }
 

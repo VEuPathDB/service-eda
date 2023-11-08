@@ -264,21 +264,34 @@ public class PluginUtil {
   }
 
   public String getEntityAncestorsAsRVectorString(EntityDef entity, ReferenceMetadata meta) {
-    if (entity == null) {
-      return "c()";
-    }
-    List<VariableDef> idColumns = new ArrayList<>();
-    for (EntityDef ancestor : meta.getAncestors(entity)) {
-      idColumns.add(ancestor.getIdColumnDef());
-    }
-
-    return getIdColumnDefsAsRVectorString(idColumns);
+    return getEntityAncestorsAsRVectorString(entity, meta, false);
   }
 
   public String getEntityAncestorsAsRVectorString(String entityId, ReferenceMetadata meta) {
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
 
     return getEntityAncestorsAsRVectorString(entity, meta);
+  }
+
+  public String getEntityAncestorsAsRVectorString(String entityId, ReferenceMetadata meta, boolean includeSelf) {
+    EntityDef entity = meta.getEntity(entityId).orElseThrow();
+   
+    return getEntityAncestorsAsRVectorString(entity, meta, includeSelf);
+  }
+
+  public String getEntityAncestorsAsRVectorString(EntityDef entity, ReferenceMetadata meta, boolean includeSelf) {
+    if (entity == null) {
+      return "c()";
+    }
+    List<VariableDef> idColumns = new ArrayList<>();
+    if (includeSelf) {
+      idColumns.add(entity.getIdColumnDef());
+    }
+    for (EntityDef ancestor : meta.getAncestors(entity)) {
+      idColumns.add(ancestor.getIdColumnDef());
+    }
+
+    return getIdColumnDefsAsRVectorString(idColumns);
   }
 
   public String getRCategoricalBinListAsString(List<String> labels) {

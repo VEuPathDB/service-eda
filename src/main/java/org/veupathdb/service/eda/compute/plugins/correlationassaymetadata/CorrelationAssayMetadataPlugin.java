@@ -1,6 +1,9 @@
 package org.veupathdb.service.eda.compute.plugins.correlationassaymetadata;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
+import org.gusdb.fgputil.json.JsonUtil;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.EntityDef;
@@ -11,13 +14,13 @@ import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.Correlation1Collection;
-import org.veupathdb.service.eda.generated.model.CorrelationComputeConfig;
 import org.veupathdb.service.eda.generated.model.CorrelationAssayMetadataPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
 
 import java.io.InputStream;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +29,7 @@ import java.util.List;
 import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
 
 public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAssayMetadataPluginRequest, Correlation1Collection> {
+  private static final Logger LOG = LogManager.getLogger(CorrelationAssayMetadataPlugin.class);
 
   private static final String INPUT_DATA = "correlation_input";
 
@@ -44,15 +48,17 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     // Wrangle into correct types for what follows
     EntityDef entity = getContext().getReferenceMetadata().getEntity(entityId).orElseThrow();
 
-    // Grab all continuous variabls from ancestors
-    // The next line only grabs the second-up ancestor instead of all of them, because when i grabbed them all
-    // the variables wold be duplicated in the output. I tried distinct() but that didn't work. Any ideas?
-    // I also noticed we were receiving stable ids in the oriringal request, so i've filtered them out below. There 
-    // is probably a nicer way to do this.
-    // This at least works for now!
-    Stream<VariableDef> descendantVariableStream = getContext().getReferenceMetadata().getAncestors(entity).get(1).getVariables().stream();
-    List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).filter(var -> !var.getVariableId().contains("_stable_id")).toList();
+    // Grab all continuous variables from ancestors
+    ReferenceMetadata metadata = getContext().getReferenceMetadata();
+    List<VariableDef> metadataVariables = metadata.getAncestors(entity).stream() // Get all ancestors of entity.
+        .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity)) // Filter to those that are one-to-one with target entity or ancestor of entity.
+        .flatMap(entityDef -> entityDef.getVariables().stream()) // Flatten stream of var streams into a single stream of vars.
+        .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident()) // Filter out inherited and non-continuous variables.
+        .filter(var -> !var.getVariableId().contains("_stable_id")) // Filter out id variables
+        .collect(Collectors.toList());
 
+    LOG.info("Metadata variables that are one-to-one with parent for ancestors of entity ID: {} -- {}", entity.getId(),
+        JsonUtil.serializeObject(metadataVariables));
 
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
         .addVars(getUtil().getCollectionMembers(collectionVariable))
@@ -60,12 +66,20 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       );
   }
 
+  private Boolean getManyToOneWithDescendant(ReferenceMetadata metadata, EntityDef ancestor, EntityDef descendantToMatch) {
+    return metadata.getChildren(ancestor).stream()
+        .filter(child -> metadata.isEntityAncestorOf(child, descendantToMatch) || descendantToMatch.getId().equals(child.getId())) // Find child on path to descendant to match.
+        .findFirst()
+        .orElseThrow()
+        .isManyToOneWithParent();
+  }
+
   @Override
   protected void execute() {
 
     Correlation1Collection computeConfig = getConfig();
     PluginUtil util = getUtil();
-    ReferenceMetadata meta = getContext().getReferenceMetadata();
+    ReferenceMetadata metadata = getContext().getReferenceMetadata();
 
     // Get compute parameters
     String method = computeConfig.getCorrelationMethod().getValue();
@@ -73,13 +87,13 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     String entityId = collectionVariable.getEntityId();
 
     // Wrangle into helpful types
-    EntityDef entity = meta.getEntity(entityId).orElseThrow();
+    EntityDef entity = metadata.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
-    for (EntityDef ancestor : meta.getAncestors(entity)) {
+    for (EntityDef ancestor : metadata.getAncestors(entity)) {
       idColumns.add(ancestor.getIdColumnDef());
     }
 
@@ -88,9 +102,12 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
 
 
     // Get stream of all ancestors and their variables
-    Stream<VariableDef> descendantVariableStream = meta.getAncestors(entity).get(1).getVariables().stream();
-    List<VariableDef> metadataVariables = descendantVariableStream.filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS).filter(var -> !var.getVariableId().contains("_stable_id")).toList();
-
+    List<VariableDef> metadataVariables = metadata.getAncestors(entity).stream() // Get all ancestors of entity.
+        .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity)) // Filter to those that are one-to-one with target entity or ancestor of entity.
+        .flatMap(entityDef -> entityDef.getVariables().stream()) // Flatten stream of var streams into a single stream of vars.
+        .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident()) // Filter out inherited and non-continuous variables.
+        .filter(var -> !var.getVariableId().contains("_stable_id")) // Filter out id variables
+        .collect(Collectors.toList());
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");

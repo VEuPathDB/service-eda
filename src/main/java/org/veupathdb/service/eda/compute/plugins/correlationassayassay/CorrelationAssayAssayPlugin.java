@@ -31,7 +31,8 @@ import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuot
 public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssayMetadataPluginRequest, Correlation1Collection> {
   private static final Logger LOG = LogManager.getLogger(CorrelationAssayAssayPlugin.class);
 
-  private static final String INPUT_DATA = "correlation_input";
+  private static final String ASSAY_1_DATA = "assay1_input";
+  private static final String ASSAY_2_DATA = "assay2_input";
 
   public CorrelationAssayAssayPlugin(@NotNull PluginContext<CorrelationAssayMetadataPluginRequest, Correlation1Collection> context) {
     super(context);
@@ -41,19 +42,27 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
   @Override
   public List<StreamSpec> getStreamSpecs() {
     // Get the collection variable and its entity
-    Correlation1Collection computeConfig = getConfig();
+    Correlation2Collections computeConfig = getConfig();
     CollectionSpec assay1 = computeConfig.getCollectionVariable1();
     String entity1Id = assay1.getEntityId();
     CollectionSpec assay2 = computeConfig.getCollectionVariable2();
     String entity2Id = assay2.getEntityId();
 
-    // validate the collection variables are on the same entity
-    if (!entity1Id.equals(entity2Id)) {
-        throw new IllegalArgumentException("Collection variables must be on the same entity.");
+    EntityDef entity1 = getContext().getReferenceMetadata().getEntity(entity1Id).orElseThrow();
+    EntityDef entity2 = getContext().getReferenceMetadata().getEntity(entity2Id).orElseThrow();
+
+    // validate the collection variables are on the same entity or both are 1:1 with a shared parent entity
+    if (!entity1Id.equals(entity2Id) &&
+        !(entity1.getAncestors().get(0).getId().equals(entity2.getAncestors().get(0).getId()) &&
+          !entity1.isOneToManyWithParent() && !entity2.isOneToManyWithParent())
+    ) {
+        throw new IllegalArgumentException("Collection variables must be on the same entity or both be 1:1 with a shared parent entity.");
     }
 
-    return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getCollectionMembers(assay1))
+    return List.of(
+      new StreamSpec(ASSAY_1_DATA, getConfig().getCollectionVariable1().getEntityId())
+        .addVars(getUtil().getCollectionMembers(assay1)),
+      new StreamSpec(ASSAY_2_DATA, getConfig().getCollectionVariable2().getEntityId())
         .addVars(getUtil().getCollectionMembers(assay2))
       );
   }
@@ -67,8 +76,10 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
 
     // Get compute parameters
     String method = computeConfig.getCorrelationMethod().getValue();
-    CollectionSpec collectionVariable = computeConfig.getCollectionVariable();
-    String entityId = collectionVariable.getEntityId();
+    CollectionSpec assay1 = computeConfig.getCollectionVariable1();
+    CollectionSpec assay2 = computeConfig.getCollectionVariable2();
+    // entity ids are validated as the same by now
+    String entityId = assay1.getEntityId();
 
     // Wrangle into helpful types
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
@@ -83,15 +94,6 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
 
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
-
-
-    // Get stream of all ancestors and their variables
-    List<VariableDef> metadataVariables = metadata.getAncestors(entity).stream() // Get all ancestors of entity.
-        .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity)) // Filter to those that are one-to-one with target entity or ancestor of entity.
-        .flatMap(entityDef -> entityDef.getVariables().stream()) // Flatten stream of var streams into a single stream of vars.
-        .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident()) // Filter out inherited and non-continuous variables.
-        .filter(var -> !var.getVariableId().contains("_stable_id")) // Filter out id variables
-        .collect(Collectors.toList());
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");

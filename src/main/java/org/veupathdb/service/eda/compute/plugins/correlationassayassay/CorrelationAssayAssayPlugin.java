@@ -42,36 +42,20 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
   public List<StreamSpec> getStreamSpecs() {
     // Get the collection variable and its entity
     Correlation1Collection computeConfig = getConfig();
-    CollectionSpec collectionVariable = computeConfig.getCollectionVariable();
-    String entityId = collectionVariable.getEntityId();
+    CollectionSpec assay1 = computeConfig.getCollectionVariable1();
+    String entity1Id = assay1.getEntityId();
+    CollectionSpec assay2 = computeConfig.getCollectionVariable2();
+    String entity2Id = assay2.getEntityId();
 
-    // Wrangle into correct types for what follows
-    EntityDef entity = getContext().getReferenceMetadata().getEntity(entityId).orElseThrow();
-
-    // Grab all continuous variables from ancestors
-    ReferenceMetadata metadata = getContext().getReferenceMetadata();
-    List<VariableDef> metadataVariables = metadata.getAncestors(entity).stream() // Get all ancestors of entity.
-        .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity)) // Filter to those that are one-to-one with target entity or ancestor of entity.
-        .flatMap(entityDef -> entityDef.getVariables().stream()) // Flatten stream of var streams into a single stream of vars.
-        .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident()) // Filter out inherited and non-continuous variables.
-        .filter(var -> !var.getVariableId().contains("_stable_id")) // Filter out id variables
-        .collect(Collectors.toList());
-
-    LOG.info("Metadata variables that are one-to-one with parent for ancestors of entity ID: {} -- {}", entity.getId(),
-        JsonUtil.serializeObject(metadataVariables));
+    // validate the collection variables are on the same entity
+    if (!entity1Id.equals(entity2Id)) {
+        throw new IllegalArgumentException("Collection variables must be on the same entity.");
+    }
 
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getCollectionMembers(collectionVariable))
-        .addVars(metadataVariables)
+        .addVars(getUtil().getCollectionMembers(assay1))
+        .addVars(getUtil().getCollectionMembers(assay2))
       );
-  }
-
-  private Boolean getManyToOneWithDescendant(ReferenceMetadata metadata, EntityDef ancestor, EntityDef descendantToMatch) {
-    return metadata.getChildren(ancestor).stream()
-        .filter(child -> metadata.isEntityAncestorOf(child, descendantToMatch) || descendantToMatch.getId().equals(child.getId())) // Find child on path to descendant to match.
-        .findFirst()
-        .orElseThrow()
-        .isManyToOneWithParent();
   }
 
   @Override

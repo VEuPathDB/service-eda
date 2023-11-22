@@ -38,6 +38,7 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
     super(context);
   }
 
+  /*
   @Override
   public ConstraintSpec getConstraintSpec() {
     return new ConstraintSpec()
@@ -59,6 +60,7 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
           .description("Input data must be a variable collection.")
       .done();
   }
+  */
 
   @NotNull
   @Override

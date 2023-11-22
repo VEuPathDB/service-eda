@@ -114,12 +114,6 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
 
-      // TODO:
-      // need to build two AbundanceData objects
-      // if were not on the same entity, we need to use the parent id column to validate the data/ rows are from the same samples
-      // should be able to do that by using the parent id column in both as recordIdColumn in both AbundanceData objects
-
-
       // Read in the assay data
       List<VariableSpec> assay1InputVars = ListBuilder.asList(computeEntityIdVarSpec);
       assay1InputVars.addAll(util.getCollectionMembers(assay1));

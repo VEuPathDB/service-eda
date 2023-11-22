@@ -131,28 +131,22 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
       assay2InputVars.addAll(entity2AncestorIdColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(ASSAY_2_DATA, assay2InputVars));
 
-      // Read in the sample metadata
-      List <VariableSpec> metadataInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      metadataInputVars.addAll(metadataVariables);
-      metadataInputVars.addAll(idColumns);
-      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataInputVars));
-      connection.voidEval("sampleMetadata <- " + INPUT_DATA); 
-
       // Turn the list of id columns into an array of strings for R
-      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
-      String dotNotatedIdColumnsString = util.listToRVector(dotNotatedIdColumns);
-
-      
+      List<String> dotNotatedEntity1IdColumns = entity1AncestorIdColumns.stream().map(VariableDef::toDotNotation).toList();
+      String dotNotatedEntity1IdColumnsString = util.listToRVector(dotNotatedEntity1IdColumns);
+      List<String> dotNotatedEntity2IdColumns = entity2AncestorIdColumns.stream().map(VariableDef::toDotNotation).toList();
+      String dotNotatedEntity2IdColumnsString = util.listToRVector(dotNotatedEntity2IdColumns);
+            
       
       // Format inputs for R
-      connection.voidEval("data1 <- AbundanceData(data=abundanceData" + 
+      connection.voidEval("data1 <- AbundanceData(data=assay1Data" + 
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
+                                ", ancestorIdColumns=as.character(" + dotNotatedEntity1IdColumnsString + ")" +
                                 ", imputeZero=TRUE)");
       
-      connection.voidEval("data2 <- SampleMetadata(data = sampleMetadata" +
+      connection.voidEval("data2 <- SampleMetadata(data = assay2Data" +
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
+                                ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + "))");
       
       // Run correlation!
       connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=data1, data2=data2" +

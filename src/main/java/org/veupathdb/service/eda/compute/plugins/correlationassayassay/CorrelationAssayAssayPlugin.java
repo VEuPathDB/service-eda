@@ -38,6 +38,28 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
     super(context);
   }
 
+  @Override
+  public ConstraintSpec getConstraintSpec() {
+    return new ConstraintSpec()
+    // im going to try leaving the dependency order out for now and hope nothing breaks
+    // the two collections can be from different branches or the same entity, which doesnt fit into the dependency order logic
+    // im manually validating their relationship before requesting data streams
+    // unfortunately this means the frontend needs to be manually validated as well and cant rely only on the constraints defined here
+    // TODO: consider a better way to do this
+    .dependencyOrder()
+      .pattern()
+        .element("collectionVariable1")
+          .required(true)
+          // right now all collections are on the assay nodes. if that changes it may break the manually validated entity relationships
+          .isCollection()
+          .description("Input data must be a variable collection.")
+        .element("collectionVariable2")
+          .required(true)
+          .isCollection()
+          .description("Input data must be a variable collection.")
+      .done();
+  }
+
   @NotNull
   @Override
   public List<StreamSpec> getStreamSpecs() {

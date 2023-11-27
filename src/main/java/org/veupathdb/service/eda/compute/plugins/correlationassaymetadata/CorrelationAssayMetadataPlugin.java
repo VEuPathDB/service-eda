@@ -132,18 +132,19 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
 
       
       
-      // Format inputs for R
-      connection.voidEval("data1 <- AbundanceData(data=abundanceData" + 
-                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
-                                ", imputeZero=TRUE)");
-      
-      connection.voidEval("data2 <- SampleMetadata(data = sampleMetadata" +
+      // Format inputs for R   
+      connection.voidEval("sampleMetadata <- SampleMetadata(data = sampleMetadata" +
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                 ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
+
+      connection.voidEval("abundanceData <- AbundanceData(data=abundanceData" + 
+                                ", sampleMetadata=sampleMetadata" +
+                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
+                                ", imputeZero=TRUE)");                          
       
       // Run correlation!
-      connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=data1, data2=data2" +
+      connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=abundanceData" +
                                                           ", method=" + singleQuote(method) +
                                                           ", verbose=TRUE)");
 

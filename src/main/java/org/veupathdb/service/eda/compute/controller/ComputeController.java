@@ -154,22 +154,22 @@ public class ComputeController implements Computes {
       }));
   }
 
-@Override
-public PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(Boolean autostart, CorrelationAssayMetadataPluginRequest entity) {
-  return PostComputesCorrelationassaymetadataResponse.respond200WithApplicationJson(submitJob(new CorrelationAssayMetadataPluginProvider(), entity, autostart));
-}
+  @Override
+  public PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(Boolean autostart, CorrelationAssayMetadataPluginRequest entity) {
+    return PostComputesCorrelationassaymetadataResponse.respond200WithApplicationJson(submitJob(new CorrelationAssayMetadataPluginProvider(), entity, autostart));
+  }
 
-@Override
-public PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(CorrelationAssayMetadataPluginRequest entity) {
-  return PostComputesCorrelationassaymetadataStatisticsResponse.respond200WithApplicationJson(new CorrelationMetadataStatsResponseStream(out -> {
-      try {
-        getResultFileStreamer(new CorrelationAssayMetadataPluginProvider(), STATISTICS, entity).write(out);
-      }
-      catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-    }));
-}
+  @Override
+  public PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(CorrelationAssayMetadataPluginRequest entity) {
+    return PostComputesCorrelationassaymetadataStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
+        try {
+          getResultFileStreamer(new CorrelationAssayMetadataPluginProvider(), STATISTICS, entity).write(out);
+        }
+        catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }));
+  }
 
   // endregion Plugin Endpoints
 

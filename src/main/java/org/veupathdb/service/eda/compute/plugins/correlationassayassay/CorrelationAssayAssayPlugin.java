@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.compute.plugins.correlationassaymetadata;
+package org.veupathdb.service.eda.compute.plugins.correlationassayassay;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,8 +13,8 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
-import org.veupathdb.service.eda.generated.model.Correlation1Collection;
-import org.veupathdb.service.eda.generated.model.CorrelationAssayMetadataPluginRequest;
+import org.veupathdb.service.eda.generated.model.Correlation2Collections;
+import org.veupathdb.service.eda.generated.model.CorrelationAssayAssayPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
@@ -28,13 +28,13 @@ import java.util.List;
 
 import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
 
-public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssayMetadataPluginRequest, Correlation1Collection> {
+public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssayAssayPluginRequest, Correlation2Collections> {
   private static final Logger LOG = LogManager.getLogger(CorrelationAssayAssayPlugin.class);
 
   private static final String ASSAY_1_DATA = "assay1Data";
   private static final String ASSAY_2_DATA = "assay2Data";
 
-  public CorrelationAssayAssayPlugin(@NotNull PluginContext<CorrelationAssayMetadataPluginRequest, Correlation1Collection> context) {
+  public CorrelationAssayAssayPlugin(@NotNull PluginContext<CorrelationAssayAssayPluginRequest, Correlation2Collections> context) {
     super(context);
   }
 
@@ -71,14 +71,15 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
     String entity1Id = assay1.getEntityId();
     CollectionSpec assay2 = computeConfig.getCollectionVariable2();
     String entity2Id = assay2.getEntityId();
+    ReferenceMetadata metadata = getContext().getReferenceMetadata();
 
-    EntityDef entity1 = getContext().getReferenceMetadata().getEntity(entity1Id).orElseThrow();
-    EntityDef entity2 = getContext().getReferenceMetadata().getEntity(entity2Id).orElseThrow();
+    EntityDef entity1 = metadata.getEntity(entity1Id).orElseThrow();
+    EntityDef entity2 = metadata.getEntity(entity2Id).orElseThrow();
 
     // validate the collection variables are on the same entity or both are 1:1 with a shared parent entity
     if (!entity1Id.equals(entity2Id) &&
-        !(entity1.getAncestors().get(0).getId().equals(entity2.getAncestors().get(0).getId()) &&
-          !entity1.isOneToManyWithParent() && !entity2.isOneToManyWithParent())
+        !(metadata.getAncestors(entity1).get(0).getId().equals(metadata.getAncestors(entity2).get(0).getId()) &&
+          !entity1.isManyToOneWithParent() && !entity2.isManyToOneWithParent())
     ) {
         throw new IllegalArgumentException("Collection variables must be on the same entity or both be 1:1 with a shared parent entity.");
     }
@@ -94,7 +95,7 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
   @Override
   protected void execute() {
 
-    Correlation1Collection computeConfig = getConfig();
+    Correlation2Collections computeConfig = getConfig();
     PluginUtil util = getUtil();
     ReferenceMetadata metadata = getContext().getReferenceMetadata();
 
@@ -112,8 +113,10 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
     EntityDef entity2 = metadata.getEntity(entity2Id).orElseThrow();
     EntityDef parentEntity = metadata.getAncestors(entity1).get(0);
     VariableDef entity1IdVarSpec = util.getEntityIdVarSpec(entity1Id);
+    VariableDef entity2IdVarSpec = util.getEntityIdVarSpec(entity2Id);
     VariableDef parentEntityIdVarSpec = util.getEntityIdVarSpec(parentEntity.getId());
-    String computeEntityIdColName = isSameEntity ? util.toColNameOrEmpty(entity1IdVarSpec) : util.toColNameOrEmpty(parentEntityIdVarSpec);
+    VariableSpec computeEntityIdVarSpec = isSameEntity ? entity1IdVarSpec : parentEntityIdVarSpec;
+    String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
 
     // Get record id columns
     List<VariableDef> entity1AncestorIdColumns = new ArrayList<>();

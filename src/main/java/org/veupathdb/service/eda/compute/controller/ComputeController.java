@@ -22,6 +22,7 @@ import org.veupathdb.service.eda.compute.plugins.PluginProvider;
 import org.veupathdb.service.eda.compute.plugins.PluginRegistry;
 import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
+import org.veupathdb.service.eda.compute.plugins.correlationassayassay.CorrelationAssayAssayPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.correlationassaymetadata.CorrelationAssayMetadataPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
@@ -137,6 +138,23 @@ public class ComputeController implements Computes {
   }
 
   @Override
+  public PostComputesCorrelationassayassayResponse postComputesCorrelationassayassay(Boolean autostart, CorrelationAssayAssayPluginRequest entity) {
+    return PostComputesCorrelationassayassayResponse.respond200WithApplicationJson(submitJob(new CorrelationAssayAssayPluginProvider(), entity, autostart));
+  }
+
+  @Override
+  public PostComputesCorrelationassayassayStatisticsResponse postComputesCorrelationassayassayStatistics(CorrelationAssayAssayPluginRequest entity) {
+    return PostComputesCorrelationassayassayStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
+        try {
+          getResultFileStreamer(new CorrelationAssayAssayPluginProvider(), STATISTICS, entity).write(out);
+        }
+        catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }));
+  }
+
+  @Override
   public PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(Boolean autostart, CorrelationAssayMetadataPluginRequest entity) {
     return PostComputesCorrelationassaymetadataResponse.respond200WithApplicationJson(submitJob(new CorrelationAssayMetadataPluginProvider(), entity, autostart));
   }
@@ -152,7 +170,6 @@ public class ComputeController implements Computes {
         }
       }));
   }
-
 
   // endregion Plugin Endpoints
 

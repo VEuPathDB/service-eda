@@ -165,9 +165,10 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
                                 ", ancestorIdColumns=as.character(" + dotNotatedEntity1IdColumnsString + ")" +
                                 ", imputeZero=TRUE)");
       
-      connection.voidEval("data2 <- SampleMetadata(data = assay2Data" +
+      connection.voidEval("data2 <- AbundanceData(data = assay2Data" +
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + "))");
+                                ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + ")" +
+                                ", imputeZero=TRUE)");
       
       // Run correlation!
       connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=data1, data2=data2" +

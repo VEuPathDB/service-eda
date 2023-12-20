@@ -63,6 +63,10 @@ public class EntityDef {
     return _variables;
   }
 
+  public List<CollectionDef> getCollections() {
+    return _collections;
+  }
+
   public Optional<VariableDef> getVariable(VariableSpec var) {
     return _variables.stream()
       .filter(v -> VariableDef.isSameVariable(v, var))

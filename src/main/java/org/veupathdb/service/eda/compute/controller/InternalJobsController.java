@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
 @AllowAdminAuth(required = true)
 public class InternalJobsController implements InternalJobs {
 
-  public GetInternalJobsResponse getInternalJobs(String jobId, String studyId, String pluginName, String adminAuthToken) {
+  @Override
+  public GetInternalJobsResponse getInternalJobs() {
     // Expose internal jobs from async platform.
     final List<InternalJob> outputEntity = AsyncPlatform.listJobsInternal().stream()
         .map(this::toApiJob)
@@ -29,6 +30,7 @@ public class InternalJobsController implements InternalJobs {
     return GetInternalJobsResponse.respond200WithApplicationJson(outputEntity);
   }
 
+  @Override
   public GetInternalJobsByJobIdResponse getInternalJobsByJobId(String jobId) {
     if (jobId == null || jobId.isEmpty()) {
       throw new BadRequestException("JobID cannot be empty or null.");

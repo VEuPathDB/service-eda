@@ -5,7 +5,6 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.InternalJob;
@@ -15,9 +14,7 @@ import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 public interface InternalJobs {
   @GET
   @Produces("application/json")
-  GetInternalJobsResponse getInternalJobs(@QueryParam("job-id") String jobId,
-      @QueryParam("study-id") String studyId, @QueryParam("plugin-name") String pluginName,
-      @QueryParam("admin-auth-token") String adminAuthToken);
+  GetInternalJobsResponse getInternalJobs();
 
   @GET
   @Path("/{job-id}")

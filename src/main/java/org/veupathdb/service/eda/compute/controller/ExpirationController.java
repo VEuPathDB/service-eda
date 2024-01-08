@@ -9,6 +9,8 @@ import org.veupathdb.lib.compute.platform.AsyncPlatform;
 import org.veupathdb.lib.compute.platform.job.JobFileReference;
 import org.veupathdb.lib.compute.platform.job.JobStatus;
 import org.veupathdb.lib.compute.platform.model.JobReference;
+import org.veupathdb.lib.container.jaxrs.server.annotations.AllowAdminAuth;
+import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.hash_id.HashID;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
 import org.veupathdb.service.eda.compute.service.ServiceOptions;
@@ -31,15 +33,14 @@ import java.util.concurrent.ForkJoinPool;
  *
  * If neither argument is passed, a call to this endpoint will expire all job results
  */
+@Authenticated
+@AllowAdminAuth(required = true)
 public class ExpirationController implements ExpireComputeJobs {
 
   private static final Logger LOG = LogManager.getLogger(ExpirationController.class);
 
   @Override
   public GetExpireComputeJobsResponse getExpireComputeJobs(String jobId, String studyId, String pluginName, String adminAuthToken) {
-    if (adminAuthToken == null || !adminAuthToken.equals(ServiceOptions.getAdminAuthToken())) {
-      throw new ForbiddenException();
-    }
     if (jobId != null && (studyId != null || pluginName != null)) {
       throw new BadRequestException("If job-id param is specified, study-id and plugin-name are not allowed.");
     }

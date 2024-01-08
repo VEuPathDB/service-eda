@@ -324,24 +324,4 @@ object ServiceOptions : Options() {
     private set
 
   // endregion RServe
-
-  // region Admin
-
-  /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
-    ┃  Administration Configuration                                        ┃
-  \*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
-
-  @Option(
-    names = ["--admin-auth-token"],
-    defaultValue = "\${env:ADMIN_AUTH_TOKEN}",
-    description = ["Special authorization token used to access admin endpoints."],
-    arity = "1",
-    required = true
-  )
-  @JvmStatic
-  var adminAuthToken = UnconfiguredStringValue
-    private set
-
-  // endregion Admin
-
 }

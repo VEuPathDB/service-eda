@@ -18,7 +18,7 @@ object Main : Server() {
 
   override fun newResourceConfig(opts: Options?): ContainerResources {
     val out = Resources()
-
+    out.enableAuth()
     // Enabled by default for debugging purposes, this should be removed when
     // production ready.
     out.property("jersey.config.server.tracing.type", "ALL")

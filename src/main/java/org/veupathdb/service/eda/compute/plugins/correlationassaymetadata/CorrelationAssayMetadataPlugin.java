@@ -86,7 +86,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
 
     // Filter variables to only include those that are continuous
     metadataVariables = metadataVariables.stream()
-      .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident() && (var.getDataType() == APIVariableDataType.NUMBER || var.getDataType() == APIVariableDataType.INTEGER)) // Filter out inherited and non-continuous, non-date variables.
+      .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident()) // Filter out inherited and non-continuous variables.
       .collect(Collectors.toList());
 
     LOG.info("Using the following metadata variables for correlation: {}",
@@ -166,7 +166,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
 
     // Filter variables to only include those that are continuous
     List<VariableDef> finalMetadataVariables = metadataVariables.stream()
-      .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident() && (var.getDataType() == APIVariableDataType.NUMBER || var.getDataType() == APIVariableDataType.INTEGER)) // Filter out inherited and non-continuous, non-date variables.
+      .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident()) // Filter out inherited and non-continuous variables.
       .collect(Collectors.toList());
 
     LOG.info("Using the following metadata variables for correlation: {}",

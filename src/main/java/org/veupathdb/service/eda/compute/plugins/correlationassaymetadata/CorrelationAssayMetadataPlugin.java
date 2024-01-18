@@ -15,6 +15,7 @@ import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.Correlation1Collection;
 import org.veupathdb.service.eda.generated.model.CorrelationAssayMetadataPluginRequest;
+import org.veupathdb.service.eda.generated.model.FeaturePrefilterThresholds;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
@@ -85,6 +86,16 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     String method = computeConfig.getCorrelationMethod().getValue();
     CollectionSpec collectionVariable = computeConfig.getCollectionVariable();
     String entityId = collectionVariable.getEntityId();
+    FeaturePrefilterThresholds featureFilterThresholds = computeConfig.getFeatureFilterThresholds();
+    String proportionNonZeroThresholdRParam = 
+      featureFilterThresholds.getPropertionNonZero() != null ? 
+        ",proportionNonZeroThreshold=" + featureFilterThresholds.getPropertionNonZero() : "";
+    String varianceThresholdRParam = 
+      featureFilterThresholds.getVariance() != null ? 
+        ",varianceThreshold=" + featureFilterThresholds.getVariance() : "";
+    String stdDevThresholdRParam =
+      featureFilterThresholds.getStandardDeviation() != null ? 
+        ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 
     // Wrangle into helpful types
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
@@ -146,6 +157,9 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       // Run correlation!
       connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=abundanceData" +
                                                           ", method=" + singleQuote(method) +
+                                                          proportionNonZeroThresholdRParam +
+                                                          varianceThresholdRParam +
+                                                          stdDevThresholdRParam +
                                                           ", verbose=TRUE)");
 
 

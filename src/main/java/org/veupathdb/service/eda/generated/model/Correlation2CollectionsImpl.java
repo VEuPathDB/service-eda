@@ -11,12 +11,16 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "correlationMethod",
+    "prefilterThresholds",
     "collectionVariable1",
     "collectionVariable2"
 })
 public class Correlation2CollectionsImpl implements Correlation2Collections {
   @JsonProperty("correlationMethod")
   private CorrelationMethod correlationMethod;
+
+  @JsonProperty("prefilterThresholds")
+  private FeaturePrefilterThresholds prefilterThresholds;
 
   @JsonProperty("collectionVariable1")
   private CollectionSpec collectionVariable1;
@@ -35,6 +39,16 @@ public class Correlation2CollectionsImpl implements Correlation2Collections {
   @JsonProperty("correlationMethod")
   public void setCorrelationMethod(CorrelationMethod correlationMethod) {
     this.correlationMethod = correlationMethod;
+  }
+
+  @JsonProperty("prefilterThresholds")
+  public FeaturePrefilterThresholds getPrefilterThresholds() {
+    return this.prefilterThresholds;
+  }
+
+  @JsonProperty("prefilterThresholds")
+  public void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds) {
+    this.prefilterThresholds = prefilterThresholds;
   }
 
   @JsonProperty("collectionVariable1")

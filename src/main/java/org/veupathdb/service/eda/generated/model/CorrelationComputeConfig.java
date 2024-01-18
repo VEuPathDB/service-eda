@@ -16,6 +16,12 @@ public interface CorrelationComputeConfig {
   @JsonProperty("correlationMethod")
   void setCorrelationMethod(CorrelationMethod correlationMethod);
 
+  @JsonProperty("prefilterThresholds")
+  FeaturePrefilterThresholds getPrefilterThresholds();
+
+  @JsonProperty("prefilterThresholds")
+  void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

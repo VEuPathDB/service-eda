@@ -10,6 +10,7 @@ import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
+import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
@@ -60,18 +61,16 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
 
       LOG.info("No ancestors found, using all variables that are not part of a collection.");
       
-      // Grab all non-id variables from this entity
-      metadataVariables = entity.getVariables().stream()
-          .filter(var -> !var.getVariableId().contains("_stable_id"))
-          .collect(Collectors.toList());
-
       // List the variables that are already in collections
       List<VariableDef> variablesInACollection = entity.getCollections().stream()
-          .flatMap(collection -> collection.getMemberVariables().stream())
-          .collect(Collectors.toList());
+      .flatMap(collection -> collection.getMemberVariables().stream())
+      .collect(Collectors.toList());
 
       // Remove variables that are already in a collection from the metadata variables list.
-      metadataVariables.removeAll(variablesInACollection);
+      metadataVariables = entity.getVariables().stream()
+          .filter(var -> var.getSource() != VariableSource.ID)
+          .filter(var -> !variablesInACollection.contains(var))
+          .collect(Collectors.toList());
 
     } else {
       
@@ -79,7 +78,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       metadataVariables = ancestors.stream() // Get all ancestors of entity.
           .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity)) // Filter to those that are one-to-one with target entity or ancestor of entity.
           .flatMap(entityDef -> entityDef.getVariables().stream()) // Flatten stream of var streams into a single stream of vars.
-          .filter(var -> !var.getVariableId().contains("_stable_id")) // Filter out id variables
+          .filter(var -> var.getSource() != VariableSource.ID) // Filter out id variables
           .collect(Collectors.toList());
 
     }
@@ -140,11 +139,6 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     List<VariableDef> metadataVariables;
     if (ancestors.isEmpty()) {
       LOG.info("No ancestors found, using all variables that are not part of a collection.");
-      
-      // Grab all non-id variables from this entity
-      metadataVariables = entity.getVariables().stream()
-          .filter(var -> !var.getVariableId().contains("_stable_id"))
-          .collect(Collectors.toList());
 
       // List the variables that are already in collections
       List<VariableDef> variablesInACollection = entity.getCollections().stream()
@@ -152,7 +146,10 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
           .collect(Collectors.toList());
 
       // Remove variables that are already in a collection from the metadata variables list.
-      metadataVariables.removeAll(variablesInACollection);
+      metadataVariables = entity.getVariables().stream()
+          .filter(var -> var.getSource() != VariableSource.ID)
+          .filter(var -> !variablesInACollection.contains(var))
+          .collect(Collectors.toList());
 
     } else {
 
@@ -160,7 +157,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       metadataVariables = ancestors.stream() // Get all ancestors of entity.
           .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity)) // Filter to those that are one-to-one with target entity or ancestor of entity.
           .flatMap(entityDef -> entityDef.getVariables().stream()) // Flatten stream of var streams into a single stream of vars.
-          .filter(var -> !var.getVariableId().contains("_stable_id")) // Filter out id variables
+          .filter(var -> var.getSource() != VariableSource.ID) // Filter out id variables
           .collect(Collectors.toList());
     }
 

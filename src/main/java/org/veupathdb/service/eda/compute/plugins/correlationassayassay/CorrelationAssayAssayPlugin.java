@@ -104,14 +104,17 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
     String method = computeConfig.getCorrelationMethod().getValue();
     CollectionSpec assay1 = computeConfig.getCollectionVariable1();
     CollectionSpec assay2 = computeConfig.getCollectionVariable2();
-    FeaturePrefilterThresholds featureFilterThresholds = computeConfig.getFeatureFilterThresholds();
+    FeaturePrefilterThresholds featureFilterThresholds = computeConfig.getPrefilterThresholds();
     String proportionNonZeroThresholdRParam = 
-      featureFilterThresholds.getPropertionNonZero() != null ? 
-        ",proportionNonZeroThreshold=" + featureFilterThresholds.getPropertionNonZero() : "";
+      featureFilterThresholds != null &&
+      featureFilterThresholds.getProportionNonZero() != null ? 
+        ",proportionNonZeroThreshold=" + featureFilterThresholds.getProportionNonZero() : "";
     String varianceThresholdRParam = 
+      featureFilterThresholds != null &&
       featureFilterThresholds.getVariance() != null ? 
         ",varianceThreshold=" + featureFilterThresholds.getVariance() : "";
     String stdDevThresholdRParam =
+      featureFilterThresholds != null &&
       featureFilterThresholds.getStandardDeviation() != null ? 
         ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 

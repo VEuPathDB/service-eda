@@ -86,14 +86,17 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     String method = computeConfig.getCorrelationMethod().getValue();
     CollectionSpec collectionVariable = computeConfig.getCollectionVariable();
     String entityId = collectionVariable.getEntityId();
-    FeaturePrefilterThresholds featureFilterThresholds = computeConfig.getFeatureFilterThresholds();
+    FeaturePrefilterThresholds featureFilterThresholds = computeConfig.getPrefilterThresholds();
     String proportionNonZeroThresholdRParam = 
-      featureFilterThresholds.getPropertionNonZero() != null ? 
-        ",proportionNonZeroThreshold=" + featureFilterThresholds.getPropertionNonZero() : "";
+      featureFilterThresholds != null &&
+      featureFilterThresholds.getProportionNonZero() != null ? 
+        ",proportionNonZeroThreshold=" + featureFilterThresholds.getProportionNonZero() : "";
     String varianceThresholdRParam = 
+      featureFilterThresholds != null &&
       featureFilterThresholds.getVariance() != null ? 
         ",varianceThreshold=" + featureFilterThresholds.getVariance() : "";
     String stdDevThresholdRParam =
+      featureFilterThresholds != null &&
       featureFilterThresholds.getStandardDeviation() != null ? 
         ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 

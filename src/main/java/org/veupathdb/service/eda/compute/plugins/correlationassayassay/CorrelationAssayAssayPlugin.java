@@ -15,6 +15,7 @@ import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.Correlation2Collections;
 import org.veupathdb.service.eda.generated.model.CorrelationAssayAssayPluginRequest;
+import org.veupathdb.service.eda.generated.model.FeaturePrefilterThresholds;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
@@ -103,6 +104,20 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
     String method = computeConfig.getCorrelationMethod().getValue();
     CollectionSpec assay1 = computeConfig.getCollectionVariable1();
     CollectionSpec assay2 = computeConfig.getCollectionVariable2();
+    FeaturePrefilterThresholds featureFilterThresholds = computeConfig.getPrefilterThresholds();
+    String proportionNonZeroThresholdRParam = 
+      featureFilterThresholds != null &&
+      featureFilterThresholds.getProportionNonZero() != null ? 
+        ",proportionNonZeroThreshold=" + featureFilterThresholds.getProportionNonZero() : "";
+    String varianceThresholdRParam = 
+      featureFilterThresholds != null &&
+      featureFilterThresholds.getVariance() != null ? 
+        ",varianceThreshold=" + featureFilterThresholds.getVariance() : "";
+    String stdDevThresholdRParam =
+      featureFilterThresholds != null &&
+      featureFilterThresholds.getStandardDeviation() != null ? 
+        ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
+
     // identify if were on the same entity, or need to work in the parent entity space
     String entity1Id = assay1.getEntityId();
     String entity2Id = assay2.getEntityId();
@@ -173,6 +188,9 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
       // Run correlation!
       connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=data1, data2=data2" +
                                                           ", method=" + singleQuote(method) +
+                                                          proportionNonZeroThresholdRParam +
+                                                          varianceThresholdRParam +
+                                                          stdDevThresholdRParam +
                                                           ", verbose=TRUE)");
 
 

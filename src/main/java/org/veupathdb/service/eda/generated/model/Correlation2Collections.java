@@ -16,6 +16,12 @@ public interface Correlation2Collections extends CorrelationComputeConfig {
   @JsonProperty("correlationMethod")
   void setCorrelationMethod(CorrelationMethod correlationMethod);
 
+  @JsonProperty("prefilterThresholds")
+  FeaturePrefilterThresholds getPrefilterThresholds();
+
+  @JsonProperty("prefilterThresholds")
+  void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds);
+
   @JsonProperty("collectionVariable1")
   CollectionSpec getCollectionVariable1();
 

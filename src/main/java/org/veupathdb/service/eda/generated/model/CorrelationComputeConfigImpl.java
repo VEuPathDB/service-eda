@@ -9,10 +9,16 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonPropertyOrder("correlationMethod")
+@JsonPropertyOrder({
+    "correlationMethod",
+    "prefilterThresholds"
+})
 public class CorrelationComputeConfigImpl implements CorrelationComputeConfig {
   @JsonProperty("correlationMethod")
   private CorrelationMethod correlationMethod;
+
+  @JsonProperty("prefilterThresholds")
+  private FeaturePrefilterThresholds prefilterThresholds;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -25,6 +31,16 @@ public class CorrelationComputeConfigImpl implements CorrelationComputeConfig {
   @JsonProperty("correlationMethod")
   public void setCorrelationMethod(CorrelationMethod correlationMethod) {
     this.correlationMethod = correlationMethod;
+  }
+
+  @JsonProperty("prefilterThresholds")
+  public FeaturePrefilterThresholds getPrefilterThresholds() {
+    return this.prefilterThresholds;
+  }
+
+  @JsonProperty("prefilterThresholds")
+  public void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds) {
+    this.prefilterThresholds = prefilterThresholds;
   }
 
   @JsonAnyGetter

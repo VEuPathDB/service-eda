@@ -50,13 +50,13 @@ public class ResponseDelegate extends Response {
   }
 
   @Override
-  public Date getLastModified() {
-    return this.delegate.getLastModified();
+  public Date getDate() {
+    return this.delegate.getDate();
   }
 
   @Override
-  public Date getDate() {
-    return this.delegate.getDate();
+  public Date getLastModified() {
+    return this.delegate.getLastModified();
   }
 
   @Override
@@ -66,6 +66,16 @@ public class ResponseDelegate extends Response {
   @Override
   public int getStatus() {
     return this.delegate.getStatus();
+  }
+
+  @Override
+  public Response.StatusType getStatusInfo() {
+    return this.delegate.getStatusInfo();
+  }
+
+  @Override
+  public <T> T readEntity(Class<T> p0, Annotation[] p1) {
+    return this.delegate.readEntity(p0,p1);
   }
 
   @Override
@@ -84,38 +94,8 @@ public class ResponseDelegate extends Response {
   }
 
   @Override
-  public <T> T readEntity(Class<T> p0, Annotation[] p1) {
-    return this.delegate.readEntity(p0,p1);
-  }
-
-  @Override
   public boolean hasEntity() {
     return this.delegate.hasEntity();
-  }
-
-  @Override
-  public Map<String, NewCookie> getCookies() {
-    return this.delegate.getCookies();
-  }
-
-  @Override
-  public Set<Link> getLinks() {
-    return this.delegate.getLinks();
-  }
-
-  @Override
-  public boolean hasLink(String p0) {
-    return this.delegate.hasLink(p0);
-  }
-
-  @Override
-  public Link getLink(String p0) {
-    return this.delegate.getLink(p0);
-  }
-
-  @Override
-  public Response.StatusType getStatusInfo() {
-    return this.delegate.getStatusInfo();
   }
 
   @Override
@@ -134,8 +114,28 @@ public class ResponseDelegate extends Response {
   }
 
   @Override
+  public Map<String, NewCookie> getCookies() {
+    return this.delegate.getCookies();
+  }
+
+  @Override
   public EntityTag getEntityTag() {
     return this.delegate.getEntityTag();
+  }
+
+  @Override
+  public Set<Link> getLinks() {
+    return this.delegate.getLinks();
+  }
+
+  @Override
+  public boolean hasLink(String p0) {
+    return this.delegate.hasLink(p0);
+  }
+
+  @Override
+  public Link getLink(String p0) {
+    return this.delegate.getLink(p0);
   }
 
   @Override

@@ -10,12 +10,16 @@ import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
+import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.Correlation1Collection;
 import org.veupathdb.service.eda.generated.model.CorrelationAssayMetadataPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
+
+import com.fasterxml.jackson.databind.JsonMappingException.Reference;
+
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
 
@@ -36,6 +40,43 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
   public CorrelationAssayMetadataPlugin(@NotNull PluginContext<CorrelationAssayMetadataPluginRequest, Correlation1Collection> context) {
     super(context);
   }
+  
+  // Return all metadata variables appropriate for this correlation computation. When there are ancestor entities,
+  // we only want those variables that are on a one-to-one path with the current entity. When there
+  // are no ancestor entities, we'll take all variables that are not part of a collection as metadata variables.
+  // Finally, we'll filter down to only the continuous variables.
+  private List<VariableDef> filterMetadataVariables(EntityDef entity, ReferenceMetadata metadata) {
+
+    List<EntityDef> ancestors = metadata.getAncestors(entity);
+
+    List<VariableDef> metadataVariables;
+  
+    if (ancestors.isEmpty()) {
+      LOG.info("No ancestors found, using all variables that are not part of a collection.");
+  
+      List<VariableDef> variablesInACollection = entity.getCollections().stream()
+          .flatMap(collection -> collection.getMemberVariables().stream())
+          .collect(Collectors.toList());
+  
+      metadataVariables = entity.getVariables().stream()
+          .filter(var -> var.getSource() != VariableSource.ID)
+          .filter(var -> !variablesInACollection.contains(var))
+          .collect(Collectors.toList());
+    } else {
+      LOG.info("At least one ancestor found. Looking for variables on entities that are on a one-to-one path with entity: {}", entity.getId());
+      metadataVariables = ancestors.stream()
+          .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity))
+          .flatMap(entityDef -> entityDef.getVariables().stream())
+          .filter(var -> var.getSource() != VariableSource.ID)
+          .collect(Collectors.toList());
+    }
+  
+    metadataVariables = metadataVariables.stream()
+      .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident())
+      .collect(Collectors.toList());
+  
+    return metadataVariables;
+  }
 
   @NotNull
   @Override
@@ -47,17 +88,12 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
 
     // Wrangle into correct types for what follows
     EntityDef entity = getContext().getReferenceMetadata().getEntity(entityId).orElseThrow();
-
-    // Grab all continuous variables from ancestors
     ReferenceMetadata metadata = getContext().getReferenceMetadata();
-    List<VariableDef> metadataVariables = metadata.getAncestors(entity).stream() // Get all ancestors of entity.
-        .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity)) // Filter to those that are one-to-one with target entity or ancestor of entity.
-        .flatMap(entityDef -> entityDef.getVariables().stream()) // Flatten stream of var streams into a single stream of vars.
-        .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident()) // Filter out inherited and non-continuous variables.
-        .filter(var -> !var.getVariableId().contains("_stable_id")) // Filter out id variables
-        .collect(Collectors.toList());
 
-    LOG.info("Metadata variables that are one-to-one with parent for ancestors of entity ID: {} -- {}", entity.getId(),
+    // Filter metadata variables into only those that are appropriate for correlation
+    List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
+
+    LOG.info("Using the following metadata variables for correlation: {}",
         JsonUtil.serializeObject(metadataVariables));
 
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
@@ -100,14 +136,11 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
 
+    // Filter metadata variables into only those that are appropriate for correlation.
+    List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
 
-    // Get stream of all ancestors and their variables
-    List<VariableDef> metadataVariables = metadata.getAncestors(entity).stream() // Get all ancestors of entity.
-        .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity)) // Filter to those that are one-to-one with target entity or ancestor of entity.
-        .flatMap(entityDef -> entityDef.getVariables().stream()) // Flatten stream of var streams into a single stream of vars.
-        .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident()) // Filter out inherited and non-continuous variables.
-        .filter(var -> !var.getVariableId().contains("_stable_id")) // Filter out id variables
-        .collect(Collectors.toList());
+    LOG.info("Using the following metadata variables for correlation: {}",
+        JsonUtil.serializeObject(metadataVariables));
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
@@ -120,7 +153,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       connection.voidEval("abundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
       // Read in the sample metadata
-      List <VariableSpec> metadataInputVars = ListBuilder.asList(computeEntityIdVarSpec);
+      List<VariableSpec> metadataInputVars = ListBuilder.asList(computeEntityIdVarSpec);
       metadataInputVars.addAll(metadataVariables);
       metadataInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataInputVars));

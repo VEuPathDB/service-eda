@@ -175,6 +175,19 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
             
       
       // Format inputs for R
+      // !!!!!!! TEMPORARY HACK !!!!!!!
+      // This to let the negative values seen in wgcna eigengenes play in mbio-land until we get a better solution
+      // see https://github.com/VEuPathDB/microbiomeComputations/issues/81
+      connection.voidEval("assay1DataIdColNames <- names(assay1Data)[grepl('stable_id', names(assay1Data))]");
+      connection.voidEval("assay1DataIds <- assay1Data[,assay1DataIdColNames, with=FALSE]");
+      connection.voidEval("assay1Data <- plyr::numcolwise(veupathUtils::shiftToNonNeg)(assay1Data)");      
+      connection.voidEval("assay1Data[,assay1DataIdColNames] <- assay1DataIds");
+      
+      connection.voidEval("assay2DataIdColNames <- names(assay2Data)[grepl('stable_id', names(assay2Data))]");
+      connection.voidEval("assay2DataIds <- assay2Data[,assay2DataIdColNames, with=FALSE]");
+      connection.voidEval("assay2Data <- plyr::numcolwise(veupathUtils::shiftToNonNeg)(assay2Data)");
+      connection.voidEval("assay2Data[,assay2DataIdColNames] <- assay2DataIds");
+
       connection.voidEval("data1 <- AbundanceData(data=assay1Data" + 
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                 ", ancestorIdColumns=as.character(" + dotNotatedEntity1IdColumnsString + ")" +

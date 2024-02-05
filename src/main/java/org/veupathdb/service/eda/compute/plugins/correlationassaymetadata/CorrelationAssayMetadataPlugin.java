@@ -189,7 +189,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       // see https://github.com/VEuPathDB/microbiomeComputations/issues/81
       connection.voidEval("abundanceDataIdColNames <- names(abundanceData)[grepl('stable_id', names(abundanceData))]");
       connection.voidEval("abundanceDataIds <- abundanceData[,abundanceDataIdColNames, with=FALSE]");
-      connection.voidEval("abundanceData <- plyr::numcolwise(veupathUtils::rescaleToNonNeg)(abundanceData)");
+      connection.voidEval("abundanceData <- plyr::numcolwise(veupathUtils::shiftToNonNeg)(abundanceData)");
       connection.voidEval("abundanceData[,abundanceDataIdColNames] <- abundanceDataIds");
 
       connection.voidEval("abundanceData <- AbundanceData(data=abundanceData" + 

@@ -179,10 +179,18 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
 
       
       
-      // Format inputs for R   
+      // Format inputs for R  
       connection.voidEval("sampleMetadata <- SampleMetadata(data = sampleMetadata" +
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                 ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
+
+      // !!!!!!! TEMPORARY HACK !!!!!!!
+      // This to let the negative values seen in wgcna eigengenes play in mbio-land until we get a better solution
+      // see https://github.com/VEuPathDB/microbiomeComputations/issues/81
+      connection.voidEval("abundanceDataIdColNames <- names(abundanceData)[grepl('stable_id', names(abundanceData))]");
+      connection.voidEval("abundanceDataIds <- abundanceData[,abundanceDataIdColNames, with=FALSE]");
+      connection.voidEval("abundanceData <- plyr::numcolwise(veupathUtils::rescaleToNonNeg)(abundanceData)");
+      connection.voidEval("abundanceData[,abundanceDataIdColNames] <- abundanceDataIds");
 
       connection.voidEval("abundanceData <- AbundanceData(data=abundanceData" + 
                                 ", sampleMetadata=sampleMetadata" +

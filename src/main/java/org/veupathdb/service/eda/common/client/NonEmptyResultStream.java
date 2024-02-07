@@ -3,6 +3,8 @@ package org.veupathdb.service.eda.common.client;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Wrapper around an input stream whose content must be a newline-delimited
@@ -24,30 +26,53 @@ public class NonEmptyResultStream extends BufferedInputStream {
   private boolean _foundFirstNewline = false;
   private boolean _continueChecking = true;
 
+  private final List<Byte> firstLine;
+
   public NonEmptyResultStream(String streamName, InputStream in) {
     super(in);
+    firstLine = new ArrayList<>();
     _streamName = streamName;
+    while (_continueChecking) {
+      try {
+        int nextByte = super.read();
+        if (nextByte == -1) throwException();
+        byte b = ((Integer) nextByte).byteValue();
+        firstLine.add(b);
+        check(b);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Override
   public int read() throws IOException {
-    int nextByte = super.read();
-    if (_continueChecking) {
-      if (nextByte == -1) throwException();
-      byte b = ((Integer)nextByte).byteValue();
-      check(b);
+    if (!firstLine.isEmpty()) {
+      return firstLine.remove(0);
     }
-    return nextByte;
+    return super.read();
   }
 
   @Override
   public synchronized int read(byte[] b, int off, int len) throws IOException {
-    int bytesRead = super.read(b, off, len);
-    if (_continueChecking) {
-      if (bytesRead == -1) throwException();
-      for (int i = 0; i < bytesRead && _continueChecking; i++) {
-        check(b[i]);
+    if (firstLine.isEmpty()) {
+      return super.read(b, off, len);
+    }
+
+    if (len > firstLine.size()) {
+      int i = off;
+      while (!firstLine.isEmpty()) {
+        b[i++] = firstLine.remove(0);
       }
+      int bytesRead = (i - off);
+      return bytesRead + super.read(b, i, len - bytesRead);
+    }
+
+    int i = off;
+    int bytesRead = 0;
+    while (bytesRead < len) {
+      b[i++] = firstLine.remove(0);
+      bytesRead++;
     }
     return bytesRead;
   }

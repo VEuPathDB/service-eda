@@ -35,9 +35,17 @@ public abstract class StreamingDataClient extends ServiceClient {
       List<StreamSpec> requiredStreams,
       Function<StreamSpec, ResponseFuture> streamGenerator,
       FunctionalInterfaces.ConsumerWithException<Map<String, InputStream>> streamProcessor) {
-    try (AutoCloseableList<InputStream> dataStreams = buildDataStreams(requiredStreams, streamGenerator)) {
+    AutoCloseableList<InputStream> dataStreams = buildDataStreams(requiredStreams, streamGenerator);
+    processDataStreams(requiredStreams, dataStreams, streamProcessor);
+  }
+
+  public static void processDataStreams(
+      List<StreamSpec> requiredStreams,
+      AutoCloseableList<InputStream> dataStreams,
+      FunctionalInterfaces.ConsumerWithException<Map<String, InputStream>> streamProcessor) {
+    try (dataStreams) {
       // convert auto-closeable list into a named stream map for processing
-      Map<String,InputStream> streamMap = new LinkedHashMap<>();
+      Map<String, InputStream> streamMap = new LinkedHashMap<>();
       for (int i = 0; i < dataStreams.size(); i++) {
         streamMap.put(requiredStreams.get(i).getStreamName(), dataStreams.get(i));
       }
@@ -45,9 +53,9 @@ public abstract class StreamingDataClient extends ServiceClient {
     }
   }
 
-  private static AutoCloseableList<InputStream> buildDataStreams(
+  public static AutoCloseableList<InputStream> buildDataStreams(
       List<StreamSpec> requiredStreams,
-      Function<StreamSpec,ResponseFuture> streamGenerator) {
+      Function<StreamSpec, ResponseFuture> streamGenerator) {
     AutoCloseableList<InputStream> dataStreams = new AutoCloseableList<>();
     Map<String, ResponseFuture> responses = new HashMap<>();
     try {
@@ -61,21 +69,30 @@ public abstract class StreamingDataClient extends ServiceClient {
 
       // get results
       for (StreamSpec spec : requiredStreams) {
-        dataStreams.add(responses.get(spec.getStreamName()).getInputStream());
+        dataStreams.add(new NonEmptyResultStream(spec.getStreamName(), responses.get(spec.getStreamName()).getInputStream()));
         responses.remove(spec.getStreamName());
       }
       return dataStreams;
     }
+    // Explicitly catch EmptyResult so that it can be re-thrown and caught downstream without being wrapped in generic catch.
+    catch (NonEmptyResultStream.EmptyResultException e) {
+      cleanDataStreams(responses, dataStreams);
+      throw e;
+    }
     catch (Exception e) {
-      // if exception occurs while creating streams; need to clean up (two parts)
-      // 1. cancel remaining responses not opened
-      for (ResponseFuture response : responses.values()) {
-        response.cancel();
-      }
-      // 2. close any that successfully opened
-      dataStreams.close();
+      cleanDataStreams(responses, dataStreams);
       // throw as a runtime exception
       throw new RuntimeException("Unable to fetch all required data", e);
     }
+  }
+
+  private static void cleanDataStreams(Map<String, ResponseFuture> responses, AutoCloseableList<InputStream> dataStreams) {
+    // if exception occurs while creating streams; need to clean up (two parts)
+    // 1. cancel remaining responses not opened
+    for (ResponseFuture response : responses.values()) {
+      response.cancel();
+    }
+    // 2. close any that successfully opened
+    dataStreams.close();
   }
 }

@@ -15,6 +15,7 @@ import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.CorrelationAssayAssayPluginRequest;
 import org.veupathdb.service.eda.generated.model.CorrelationAssayMetadataPluginRequest;
+import org.veupathdb.service.eda.generated.model.CorrelationAssaySelfPluginRequest;
 import org.veupathdb.service.eda.generated.model.CorrelationStatsResponse;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceStatsResponse;
@@ -134,6 +135,21 @@ public interface Computes {
   @Consumes("application/json")
   PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(
       CorrelationAssayMetadataPluginRequest entity);
+
+  @POST
+  @Path("/correlationassayself")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesCorrelationassayselfResponse postComputesCorrelationassayself(
+      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      CorrelationAssaySelfPluginRequest entity);
+
+  @POST
+  @Path("/correlationassayself/statistics")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesCorrelationassayselfStatisticsResponse postComputesCorrelationassayselfStatistics(
+      CorrelationAssaySelfPluginRequest entity);
 
   class GetComputesResponse extends ResponseDelegate {
     private GetComputesResponse(Response response, Object entity) {
@@ -381,6 +397,40 @@ public interface Computes {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
       return new PostComputesCorrelationassaymetadataStatisticsResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesCorrelationassayselfResponse extends ResponseDelegate {
+    private PostComputesCorrelationassayselfResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesCorrelationassayselfResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesCorrelationassayselfResponse respond200WithApplicationJson(
+        JobResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostComputesCorrelationassayselfResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesCorrelationassayselfStatisticsResponse extends ResponseDelegate {
+    private PostComputesCorrelationassayselfStatisticsResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesCorrelationassayselfStatisticsResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesCorrelationassayselfStatisticsResponse respond200WithApplicationJson(
+        CorrelationStatsResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostComputesCorrelationassayselfStatisticsResponse(responseBuilder.build(), entity);
     }
   }
 }

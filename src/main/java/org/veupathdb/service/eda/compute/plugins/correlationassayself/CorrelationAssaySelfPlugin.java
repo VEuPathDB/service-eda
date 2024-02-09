@@ -102,13 +102,12 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
       List<String> dotNotatedEntityIdColumns = entityAncestorIdColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedEntityIdColumnsString = util.listToRVector(dotNotatedEntityIdColumns);
 
-      connection.voidEval("data1 <- AbundanceData(data=assayData" + 
+      connection.voidEval("data <- AbundanceData(data=assayData" + 
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                 ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                 ", imputeZero=TRUE)");
-      
       // Run correlation!
-      connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=data1" +
+      connection.voidEval("computeResult <- microbiomeComputations::selfCorrelation(data=data" +
                                                           ", method=" + singleQuote(method) +
                                                           proportionNonZeroThresholdRParam +
                                                           varianceThresholdRParam +

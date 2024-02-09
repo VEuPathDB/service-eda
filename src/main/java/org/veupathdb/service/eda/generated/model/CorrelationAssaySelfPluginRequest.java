@@ -30,10 +30,10 @@ public interface CorrelationAssaySelfPluginRequest extends ComputeRequestBase {
   void setDerivedVariables(List<DerivedVariableSpec> derivedVariables);
 
   @JsonProperty("config")
-  Correlation1Collection getConfig();
+  CorrelationAssaySelfConfig getConfig();
 
   @JsonProperty("config")
-  void setConfig(Correlation1Collection config);
+  void setConfig(CorrelationAssaySelfConfig config);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

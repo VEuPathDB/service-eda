@@ -24,6 +24,7 @@ import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.correlationassayassay.CorrelationAssayAssayPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.correlationassaymetadata.CorrelationAssayMetadataPluginProvider;
+import org.veupathdb.service.eda.compute.plugins.correlationassayself.CorrelationAssaySelfPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
@@ -164,6 +165,23 @@ public class ComputeController implements Computes {
     return PostComputesCorrelationassaymetadataStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
         try {
           getResultFileStreamer(new CorrelationAssayMetadataPluginProvider(), STATISTICS, entity).write(out);
+        }
+        catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }));
+  }
+
+  @Override
+  public PostComputesCorrelationassayselfResponse postComputesCorrelationassayself(Boolean autostart, CorrelationAssaySelfPluginRequest entity) {
+    return PostComputesCorrelationassayselfResponse.respond200WithApplicationJson(submitJob(new CorrelationAssaySelfPluginProvider(), entity, autostart));
+  }
+
+  @Override
+  public PostComputesCorrelationassayselfStatisticsResponse postComputesCorrelationassayselfStatistics(CorrelationAssaySelfPluginRequest entity) {
+    return PostComputesCorrelationassayselfStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
+        try {
+          getResultFileStreamer(new CorrelationAssaySelfPluginProvider(), STATISTICS, entity).write(out);
         }
         catch (IOException e) {
           throw new RuntimeException(e);

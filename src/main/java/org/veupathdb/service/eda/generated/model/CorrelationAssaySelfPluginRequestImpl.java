@@ -27,7 +27,7 @@ public class CorrelationAssaySelfPluginRequestImpl implements CorrelationAssaySe
   private List<DerivedVariableSpec> derivedVariables;
 
   @JsonProperty("config")
-  private Correlation1Collection config;
+  private CorrelationAssaySelfConfig config;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -63,12 +63,12 @@ public class CorrelationAssaySelfPluginRequestImpl implements CorrelationAssaySe
   }
 
   @JsonProperty("config")
-  public Correlation1Collection getConfig() {
+  public CorrelationAssaySelfConfig getConfig() {
     return this.config;
   }
 
   @JsonProperty("config")
-  public void setConfig(Correlation1Collection config) {
+  public void setConfig(CorrelationAssaySelfConfig config) {
     this.config = config;
   }
 

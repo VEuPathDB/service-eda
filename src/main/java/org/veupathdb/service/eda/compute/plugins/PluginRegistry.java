@@ -8,6 +8,7 @@ import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.correlationassayassay.CorrelationAssayAssayPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.correlationassaymetadata.CorrelationAssayMetadataPluginProvider;
+import org.veupathdb.service.eda.compute.plugins.correlationassayself.CorrelationAssaySelfPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
@@ -51,7 +52,8 @@ public final class PluginRegistry {
       new RankedAbundancePluginProvider(),
       new DifferentialAbundancePluginProvider(),
       new CorrelationAssayAssayPluginProvider(),
-      new CorrelationAssayMetadataPluginProvider()
+      new CorrelationAssayMetadataPluginProvider(),
+      new CorrelationAssaySelfPluginProvider()
     );
 
     //

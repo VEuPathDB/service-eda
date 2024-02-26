@@ -177,20 +177,12 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedIdColumnsString = util.listToRVector(dotNotatedIdColumns);
 
-      
+      // TODO figure how to identify when we have an AbundanceData object.. vs a generic data table.
       
       // Format inputs for R  
       connection.voidEval("sampleMetadata <- SampleMetadata(data = sampleMetadata" +
                                 ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                 ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
-
-      // !!!!!!! TEMPORARY HACK !!!!!!!
-      // This to let the negative values seen in wgcna eigengenes play in mbio-land until we get a better solution
-      // see https://github.com/VEuPathDB/microbiomeComputations/issues/81
-      connection.voidEval("abundanceDataIdColNames <- names(abundanceData)[grepl('stable_id', names(abundanceData))]");
-      connection.voidEval("abundanceDataIds <- abundanceData[,abundanceDataIdColNames, with=FALSE]");
-      connection.voidEval("abundanceData <- plyr::numcolwise(veupathUtils::shiftToNonNeg)(abundanceData)");
-      connection.voidEval("abundanceData[,abundanceDataIdColNames] <- abundanceDataIds");
 
       connection.voidEval("abundanceData <- AbundanceData(data=abundanceData" + 
                                 ", sampleMetadata=sampleMetadata" +
@@ -199,7 +191,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
                                 ", imputeZero=TRUE)");                          
       
       // Run correlation!
-      connection.voidEval("computeResult <- microbiomeComputations::correlation(data1=abundanceData" +
+      connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData" +
                                                           ", method=" + singleQuote(method) +
                                                           proportionNonZeroThresholdRParam +
                                                           varianceThresholdRParam +
@@ -207,7 +199,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
                                                           ", verbose=TRUE)");
 
 
-      String statsCmd = "writeStatistics(computeResult, NULL, TRUE)";
+      String statsCmd = "veupathUtils::writeStatistics(computeResult, NULL, TRUE)";
 
       getWorkspace().writeStatisticsResult(connection, statsCmd);
     });

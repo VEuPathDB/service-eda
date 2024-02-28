@@ -140,6 +140,17 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
+    CollectionDef collection = metadata.getCollection(collectionVariable).orElseThrow();
+
+    // are we mbio stuffs or eigengene?
+    // presumably as we support more types in the future, this logic will become more complicated?
+    // might even involve subclassing plugins?
+    // i think we cross that bridge when we get there and know more.. 
+    // NOTE: getMember tells us the member type, rather than gives us a literal member
+    boolean isEigengene = false;
+    if (collection.getMember().equals("eigengene")) {
+      isEigengene = true;
+    }
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
@@ -176,29 +187,36 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       // Turn the list of id columns into an array of strings for R
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedIdColumnsString = util.listToRVector(dotNotatedIdColumns);
-
-      // TODO figure how to identify when we have an AbundanceData object.. vs a generic data table.
       
       // Format inputs for R  
-      connection.voidEval("sampleMetadata <- SampleMetadata(data = sampleMetadata" +
-                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
+      if (isEigengene)  {
+        connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData, data2=sampleMetadata" +
+                                  ", method=" + singleQuote(method) +
+                                  proportionNonZeroThresholdRParam +
+                                  varianceThresholdRParam +
+                                  stdDevThresholdRParam +
+                                  ", verbose=TRUE)");
+      } else {
+        connection.voidEval("sampleMetadata <- SampleMetadata(data = sampleMetadata" +
+                                  ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                  ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
 
-      connection.voidEval("abundanceData <- AbundanceData(data=abundanceData" + 
-                                ", sampleMetadata=sampleMetadata" +
-                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
-                                ", imputeZero=TRUE)");                          
-      
-      // Run correlation!
-      connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData" +
-                                                          ", method=" + singleQuote(method) +
-                                                          proportionNonZeroThresholdRParam +
-                                                          varianceThresholdRParam +
-                                                          stdDevThresholdRParam +
-                                                          ", verbose=TRUE)");
+        connection.voidEval("abundanceData <- AbundanceData(data=abundanceData" + 
+                                  ", sampleMetadata=sampleMetadata" +
+                                  ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                  ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
+                                  ", imputeZero=TRUE)");       
+                                  
+        // Run correlation!
+        connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData" +
+                                                            ", method=" + singleQuote(method) +
+                                                            proportionNonZeroThresholdRParam +
+                                                            varianceThresholdRParam +
+                                                            stdDevThresholdRParam +
+                                                            ", verbose=TRUE)");
+      }
 
-
+      // Write results
       String statsCmd = "veupathUtils::writeStatistics(computeResult, NULL, TRUE)";
 
       getWorkspace().writeStatisticsResult(connection, statsCmd);

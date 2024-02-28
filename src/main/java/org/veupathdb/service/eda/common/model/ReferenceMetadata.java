@@ -171,7 +171,9 @@ public class ReferenceMetadata {
             col.getMemberVariableIds(),
             DataRanges.getDataRanges(col),
             false,
-            col.getVariableSpecToImputeZeroesFor()
+            col.getVariableSpecToImputeZeroesFor(),
+            col.getMember(),
+            col.getMemberPlural()
         )
     ).forEach(colDef -> entityDef.addCollection(colDef));
 

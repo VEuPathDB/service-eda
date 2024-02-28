@@ -51,6 +51,12 @@ public class CollectionDef extends CollectionSpecImpl {
   @JsonIgnore
   private final VariableSpec _variableSpecToImputeZeroesFor;
 
+  @JsonIgnore
+  private final String _member;
+
+  @JsonIgnore
+  private final String _memberPlural;
+
   public CollectionDef(
       EntityDef entity,
       String id,
@@ -66,7 +72,9 @@ public class CollectionDef extends CollectionSpecImpl {
       List<String> memberVariableIds,
       Optional<DataRanges> dataRanges,
       boolean hasStudyDependentVocabulary,
-      VariableSpec variableSpecToImputeZeroesFor) {
+      VariableSpec variableSpecToImputeZeroesFor,
+      String member,
+      String memberPlural) {
     setEntityId(entity.getId());
     setCollectionId(id);
     _entity = entity;
@@ -83,6 +91,8 @@ public class CollectionDef extends CollectionSpecImpl {
     _dataRanges = dataRanges;
     _hasStudyDependentVocabulary = hasStudyDependentVocabulary;
     _variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
+    _member = member;
+    _memberPlural = memberPlural;
   }
 
   @JsonIgnore

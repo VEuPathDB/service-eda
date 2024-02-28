@@ -135,7 +135,6 @@ public class CollectionDef extends CollectionSpecImpl {
     return _isProportion;
   }
 
-
   @JsonIgnore
   public String getNormalizationMethod() {
     return _normalizationMethod;
@@ -154,6 +153,16 @@ public class CollectionDef extends CollectionSpecImpl {
   @JsonIgnore
   public VariableSpec getVariableSpecToImputeZeroesFor() {
     return _variableSpecToImputeZeroesFor;
+  }
+
+  @JsonIgnore
+  public String getMember() {
+    return _member;
+  }
+
+  @JsonIgnore
+  public String getMemberPlural() {
+    return _memberPlural;
   }
 
   @JsonIgnore

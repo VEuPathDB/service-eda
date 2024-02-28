@@ -132,6 +132,21 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
     VariableDef parentEntityIdVarSpec = util.getEntityIdVarSpec(parentEntity.getId());
     VariableSpec computeEntityIdVarSpec = isSameEntity ? entity1IdVarSpec : parentEntityIdVarSpec;
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
+    CollectionDef collection1 = metadata.getCollection(assay1).orElseThrow();
+    CollectionDef collection2 = metadata.getCollection(assay2).orElseThrow();
+
+    // are we mbio stuffs or eigengene?
+    // presumably as we support more types in the future, this logic will become more complicated?
+    // might even involve subclassing plugins?
+    // i think we cross that bridge when we get there and know more.. 
+    // NOTE: getMember tells us the member type, rather than gives us a literal member
+    boolean isEigengene = false;
+    if (collection1.getMember().equals("eigengene") || collection2.getMember().equals("eigengene")) {
+      if (!(collection1.getMember().equals("eigengene") && collection2.getMember().equals("eigengene"))) {
+        throw new IllegalArgumentException("Both collection variables must have the same member type.");
+      }
+      isEigengene = true;
+    }
 
     // Get record id columns
     List<VariableDef> entity1AncestorIdColumns = new ArrayList<>();
@@ -173,17 +188,20 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
       List<String> dotNotatedEntity2IdColumns = entity2AncestorIdColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedEntity2IdColumnsString = util.listToRVector(dotNotatedEntity2IdColumns);
             
-      // TODO figure how to identify when we have an AbundanceData object.. vs a generic data table.
-
-      connection.voidEval("data1 <- AbundanceData(data=assay1Data" + 
-                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                ", ancestorIdColumns=as.character(" + dotNotatedEntity1IdColumnsString + ")" +
-                                ", imputeZero=TRUE)");
+      if (isEigengene) {
+        connection.voidEval("data1 <- assay1Data");
+        connection.voidEval("data2 <- assay2Data");
+      } else {
+        connection.voidEval("data1 <- AbundanceData(data=assay1Data" + 
+                                  ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                  ", ancestorIdColumns=as.character(" + dotNotatedEntity1IdColumnsString + ")" +
+                                  ", imputeZero=TRUE)");
       
-      connection.voidEval("data2 <- AbundanceData(data = assay2Data" +
-                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + ")" +
-                                ", imputeZero=TRUE)");
+        connection.voidEval("data2 <- AbundanceData(data = assay2Data" +
+                                  ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                  ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + ")" +
+                                  ", imputeZero=TRUE)");
+      }
       
       // Run correlation!
       connection.voidEval("computeResult <- veupathUtils::correlation(data1=data1, data2=data2" +

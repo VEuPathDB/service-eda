@@ -26,6 +26,8 @@ import java.util.Map;
     "normalizationMethod",
     "isCompositional",
     "isProportion",
+    "member",
+    "memberPlural",
     "distributionDefaults",
     "units"
 })
@@ -68,6 +70,12 @@ public class APIIntegerCollectionImpl implements APIIntegerCollection {
 
   @JsonProperty("isProportion")
   private Boolean isProportion;
+
+  @JsonProperty("member")
+  private String member;
+
+  @JsonProperty("memberPlural")
+  private String memberPlural;
 
   @JsonProperty("distributionDefaults")
   private APIIntegerDistributionDefaults distributionDefaults;
@@ -201,6 +209,26 @@ public class APIIntegerCollectionImpl implements APIIntegerCollection {
   @JsonProperty("isProportion")
   public void setIsProportion(Boolean isProportion) {
     this.isProportion = isProportion;
+  }
+
+  @JsonProperty("member")
+  public String getMember() {
+    return this.member;
+  }
+
+  @JsonProperty("member")
+  public void setMember(String member) {
+    this.member = member;
+  }
+
+  @JsonProperty("memberPlural")
+  public String getMemberPlural() {
+    return this.memberPlural;
+  }
+
+  @JsonProperty("memberPlural")
+  public void setMemberPlural(String memberPlural) {
+    this.memberPlural = memberPlural;
   }
 
   @JsonProperty("distributionDefaults")

@@ -102,6 +102,18 @@ public interface APICollection {
   @JsonProperty("isProportion")
   void setIsProportion(Boolean isProportion);
 
+  @JsonProperty("member")
+  String getMember();
+
+  @JsonProperty("member")
+  void setMember(String member);
+
+  @JsonProperty("memberPlural")
+  String getMemberPlural();
+
+  @JsonProperty("memberPlural")
+  void setMemberPlural(String memberPlural);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

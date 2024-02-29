@@ -23,7 +23,9 @@ import java.util.Map;
     "variableSpecToImputeZeroesFor",
     "normalizationMethod",
     "isCompositional",
-    "isProportion"
+    "isProportion",
+    "member",
+    "memberPlural"
 })
 public class APICollectionImpl implements APICollection {
   @JsonProperty("id")
@@ -64,6 +66,12 @@ public class APICollectionImpl implements APICollection {
 
   @JsonProperty("isProportion")
   private Boolean isProportion;
+
+  @JsonProperty("member")
+  private String member;
+
+  @JsonProperty("memberPlural")
+  private String memberPlural;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -191,6 +199,26 @@ public class APICollectionImpl implements APICollection {
   @JsonProperty("isProportion")
   public void setIsProportion(Boolean isProportion) {
     this.isProportion = isProportion;
+  }
+
+  @JsonProperty("member")
+  public String getMember() {
+    return this.member;
+  }
+
+  @JsonProperty("member")
+  public void setMember(String member) {
+    this.member = member;
+  }
+
+  @JsonProperty("memberPlural")
+  public String getMemberPlural() {
+    return this.memberPlural;
+  }
+
+  @JsonProperty("memberPlural")
+  public void setMemberPlural(String memberPlural) {
+    this.memberPlural = memberPlural;
   }
 
   @JsonAnyGetter

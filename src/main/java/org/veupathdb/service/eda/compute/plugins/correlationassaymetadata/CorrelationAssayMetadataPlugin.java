@@ -141,17 +141,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    CollectionDef collection = metadata.getCollection(collectionVariable).orElseThrow();
-
-    // are we mbio stuffs or eigengene?
-    // presumably as we support more types in the future, this logic will become more complicated?
-    // might even involve subclassing plugins?
-    // i think we cross that bridge when we get there and know more.. 
-    // NOTE: getMember tells us the member type, rather than gives us a literal member
-    boolean isEigengene = false;
-    if (collection.getMember().equals("eigengene")) {
-      isEigengene = true;
-    }
+    CollectionDef collection = metadata.getCollection(collectionVariable).orElseThrow(); 
 
     // Get record id columns
     List<VariableDef> idColumns = new ArrayList<>();
@@ -188,6 +178,17 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       // Turn the list of id columns into an array of strings for R
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedIdColumnsString = util.listToRVector(dotNotatedIdColumns);
+
+      // are we mbio stuffs or eigengene?
+      // presumably as we support more types in the future, this logic will become more complicated?
+      // might even involve subclassing plugins?
+      // i think we cross that bridge when we get there and know more.. 
+      // NOTE: getMember tells us the member type, rather than gives us a literal member
+      String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
+      boolean isEigengene = false;
+      if (collectionMemberType.equals("eigengene")) {
+        isEigengene = true;
+      }
       
       // Format inputs for R  
       if (isEigengene)  {
@@ -198,11 +199,11 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
                                   stdDevThresholdRParam +
                                   ", verbose=TRUE)");
       } else {
-        connection.voidEval("sampleMetadata <- SampleMetadata(data = sampleMetadata" +
+        connection.voidEval("sampleMetadata <- microbiomeComputations::SampleMetadata(data = sampleMetadata" +
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
 
-        connection.voidEval("abundanceData <- AbundanceData(data=abundanceData" + 
+        connection.voidEval("abundanceData <- microbiomeComputations::AbundanceData(data=abundanceData" + 
                                   ", sampleMetadata=sampleMetadata" +
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +

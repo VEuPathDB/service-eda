@@ -6,6 +6,7 @@ import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.model.CollectionDef;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -102,18 +103,37 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
       List<String> dotNotatedEntityIdColumns = entityAncestorIdColumns.stream().map(VariableDef::toDotNotation).toList();
       String dotNotatedEntityIdColumnsString = util.listToRVector(dotNotatedEntityIdColumns);
 
-      connection.voidEval("data <- AbundanceData(data=assayData" + 
-                                ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
-                                ", imputeZero=TRUE)");
-      // Run correlation!
-      connection.voidEval("computeResult <- microbiomeComputations::selfCorrelation(data=data" +
-                                                          ", method=" + singleQuote(method) +
-                                                          proportionNonZeroThresholdRParam +
-                                                          varianceThresholdRParam +
-                                                          stdDevThresholdRParam +
-                                                          ", verbose=TRUE)");
-
+      // are we mbio stuffs or eigengene?
+      // presumably as we support more types in the future, this logic will become more complicated?
+      // might even involve subclassing plugins?
+      // i think we cross that bridge when we get there and know more.. 
+      // NOTE: getMember tells us the member type, rather than gives us a literal member
+      String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
+      boolean isEigengene = false;
+      if (collectionMemberType.equals("eigengene")) {
+        isEigengene = true;
+      }
+      
+      if (isEigengene)  {
+        connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=assayData" +
+                                  ", method=" + singleQuote(method) +
+                                  proportionNonZeroThresholdRParam +
+                                  varianceThresholdRParam +
+                                  stdDevThresholdRParam +
+                                  ", verbose=TRUE)");
+      } else {
+        connection.voidEval("data <- microbiomeComputations::AbundanceData(data=assayData" + 
+                                  ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                  ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
+                                  ", imputeZero=TRUE)");
+        // Run correlation!
+        connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=data" +
+                                                            ", method=" + singleQuote(method) +
+                                                            proportionNonZeroThresholdRParam +
+                                                            varianceThresholdRParam +
+                                                            stdDevThresholdRParam +
+                                                            ", verbose=TRUE)");
+      }
 
       String statsCmd = "writeStatistics(computeResult, NULL, TRUE)";
 

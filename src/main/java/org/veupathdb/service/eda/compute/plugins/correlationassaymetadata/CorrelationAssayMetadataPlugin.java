@@ -192,11 +192,16 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       
       // Format inputs for R  
       if (isEigengene)  {
+        connection.voidEval("abundanceData <- abundanceData[order(" + computeEntityIdColName + ")]; " + 
+          "abundanceData <- abundanceData[, -as.character(" + dotNotatedIdColumnsString+ "), with=FALSE];" +
+          "abundanceData <- abundanceData[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE];");
+
+        connection.voidEval("sampleMetadata <- sampleMetadata[order(" + computeEntityIdColName + ")]; " + 
+          "sampleMetadata <- sampleMetadata[, -as.character(" + dotNotatedIdColumnsString + "), with=FALSE];" +
+          "sampleMetadata <- sampleMetadata[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE];");
+        
         connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData, data2=sampleMetadata" +
                                   ", method=" + singleQuote(method) +
-                                  proportionNonZeroThresholdRParam +
-                                  varianceThresholdRParam +
-                                  stdDevThresholdRParam +
                                   ", verbose=TRUE)");
       } else {
         connection.voidEval("sampleMetadata <- microbiomeComputations::SampleMetadata(data = sampleMetadata" +

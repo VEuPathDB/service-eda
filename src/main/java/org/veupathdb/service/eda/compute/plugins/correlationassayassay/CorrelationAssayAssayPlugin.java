@@ -192,8 +192,19 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
       }      
 
       if (isEigengene) {
-        connection.voidEval("data1 <- assay1Data");
-        connection.voidEval("data2 <- assay2Data");
+        connection.voidEval("data1 <- assay1Data; " + 
+          "data1 <- data1[order(" + computeEntityIdColName + ")]; " + 
+          "data1 <- data1[, -as.character(" + dotNotatedEntity1IdColumnsString + "), with=FALSE];" +
+          "data1 <- data1[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE]");
+
+        connection.voidEval("data2 <- assay2Data; " +
+          "data2 <- data2[order(" + computeEntityIdColName + ")]; " + 
+          "data2 <- data2[, -as.character(" + dotNotatedEntity2IdColumnsString + "), with=FALSE];" +
+          "data2 <- data2[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE]");
+
+        connection.voidEval("computeResult <- veupathUtils::correlation(data1=data1, data2=data2" +
+                                                            ", method=" + singleQuote(method) +
+                                                            ", verbose=TRUE)");
       } else {
         connection.voidEval("data1 <- microbiomeComputations::AbundanceData(data=assay1Data" + 
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
@@ -204,17 +215,16 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + ")" +
                                   ", imputeZero=TRUE)");
+
+        // Run correlation!
+        connection.voidEval("computeResult <- veupathUtils::correlation(data1=data1, data2=data2" +
+                                                            ", method=" + singleQuote(method) +
+                                                            proportionNonZeroThresholdRParam +
+                                                            varianceThresholdRParam +
+                                                            stdDevThresholdRParam +
+                                                            ", verbose=TRUE)");
       }
       
-      // Run correlation!
-      connection.voidEval("computeResult <- veupathUtils::correlation(data1=data1, data2=data2" +
-                                                          ", method=" + singleQuote(method) +
-                                                          proportionNonZeroThresholdRParam +
-                                                          varianceThresholdRParam +
-                                                          stdDevThresholdRParam +
-                                                          ", verbose=TRUE)");
-
-
       String statsCmd = "veupathUtils::writeStatistics(computeResult, NULL, TRUE)";
 
       getWorkspace().writeStatisticsResult(connection, statsCmd);

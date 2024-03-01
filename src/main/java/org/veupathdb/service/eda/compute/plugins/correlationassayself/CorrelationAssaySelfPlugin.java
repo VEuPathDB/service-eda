@@ -116,11 +116,12 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
       }
       
       if (isEigengene)  {
+        connection.voidEval("assayData <- assayData[order(" + computeEntityIdColName + ")]; " + 
+          "assayData <- assayData[, -as.character(" + dotNotatedEntityIdColumnsString +"), with=FALSE];" +
+          "assayData <- assayData[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE]");
+
         connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=assayData" +
                                   ", method=" + singleQuote(method) +
-                                  proportionNonZeroThresholdRParam +
-                                  varianceThresholdRParam +
-                                  stdDevThresholdRParam +
                                   ", verbose=TRUE)");
       } else {
         connection.voidEval("data <- microbiomeComputations::AbundanceData(data=assayData" + 

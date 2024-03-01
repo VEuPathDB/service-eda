@@ -80,6 +80,7 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
     VariableDef entityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(entityIdVarSpec);
+    CollectionDef collection = metadata.getCollection(assay).orElseThrow(); 
 
     // Get record id columns
     List<VariableDef> entityAncestorIdColumns = new ArrayList<>();
@@ -110,7 +111,7 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
       // NOTE: getMember tells us the member type, rather than gives us a literal member
       String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
       boolean isEigengene = false;
-      if (collectionMemberType.equals("eigengene")) {
+      if (collectionMemberType.contains("Eigengene")) {
         isEigengene = true;
       }
       

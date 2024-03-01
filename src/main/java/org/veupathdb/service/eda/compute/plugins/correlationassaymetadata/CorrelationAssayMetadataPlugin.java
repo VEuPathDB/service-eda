@@ -186,7 +186,7 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       // NOTE: getMember tells us the member type, rather than gives us a literal member
       String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
       boolean isEigengene = false;
-      if (collectionMemberType.equals("eigengene")) {
+      if (collectionMemberType.contains("Eigengene")) {
         isEigengene = true;
       }
       

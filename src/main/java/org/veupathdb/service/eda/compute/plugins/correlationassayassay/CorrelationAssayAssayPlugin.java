@@ -184,8 +184,8 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
       String collection1MemberType = collection1.getMember() == null ? "unknown" : collection1.getMember();
       String collection2MemberType = collection2.getMember() == null ? "unknown" : collection2.getMember();
       boolean isEigengene = false;
-      if (collection1MemberType.equals("eigengene") || collection2MemberType.equals("eigengene")) {
-        if (!(collection1MemberType.equals("eigengene") && collection2MemberType.equals("eigengene"))) {
+      if (collection1MemberType.contains("Eigengene") || collection2MemberType.contains("Eigengene")) {
+        if (!(collection1MemberType.contains("Eigengene") && collection2MemberType.contains("Eigengene"))) {
           throw new IllegalArgumentException("Both collection variables must have the same member type.");
         }
         isEigengene = true;

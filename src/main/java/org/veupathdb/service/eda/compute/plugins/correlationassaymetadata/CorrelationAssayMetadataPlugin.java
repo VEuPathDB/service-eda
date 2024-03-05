@@ -161,12 +161,12 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
 
-      // Read in the abundance data
+      // Read in the assay data
       List<VariableSpec> abundanceInputVars = ListBuilder.asList(computeEntityIdVarSpec);
       abundanceInputVars.addAll(util.getCollectionMembers(collectionVariable));
       abundanceInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, abundanceInputVars));
-      connection.voidEval("abundanceData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
+      connection.voidEval("assayData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
       // Read in the sample metadata
       List<VariableSpec> metadataInputVars = ListBuilder.asList(computeEntityIdVarSpec);
@@ -190,25 +190,29 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
         isEigengene = true;
       }
       
-      // Format inputs for R  
+      // Prep data and run correlation
       if (isEigengene)  {
-        connection.voidEval("abundanceData <- abundanceData[order(" + computeEntityIdColName + ")]; " + 
-          "abundanceData <- abundanceData[, -as.character(" + dotNotatedIdColumnsString+ "), with=FALSE];" +
-          "abundanceData <- abundanceData[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE];");
+        // If we have eigenegene data, we'll use our base correlation function in veupathUtils, so we
+        // only need to make data frames for the assay data and sample metadata.
+        connection.voidEval("eigengeneData <- assayData[order(" + computeEntityIdColName + ")]; " + 
+          "eigengeneData <- eigengeneData[, -as.character(" + dotNotatedIdColumnsString+ "), with=FALSE];" +
+          "eigengeneData <- eigengeneData[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE];");
 
         connection.voidEval("sampleMetadata <- sampleMetadata[order(" + computeEntityIdColName + ")]; " + 
           "sampleMetadata <- sampleMetadata[, -as.character(" + dotNotatedIdColumnsString + "), with=FALSE];" +
           "sampleMetadata <- sampleMetadata[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE];");
         
-        connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData, data2=sampleMetadata" +
+        connection.voidEval("computeResult <- veupathUtils::correlation(data1=eigengeneData, data2=sampleMetadata" +
                                   ", method=" + singleQuote(method) +
                                   ", verbose=TRUE)");
       } else {
+        // If we don't have eigengene data, for now we can assume the data is abundance data.
+        // Abundance data can go through our microbiomeComputations pipeline.
         connection.voidEval("sampleMetadata <- microbiomeComputations::SampleMetadata(data = sampleMetadata" +
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
 
-        connection.voidEval("abundanceData <- microbiomeComputations::AbundanceData(data=abundanceData" + 
+        connection.voidEval("abundanceData <- microbiomeComputations::AbundanceData(data=assayData" + 
                                   ", sampleMetadata=sampleMetadata" +
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +

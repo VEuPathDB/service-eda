@@ -184,14 +184,16 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
       String collection1MemberType = collection1.getMember() == null ? "unknown" : collection1.getMember();
       String collection2MemberType = collection2.getMember() == null ? "unknown" : collection2.getMember();
       boolean isEigengene = false;
+      // If either collection is an eigengene, we'll use our base correlation function in veupathUtils,
+      // so we want to set the isEigengene flag to true.
       if (collection1MemberType.contains("Eigengene") || collection2MemberType.contains("Eigengene")) {
-        if (!(collection1MemberType.contains("Eigengene") && collection2MemberType.contains("Eigengene"))) {
-          throw new IllegalArgumentException("Both collection variables must have the same member type.");
-        }
         isEigengene = true;
       }      
 
+      // Prep data and run correlation
       if (isEigengene) {
+        // If we have eigenegene data, we'll use our base correlation function in veupathUtils, so we
+        // only need to make data frames for the assay data and sample metadata.
         connection.voidEval("data1 <- assay1Data; " + 
           "data1 <- data1[order(" + computeEntityIdColName + ")]; " + 
           "data1 <- data1[, -as.character(" + dotNotatedEntity1IdColumnsString + "), with=FALSE];" +
@@ -206,6 +208,8 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
                                                             ", method=" + singleQuote(method) +
                                                             ", verbose=TRUE)");
       } else {
+        // If we don't have eigengene data, for now we can assume the data is abundance data.
+        // Abundance data can go through our microbiomeComputations pipeline.
         connection.voidEval("data1 <- microbiomeComputations::AbundanceData(data=assay1Data" + 
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedEntity1IdColumnsString + ")" +

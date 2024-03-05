@@ -115,7 +115,10 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
         isEigengene = true;
       }
       
+      // Prep data and run correlation
       if (isEigengene)  {
+        // If we have eigenegene data, we'll use our base correlation function in veupathUtils, so we
+        // only need to make data frames for the assay data and sample metadata.
         connection.voidEval("assayData <- assayData[order(" + computeEntityIdColName + ")]; " + 
           "assayData <- assayData[, -as.character(" + dotNotatedEntityIdColumnsString +"), with=FALSE];" +
           "assayData <- assayData[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE]");
@@ -124,6 +127,8 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
                                   ", method=" + singleQuote(method) +
                                   ", verbose=TRUE)");
       } else {
+        // If we don't have eigengene data, for now we can assume the data is abundance data.
+        // Abundance data can go through our microbiomeComputations pipeline.
         connection.voidEval("data <- microbiomeComputations::AbundanceData(data=assayData" + 
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +

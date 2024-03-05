@@ -111,7 +111,7 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
       // NOTE: getMember tells us the member type, rather than gives us a literal member
       String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
       boolean isEigengene = false;
-      if (collectionMemberType.contains("Eigengene")) {
+      if (collectionMemberType.toLowerCase().contains("eigengene")) {
         isEigengene = true;
       }
       

@@ -186,7 +186,7 @@ public class CorrelationAssayAssayPlugin extends AbstractPlugin<CorrelationAssay
       boolean isEigengene = false;
       // If either collection is an eigengene, we'll use our base correlation function in veupathUtils,
       // so we want to set the isEigengene flag to true.
-      if (collection1MemberType.contains("Eigengene") || collection2MemberType.contains("Eigengene")) {
+      if (collection1MemberType.toLowerCase().contains("eigengene") || collection2MemberType.toLowerCase().contains("eigengene")) {
         isEigengene = true;
       }      
 

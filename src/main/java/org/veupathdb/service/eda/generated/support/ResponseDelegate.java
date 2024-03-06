@@ -114,13 +114,13 @@ public class ResponseDelegate extends Response {
     return this.entity;}
 
   @Override
-  public boolean bufferEntity() {
-    return this.delegate.bufferEntity();
+  public Response.StatusType getStatusInfo() {
+    return this.delegate.getStatusInfo();
   }
 
   @Override
-  public Response.StatusType getStatusInfo() {
-    return this.delegate.getStatusInfo();
+  public boolean bufferEntity() {
+    return this.delegate.bufferEntity();
   }
 
   @Override

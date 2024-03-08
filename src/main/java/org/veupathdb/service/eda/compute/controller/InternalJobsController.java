@@ -4,7 +4,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import org.veupathdb.lib.compute.platform.AsyncPlatform;
 import org.veupathdb.lib.compute.platform.job.InternalJobRecord;
-import org.veupathdb.lib.container.jaxrs.server.annotations.AllowAdminAuth;
+import org.veupathdb.lib.container.jaxrs.server.annotations.AdminRequired;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.hash_id.HashID;
 import org.veupathdb.service.eda.generated.model.InternalJob;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Authenticated
-@AllowAdminAuth(required = true)
+@AdminRequired
 public class InternalJobsController implements InternalJobs {
 
   @Override

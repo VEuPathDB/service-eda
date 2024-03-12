@@ -33,7 +33,6 @@ import java.util.concurrent.ForkJoinPool;
  *
  * If neither argument is passed, a call to this endpoint will expire all job results
  */
-@Authenticated
 @AdminRequired
 public class ExpirationController implements ExpireComputeJobs {
 

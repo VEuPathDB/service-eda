@@ -1,0 +1,327 @@
+#%RAML 1.0 Library
+
+types:
+  # Type name determines the name of the Java class that will be generated.
+
+  # maybe make plots a dir and break out into files?
+  # assumption is data object is consistent across all barplot (etc) vizs
+  BarplotData:
+    additionalProperties: false
+    properties:
+      overlayVariableDetails:
+        type: StrataVariableDetails
+        required: false
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      value:
+        type: number[]
+        minItems: 1
+        required: true
+      label:
+        type: string[]
+        minItems: 1
+        required: true
+
+  MapMarkersOverlayData:
+    additionalProperties: false
+    properties:
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      value:
+        type: number[]
+        minItems: 1
+        required: true
+      label:
+        type: string[]
+        minItems: 1
+        required: true
+
+  BoxplotData:
+    additionalProperties: false
+    properties:
+      overlayVariableDetails:
+        type: StrataVariableDetails
+        required: false
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      lowerfence:
+        type: number[]
+        minItems: 1
+        required: true
+      upperfence:
+        type: number[]
+        minItems: 1
+        required: true
+      q1:
+        type: number[]
+        minItems: 1
+        required: true
+      q3:
+        type: number[]
+        minItems: 1
+        required: true
+      median:
+        type: number[]
+        minItems: 1
+        required: true
+      outliers:
+        type: number[][]
+        required: false
+      rawData:
+        type: number[][]
+        required: false
+      mean:
+        type: number[]
+        required: false
+      label:
+        type: string[]
+
+  BoxplotStatsTable:
+    additionalProperties: false
+    properties:
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      xVariableDetails:
+        type: StrataVariableDetails
+        required: false
+      statistic:
+        type: string
+      pvalue:
+        type: number
+      parameter:
+        type: number[]
+      method:
+        type: string
+      statsError:
+        type: string
+
+  HistogramData:
+    additionalProperties: false
+    properties:
+      overlayVariableDetails:
+        type: StrataVariableDetails
+        required: false
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      value:
+        type: number[]
+        minItems: 1
+        required: true
+      binStart:
+        type: string[]
+        minItems: 1
+        required: true
+      binEnd:
+        type: string[]
+        minItems: 1
+        required: true
+      binLabel:
+        type: string[]
+        minItems: 1
+        required: true
+
+  BinSlider:
+    additionalProperties: false
+    properties:
+      min:
+        type: number
+      max:
+        type: number
+      step:
+        type: number
+
+  HeatmapData:
+    additionalProperties: false
+    properties:
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      value:
+        type: number[][]
+        minItems: 1
+        required: true
+      label:
+        type: string[]
+        minItems: 1
+        required: true
+
+  MosaicPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      config: MosaicSpec
+
+  MosaicSpec:
+    additionalProperties: false
+    properties:
+      outputEntityId:
+        type: string
+      showMissingness:
+        type: ShowMissingnessNoAxes
+        required: false
+      xAxisVariable:
+        type: VariableSpec
+      yAxisVariable:
+        type: VariableSpec
+      facetVariable:
+        type: VariableSpec[]
+        maxItems: 2
+        required: false
+
+  MosaicData:
+    additionalProperties: false
+    properties:
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      xLabel:
+        type: string[]
+        minItems: 1
+        required: true
+      yLabel:
+        type: string[][]
+        minItems: 1
+        required: true
+      value:
+        type: number[][]
+        minItems: 1
+        required: true
+
+  Mosaic:
+    additionalProperties: false
+    properties:
+      data:
+        type: MosaicData[]
+      config:
+        type: PlotConfig
+
+  ScatterplotData:
+    additionalProperties: false
+    properties:
+      overlayVariableDetails:
+        type: StrataVariableDetails
+        required: false
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      seriesY:
+        type: string[]
+        minItems: 1
+      seriesX:
+        type: string[]
+        minItems: 1
+      smoothedMeanX:
+        type: string[]
+        required: false
+      smoothedMeanY:
+        type: number[]
+        required: false
+      smoothedMeanSE:
+        type: number[]
+        required: false
+      smoothedMeanError:
+        type: string
+        required: false
+      bestFitLineX:
+        type: string[]
+        required: false
+      bestFitLineY:
+        type: number[]
+        required: false
+      r2:
+        type: number
+        required: false
+
+  DensityplotData:
+    additionalProperties: false
+    properties:
+      overlayVariableDetails:
+        type: StrataVariableDetails
+        required: false
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      densityY:
+        type: number[]
+        minItems: 1
+      densityX:
+        type: number[]
+        minItems: 1  
+
+  LineplotData:
+    additionalProperties: false
+    properties:
+      overlayVariableDetails:
+        type: StrataVariableDetails
+        required: false
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      seriesY:
+        type: string[]
+        minItems: 1
+      seriesX:
+        type: string[]
+        minItems: 1
+      binStart:
+        type: string[]
+        minItems: 1
+        required: false
+      binEnd:
+        type: string[]
+        minItems: 1
+        required: false
+      binSampleSize:
+        type: SampleSize[]
+        minItems: 1
+        required: false
+      errorBars:
+        type: ErrorBar[]
+        minItems: 1
+        required: false
+
+  PlotConfig:
+    additionalProperties: false
+    properties:
+      completeCasesAllVars: number
+      completeCasesAxesVars: number
+      variables: VariableMapping[]
+
+  SampleSizeTable:
+    additionalProperties: false
+    properties:
+      xVariableDetails:
+        type: StrataVariableDetails[]
+        required: false
+      overlayVariableDetails:
+        type: StrataVariableDetails
+        required: false
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      size:
+        type: number[]
+        minItems: 1
+
+  VariableCompleteCases:
+    additionalProperties: false
+    properties:
+      variableDetails:
+        type: VariableSpec
+      completeCases:
+        type: number

@@ -1,0 +1,213 @@
+#%RAML 1.0 Library
+
+types:
+  # Type name determines the name of the Java class that will be generated.
+
+  # id really like to rename this RequestBase now that not all plugins using it are actually vizs
+  DataPluginRequestBase:
+    additionalProperties: false
+    properties:
+      studyId: string
+      filters:
+        required: false
+        type: API_Filter[]
+      derivedVariables:
+        required: false
+        type: DerivedVariableSpec[]
+
+  EmptyDataPluginSpec:
+    type: object
+    additionalProperties: false
+
+  StringBoolean:
+    type: string
+    enum: [ 'TRUE', 'FALSE' ]
+
+  StrataVariableDetails:
+    type: VariableSpec
+    properties:
+      value: string
+
+  BinSpec:
+    additionalProperties: false
+    properties:
+      type?:
+        type: string
+        enum: ['binWidth','numBins']
+      value?: number
+      units?: BinUnits
+      range?: NumberRange | DateRange
+
+  # im thinking we should remove support for numBins.
+  # weve never used it and its complicating the logic.
+  BinWidthSpec:
+    additionalProperties: false
+    properties:
+      type?:
+        type: string
+        enum: ['binWidth']
+      value?: number
+      units?: BinUnits
+      range?: NumberRange | DateRange
+
+  NumberRange:
+    additionalProperties: false
+    properties:
+      min: number
+      max: number
+
+  DateRange:
+    additionalProperties: false
+    properties:
+      min: string
+      max: string
+
+  NumericViewport:
+    additionalProperties: false
+    properties:
+      xMin: string
+      xMax: string
+
+  LongitudeViewport:
+    additionalProperties: false
+    properties: 
+      left: number
+      right: number
+
+  GeolocationViewport:
+    additionalProperties: false
+    properties:
+      latitude: NumericViewport
+      longitude: LongitudeViewport
+
+  ErrorBar:
+    additionalProperties: false
+    properties:
+      lowerBound: number
+      upperBound: number
+      error: string
+
+  SimpleSampleSize:
+    additionalProperties: false
+    properties:
+      N: number
+
+  ProportionSampleSize:
+    additionalProperties: false
+    properties:
+      numeratorN: number
+      denominatorN: number
+
+  SampleSize:
+    type: SimpleSampleSize | ProportionSampleSize
+
+  # continue to allow deprecated values for now
+  ShowMissingness:
+    type: string
+    enum: ['allVariables', 'strataVariables', 'noVariables', 'TRUE', 'FALSE']
+
+  ShowMissingnessNoAxes:
+    type: string
+    enum: ['strataVariables', 'noVariables', 'TRUE', 'FALSE']
+
+  # Assuming computed variable must be on y axis and that x axis may be determined by collection var or specified.
+  BoxplotWith1ComputeSpec:
+    additionalProperties: false
+    properties:
+      outputEntityId:
+        type: string
+      showMissingness:
+        type: ShowMissingnessNoAxes
+        required: false
+      points:
+        type: string
+        enum: ['outliers', 'all']
+      mean:
+        type: StringBoolean
+      computeStats:
+        type: StringBoolean
+      xAxisVariable:
+        type: VariableSpec
+        required: false
+      overlayVariable:
+        type: VariableSpec
+        required: false
+      facetVariable:
+        type: VariableSpec[]
+        maxItems: 2
+        required: false
+
+  # Assume y-axis is always computed variable
+  ScatterplotWith1ComputeSpec:
+    additionalProperties: false
+    properties:
+      outputEntityId:
+        type: string
+      showMissingness:
+        type: ShowMissingnessNoAxes
+        required: false
+      valueSpec:
+        type: string
+        enum: ['raw', 'smoothedMeanWithRaw', 'bestFitLineWithRaw']
+      xAxisVariable:
+        type: VariableSpec
+      overlayVariable: 
+        type: VariableSpec
+        required: false
+      facetVariable:
+        type: VariableSpec[]
+        maxItems: 2
+        required: false
+
+  Aggregator:
+    type: string
+    enum: [ "mean", "median" ]
+
+  QuantitativeOverlayConfig:
+    properties:
+      overlayVariable: VariableSpec
+      aggregationConfig: QuantitativeAggregationConfig
+
+  QuantitativeAggregationConfig:
+    additionalProperties: false
+    discriminator: overlayType
+    properties:
+      overlayType:
+        type: OverlayType
+
+  ContinuousAggregationConfig:
+    type: QuantitativeAggregationConfig
+    additionalProperties: false
+    discriminatorValue: continuous
+    properties:
+      aggregator: Aggregator
+
+  CategoricalAggregationConfig:
+    type: QuantitativeAggregationConfig
+    discriminatorValue: categorical
+    additionalProperties: false
+    properties:
+      numeratorValues: string[]
+      denominatorValues: string[]
+
+  # make the values optional though, req for line plot but also makes the other cat collection floaters more flexible
+  CollectionOverlayConfigWithValues:
+    type: CollectionOverlayConfig
+    properties:
+      selectedValues?: string[]  
+
+  # FIXME: eventually convert to LabeledRange (may require DB migration) :(
+  LegacyLabeledRange:
+    additionalProperties: false
+    properties:
+      binStart: string
+      binEnd: string
+      binLabel: string
+
+  # FIXME: eventually extend LabeledRangeWithValue (adding count)
+  LegacyLabeledRangeWithCountAndValue:
+    type: LegacyLabeledRange
+    additionalProperties: false
+    properties:
+      value: number
+      count: number

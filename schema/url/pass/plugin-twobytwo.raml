@@ -1,0 +1,64 @@
+#%RAML 1.0 Library
+
+types:
+  # Type name determines the name of the Java class that will be generated.
+
+  TwoByTwoSpec:
+    type: MosaicSpec
+    properties:
+      xAxisReferenceValue: string
+      yAxisReferenceValue: string
+
+  TwoByTwoPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      config: TwoByTwoSpec
+
+  # TODO once we get the other stats tables on this path we can add df, configuration notes, error msg etc
+  Statistic:
+    additionalProperties: false
+    properties:
+      value: number
+      confidenceInterval?: string # (min - max)
+      confidenceLevel?: number
+      pvalue: string # number to two signifs or string '<0.0001'
+
+  TwoByTwoStatsTable:
+    additionalProperties: false
+    properties:
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      chisq:
+        type: Statistic
+      fisher:
+        type: Statistic
+      prevalence?:
+        type: Statistic
+      oddsratio?:
+        type: Statistic
+      relativerisk?:
+        type: Statistic
+      sensitivity?:
+        type: Statistic
+      specificity?:
+        type: Statistic
+      posPredictiveValue?:
+        type: Statistic
+      negPredictiveValue?:
+        type: Statistic
+      
+        
+  TwoByTwoPostResponse:
+    additionalProperties: false
+    properties:
+      mosaic:
+        type: Mosaic
+      sampleSizeTable:
+        type: SampleSizeTable[]
+      statsTable:
+        type: TwoByTwoStatsTable[]
+        required: false
+      completeCasesTable:
+        type: VariableCompleteCases[]

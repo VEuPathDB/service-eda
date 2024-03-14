@@ -1,0 +1,75 @@
+#%RAML 1.0 Library
+
+types:
+  # Type name determines the name of the Java class that will be generated.
+
+  LineplotPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      config: LineplotSpec
+
+  LineplotSpec:
+    additionalProperties: false
+    properties:
+      outputEntityId:
+        type: string
+      showMissingness:
+        type: ShowMissingnessNoAxes
+        required: false
+      xAxisVariable: 
+        type: VariableSpec
+      yAxisVariable: 
+        type: VariableSpec
+      yAxisNumeratorValues:
+        type: string[]
+        required: false
+      yAxisDenominatorValues:
+        type: string[]
+        required: false
+      overlayVariable: 
+        type: VariableSpec
+        required: false
+      facetVariable: 
+        type: VariableSpec[]
+        maxItems: 2
+        required: false
+      binSpec:
+        type: BinSpec
+        required: false
+      valueSpec:
+        type: string
+        enum: ['median','mean','geometricMean','proportion']
+      # for now assume 95 ci only, eventually values like 'se', 'sd', 'ci' etc
+      errorBars:
+        type: StringBoolean
+      viewport:
+        type: NumericViewport
+        required: false
+
+  LineplotConfig:
+    type: PlotConfig
+    properties:
+      binSlider?:
+        type: BinSlider
+      binSpec?:
+        type: BinSpec
+      viewport?:
+        type: NumericViewport
+
+  Lineplot:
+    additionalProperties: false
+    properties:
+      data:
+        type: LineplotData[]
+      config:
+        type: LineplotConfig
+
+  LineplotPostResponse:
+    additionalProperties: false
+    properties:
+      lineplot:
+        type: Lineplot
+      sampleSizeTable:
+        type: SampleSizeTable[]
+      completeCasesTable:
+        type: VariableCompleteCases[]

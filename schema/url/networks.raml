@@ -1,0 +1,98 @@
+#%RAML 1.0 Library
+
+types:
+  # Type name determines the name of the Java class that will be generated.
+
+  NodeData:
+    properties:
+      id: string
+      degree?: number
+  
+  LinkData:
+    properties:
+      source: NodeData
+      target: NodeData
+      weight: string
+      color: string
+  
+  NetworkData:
+    properties:
+      nodes: NodeData[]
+      links: LinkData[]
+
+  # I don't think eda variables will be used as nodes or links for years. That'd be a quite complicated
+  # setup. Instead, i'm leaving this here for if we use computed vars for nodes, edges, color, etc. Seems
+  # a reasonable place to start at least.
+  NetworkConfig:
+    properties:
+      variables: 
+        type: VariableMapping[]
+        required: false
+
+  KPartiteNetworkConfig:
+    type: NetworkConfig
+    properties:
+      partitionsMetadata: string[]
+
+  NodeIdList:
+    additionalProperties: false
+    properties:
+      nodeIds: string[]
+
+  KPartiteNetworkData:
+    type: NetworkData
+    properties:
+      partitions: NodeIdList[]
+
+  KPartiteNetwork:
+    additionalProperties: false
+    properties:
+      data: KPartiteNetworkData
+      config: KPartiteNetworkConfig
+
+  KPartiteNetworkPostResponse:
+    additionalProperties: false
+    properties:
+      kpartitenetwork: KPartiteNetwork
+
+  # a specific case of a KPartiteNetwork w two partitions
+  BipartiteNetworkConfig:
+    type: NetworkConfig
+    properties:
+      partitionsMetadata: 
+        type: string[]
+        minItems: 2
+        maxItems: 2      
+
+  BipartiteNetworkData:
+    type: NetworkData
+    properties:
+      partitions:
+        type: NodeIdList[]
+        maxItems: 2
+        minItems: 2
+
+  BipartiteNetwork:
+    additionalProperties: false
+    properties:
+      data: BipartiteNetworkData
+      config: BipartiteNetworkConfig
+
+  BipartiteNetworkPostResponse:
+    additionalProperties: false
+    properties:
+      bipartitenetwork:
+        type: BipartiteNetwork
+      # Eventually could have stats such as number isolated nodes, degree distribution, etc. That all can go here.
+
+  Network:
+    additionalProperties: false
+    properties:
+      data: NetworkData
+      config: NetworkConfig
+
+  NetworkPostResponse:
+    additionalProperties: false
+    properties:
+      network:
+        type: Network

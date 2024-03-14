@@ -1,0 +1,32 @@
+#%RAML 1.0 Library
+
+types:
+  
+  ContinuousVariableMetadataPostRequest:
+    additionalProperties: false
+    type: DataPluginRequestBase
+    properties:
+      config: ContinuousVariableMetadataSpec
+
+  ContinuousVariableMetadataSpec:
+    additionalProperties: false
+    properties:
+      variable: VariableSpec
+      metadata:
+        # is this valid? im guessing how wed do this..
+        type: array
+        items:
+          enum: ['binRanges', 'median']
+
+  AllBinRanges:
+    additionalProperties: false
+    properties:
+      equalInterval: LabeledRange[]
+      quantile: LabeledRange[]
+      standardDeviation: LabeledRange[]
+
+  ContinuousVariableMetadataPostResponse:
+    additionalProperties: false
+    properties:
+      binRanges?: AllBinRanges
+      median?: number

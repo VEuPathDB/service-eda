@@ -1,0 +1,34 @@
+#%RAML 1.0 Library
+
+types:
+
+  AppsGetResponse:
+    properties:
+      apps: AppOverview[]
+
+  AppOverview:
+    additionalProperties: false
+    properties:
+      name: string
+      displayName: string
+      description: string
+      projects: string[]
+      computeName?: string
+      visualizations: VisualizationOverview[]
+
+  VisualizationOverview:
+    additionalProperties: false
+    properties:
+      name: string
+      displayName: string
+      description: string
+      projects: string[]
+      maxPanels: number
+      dataElementConstraints:
+        type: DataElementConstraintPattern[]
+        required: false
+      dataElementDependencyOrder:
+        type: string[][]
+        required: false
+      # inputSchema: object  (TBD)
+      # outputSchema: object (TBD)

@@ -1,0 +1,732 @@
+#%RAML 1.0 Extension
+
+extends: https://raw.githubusercontent.com/VEuPathDB/docs-api-schema/v2.0.2/libraries/base-service.raml
+
+title: EDA Workspace Data Service API
+version: v1.0.0
+mediaType: application/json
+
+uses:
+  error: https://raw.githubusercontent.com/VEuPathDB/docs-api-schema/v2.0.2/libraries/errors.raml
+  lib: schema/library.raml
+
+securitySchemes:
+  header-auth:
+    description: Authentication based on a WDK auth cookie.
+    type:
+      x-custom
+    describedBy:
+      headers:
+        Auth_Key:
+          description: Authorization header.
+          type: string
+
+####################################
+# Data Service Specific Endpoints
+####################################
+
+/filter-aware-metadata/continuous-variable:
+  post:
+    description: Returns equal interval, quantile and standard deviation based bin ranges and/or the median for a continuous variable over a specified range.
+    body:
+      application/json:
+        type: lib.ContinuousVariableMetadataPostRequest
+    responses:
+      200:
+        body:
+          application/json:
+            type: lib.ContinuousVariableMetadataPostResponse
+
+/apps:
+  displayName: Available Apps
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            type: lib.AppsGetResponse
+
+  /standalone-map/visualizations:
+    displayName: Available visualizations for the Standalone Map application
+
+    /map-markers:
+      post:
+        description: Returns data required to make Standalone Map markers
+        body:
+          application/json:
+            type: lib.StandaloneMapMarkersPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.StandaloneMapMarkersPostResponse
+
+      /bubbles:
+        post:
+          description: |
+            Returns data required to make bubble markers.
+          body:
+            application/json:
+              type: lib.StandaloneMapBubblesPostRequest
+          responses:
+            200:
+              body:
+                application/json:
+                  type: lib.StandaloneMapBubblesPostResponse
+
+        /legend:
+          post:
+            description: Returns data required to make bubble marker legends
+            body:
+              application/json:
+                type: lib.StandaloneMapBubblesLegendPostRequest
+            responses:
+              200:
+                body:
+                  application/json:
+                    type: lib.StandaloneMapBubblesLegendPostResponse
+      /collections:
+        post:
+          description: |
+            Map marker endpoint for collection variables.
+          body:
+            application/json:
+              type: lib.StandaloneCollectionMapMarkerPostRequest
+          responses:
+            200:
+              body:
+                application/json:
+                  type: lib.StandaloneCollectionMapMarkerPostResponse
+
+
+  /standalone-map-xyrelationships/visualizations:
+    displayName: Available visualizations for the Standalone Map application
+
+    /scatterplot:
+      post:
+        description: Returns data required to create a floating scatterplot visualization in the Standalone Map
+        body:
+          application/json:
+            type: lib.FloatingScatterplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingScatterplotPostResponse
+
+    /lineplot:
+      post:
+        description: Returns data required to create a floating lineplot visualization in the Standalone Map
+        body:
+          application/json:
+            type: lib.FloatingLineplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingLineplotPostResponse
+
+    /timeseries:
+      post:
+        description: Returns data required to create a floating time series visualization in the Standalone Map
+        body:
+          application/json:
+            type: lib.FloatingLineplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingLineplotPostResponse
+
+  /standalone-map-distributions/visualizations:
+    displayName: Available visualizations for the Standalone Map application
+
+    /histogram:
+      post:
+        description: Returns data required to create a floating histogram visualization in the Standalone Map
+        body:
+          application/json:
+            type: lib.FloatingHistogramPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingHistogramPostResponse
+
+    /boxplot:
+      post:
+        description: Returns data required to create a floating boxplot visualization in the Standalone Map
+        body:
+          application/json:
+            type: lib.FloatingBoxplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingBoxplotPostResponse
+
+  /standalone-map-countsandproportions/visualizations:
+    displayName: Available visualizations for the Standalone Map application
+
+    /barplot:
+      post:
+        description: Returns data required to create a floating bar plot visualization in the Standalone Map
+        body:
+          application/json:
+            type: lib.FloatingBarplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingBarplotPostResponse
+
+    /conttable:
+      post:
+        description: Returns data required to create a floating RxC mosaic plot visualization in the Standalone Map
+        body:
+          application/json:
+            type: lib.FloatingContTablePostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingContTablePostResponse
+
+  /standalone-map-continuous-collections/visualizations:
+    displayName: Available visualizations for the Standalone Map application
+
+    /lineplot:
+      post:
+        description: Returns data required to create a floating line plot visualization for continuous variable collections in the Standalone Map
+        body:
+          application/json:
+            type: lib.CollectionFloatingLineplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingLineplotPostResponse
+
+    /timeseries:
+      post:
+        description: Returns data required to create a floating time series visualization for continuous variable collections in the Standalone Map
+        body:
+          application/json:
+            type: lib.CollectionFloatingLineplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingLineplotPostResponse
+
+    /boxplot:
+      post:
+        description: Returns data required to create a floating box plot visualization for continuous variable collections in the Standalone Map
+        body:
+          application/json:
+            type: lib.CollectionFloatingBoxplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingBoxplotPostResponse
+
+    /histogram:
+      post:
+        description: Returns data required to create a floating histogram visualization for continuous variable collections in the Standalone Map
+        body:
+          application/json:
+            type: lib.CollectionFloatingHistogramPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingHistogramPostResponse
+
+  /standalone-map-categorical-collections/visualizations:
+    displayName: Available visualizations for the Standalone Map application
+
+    /lineplot:
+      post:
+        description: Returns data required to create a floating line plot visualization for categorical variable collections in the Standalone Map
+        body:
+          application/json:
+            type: lib.CollectionFloatingLineplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingLineplotPostResponse
+
+
+    /barplot:
+      post:
+        description: Returns data required to create a floating bar plot visualization for categorical variable collections in the Standalone Map
+        body:
+          application/json:
+            type: lib.CollectionFloatingBarplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingBarplotPostResponse
+
+    /conttable:
+      post:
+        description: Returns data required to create a floating RxC mosaic plot visualization for categorical variable collections in the Standalone Map
+        body:
+          application/json:
+            type: lib.CollectionFloatingContTablePostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingContTablePostResponse
+
+  /pass/visualizations:
+    displayName: Available visualizations for the null/ pass-through app
+
+    /map-markers:
+      post:
+        description: Returns data required to make MapVeu markers <br> Java impl- working <br> R impl- NA
+        body:
+          application/json:
+            type: lib.MapPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.MapPostResponse
+
+    /table:
+      post:
+        description: Return a tabular report of one or more variables. In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
+        body:
+          application/json:
+            type: lib.TablePostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.TablePostResponse
+
+    /scatterplot:
+      post:
+        description: Returns data required to create a scatterplot visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.ScatterplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.ScatterplotPostResponse
+
+
+    /densityplot:
+      post:
+        description: Returns data required to create a densityplot visualization <br> Java impl- NA <br> R impl- drafted, passing unit tests, not confirmed working
+        body:
+          application/json:
+            type: lib.DensityplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.DensityplotPostResponse
+
+    /timeseries:
+      post:
+        description: Returns data required to create a Time Series visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.LineplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.LineplotPostResponse
+
+    /lineplot:
+      post:
+        description: Returns data required to create a lineplot visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.LineplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.LineplotPostResponse
+
+    /histogram:
+      post:
+        description: Returns data required to create a histogram visualization. <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.HistogramPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.HistogramPostResponse
+
+    /boxplot:
+      post:
+        description: Returns data required to create a boxplot visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.BoxplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.BoxplotPostResponse
+
+    /heatmap:
+      post:
+        description: Returns data required to create a heatmap visualization <br> Java impl- NA <br> R impl- drafted
+        body:
+          application/json:
+            type: lib.HeatmapPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.HeatmapPostResponse
+
+    /barplot:
+      post:
+        description: Returns data required to create a bar plot visualization <br> Java impl- drafted, not working <br> R impl- working
+        body:
+          application/json:
+            type: lib.BarplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.BarplotPostResponse
+
+    /map-markers-overlay:
+      post:
+        description: Returns data required to create a pie plot visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.MapMarkersOverlayPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.MapMarkersOverlayPostResponse
+
+    /twobytwo:
+      post:
+        description: Returns data required to create a mosaic plot visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.TwoByTwoPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.TwoByTwoPostResponse
+
+    /conttable:
+      post:
+        description: Returns data required to create a mosaic plot visualization <br> Java impl- NA <br> R impl- drafted
+        body:
+          application/json:
+            type: lib.MosaicPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.ContTablePostResponse
+
+  /alphadiv/visualizations:
+    displayName: Visualizations for assessing internal sample diversity (alpha diversity).
+
+    /boxplot:
+      post:
+        description: Returns data required to create a box plot with alpha diversity as dependent axis <br> Java impl- NA <br> R impl- NA
+        body:
+          application/json:
+            type: lib.AlphaDivBoxplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.BoxplotPostResponse
+
+    /scatterplot:
+        post:
+          description: Returns data required to create a scatterplot that explores the relationship between a continuous variable and alpha diversity <br> Java impl- NA <br> R impl- NA
+          body:
+            application/json:
+              type: lib.AlphaDivScatterplotPostRequest
+          responses:
+            200:
+              body:
+                application/json:
+                  type: lib.ScatterplotPostResponse
+
+  /abundance/visualizations:
+    displayName: Visualizations for assessing abundance data in a collection of samples.
+
+    /boxplot:
+      post:
+        description: Returns data required to create a box plot with abundance as dependent axis <br> Java impl- NA <br> R impl- NA
+        body:
+          application/json:
+            type: lib.AbundanceBoxplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.BoxplotPostResponse
+
+    /scatterplot:
+      post:
+        description: Returns data required to create a scatterplot that explores the relationship between a continuous variable and alpha diversity <br> Java impl- NA <br> R impl- NA
+        body:
+          application/json:
+            type: lib.AbundanceScatterplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.ScatterplotPostResponse
+
+  /betadiv/visualizations:
+    displayName: Visualizations for exploring the diversity between samples (beta diversity).
+
+    /scatterplot:
+      post:
+        description: Returns data required to create a scatterplot that explores the differences between samples in a dataset as described by beta diversity <br> Java impl- NA <br> R impl- NA
+        body:
+          application/json:
+            type: lib.BetaDivScatterplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.ScatterplotPostResponse
+
+  /differentialabundance/visualizations:
+    displayName: Visualizations for interrogating differentially abundant taxa, genes, or pathways
+
+    /volcanoplot:
+      post:
+        description: Returns data required to create a volcanoplot from a differential abundance analysis.
+        body:
+          application/json:
+            type: lib.DifferentialAbundanceVolcanoplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.DifferentialAbundanceStatsResponse
+
+  /correlationassayassay/visualizations:
+    displayName: Visualizations for discovering correlations between various assay data
+
+    /bipartitenetwork:
+      post:
+        description: Returns data required to create a bipartite network from a correlation matrix.
+        body:
+          application/json:
+            type: lib.CorrelationAssayAssayBipartitenetworkPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.CorrelationBipartiteNetworkPostResponse
+
+  /correlationassaymetadata/visualizations:
+    displayName: Visualizations for discovering corrleations between assay data and sample metadata
+
+    /bipartitenetwork:
+      post:
+        description: Returns data required to create a bipartite network from a correlation matrix.
+        body:
+          application/json:
+            type: lib.CorrelationAssayMetadataBipartitenetworkPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.CorrelationBipartiteNetworkPostResponse
+
+  /correlationassayself/visualizations:
+    displayName: Visualizations for discovering correlations between variables within an assay
+
+    /unipartitenetwork:
+      post:
+        description: Returns data required to create a unipartite network from a correlation matrix.
+        body:
+          application/json:
+            type: lib.CorrelationAssaySelfUnipartitenetworkPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.CorrelationNetworkPostResponse
+
+  /distributions/visualizations:
+    displayName: Visualizations for exploring distributions of data.
+
+    /histogram:
+      post:
+        description: Returns data required to create a histogram visualization. <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.HistogramPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.HistogramPostResponse
+
+    /boxplot:
+      post:
+        description: Returns data required to create a boxplot visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.BoxplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.BoxplotPostResponse
+
+  /countsandproportions/visualizations:
+    displayName: Visualizations for exploring quantities and relative sizes of data.
+
+    /barplot:
+      post:
+        description: Returns data required to create a bar or pie plot visualization <br> Java impl- drafted, not working <br> R impl- working
+        body:
+          application/json:
+            type: lib.BarplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.BarplotPostResponse
+
+    /twobytwo:
+      post:
+        description: Returns data required to create a mosaic plot visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.TwoByTwoPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.TwoByTwoPostResponse
+
+    /conttable:
+      post:
+        description: Returns data required to create a mosaic plot visualization <br> Java impl- NA <br> R impl- drafted
+        body:
+          application/json:
+            type: lib.MosaicPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.ContTablePostResponse
+
+  /xyrelationships/visualizations:
+    displayName: Visualizations for exploring relationships between two continuous variables.
+
+    /scatterplot:
+      post:
+        description: Returns data required to create a scatterplot visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.ScatterplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.ScatterplotPostResponse
+
+    /lineplot:
+      post:
+        description: Returns data required to create a lineplot visualization <br> Java impl- NA <br> R impl- working
+        body:
+          application/json:
+            type: lib.LineplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.LineplotPostResponse
+
+  /sample/visualizations:
+    displayName: Sample visualizations demonstrating/testing service capabilities
+
+    /record-count:
+      post:
+        description: Returns a count of the records in the subset
+        body:
+          application/json:
+            type: lib.RecordCountPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.RecordCountPostResponse
+
+    /multi-stream:
+      post:
+        description: Returns a stream of records with its first two attributes (combined from parallel streams)
+        body:
+          application/json:
+            type: lib.MultiStreamPostRequest
+        responses:
+          200:
+            body:
+              text/plain:
+                type: lib.EntityTabularPostResponse
+
+    /collections-test:
+      post:
+        description: Returns a tabular response for the subset with all vars in the requested collection
+        body:
+          application/json:
+            type: lib.TestCollectionsPostRequest
+        responses:
+          200:
+            body:
+              text/plain:
+                type: lib.EntityTabularPostResponse
+
+    /categorical-distribution:
+      post:
+        description: Returns a set of count and proportion distributions for a native categorical variable
+        body:
+          application/json:
+            type: lib.CategoricalDistributionPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.CategoricalDistributionPostResponse
+
+  /samplewithcompute/visualizations:
+    displayName: Sample visualizations with computes demonstrating/testing service capabilities
+
+    /viz-with-compute:
+      post:
+        description: Sample visualization plugin that uses data from a compute
+        body:
+          application/json:
+            type: lib.ExampleComputeVizPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.ExampleComputeVizPostResponse

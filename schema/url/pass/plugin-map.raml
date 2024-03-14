@@ -1,0 +1,53 @@
+#%RAML 1.0 Library
+
+types:
+
+  MapPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      config: MapSpec
+
+  MapSpec:
+    additionalProperties: false
+    properties:
+      outputEntityId: 
+        type: string
+      geoAggregateVariable:
+        type: VariableSpec
+      longitudeVariable:
+        type: VariableSpec
+      latitudeVariable:
+        type: VariableSpec
+      viewport:
+        type: GeolocationViewport
+
+  MapConfig:
+    additionalProperties: false
+    properties: 
+      completeCasesGeoVar: number
+
+  MapPostResponse:
+    additionalProperties: false
+    properties:
+      mapElements: MapElementInfo[]
+      config: MapConfig
+
+  MapElementInfo:
+    additionalProperties: false
+    properties:
+      geoAggregateValue:
+        type: string
+      entityCount:
+        type: number
+      avgLat:
+        type: number
+      avgLon:
+        type: number
+      minLat:
+        type: number
+      minLon:
+        type: number
+      maxLat:
+        type: number
+      maxLon:
+        type: number

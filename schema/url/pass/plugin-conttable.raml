@@ -1,0 +1,34 @@
+#%RAML 1.0 Library
+
+types:
+  # Type name determines the name of the Java class that will be generated.
+
+  ContTableStatsTable:
+    additionalProperties: false
+    properties:
+      facetVariableDetails:
+        type: StrataVariableDetails[]
+        maxItems: 2
+        required: false
+      pvalue:
+        type: number[]
+        minItems: 1
+      degreesFreedom:
+        type: number[]
+        minItems: 1
+      chisq:
+        type: number[]
+        minItems: 1
+
+  ContTablePostResponse:
+    additionalProperties: false
+    properties:
+      mosaic:
+        type: Mosaic
+      sampleSizeTable:
+        type: SampleSizeTable[]
+      statsTable:
+        type: ContTableStatsTable[]
+        required: false
+      completeCasesTable:
+        type: VariableCompleteCases[]

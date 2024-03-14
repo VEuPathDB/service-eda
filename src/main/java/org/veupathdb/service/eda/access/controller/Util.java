@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.controller;
+package org.veupathdb.service.eda.access.controller;
 
 import jakarta.ws.rs.InternalServerErrorException;
 

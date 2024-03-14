@@ -1,16 +1,16 @@
-package org.veupathdb.service.eda.ds.service;
+package org.veupathdb.service.eda.data.service;
 
 import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.container.jaxrs.server.annotations.DisableJackson;
-import org.veupathdb.service.eda.ds.plugin.filteredmetadata.ContinuousVariablePlugin;
+import org.veupathdb.service.eda.data.plugin.filteredmetadata.ContinuousVariablePlugin;
 import org.veupathdb.service.eda.generated.model.ContinuousVariableMetadataPostRequest;
 import org.veupathdb.service.eda.generated.model.ContinuousVariableMetadataPostResponseStream;
 import org.veupathdb.service.eda.generated.resources.FilterAwareMetadataContinuousVariable;
 
-import static org.veupathdb.service.eda.ds.service.AppsService.processRequest;
-import static org.veupathdb.service.eda.ds.service.AppsService.wrapPlugin;
+import static org.veupathdb.service.eda.data.service.AppsService.processRequest;
+import static org.veupathdb.service.eda.data.service.AppsService.wrapPlugin;
 
 @Authenticated(allowGuests = true)
 public class FilterAwareMetadataService implements FilterAwareMetadataContinuousVariable {

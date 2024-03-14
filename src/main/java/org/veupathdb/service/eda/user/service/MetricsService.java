@@ -1,10 +1,10 @@
-package org.veupathdb.service.eda.us.service;
+package org.veupathdb.service.eda.user.service;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.MetricsUserProjectIdAnalyses;
-import org.veupathdb.service.eda.us.model.TabularDataWriter;
-import org.veupathdb.service.eda.us.model.UserDataFactory;
+import org.veupathdb.service.eda.user.model.TabularDataWriter;
+import org.veupathdb.service.eda.user.model.UserDataFactory;
 
 import java.io.IOException;
 import java.time.LocalDate;

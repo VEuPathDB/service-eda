@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.history.queries;
+package org.veupathdb.service.eda.access.service.history.queries;
 
 import java.sql.Connection;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import java.util.Map;
 import io.vulpine.lib.query.util.basic.BasicStatementMapReadQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.veupathdb.service.access.service.history.model.HistoryUserRow;
+import org.veupathdb.service.eda.access.service.history.model.HistoryUserRow;
 
 public class SelectHistoryUsers
 {

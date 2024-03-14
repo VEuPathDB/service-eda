@@ -1,0 +1,13 @@
+#%RAML 1.0 Library
+
+types:
+
+  InternalJob:
+    type: object
+    properties:
+      jobId: JobID
+      status: JobStatus
+      owned: boolean
+      created: datetime
+      grabbed: datetime
+      finished: datetime

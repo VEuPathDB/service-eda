@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.user;
+package org.veupathdb.service.eda.access.service.user;
 
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -9,12 +9,12 @@ import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
-import org.veupathdb.service.access.generated.model.ApprovalStatus;
-import org.veupathdb.service.access.generated.model.EndUserList;
-import org.veupathdb.service.access.model.SearchQuery;
-import org.veupathdb.service.access.service.provider.ProviderRepo;
-import org.veupathdb.service.access.service.staff.StaffRepo;
-import org.veupathdb.service.access.service.staff.StaffService;
+import org.veupathdb.service.eda.generated.model.ApprovalStatus;
+import org.veupathdb.service.eda.generated.model.EndUserList;
+import org.veupathdb.service.eda.access.model.SearchQuery;
+import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
+import org.veupathdb.service.eda.access.service.staff.StaffRepo;
+import org.veupathdb.service.eda.access.service.staff.StaffService;
 
 public class EndUserSearchService
 {

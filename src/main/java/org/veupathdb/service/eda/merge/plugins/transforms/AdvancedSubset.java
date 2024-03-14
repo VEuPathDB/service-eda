@@ -1,10 +1,10 @@
-package org.veupathdb.service.eda.ms.plugins.transforms;
+package org.veupathdb.service.eda.merge.plugins.transforms;
 
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidationException;
-import org.veupathdb.service.eda.ms.core.derivedvars.Transform;
-import org.veupathdb.service.eda.ms.plugins.reductions.SubsetMembership;
+import org.veupathdb.service.eda.merge.core.derivedvars.Transform;
+import org.veupathdb.service.eda.merge.plugins.reductions.SubsetMembership;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
 

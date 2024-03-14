@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.us.service;
+package org.veupathdb.service.eda.user.service;
 
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
@@ -11,8 +11,8 @@ import org.veupathdb.service.eda.generated.model.AnalysisListPostResponse;
 import org.veupathdb.service.eda.generated.model.SingleAnalysisPublicInfo;
 import org.veupathdb.service.eda.generated.model.SingleAnalysisPublicInfoImpl;
 import org.veupathdb.service.eda.generated.resources.ImportAnalysisProjectId;
-import org.veupathdb.service.eda.us.Utils;
-import org.veupathdb.service.eda.us.model.*;
+import org.veupathdb.service.eda.user.Utils;
+import org.veupathdb.service.eda.user.model.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.gusdb.fgputil.functional.Functions.doThrow;
-import static org.veupathdb.service.eda.us.Utils.*;
+import static org.veupathdb.service.eda.user.Utils.*;
 
 @Authenticated(allowGuests = true)
 public class ImportAnalysisService implements ImportAnalysisProjectId {

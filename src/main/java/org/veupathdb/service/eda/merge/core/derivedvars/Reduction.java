@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.core.derivedvars;
+package org.veupathdb.service.eda.merge.core.derivedvars;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;

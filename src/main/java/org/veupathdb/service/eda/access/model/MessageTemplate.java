@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.model;
+package org.veupathdb.service.eda.access.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;

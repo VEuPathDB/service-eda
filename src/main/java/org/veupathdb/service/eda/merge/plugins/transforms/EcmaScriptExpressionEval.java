@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.plugins.transforms;
+package org.veupathdb.service.eda.merge.plugins.transforms;
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.graalvm.polyglot.Context;
@@ -8,7 +8,7 @@ import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
-import org.veupathdb.service.eda.ms.core.derivedvars.Transform;
+import org.veupathdb.service.eda.merge.core.derivedvars.Transform;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;

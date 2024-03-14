@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.email;
+package org.veupathdb.service.eda.access.service.email;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -21,13 +21,13 @@ import javax.mail.internet.MimeMultipart;
 import org.apache.logging.log4j.Logger;
 import org.stringtemplate.v4.ST;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
-import org.veupathdb.service.access.Main;
-import org.veupathdb.service.access.model.Dataset;
-import org.veupathdb.service.access.model.DatasetEmails;
-import org.veupathdb.service.access.model.Email;
-import org.veupathdb.service.access.model.EndUserRow;
-import org.veupathdb.service.access.repo.DB;
-import org.veupathdb.service.access.util.PatternUtil;
+import org.veupathdb.service.eda.Main;
+import org.veupathdb.service.eda.access.model.Dataset;
+import org.veupathdb.service.eda.access.model.DatasetEmails;
+import org.veupathdb.service.eda.access.model.Email;
+import org.veupathdb.service.eda.access.model.EndUserRow;
+import org.veupathdb.service.eda.access.repo.DB;
+import org.veupathdb.service.eda.access.util.PatternUtil;
 
 public class EmailUtil
 {

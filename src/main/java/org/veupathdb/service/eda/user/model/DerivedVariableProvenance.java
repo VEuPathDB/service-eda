@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.us.model;
+package org.veupathdb.service.eda.user.model;
 
 import org.json.JSONObject;
 import org.veupathdb.service.eda.generated.model.DerivedVariableProvenanceImpl;

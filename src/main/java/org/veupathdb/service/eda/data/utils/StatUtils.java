@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.utils;
+package org.veupathdb.service.eda.data.utils;
 
 public class StatUtils {
 

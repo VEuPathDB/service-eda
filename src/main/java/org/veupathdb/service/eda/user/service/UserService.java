@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.us.service;
+package org.veupathdb.service.eda.user.service;
 
 import java.util.*;
 
@@ -11,11 +11,11 @@ import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.UsersUserId;
-import org.veupathdb.service.eda.us.Utils;
-import org.veupathdb.service.eda.us.model.*;
+import org.veupathdb.service.eda.user.Utils;
+import org.veupathdb.service.eda.user.model.*;
 
 import static org.gusdb.fgputil.functional.Functions.also;
-import static org.veupathdb.service.eda.us.Utils.*;
+import static org.veupathdb.service.eda.user.Utils.*;
 
 @Authenticated(allowGuests = true)
 public class UserService implements UsersUserId {

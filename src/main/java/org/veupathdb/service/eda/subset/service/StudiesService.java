@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.service;
+package org.veupathdb.service.eda.subset.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -53,24 +53,24 @@ import org.veupathdb.service.eda.generated.model.VariableDistributionPostRespons
 import org.veupathdb.service.eda.generated.model.VocabByRootEntityPostRequest;
 import org.veupathdb.service.eda.generated.model.VocabByRootEntityPostResponseStream;
 import org.veupathdb.service.eda.generated.resources.Studies;
-import org.veupathdb.service.eda.ss.Resources;
-import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.StudyOverview;
-import org.veupathdb.service.eda.ss.model.db.*;
-import org.veupathdb.service.eda.ss.model.distribution.DistributionFactory;
-import org.veupathdb.service.eda.ss.model.reducer.BinaryValuesStreamer;
-import org.veupathdb.service.eda.ss.model.reducer.MetadataFileBinaryProvider;
-import org.veupathdb.service.eda.ss.model.tabular.DataSourceType;
-import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
-import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
-import org.veupathdb.service.eda.ss.model.variable.Variable;
-import org.veupathdb.service.eda.ss.model.variable.VariableType;
-import org.veupathdb.service.eda.ss.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
-import org.veupathdb.service.eda.ss.model.variable.binary.SimpleStudyFinder;
+import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.subset.model.Entity;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.model.StudyOverview;
+import org.veupathdb.service.eda.subset.model.db.*;
+import org.veupathdb.service.eda.subset.model.distribution.DistributionFactory;
+import org.veupathdb.service.eda.subset.model.reducer.BinaryValuesStreamer;
+import org.veupathdb.service.eda.subset.model.reducer.MetadataFileBinaryProvider;
+import org.veupathdb.service.eda.subset.model.tabular.DataSourceType;
+import org.veupathdb.service.eda.subset.model.tabular.TabularReportConfig;
+import org.veupathdb.service.eda.subset.model.tabular.TabularResponses;
+import org.veupathdb.service.eda.subset.model.variable.Variable;
+import org.veupathdb.service.eda.subset.model.variable.VariableType;
+import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
+import org.veupathdb.service.eda.subset.model.variable.binary.SimpleStudyFinder;
 
-import static org.veupathdb.service.eda.ss.service.ApiConversionUtil.*;
+import static org.veupathdb.service.eda.subset.service.ApiConversionUtil.*;
 
 @Authenticated(allowGuests = true)
 public class StudiesService implements Studies {

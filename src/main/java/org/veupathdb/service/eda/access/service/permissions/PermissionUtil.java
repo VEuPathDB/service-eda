@@ -1,8 +1,8 @@
-package org.veupathdb.service.access.service.permissions;
+package org.veupathdb.service.eda.access.service.permissions;
 
-import org.veupathdb.service.access.generated.model.DatasetPermissionEntry;
-import org.veupathdb.service.access.generated.model.DatasetPermissionEntryImpl;
-import org.veupathdb.service.access.generated.model.DatasetPermissionLevel;
+import org.veupathdb.service.eda.generated.model.DatasetPermissionEntry;
+import org.veupathdb.service.eda.generated.model.DatasetPermissionEntryImpl;
+import org.veupathdb.service.eda.generated.model.DatasetPermissionLevel;
 
 class PermissionUtil
 {

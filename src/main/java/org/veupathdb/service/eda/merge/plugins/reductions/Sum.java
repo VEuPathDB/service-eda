@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.plugins.reductions;
+package org.veupathdb.service.eda.merge.plugins.reductions;
 
 public class Sum extends SingleNumericVarReduction {
 

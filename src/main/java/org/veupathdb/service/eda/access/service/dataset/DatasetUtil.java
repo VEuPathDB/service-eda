@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.dataset;
+package org.veupathdb.service.eda.access.service.dataset;
 
 import java.sql.ResultSet;
 import java.util.Map;
@@ -6,9 +6,9 @@ import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
-import org.veupathdb.service.access.model.Dataset;
-import org.veupathdb.service.access.repo.DB.Column;
-import org.veupathdb.service.access.util.Format;
+import org.veupathdb.service.eda.access.model.Dataset;
+import org.veupathdb.service.eda.access.repo.DB.Column;
+import org.veupathdb.service.eda.access.util.Format;
 
 public class DatasetUtil
 {

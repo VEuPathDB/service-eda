@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.util;
+package org.veupathdb.service.eda.access.util;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

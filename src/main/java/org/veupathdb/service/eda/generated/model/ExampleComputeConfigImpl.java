@@ -11,7 +11,8 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "inputVariable",
-    "valueSuffix"
+    "valueSuffix",
+    "failureProbability"
 })
 public class ExampleComputeConfigImpl implements ExampleComputeConfig {
   @JsonProperty("inputVariable")
@@ -19,6 +20,9 @@ public class ExampleComputeConfigImpl implements ExampleComputeConfig {
 
   @JsonProperty("valueSuffix")
   private String valueSuffix;
+
+  @JsonProperty("failureProbability")
+  private Number failureProbability;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -41,6 +45,16 @@ public class ExampleComputeConfigImpl implements ExampleComputeConfig {
   @JsonProperty("valueSuffix")
   public void setValueSuffix(String valueSuffix) {
     this.valueSuffix = valueSuffix;
+  }
+
+  @JsonProperty("failureProbability")
+  public Number getFailureProbability() {
+    return this.failureProbability;
+  }
+
+  @JsonProperty("failureProbability")
+  public void setFailureProbability(Number failureProbability) {
+    this.failureProbability = failureProbability;
   }
 
   @JsonAnyGetter

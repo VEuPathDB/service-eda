@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.history;
+package org.veupathdb.service.eda.access.service.history;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -12,13 +12,13 @@ import jakarta.ws.rs.InternalServerErrorException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
-import org.veupathdb.service.access.generated.model.*;
-import org.veupathdb.service.access.service.history.model.HistoryResultRow;
-import org.veupathdb.service.access.service.history.model.HistoryUserRow;
-import org.veupathdb.service.access.service.history.queries.SelectHistoryRows;
-import org.veupathdb.service.access.service.history.queries.SelectHistoryUsers;
-import org.veupathdb.service.access.service.history.queries.SelectUserHistoryRows;
-import org.veupathdb.service.access.service.staff.StaffService;
+import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.access.service.history.model.HistoryResultRow;
+import org.veupathdb.service.eda.access.service.history.model.HistoryUserRow;
+import org.veupathdb.service.eda.access.service.history.queries.SelectHistoryRows;
+import org.veupathdb.service.eda.access.service.history.queries.SelectHistoryUsers;
+import org.veupathdb.service.eda.access.service.history.queries.SelectUserHistoryRows;
+import org.veupathdb.service.eda.access.service.staff.StaffService;
 
 public class HistoryService
 {

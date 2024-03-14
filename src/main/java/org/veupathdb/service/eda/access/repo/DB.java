@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.repo;
+package org.veupathdb.service.eda.access.repo;
 
 public interface DB
 {

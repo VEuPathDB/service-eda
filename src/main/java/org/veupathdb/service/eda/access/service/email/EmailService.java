@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.email;
+package org.veupathdb.service.eda.access.service.email;
 
 
 import java.util.Arrays;
@@ -11,11 +11,11 @@ import javax.mail.internet.MimeMessage;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
-import org.veupathdb.service.access.Main;
-import org.veupathdb.service.access.model.Dataset;
-import org.veupathdb.service.access.model.Email;
-import org.veupathdb.service.access.model.EndUserRow;
-import org.veupathdb.service.access.util.Format;
+import org.veupathdb.service.eda.Main;
+import org.veupathdb.service.eda.access.model.Dataset;
+import org.veupathdb.service.eda.access.model.Email;
+import org.veupathdb.service.eda.access.model.EndUserRow;
+import org.veupathdb.service.eda.access.util.Format;
 
 public class EmailService
 {

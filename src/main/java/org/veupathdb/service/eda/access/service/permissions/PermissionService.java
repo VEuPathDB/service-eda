@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.permissions;
+package org.veupathdb.service.eda.access.service.permissions;
 
 import java.util.List;
 import java.util.Map;
@@ -10,16 +10,16 @@ import jakarta.ws.rs.WebApplicationException;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.gusdb.fgputil.Wrapper;
 import org.veupathdb.lib.container.jaxrs.model.User;
-import org.veupathdb.service.access.controller.Util;
-import org.veupathdb.service.access.generated.model.*;
-import org.veupathdb.service.access.model.ApprovalStatus;
-import org.veupathdb.service.access.model.DatasetProps;
-import org.veupathdb.service.access.service.userdataset.UserDatasetIsaStudies;
-import org.veupathdb.service.access.service.dataset.DatasetRepo;
-import org.veupathdb.service.access.service.provider.ProviderRepo;
-import org.veupathdb.service.access.service.staff.StaffRepo;
-import org.veupathdb.service.access.service.user.EndUserRepo;
-import org.veupathdb.service.access.service.user.EndUserUtil;
+import org.veupathdb.service.eda.access.controller.Util;
+import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.access.model.ApprovalStatus;
+import org.veupathdb.service.eda.access.model.DatasetProps;
+import org.veupathdb.service.eda.access.service.userdataset.UserDatasetIsaStudies;
+import org.veupathdb.service.eda.access.service.dataset.DatasetRepo;
+import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
+import org.veupathdb.service.eda.access.service.staff.StaffRepo;
+import org.veupathdb.service.eda.access.service.user.EndUserRepo;
+import org.veupathdb.service.eda.access.service.user.EndUserUtil;
 
 public class PermissionService
 {

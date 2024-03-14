@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.provider;
+package org.veupathdb.service.eda.access.service.provider;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,10 +11,10 @@ import jakarta.ws.rs.WebApplicationException;
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.errors.UnprocessableEntityException;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
-import org.veupathdb.service.access.generated.model.DatasetProviderCreateRequest;
-import org.veupathdb.service.access.service.account.AccountRepo;
-import org.veupathdb.service.access.service.dataset.DatasetRepo;
-import org.veupathdb.service.access.util.Keys;
+import org.veupathdb.service.eda.generated.model.DatasetProviderCreateRequest;
+import org.veupathdb.service.eda.access.service.account.AccountRepo;
+import org.veupathdb.service.eda.access.service.dataset.DatasetRepo;
+import org.veupathdb.service.eda.access.util.Keys;
 
 public class ProviderValidation
 {

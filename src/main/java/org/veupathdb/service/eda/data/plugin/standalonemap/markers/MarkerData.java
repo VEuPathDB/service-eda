@@ -1,7 +1,7 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap.markers;
+package org.veupathdb.service.eda.data.plugin.standalonemap.markers;
 
 import org.gusdb.fgputil.geo.LatLonAverager;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator.MarkerAggregator;
+import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggregator;
 
 public class MarkerData<T> {
 

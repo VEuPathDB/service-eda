@@ -28,7 +28,7 @@ import org.veupathdb.service.eda.compute.plugins.correlationassayself.Correlatio
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
-import org.veupathdb.service.eda.compute.service.ServiceOptions;
+import org.veupathdb.service.eda.Main;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
@@ -241,7 +241,7 @@ public class ComputeController implements Computes {
               .orElseThrow(() -> new BadRequestException("Invalid study ID: " + studyId)));
       var derivedVars = Optional.ofNullable(requestObject.getDerivedVariables()).orElse(Collections.emptyList());
       if (!derivedVars.isEmpty()) {
-        var mergeClient = new EdaMergingClient(ServiceOptions.INSTANCE.getEdaMergeHost(), auth);
+        var mergeClient = new EdaMergingClient(Main.config.getEdaMergeHost(), auth);
         for (var derivedVar : mergeClient.getDerivedVariableMetadata(studyId, derivedVars)) {
           meta.incorporateDerivedVariable(derivedVar);
         }

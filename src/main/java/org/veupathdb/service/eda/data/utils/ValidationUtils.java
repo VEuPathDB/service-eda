@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.utils;
+package org.veupathdb.service.eda.data.utils;
 
 import com.google.common.collect.Sets;
 import org.gusdb.fgputil.validation.ValidationException;

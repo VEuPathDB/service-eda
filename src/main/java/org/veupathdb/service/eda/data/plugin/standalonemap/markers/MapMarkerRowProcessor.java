@@ -1,7 +1,7 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap.markers;
+package org.veupathdb.service.eda.data.plugin.standalonemap.markers;
 
 import org.gusdb.fgputil.DelimitedDataParser;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator.MarkerAggregator;
+import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggregator;
 
 import java.io.BufferedReader;
 import java.io.IOException;

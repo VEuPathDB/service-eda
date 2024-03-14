@@ -1,9 +1,9 @@
-package org.veupathdb.service.access.service.history.model;
+package org.veupathdb.service.eda.access.service.history.model;
 
 import java.sql.ResultSet;
 import java.time.OffsetDateTime;
 
-import org.veupathdb.service.access.model.*;
+import org.veupathdb.service.eda.access.model.*;
 
 public class HistoryResultRow
 {

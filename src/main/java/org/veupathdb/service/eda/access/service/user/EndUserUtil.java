@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.user;
+package org.veupathdb.service.eda.access.service.user;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -12,13 +12,13 @@ import java.util.stream.Collectors;
 import io.vulpine.lib.query.util.basic.BasicPreparedVoidQuery;
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
-import org.veupathdb.service.access.generated.model.*;
-import org.veupathdb.service.access.model.ApprovalStatus;
-import org.veupathdb.service.access.model.RestrictionLevel;
-import org.veupathdb.service.access.model.*;
-import org.veupathdb.service.access.repo.DB;
-import org.veupathdb.service.access.repo.SQL;
-import org.veupathdb.service.access.util.PsBuilder;
+import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.access.model.ApprovalStatus;
+import org.veupathdb.service.eda.access.model.RestrictionLevel;
+import org.veupathdb.service.eda.access.model.*;
+import org.veupathdb.service.eda.access.repo.DB;
+import org.veupathdb.service.eda.access.repo.SQL;
+import org.veupathdb.service.eda.access.util.PsBuilder;
 
 public class EndUserUtil
 {
@@ -72,7 +72,7 @@ public class EndUserUtil
    * @return Translated internal approval status value.
    */
   static ApprovalStatus convertApproval(
-    final org.veupathdb.service.access.generated.model.ApprovalStatus status
+    final org.veupathdb.service.eda.generated.model.ApprovalStatus status
   ) {
     log.trace("EndUserService#convertApproval(ApprovalStatus)");
 
@@ -93,16 +93,16 @@ public class EndUserUtil
    *
    * @return Translated external approval status value.
    */
-  public static org.veupathdb.service.access.generated.model.ApprovalStatus convertApproval(
+  public static org.veupathdb.service.eda.generated.model.ApprovalStatus convertApproval(
     final ApprovalStatus status
   ) {
     log.trace("EndUserService#convertApproval(ApprovalStatus)");
     return status == null
-      ? org.veupathdb.service.access.generated.model.ApprovalStatus.UNREQUESTED
+      ? org.veupathdb.service.eda.generated.model.ApprovalStatus.UNREQUESTED
       : switch (status) {
-        case APPROVED -> org.veupathdb.service.access.generated.model.ApprovalStatus.APPROVED;
-        case DENIED -> org.veupathdb.service.access.generated.model.ApprovalStatus.DENIED;
-        case REQUESTED -> org.veupathdb.service.access.generated.model.ApprovalStatus.REQUESTED;
+        case APPROVED -> org.veupathdb.service.eda.generated.model.ApprovalStatus.APPROVED;
+        case DENIED -> org.veupathdb.service.eda.generated.model.ApprovalStatus.DENIED;
+        case REQUESTED -> org.veupathdb.service.eda.generated.model.ApprovalStatus.REQUESTED;
       };
   }
 
@@ -114,7 +114,7 @@ public class EndUserUtil
    * @return Translated internal restriction level value.
    */
   static RestrictionLevel convertRestriction(
-    final org.veupathdb.service.access.generated.model.RestrictionLevel level
+    final org.veupathdb.service.eda.generated.model.RestrictionLevel level
   ) {
     log.trace("EndUserService#convertRestriction(RestrictionLevel)");
     return level == null
@@ -135,18 +135,18 @@ public class EndUserUtil
    *
    * @return Translated external restriction level value.
    */
-  static org.veupathdb.service.access.generated.model.RestrictionLevel convertRestriction(
+  static org.veupathdb.service.eda.generated.model.RestrictionLevel convertRestriction(
     final RestrictionLevel level
   ) {
     log.trace("EndUserService#convertRestriction(RestrictionLevel)");
     return level == null
       ? null
       : switch (level) {
-        case PRIVATE -> org.veupathdb.service.access.generated.model.RestrictionLevel.PRIVATE;
-        case CONTROLLED -> org.veupathdb.service.access.generated.model.RestrictionLevel.CONTROLLED;
-        case PRERELEASE -> org.veupathdb.service.access.generated.model.RestrictionLevel.PRERELEASE;
-        case PROTECTED -> org.veupathdb.service.access.generated.model.RestrictionLevel.PROTECTED;
-        case PUBLIC -> org.veupathdb.service.access.generated.model.RestrictionLevel.PUBLIC;
+        case PRIVATE -> org.veupathdb.service.eda.generated.model.RestrictionLevel.PRIVATE;
+        case CONTROLLED -> org.veupathdb.service.eda.generated.model.RestrictionLevel.CONTROLLED;
+        case PRERELEASE -> org.veupathdb.service.eda.generated.model.RestrictionLevel.PRERELEASE;
+        case PROTECTED -> org.veupathdb.service.eda.generated.model.RestrictionLevel.PROTECTED;
+        case PUBLIC -> org.veupathdb.service.eda.generated.model.RestrictionLevel.PUBLIC;
       };
   }
 

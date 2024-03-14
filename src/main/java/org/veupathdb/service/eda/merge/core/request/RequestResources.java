@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.core.request;
+package org.veupathdb.service.eda.merge.core.request;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,9 +9,9 @@ import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 import org.veupathdb.service.eda.generated.model.DerivedVariableBulkMetadataRequest;
 import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
-import org.veupathdb.service.eda.ms.Resources;
-import org.veupathdb.service.eda.ms.core.derivedvars.DerivedVariable;
-import org.veupathdb.service.eda.ms.core.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariable;
+import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
 
 import java.util.List;
 import java.util.Map.Entry;

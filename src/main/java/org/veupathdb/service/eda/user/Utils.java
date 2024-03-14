@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.us;
+package org.veupathdb.service.eda.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.sql.Timestamp;
@@ -19,9 +19,10 @@ import org.gusdb.fgputil.json.JsonUtil;
 import org.json.JSONObject;
 import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
+import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
-import org.veupathdb.service.eda.us.model.AnalysisDetailWithUser;
-import org.veupathdb.service.eda.us.model.UserDataFactory;
+import org.veupathdb.service.eda.user.model.AnalysisDetailWithUser;
+import org.veupathdb.service.eda.user.model.UserDataFactory;
 
 public class Utils {
 

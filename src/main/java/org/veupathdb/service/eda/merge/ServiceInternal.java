@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms;
+package org.veupathdb.service.eda.merge;
 
 import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.ContainerRequest;
@@ -10,7 +10,7 @@ import org.veupathdb.service.eda.generated.resources.MergingInternal;
 
 import java.util.Map.Entry;
 
-import static org.veupathdb.service.eda.ms.ServiceExternal.*;
+import static org.veupathdb.service.eda.merge.ServiceExternal.*;
 
 /**
  * Implementation of endpoints at or below the /merging-internal top-level endpoint.  These endpoints are intended to be

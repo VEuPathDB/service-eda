@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.user;
+package org.veupathdb.service.eda.access.service.user;
 
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -7,8 +7,8 @@ import jakarta.ws.rs.WebApplicationException;
 
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
-import org.veupathdb.service.access.generated.model.EndUser;
-import org.veupathdb.service.access.model.EndUserRow;
+import org.veupathdb.service.eda.generated.model.EndUser;
+import org.veupathdb.service.eda.access.model.EndUserRow;
 
 public class EndUserLookupService
 {

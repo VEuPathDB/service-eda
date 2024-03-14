@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator;
+package org.veupathdb.service.eda.data.plugin.standalonemap.aggregator;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.util;
+package org.veupathdb.service.eda.access.util;
 
 import java.util.Spliterator;
 import java.util.Spliterators;

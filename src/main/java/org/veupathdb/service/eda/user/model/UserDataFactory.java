@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.us.model;
+package org.veupathdb.service.eda.user.model;
 
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
@@ -11,8 +11,8 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.json.JSONObject;
 import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.service.eda.generated.model.*;
-import org.veupathdb.service.eda.us.Resources;
-import org.veupathdb.service.eda.us.Utils;
+import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.user.Utils;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -24,7 +24,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.functional.Functions.*;
-import static org.veupathdb.service.eda.us.Utils.mapIfPresent;
+import static org.veupathdb.service.eda.user.Utils.mapIfPresent;
 
 /**
  * Performs all database operations for the user service

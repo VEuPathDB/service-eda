@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss;
+package org.veupathdb.service.eda.subset;
 
 import static org.gusdb.fgputil.runtime.Environment.getOptionalVar;
 import static org.gusdb.fgputil.runtime.Environment.getRequiredVar;

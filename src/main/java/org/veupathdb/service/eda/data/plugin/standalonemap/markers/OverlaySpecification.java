@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap.markers;
+package org.veupathdb.service.eda.data.plugin.standalonemap.markers;
 
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;

@@ -1,16 +1,16 @@
-package org.veupathdb.service.eda.us.model;
+package org.veupathdb.service.eda.user.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.veupathdb.service.eda.generated.model.DerivedVariableGetResponse;
 import org.veupathdb.service.eda.generated.model.DerivedVariableGetResponseImpl;
 import org.veupathdb.service.eda.generated.model.DerivedVariablePostRequest;
-import org.veupathdb.service.eda.us.Utils;
+import org.veupathdb.service.eda.user.Utils;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
 import static org.gusdb.fgputil.functional.Functions.also;
-import static org.veupathdb.service.eda.us.Utils.mapIfPresent;
+import static org.veupathdb.service.eda.user.Utils.mapIfPresent;
 
 /**
  * Represents a complete database row for a Derived Variable.

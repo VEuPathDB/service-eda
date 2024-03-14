@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.service;
+package org.veupathdb.service.eda.subset.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,31 +19,31 @@ import org.gusdb.fgputil.functional.TreeNode;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient.StudyDatasetInfo;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
-import org.veupathdb.service.eda.ss.Utils;
-import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.StudyOverview;
-import org.veupathdb.service.eda.ss.model.distribution.BinSpecWithRange;
-import org.veupathdb.service.eda.ss.model.distribution.BinUnits;
-import org.veupathdb.service.eda.ss.model.distribution.DateDistributionConfig;
-import org.veupathdb.service.eda.ss.model.distribution.NumberDistributionConfig;
-import org.veupathdb.service.eda.ss.model.distribution.ValueSpec;
-import org.veupathdb.service.eda.ss.model.filter.DateRangeFilter;
-import org.veupathdb.service.eda.ss.model.filter.DateSetFilter;
-import org.veupathdb.service.eda.ss.model.filter.Filter;
-import org.veupathdb.service.eda.ss.model.filter.LongitudeRangeFilter;
-import org.veupathdb.service.eda.ss.model.filter.MultiFilter;
-import org.veupathdb.service.eda.ss.model.filter.MultiFilterSubFilter;
-import org.veupathdb.service.eda.ss.model.filter.NumberRangeFilter;
-import org.veupathdb.service.eda.ss.model.filter.NumberSetFilter;
-import org.veupathdb.service.eda.ss.model.filter.StringSetFilter;
-import org.veupathdb.service.eda.ss.model.tabular.TabularHeaderFormat;
-import org.veupathdb.service.eda.ss.model.varcollection.DateVarCollection;
-import org.veupathdb.service.eda.ss.model.varcollection.FloatingPointVarCollection;
-import org.veupathdb.service.eda.ss.model.varcollection.IntegerVarCollection;
-import org.veupathdb.service.eda.ss.model.varcollection.StringVarCollection;
-import org.veupathdb.service.eda.ss.model.varcollection.VarCollection;
-import org.veupathdb.service.eda.ss.model.variable.*;
+import org.veupathdb.service.eda.subset.Utils;
+import org.veupathdb.service.eda.subset.model.Entity;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.model.StudyOverview;
+import org.veupathdb.service.eda.subset.model.distribution.BinSpecWithRange;
+import org.veupathdb.service.eda.subset.model.distribution.BinUnits;
+import org.veupathdb.service.eda.subset.model.distribution.DateDistributionConfig;
+import org.veupathdb.service.eda.subset.model.distribution.NumberDistributionConfig;
+import org.veupathdb.service.eda.subset.model.distribution.ValueSpec;
+import org.veupathdb.service.eda.subset.model.filter.DateRangeFilter;
+import org.veupathdb.service.eda.subset.model.filter.DateSetFilter;
+import org.veupathdb.service.eda.subset.model.filter.Filter;
+import org.veupathdb.service.eda.subset.model.filter.LongitudeRangeFilter;
+import org.veupathdb.service.eda.subset.model.filter.MultiFilter;
+import org.veupathdb.service.eda.subset.model.filter.MultiFilterSubFilter;
+import org.veupathdb.service.eda.subset.model.filter.NumberRangeFilter;
+import org.veupathdb.service.eda.subset.model.filter.NumberSetFilter;
+import org.veupathdb.service.eda.subset.model.filter.StringSetFilter;
+import org.veupathdb.service.eda.subset.model.tabular.TabularHeaderFormat;
+import org.veupathdb.service.eda.subset.model.varcollection.DateVarCollection;
+import org.veupathdb.service.eda.subset.model.varcollection.FloatingPointVarCollection;
+import org.veupathdb.service.eda.subset.model.varcollection.IntegerVarCollection;
+import org.veupathdb.service.eda.subset.model.varcollection.StringVarCollection;
+import org.veupathdb.service.eda.subset.model.varcollection.VarCollection;
+import org.veupathdb.service.eda.subset.model.variable.*;
 
 public class ApiConversionUtil {
   private static final Logger LOG = LogManager.getLogger(ApiConversionUtil.class);
@@ -299,9 +299,9 @@ public class ApiConversionUtil {
     return valueSpec == null ? null : ValueSpec.valueOf(valueSpec.name());
   }
 
-  public static List<org.veupathdb.service.eda.ss.model.tabular.SortSpecEntry> toInternalSorting(List<SortSpecEntry> sorting) {
+  public static List<org.veupathdb.service.eda.subset.model.tabular.SortSpecEntry> toInternalSorting(List<SortSpecEntry> sorting) {
     return sorting == null ? null : sorting.stream()
-        .map(e -> new org.veupathdb.service.eda.ss.model.tabular.SortSpecEntry()
+        .map(e -> new org.veupathdb.service.eda.subset.model.tabular.SortSpecEntry()
             .setDirection(SortDirection.valueOf(e.getDirection().name()))
             .setKey(e.getKey()))
         .collect(Collectors.toList());
@@ -311,8 +311,8 @@ public class ApiConversionUtil {
     return headerFormat == null ? null : TabularHeaderFormat.valueOf(headerFormat.name());
   }
 
-  public static org.veupathdb.service.eda.ss.model.tabular.DataSourceType toInternalDataSourceType(DataSourceType dataSourceType) {
-    return org.veupathdb.service.eda.ss.model.tabular.DataSourceType.fromValue(dataSourceType.getValue());
+  public static org.veupathdb.service.eda.subset.model.tabular.DataSourceType toInternalDataSourceType(DataSourceType dataSourceType) {
+    return org.veupathdb.service.eda.subset.model.tabular.DataSourceType.fromValue(dataSourceType.getValue());
   }
 
   public static List<APIStudyOverview> toApiStudyOverviews(

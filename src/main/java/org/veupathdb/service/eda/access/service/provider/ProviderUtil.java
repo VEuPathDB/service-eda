@@ -1,15 +1,15 @@
-package org.veupathdb.service.access.service.provider;
+package org.veupathdb.service.eda.access.service.provider;
 
 import java.sql.ResultSet;
 
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
-import org.veupathdb.service.access.generated.model.DatasetProvider;
-import org.veupathdb.service.access.generated.model.DatasetProviderImpl;
-import org.veupathdb.service.access.generated.model.UserDetailsImpl;
-import org.veupathdb.service.access.model.ProviderRow;
-import org.veupathdb.service.access.repo.DB;
-import org.veupathdb.service.access.service.user.UserUtil;
+import org.veupathdb.service.eda.generated.model.DatasetProvider;
+import org.veupathdb.service.eda.generated.model.DatasetProviderImpl;
+import org.veupathdb.service.eda.generated.model.UserDetailsImpl;
+import org.veupathdb.service.eda.access.model.ProviderRow;
+import org.veupathdb.service.eda.access.repo.DB;
+import org.veupathdb.service.eda.access.service.user.UserUtil;
 
 public class ProviderUtil
 {

@@ -1,9 +1,9 @@
-package org.veupathdb.service.eda.ms.plugins.reductions;
+package org.veupathdb.service.eda.merge.plugins.reductions;
 
 import org.gusdb.fgputil.validation.ValidationException;
 import org.json.JSONArray;
-import org.veupathdb.service.eda.ms.core.derivedvars.Reduction;
-import org.veupathdb.service.eda.ms.plugins.transforms.RelativeObservationCalculator.RelativeObservationAggregatorConfig;
+import org.veupathdb.service.eda.merge.core.derivedvars.Reduction;
+import org.veupathdb.service.eda.merge.plugins.transforms.RelativeObservationCalculator.RelativeObservationAggregatorConfig;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;

@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.service;
+package org.veupathdb.service.eda.subset.service;
 
 import jakarta.ws.rs.BadRequestException;
 import java.util.ArrayList;
@@ -16,14 +16,14 @@ import org.veupathdb.service.eda.generated.model.APINumberRangeFilterImpl;
 import org.veupathdb.service.eda.generated.model.APIStringSetFilter;
 import org.veupathdb.service.eda.generated.model.APIStringSetFilterImpl;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
-import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.StudyOverview;
-import org.veupathdb.service.eda.ss.model.db.StudyFactory;
-import org.veupathdb.service.eda.ss.model.db.VariableFactory;
-import org.veupathdb.service.eda.ss.model.reducer.EmptyBinaryMetadataProvider;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
-import org.veupathdb.service.eda.ss.test.MockModel;
-import org.veupathdb.service.eda.ss.test.StubDb;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.model.StudyOverview;
+import org.veupathdb.service.eda.subset.model.db.StudyFactory;
+import org.veupathdb.service.eda.subset.model.db.VariableFactory;
+import org.veupathdb.service.eda.subset.model.reducer.EmptyBinaryMetadataProvider;
+import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
+import org.veupathdb.service.eda.subset.test.MockModel;
+import org.veupathdb.service.eda.subset.test.StubDb;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

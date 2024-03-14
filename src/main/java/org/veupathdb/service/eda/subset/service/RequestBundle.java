@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.service;
+package org.veupathdb.service.eda.subset.service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +12,11 @@ import org.apache.logging.log4j.Logger;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APITabularReportConfig;
 import org.veupathdb.service.eda.generated.model.SortSpecEntry;
-import org.veupathdb.service.eda.ss.model.Entity;
-import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.tabular.TabularReportConfig;
-import org.veupathdb.service.eda.ss.model.variable.*;
-import org.veupathdb.service.eda.ss.model.filter.Filter;
+import org.veupathdb.service.eda.subset.model.Entity;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.model.tabular.TabularReportConfig;
+import org.veupathdb.service.eda.subset.model.variable.*;
+import org.veupathdb.service.eda.subset.model.filter.Filter;
 
 public class RequestBundle {
 

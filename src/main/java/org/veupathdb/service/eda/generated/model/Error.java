@@ -16,8 +16,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
     @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.UnprocessableEntityError.class),
     @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.NotFoundError.class),
     @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.UnauthorizedError.class),
-    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.MethodNotAllowedError.class),
     @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.BadRequestError.class),
+    @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.MethodNotAllowedError.class),
     @JsonSubTypes.Type(org.veupathdb.service.eda.generated.model.Error.class)
 })
 @JsonDeserialize(

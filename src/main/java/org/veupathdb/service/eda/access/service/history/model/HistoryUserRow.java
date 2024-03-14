@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.history.model;
+package org.veupathdb.service.eda.access.service.history.model;
 
 import java.sql.ResultSet;
 

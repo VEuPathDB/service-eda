@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap;
+package org.veupathdb.service.eda.data.plugin.standalonemap;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -16,17 +16,17 @@ import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
-import org.veupathdb.service.eda.ds.core.AbstractEmptyComputePlugin;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator.MarkerAggregator;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator.QualitativeOverlayAggregator;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.markers.MapMarkerRowProcessor;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.markers.MarkerData;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.markers.OverlaySpecification;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.markers.GeolocationViewport;
+import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
+import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggregator;
+import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.QualitativeOverlayAggregator;
+import org.veupathdb.service.eda.data.plugin.standalonemap.markers.MapMarkerRowProcessor;
+import org.veupathdb.service.eda.data.plugin.standalonemap.markers.MarkerData;
+import org.veupathdb.service.eda.data.plugin.standalonemap.markers.OverlaySpecification;
+import org.veupathdb.service.eda.data.plugin.standalonemap.markers.GeolocationViewport;
 import org.veupathdb.service.eda.generated.model.*;
 
 import static org.gusdb.fgputil.FormatUtil.TAB;
-import static org.veupathdb.service.eda.ds.metadata.AppsMetadata.VECTORBASE_PROJECT;
+import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
 
 public class StandaloneMapMarkersPlugin extends AbstractEmptyComputePlugin<StandaloneMapMarkersPostRequest, StandaloneMapMarkersSpec> {
   private OverlaySpecification _overlaySpecification = null;

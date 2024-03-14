@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.staff;
+package org.veupathdb.service.eda.access.service.staff;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,13 +7,13 @@ import io.vulpine.lib.query.util.basic.BasicPreparedListReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedWriteQuery;
 import io.vulpine.lib.query.util.basic.BasicStatementReadQuery;
-import org.veupathdb.service.access.model.PartialStaffRow;
-import org.veupathdb.service.access.model.StaffRow;
-import org.veupathdb.service.access.repo.DB;
-import org.veupathdb.service.access.repo.SQL;
-import org.veupathdb.service.access.service.QueryUtil;
-import org.veupathdb.service.access.util.PsBuilder;
-import org.veupathdb.service.access.util.SqlUtil;
+import org.veupathdb.service.eda.access.model.PartialStaffRow;
+import org.veupathdb.service.eda.access.model.StaffRow;
+import org.veupathdb.service.eda.access.repo.DB;
+import org.veupathdb.service.eda.access.repo.SQL;
+import org.veupathdb.service.eda.access.service.QueryUtil;
+import org.veupathdb.service.eda.access.util.PsBuilder;
+import org.veupathdb.service.eda.access.util.SqlUtil;
 
 public class StaffRepo
 {

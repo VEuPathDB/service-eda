@@ -19,11 +19,10 @@ import java.util.Map;
     "distinctValuesCount",
     "memberVariableIds",
     "imputeZero",
-    "hasStudyDependentVocabulary",
-    "variableSpecToImputeZeroesFor",
     "normalizationMethod",
     "isCompositional",
     "isProportion",
+    "variableSpecToImputeZeroesFor",
     "member",
     "memberPlural"
 })
@@ -52,12 +51,6 @@ public class APICollectionImpl implements APICollection {
   @JsonProperty("imputeZero")
   private Boolean imputeZero;
 
-  @JsonProperty("hasStudyDependentVocabulary")
-  private Boolean hasStudyDependentVocabulary;
-
-  @JsonProperty("variableSpecToImputeZeroesFor")
-  private VariableSpec variableSpecToImputeZeroesFor;
-
   @JsonProperty("normalizationMethod")
   private String normalizationMethod;
 
@@ -66,6 +59,9 @@ public class APICollectionImpl implements APICollection {
 
   @JsonProperty("isProportion")
   private Boolean isProportion;
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  private VariableSpec variableSpecToImputeZeroesFor;
 
   @JsonProperty("member")
   private String member;
@@ -151,26 +147,6 @@ public class APICollectionImpl implements APICollection {
     this.imputeZero = imputeZero;
   }
 
-  @JsonProperty("hasStudyDependentVocabulary")
-  public Boolean getHasStudyDependentVocabulary() {
-    return this.hasStudyDependentVocabulary;
-  }
-
-  @JsonProperty("hasStudyDependentVocabulary")
-  public void setHasStudyDependentVocabulary(Boolean hasStudyDependentVocabulary) {
-    this.hasStudyDependentVocabulary = hasStudyDependentVocabulary;
-  }
-
-  @JsonProperty("variableSpecToImputeZeroesFor")
-  public VariableSpec getVariableSpecToImputeZeroesFor() {
-    return this.variableSpecToImputeZeroesFor;
-  }
-
-  @JsonProperty("variableSpecToImputeZeroesFor")
-  public void setVariableSpecToImputeZeroesFor(VariableSpec variableSpecToImputeZeroesFor) {
-    this.variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
-  }
-
   @JsonProperty("normalizationMethod")
   public String getNormalizationMethod() {
     return this.normalizationMethod;
@@ -199,6 +175,16 @@ public class APICollectionImpl implements APICollection {
   @JsonProperty("isProportion")
   public void setIsProportion(Boolean isProportion) {
     this.isProportion = isProportion;
+  }
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  public VariableSpec getVariableSpecToImputeZeroesFor() {
+    return this.variableSpecToImputeZeroesFor;
+  }
+
+  @JsonProperty("variableSpecToImputeZeroesFor")
+  public void setVariableSpecToImputeZeroesFor(VariableSpec variableSpecToImputeZeroesFor) {
+    this.variableSpecToImputeZeroesFor = variableSpecToImputeZeroesFor;
   }
 
   @JsonProperty("member")

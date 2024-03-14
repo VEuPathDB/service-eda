@@ -12,7 +12,7 @@ import org.veupathdb.service.eda.generated.model.ConcatenationConfig;
 import org.veupathdb.service.eda.generated.model.ConcatenationConfigImpl;
 import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
 import org.veupathdb.service.eda.generated.model.DerivedVariableSpecImpl;
-import org.veupathdb.service.eda.ms.core.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

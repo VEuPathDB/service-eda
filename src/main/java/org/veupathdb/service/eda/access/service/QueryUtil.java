@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service;
+package org.veupathdb.service.eda.access.service;
 
 import io.vulpine.lib.jcfi.CheckedBiFunction;
 import io.vulpine.lib.jcfi.CheckedConsumer;

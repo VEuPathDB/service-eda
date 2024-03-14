@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.staff;
+package org.veupathdb.service.eda.access.service.staff;
 
 import java.util.List;
 import java.util.Map;
@@ -12,18 +12,18 @@ import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
-import org.veupathdb.service.access.generated.model.NewStaffRequest;
-import org.veupathdb.service.access.generated.model.Staff;
-import org.veupathdb.service.access.generated.model.StaffImpl;
-import org.veupathdb.service.access.generated.model.StaffList;
-import org.veupathdb.service.access.generated.model.StaffListImpl;
-import org.veupathdb.service.access.generated.model.StaffPatch;
-import org.veupathdb.service.access.generated.model.UserDetailsImpl;
-import org.veupathdb.service.access.model.PartialStaffRow;
-import org.veupathdb.service.access.model.ProviderRow;
-import org.veupathdb.service.access.model.StaffRow;
-import org.veupathdb.service.access.service.provider.ProviderRepo;
-import org.veupathdb.service.access.util.Keys;
+import org.veupathdb.service.eda.generated.model.NewStaffRequest;
+import org.veupathdb.service.eda.generated.model.Staff;
+import org.veupathdb.service.eda.generated.model.StaffImpl;
+import org.veupathdb.service.eda.generated.model.StaffList;
+import org.veupathdb.service.eda.generated.model.StaffListImpl;
+import org.veupathdb.service.eda.generated.model.StaffPatch;
+import org.veupathdb.service.eda.generated.model.UserDetailsImpl;
+import org.veupathdb.service.eda.access.model.PartialStaffRow;
+import org.veupathdb.service.eda.access.model.ProviderRow;
+import org.veupathdb.service.eda.access.model.StaffRow;
+import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
+import org.veupathdb.service.eda.access.util.Keys;
 
 public class StaffService {
 

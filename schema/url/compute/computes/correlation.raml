@@ -1,0 +1,84 @@
+#%RAML 1.0 Library
+
+types:
+
+  FeaturePrefilterThresholds:
+    additionalProperties: false
+    properties:
+      proportionNonZero?: 
+        type: number # should be between 0 and 1 inclusive
+      variance?:
+        type: number # should be 0 or greater
+      standardDeviation?:
+        type: number # should be 0 or greater
+
+  CorrelationComputeConfig:
+    properties:
+      correlationMethod: CorrelationMethod
+      prefilterThresholds?: FeaturePrefilterThresholds
+
+  CorrelationAssaySelfConfig:
+    properties:
+      correlationMethod: 
+        type: string
+        enum: ['spearman','pearson','sparcc']
+      prefilterThresholds?: FeaturePrefilterThresholds
+      collectionVariable: CollectionSpec
+
+  CorrelationMethod:
+    type: string
+    enum: ['spearman','pearson']
+
+  Correlation1Collection:
+    type: CorrelationComputeConfig
+    properties: 
+      collectionVariable: CollectionSpec
+
+  Correlation2Collections:
+    type: CorrelationComputeConfig
+    properties: 
+      collectionVariable1: CollectionSpec
+      collectionVariable2: CollectionSpec
+
+  CorrelationAssaySelfPluginRequest:
+    type: ComputeRequestBase
+    properties:
+      config: CorrelationAssaySelfConfig
+
+  # for future use, but so we think about it now
+  CorrelationMetadataSelfPluginRequest:
+    type: ComputeRequestBase
+    properties:
+      config: CorrelationComputeConfig
+
+  CorrelationAssayAssayPluginRequest:
+    type: ComputeRequestBase
+    properties:
+      config: Correlation2Collections
+
+  CorrelationAssayMetadataPluginRequest:
+    type: ComputeRequestBase
+    properties:
+      config: Correlation1Collection
+
+  CorrelationStatsResponse:
+    additionalProperties: false
+    properties:
+      statistics: CorrelationPoint[]
+      data1Metadata: string
+      data2Metadata: string
+
+  CorrelationPoint:
+    properties: 
+      data1: string
+      data2: string
+      correlationCoef: 
+        type: string
+        required: false
+      pValue: 
+        type: string
+        required: false
+      adjustedPValue:
+        type: string
+        required: false
+

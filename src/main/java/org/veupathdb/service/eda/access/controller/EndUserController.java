@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.controller;
+package org.veupathdb.service.eda.access.controller;
 
 import java.util.List;
 import jakarta.ws.rs.BadRequestException;
@@ -7,20 +7,20 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
-import org.veupathdb.service.access.generated.model.ApprovalStatus;
-import org.veupathdb.service.access.generated.model.EndUserCreateRequest;
-import org.veupathdb.service.access.generated.model.EndUserPatch;
-import org.veupathdb.service.access.generated.resources.DatasetEndUsers;
-import org.veupathdb.service.access.service.provider.ProviderService;
-import org.veupathdb.service.access.service.user.EndUserCreationService;
-import org.veupathdb.service.access.service.user.EndUserDeleteService;
-import org.veupathdb.service.access.service.user.EndUserLookupService;
-import org.veupathdb.service.access.service.user.EndUserPatchService;
-import org.veupathdb.service.access.service.user.EndUserSearchService;
+import org.veupathdb.service.eda.generated.model.ApprovalStatus;
+import org.veupathdb.service.eda.generated.model.EndUserCreateRequest;
+import org.veupathdb.service.eda.generated.model.EndUserPatch;
+import org.veupathdb.service.eda.generated.resources.DatasetEndUsers;
+import org.veupathdb.service.eda.access.service.provider.ProviderService;
+import org.veupathdb.service.eda.access.service.user.EndUserCreationService;
+import org.veupathdb.service.eda.access.service.user.EndUserDeleteService;
+import org.veupathdb.service.eda.access.service.user.EndUserLookupService;
+import org.veupathdb.service.eda.access.service.user.EndUserPatchService;
+import org.veupathdb.service.eda.access.service.user.EndUserSearchService;
 
-import static org.veupathdb.service.access.service.provider.ProviderService.userIsManager;
-import static org.veupathdb.service.access.service.staff.StaffService.userIsOwner;
-import static org.veupathdb.service.access.service.staff.StaffService.userIsStaff;
+import static org.veupathdb.service.eda.access.service.provider.ProviderService.userIsManager;
+import static org.veupathdb.service.eda.access.service.staff.StaffService.userIsOwner;
+import static org.veupathdb.service.eda.access.service.staff.StaffService.userIsStaff;
 
 @Authenticated
 public class EndUserController implements DatasetEndUsers

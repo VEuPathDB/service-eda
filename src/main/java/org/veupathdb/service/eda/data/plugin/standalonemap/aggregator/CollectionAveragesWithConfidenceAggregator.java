@@ -1,6 +1,6 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator;
+package org.veupathdb.service.eda.data.plugin.standalonemap.aggregator;
 
-import org.veupathdb.service.eda.ds.plugin.standalonemap.markers.QuantitativeAggregateConfiguration;
+import org.veupathdb.service.eda.data.plugin.standalonemap.markers.QuantitativeAggregateConfiguration;
 
 import java.util.HashMap;
 import java.util.List;

@@ -1,10 +1,10 @@
-package org.veupathdb.service.access.service.staff;
+package org.veupathdb.service.eda.access.service.staff;
 
 import java.sql.ResultSet;
 
-import org.veupathdb.service.access.model.StaffRow;
-import org.veupathdb.service.access.repo.DB;
-import org.veupathdb.service.access.service.user.UserUtil;
+import org.veupathdb.service.eda.access.model.StaffRow;
+import org.veupathdb.service.eda.access.repo.DB;
+import org.veupathdb.service.eda.access.service.user.UserUtil;
 
 public class StaffUtil
 {

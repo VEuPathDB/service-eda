@@ -1,4 +1,4 @@
-package org.veupathdb.service.dsdl;
+package org.veupathdb.service.eda.download;
 
 import io.prometheus.client.Counter;
 

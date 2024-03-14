@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.history.queries;
+package org.veupathdb.service.eda.access.service.history.queries;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import io.vulpine.lib.query.util.basic.BasicPreparedListReadQuery;
-import org.veupathdb.service.access.service.history.model.HistoryResultRow;
+import org.veupathdb.service.eda.access.service.history.model.HistoryResultRow;
 
 /**
  * Fetches history rows that were created by the dataset manager with the given

@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap;
+package org.veupathdb.service.eda.data.plugin.standalonemap;
 
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.validation.ValidationException;
@@ -7,9 +7,9 @@ import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.common.plugin.util.RFileSetProcessor;
-import org.veupathdb.service.eda.ds.Resources;
-import org.veupathdb.service.eda.ds.core.AbstractEmptyComputePlugin;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.markers.OverlaySpecification;
+import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
+import org.veupathdb.service.eda.data.plugin.standalonemap.markers.OverlaySpecification;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.util.Optional;
 
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.streamResult;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithProcessedRemoteFiles;
-import static org.veupathdb.service.eda.ds.metadata.AppsMetadata.VECTORBASE_PROJECT;
+import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
 
 public class FloatingBoxplotPlugin extends AbstractEmptyComputePlugin<FloatingBoxplotPostRequest, FloatingBoxplotSpec> {
   private OverlaySpecification _overlaySpecification = null;

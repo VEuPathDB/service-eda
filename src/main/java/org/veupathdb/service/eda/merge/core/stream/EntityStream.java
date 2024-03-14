@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.core.stream;
+package org.veupathdb.service.eda.merge.core.stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

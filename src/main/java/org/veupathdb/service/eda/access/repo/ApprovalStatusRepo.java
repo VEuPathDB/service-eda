@@ -1,8 +1,8 @@
-package org.veupathdb.service.access.repo;
+package org.veupathdb.service.eda.access.repo;
 
-import org.veupathdb.service.access.model.ApprovalStatus;
-import org.veupathdb.service.access.model.ApprovalStatusCache;
-import org.veupathdb.service.access.service.QueryUtil;
+import org.veupathdb.service.eda.access.model.ApprovalStatus;
+import org.veupathdb.service.eda.access.model.ApprovalStatusCache;
+import org.veupathdb.service.eda.access.service.QueryUtil;
 
 public final class ApprovalStatusRepo
 {

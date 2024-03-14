@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator;
+package org.veupathdb.service.eda.data.plugin.standalonemap.aggregator;
 
 public class CountAggregator implements MarkerAggregator<Integer> {
   private int count = 0;

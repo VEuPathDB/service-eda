@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.service.provider;
+package org.veupathdb.service.eda.access.service.provider;
 
 import java.util.List;
 import java.util.Map;
@@ -8,13 +8,13 @@ import io.vulpine.lib.query.util.basic.BasicPreparedListReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedMapReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedWriteQuery;
-import org.veupathdb.service.access.model.PartialProviderRow;
-import org.veupathdb.service.access.model.ProviderRow;
-import org.veupathdb.service.access.repo.DB;
-import org.veupathdb.service.access.repo.SQL;
-import org.veupathdb.service.access.service.QueryUtil;
-import org.veupathdb.service.access.util.PsBuilder;
-import org.veupathdb.service.access.util.SqlUtil;
+import org.veupathdb.service.eda.access.model.PartialProviderRow;
+import org.veupathdb.service.eda.access.model.ProviderRow;
+import org.veupathdb.service.eda.access.repo.DB;
+import org.veupathdb.service.eda.access.repo.SQL;
+import org.veupathdb.service.eda.access.service.QueryUtil;
+import org.veupathdb.service.eda.access.util.PsBuilder;
+import org.veupathdb.service.eda.access.util.SqlUtil;
 
 public class ProviderRepo
 {

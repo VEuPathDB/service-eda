@@ -1,4 +1,4 @@
-package org.veupathdb.service.dsdl;
+package org.veupathdb.service.eda.download;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,11 +18,12 @@ import org.gusdb.fgputil.MapBuilder;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.container.jaxrs.server.middleware.CustomResponseHeadersFilter;
+import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient.StudyDatasetInfo;
-import org.veupathdb.service.generated.model.FileContentResponseStream;
-import org.veupathdb.service.generated.resources.Download;
+import org.veupathdb.service.eda.generated.model.FileContentResponseStream;
+import org.veupathdb.service.eda.generated.resources.Download;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 

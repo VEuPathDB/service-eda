@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap;
+package org.veupathdb.service.eda.data.plugin.standalonemap;
 
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.json.JsonUtil;
@@ -6,10 +6,10 @@ import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
-import org.veupathdb.service.eda.ds.core.AbstractEmptyComputePlugin;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator.CountAggregator;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.markers.QuantitativeAggregateConfiguration;
-import org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator.MarkerAggregator;
+import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
+import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.CountAggregator;
+import org.veupathdb.service.eda.data.plugin.standalonemap.markers.QuantitativeAggregateConfiguration;
+import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggregator;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.OverlayLegendConfig;
 import org.veupathdb.service.eda.generated.model.SizeLegendConfig;
@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static org.gusdb.fgputil.FormatUtil.TAB;
-import static org.veupathdb.service.eda.ds.metadata.AppsMetadata.VECTORBASE_PROJECT;
+import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
 
 /**
  * Plugin designed to provide legend information for bubble markers. This is required for a client to interpret

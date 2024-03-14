@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.core.derivedvars;
+package org.veupathdb.service.eda.merge.core.derivedvars;
 
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.validation.ValidationException;
@@ -8,8 +8,8 @@ import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
-import org.veupathdb.service.eda.ms.plugins.Reductions;
-import org.veupathdb.service.eda.ms.plugins.Transforms;
+import org.veupathdb.service.eda.merge.plugins.Reductions;
+import org.veupathdb.service.eda.merge.plugins.Transforms;
 
 import java.util.*;
 import java.util.function.Function;

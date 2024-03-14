@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.service;
+package org.veupathdb.service.eda.subset.service;
 
 import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.ContainerRequest;
@@ -7,7 +7,7 @@ import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
 import org.veupathdb.service.eda.generated.resources.SsInternalStudiesStudyIdEntitiesEntityId;
-import org.veupathdb.service.eda.ss.model.tabular.TabularResponses;
+import org.veupathdb.service.eda.subset.model.tabular.TabularResponses;
 
 /**
  * Provides some of the same endpoints as regular StudiesService but without user authorization checking

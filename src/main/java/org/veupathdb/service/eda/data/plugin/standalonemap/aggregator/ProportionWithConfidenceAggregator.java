@@ -1,7 +1,7 @@
-package org.veupathdb.service.eda.ds.plugin.standalonemap.aggregator;
+package org.veupathdb.service.eda.data.plugin.standalonemap.aggregator;
 
 
-import org.veupathdb.service.eda.ds.utils.StatUtils;
+import org.veupathdb.service.eda.data.utils.StatUtils;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
-package org.veupathdb.service.eda.ms.plugins.reductions;
+package org.veupathdb.service.eda.merge.plugins.reductions;
 
 import org.gusdb.fgputil.validation.ValidationException;
-import org.veupathdb.service.eda.ms.core.derivedvars.Reduction;
+import org.veupathdb.service.eda.merge.core.derivedvars.Reduction;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.List;

@@ -1,15 +1,15 @@
-package org.veupathdb.service.eda.ss.service;
+package org.veupathdb.service.eda.subset.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.veupathdb.service.eda.ss.Resources;
-import org.veupathdb.service.eda.ss.model.Study;
-import org.veupathdb.service.eda.ss.model.StudyOverview;
-import org.veupathdb.service.eda.ss.model.db.StudyFactory;
-import org.veupathdb.service.eda.ss.model.db.StudyProvider;
-import org.veupathdb.service.eda.ss.model.db.VariableFactory;
-import org.veupathdb.service.eda.ss.model.reducer.MetadataFileBinaryProvider;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
+import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.model.StudyOverview;
+import org.veupathdb.service.eda.subset.model.db.StudyFactory;
+import org.veupathdb.service.eda.subset.model.db.StudyProvider;
+import org.veupathdb.service.eda.subset.model.db.VariableFactory;
+import org.veupathdb.service.eda.subset.model.reducer.MetadataFileBinaryProvider;
+import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 
 import java.time.Duration;
 import java.util.Collections;

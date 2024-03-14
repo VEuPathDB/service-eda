@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.model;
+package org.veupathdb.service.eda.access.model;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -13,7 +13,7 @@ import org.veupathdb.lib.container.jaxrs.server.annotations.AdminRequired;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.hash_id.HashID;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
-import org.veupathdb.service.eda.compute.service.ServiceOptions;
+import org.veupathdb.service.eda.Main;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponse;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponseImpl;
 import org.veupathdb.service.eda.generated.resources.ExpireComputeJobs;

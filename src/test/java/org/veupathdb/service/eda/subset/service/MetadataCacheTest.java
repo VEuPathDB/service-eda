@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ss.service;
+package org.veupathdb.service.eda.subset.service;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -7,9 +7,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.veupathdb.service.eda.ss.model.StudyOverview;
-import org.veupathdb.service.eda.ss.model.db.StudyProvider;
-import org.veupathdb.service.eda.ss.model.variable.binary.BinaryFilesManager;
+import org.veupathdb.service.eda.subset.model.StudyOverview;
+import org.veupathdb.service.eda.subset.model.db.StudyProvider;
+import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 
 import java.time.Duration;
 import java.util.Date;

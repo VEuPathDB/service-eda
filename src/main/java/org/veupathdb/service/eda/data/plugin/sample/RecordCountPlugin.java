@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.sample;
+package org.veupathdb.service.eda.data.plugin.sample;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,7 +11,7 @@ import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.VariableSource;
-import org.veupathdb.service.eda.ds.core.AbstractEmptyComputePlugin;
+import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.IOException;

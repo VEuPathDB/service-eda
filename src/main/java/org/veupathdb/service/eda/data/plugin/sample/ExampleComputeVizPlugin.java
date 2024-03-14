@@ -1,11 +1,11 @@
-package org.veupathdb.service.eda.ds.plugin.sample;
+package org.veupathdb.service.eda.data.plugin.sample;
 
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
-import org.veupathdb.service.eda.ds.core.AbstractPlugin;
+import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.*;

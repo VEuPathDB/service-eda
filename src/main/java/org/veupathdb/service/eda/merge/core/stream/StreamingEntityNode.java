@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.core.stream;
+package org.veupathdb.service.eda.merge.core.stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -6,10 +6,10 @@ import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
-import org.veupathdb.service.eda.ms.core.derivedvars.DerivedVariableFactory;
-import org.veupathdb.service.eda.ms.core.derivedvars.DerivedVariable;
-import org.veupathdb.service.eda.ms.core.derivedvars.Reduction;
-import org.veupathdb.service.eda.ms.core.derivedvars.Transform;
+import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariable;
+import org.veupathdb.service.eda.merge.core.derivedvars.Reduction;
+import org.veupathdb.service.eda.merge.core.derivedvars.Transform;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;

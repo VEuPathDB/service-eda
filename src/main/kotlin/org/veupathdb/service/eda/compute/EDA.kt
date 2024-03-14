@@ -15,7 +15,7 @@ import org.veupathdb.service.eda.common.client.spec.StreamSpec
 import org.veupathdb.service.eda.common.model.ReferenceMetadata
 import org.veupathdb.service.eda.compute.exec.PluginJobPayload
 import org.veupathdb.service.eda.compute.plugins.PluginMeta
-import org.veupathdb.service.eda.compute.service.ServiceOptions
+import org.veupathdb.service.eda.Main
 import org.veupathdb.service.eda.compute.util.JobIDs
 import org.veupathdb.service.eda.compute.util.toAuthTuple
 import org.veupathdb.service.eda.compute.util.toJobResponse
@@ -51,7 +51,7 @@ object EDA {
    */
   @JvmStatic
   fun getStudyPerms(studyID: String, auth: TwoTuple<String, String>): StudyAccess =
-    DatasetAccessClient(ServiceOptions.datasetAccessHost, auth).getStudyAccessByStudyId(studyID)
+    DatasetAccessClient(Main.config.datasetAccessHost, auth).getStudyAccessByStudyId(studyID)
       .orElseThrow { ForbiddenException() }
 
   /**
@@ -68,7 +68,7 @@ object EDA {
    */
   @JvmStatic
   fun getAPIStudyDetail(studyID: String, auth: TwoTuple<String, String>): Optional<APIStudyDetail> =
-    EdaSubsettingClient(ServiceOptions.edaSubsettingHost, auth).getStudy(studyID)
+    EdaSubsettingClient(Main.config.edaSubsettingHost, auth).getStudy(studyID)
 
   /**
    * Fetches the [APIStudyDetail] information from the EDA Subsetting Service
@@ -117,7 +117,7 @@ object EDA {
     spec: StreamSpec,
     auth: TwoTuple<String, String>
   ): InputStream =
-    EdaMergingClient(ServiceOptions.edaMergeHost, auth)
+    EdaMergingClient(Main.config.edaMergeHost, auth)
       .getTabularDataStream(refMeta, filters, derivedVars, Optional.empty(), spec).inputStream
 
   /**

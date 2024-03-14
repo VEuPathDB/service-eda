@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.us.model;
+package org.veupathdb.service.eda.user.model;
 
 import java.util.Arrays;
 import java.util.HashMap;

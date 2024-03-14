@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.core.request;
+package org.veupathdb.service.eda.merge.core.request;
 
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.ListBuilder;
@@ -10,7 +10,7 @@ import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.ms.Resources;
+import org.veupathdb.service.eda.Resources;
 
 import java.util.ArrayList;
 import java.util.Collections;

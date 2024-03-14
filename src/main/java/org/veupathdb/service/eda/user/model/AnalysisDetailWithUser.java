@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.us.model;
+package org.veupathdb.service.eda.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.sql.ResultSet;
@@ -14,11 +14,11 @@ import org.veupathdb.service.eda.generated.model.AnalysisProvenance;
 import org.veupathdb.service.eda.generated.model.AnalysisProvenanceImpl;
 import org.veupathdb.service.eda.generated.model.OnImportProvenanceProps;
 import org.veupathdb.service.eda.generated.model.OnImportProvenancePropsImpl;
-import org.veupathdb.service.eda.us.Utils;
-import org.veupathdb.service.eda.us.model.AccountDbData.AccountDataPair;
+import org.veupathdb.service.eda.user.Utils;
+import org.veupathdb.service.eda.user.model.AccountDbData.AccountDataPair;
 
-import static org.veupathdb.service.eda.us.Utils.checkMaxSize;
-import static org.veupathdb.service.eda.us.Utils.checkNonEmpty;
+import static org.veupathdb.service.eda.user.Utils.checkMaxSize;
+import static org.veupathdb.service.eda.user.Utils.checkNonEmpty;
 
 /**
  * Non-API analysis data container; used to pass information about a single

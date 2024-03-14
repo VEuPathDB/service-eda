@@ -1,10 +1,10 @@
-package org.veupathdb.service.access.service.email;
+package org.veupathdb.service.eda.access.service.email;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
-import org.veupathdb.service.access.model.MessageTemplate;
+import org.veupathdb.service.eda.access.model.MessageTemplate;
 
 class Const
 {

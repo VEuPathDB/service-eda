@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.pass;
+package org.veupathdb.service.eda.data.plugin.pass;
 
 import org.gusdb.fgputil.validation.ValidationException;
 import org.json.JSONObject;
@@ -6,8 +6,8 @@ import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
-import org.veupathdb.service.eda.ds.Resources;
-import org.veupathdb.service.eda.ds.core.AbstractEmptyComputePlugin;
+import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.BarplotPostRequest;
 import org.veupathdb.service.eda.generated.model.BarplotSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
@@ -22,8 +22,8 @@ import java.util.Scanner;
 
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.streamResult;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
-import static org.veupathdb.service.eda.ds.metadata.AppsMetadata.CLINEPI_PROJECT;
-import static org.veupathdb.service.eda.ds.metadata.AppsMetadata.MICROBIOME_PROJECT;
+import static org.veupathdb.service.eda.data.metadata.AppsMetadata.CLINEPI_PROJECT;
+import static org.veupathdb.service.eda.data.metadata.AppsMetadata.MICROBIOME_PROJECT;
 
 public class BarplotPlugin extends AbstractEmptyComputePlugin<BarplotPostRequest, BarplotSpec> {
 

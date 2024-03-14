@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.correlation;
+package org.veupathdb.service.eda.data.plugin.correlation;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
-import org.veupathdb.service.eda.ds.core.AbstractPlugin;
+import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
 public abstract class AbstractCorrelationBipartiteNetwork<T extends DataPluginRequestBase, R extends CorrelationComputeConfig> extends AbstractPlugin<T, CorrelationNetworkSpec, R> {

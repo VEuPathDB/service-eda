@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.controller;
+package org.veupathdb.service.eda.access.controller;
 
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Context;
@@ -6,19 +6,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
-import org.veupathdb.service.access.Main;
-import org.veupathdb.service.access.generated.model.EndUserPatch;
-import org.veupathdb.service.access.generated.model.EndUserPatchImpl;
-import org.veupathdb.service.access.generated.resources.ApproveEligibleAccessRequests;
-import org.veupathdb.service.access.model.ApprovalStatus;
-import org.veupathdb.service.access.model.DatasetAccessLevel;
-import org.veupathdb.service.access.model.DatasetProps;
-import org.veupathdb.service.access.model.EndUserRow;
-import org.veupathdb.service.access.model.SearchQuery;
-import org.veupathdb.service.access.service.dataset.DatasetRepo;
-import org.veupathdb.service.access.service.user.EndUserPatchService;
-import org.veupathdb.service.access.service.user.EndUserRepo;
-import org.veupathdb.service.access.util.Keys;
+import org.veupathdb.service.eda.Main;
+import org.veupathdb.service.eda.generated.model.EndUserPatch;
+import org.veupathdb.service.eda.generated.model.EndUserPatchImpl;
+import org.veupathdb.service.eda.generated.resources.ApproveEligibleAccessRequests;
+import org.veupathdb.service.eda.access.model.ApprovalStatus;
+import org.veupathdb.service.eda.access.model.DatasetAccessLevel;
+import org.veupathdb.service.eda.access.model.DatasetProps;
+import org.veupathdb.service.eda.access.model.EndUserRow;
+import org.veupathdb.service.eda.access.model.SearchQuery;
+import org.veupathdb.service.eda.access.service.dataset.DatasetRepo;
+import org.veupathdb.service.eda.access.service.user.EndUserPatchService;
+import org.veupathdb.service.eda.access.service.user.EndUserRepo;
+import org.veupathdb.service.eda.access.util.Keys;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -94,7 +94,7 @@ public class ApproveEligibleStudiesController implements ApproveEligibleAccessRe
     final EndUserPatch statusPatch = new EndUserPatchImpl();
     statusPatch.setOp(EndUserPatch.OpType.REPLACE);
     statusPatch.setPath("/" + Keys.Json.KEY_APPROVAL_STATUS);
-    statusPatch.setValue(org.veupathdb.service.access.generated.model.ApprovalStatus.APPROVED.getValue());
+    statusPatch.setValue(org.veupathdb.service.eda.generated.model.ApprovalStatus.APPROVED.getValue());
 
     final EndUserPatch notePatch = new EndUserPatchImpl();
     notePatch.setOp(EndUserPatch.OpType.REPLACE);

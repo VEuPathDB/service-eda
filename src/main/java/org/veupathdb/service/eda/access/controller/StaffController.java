@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.controller;
+package org.veupathdb.service.eda.access.controller;
 
 import java.util.List;
 import java.util.Map;
@@ -7,12 +7,12 @@ import jakarta.ws.rs.core.Context;
 
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
-import org.veupathdb.service.access.generated.model.NewStaffRequest;
-import org.veupathdb.service.access.generated.model.NewStaffResponseImpl;
-import org.veupathdb.service.access.generated.model.StaffPatch;
-import org.veupathdb.service.access.generated.resources.Staff;
-import org.veupathdb.service.access.service.staff.StaffService;
-import org.veupathdb.service.access.util.Keys;
+import org.veupathdb.service.eda.generated.model.NewStaffRequest;
+import org.veupathdb.service.eda.generated.model.NewStaffResponseImpl;
+import org.veupathdb.service.eda.generated.model.StaffPatch;
+import org.veupathdb.service.eda.generated.resources.Staff;
+import org.veupathdb.service.eda.access.service.staff.StaffService;
+import org.veupathdb.service.eda.access.util.Keys;
 
 @Authenticated
 public class StaffController implements Staff

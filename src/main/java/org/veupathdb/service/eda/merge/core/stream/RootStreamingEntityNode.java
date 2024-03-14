@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.core.stream;
+package org.veupathdb.service.eda.merge.core.stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,8 +12,8 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableMapping;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.ms.core.request.ComputeInfo;
-import org.veupathdb.service.eda.ms.core.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
+import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
 
 import java.io.InputStream;
 import java.util.*;

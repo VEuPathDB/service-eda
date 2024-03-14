@@ -1,10 +1,10 @@
-package org.veupathdb.service.eda.ds.plugin.pass;
+package org.veupathdb.service.eda.data.plugin.pass;
 
 import java.util.List;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 
-import static org.veupathdb.service.eda.ds.metadata.AppsMetadata.CLINEPI_PROJECT;
+import static org.veupathdb.service.eda.data.metadata.AppsMetadata.CLINEPI_PROJECT;
 
 public class TimeSeriesPlugin extends LineplotPlugin {
 

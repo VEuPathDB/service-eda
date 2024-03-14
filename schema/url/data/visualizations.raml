@@ -194,7 +194,10 @@ types:
   CollectionOverlayConfigWithValues:
     type: CollectionOverlayConfig
     properties:
-      selectedValues?: string[]  
+      selectedValues?: string[]
+
+  DynamicDataSpec:
+    type: CollectionSpec | VariableSpec
 
   # FIXME: eventually convert to LabeledRange (may require DB migration) :(
   LegacyLabeledRange:

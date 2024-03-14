@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.sample;
+package org.veupathdb.service.eda.data.plugin.sample;
 
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.IoUtil;
@@ -6,7 +6,7 @@ import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.CollectionDef;
-import org.veupathdb.service.eda.ds.core.AbstractEmptyComputePlugin;
+import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.TestCollectionsPostRequest;
 

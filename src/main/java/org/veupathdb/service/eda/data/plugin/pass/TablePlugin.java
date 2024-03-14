@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ds.plugin.pass;
+package org.veupathdb.service.eda.data.plugin.pass;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
-import org.veupathdb.service.eda.ds.core.AbstractEmptyComputePlugin;
+import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.TablePostRequest;
 import org.veupathdb.service.eda.generated.model.TableSpec;
 
@@ -20,8 +20,8 @@ import java.util.Scanner;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 import static org.gusdb.fgputil.FormatUtil.TAB;
-import static org.veupathdb.service.eda.ds.metadata.AppsMetadata.CLINEPI_PROJECT;
-import static org.veupathdb.service.eda.ds.metadata.AppsMetadata.MICROBIOME_PROJECT;
+import static org.veupathdb.service.eda.data.metadata.AppsMetadata.CLINEPI_PROJECT;
+import static org.veupathdb.service.eda.data.metadata.AppsMetadata.MICROBIOME_PROJECT;
 
 public class TablePlugin extends AbstractEmptyComputePlugin<TablePostRequest, TableSpec> {
 

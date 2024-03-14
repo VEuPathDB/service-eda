@@ -1,4 +1,4 @@
-package org.veupathdb.service.access.model;
+package org.veupathdb.service.eda.access.model;
 
 public class UserRow
 {

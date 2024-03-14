@@ -22,6 +22,12 @@ public interface ExampleComputeConfig {
   @JsonProperty("valueSuffix")
   void setValueSuffix(String valueSuffix);
 
+  @JsonProperty("failureProbability")
+  Number getFailureProbability();
+
+  @JsonProperty("failureProbability")
+  void setFailureProbability(Number failureProbability);
+
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();
 

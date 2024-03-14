@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.core;
+package org.veupathdb.service.eda.merge.core;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,9 +13,9 @@ import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.ms.core.request.ComputeInfo;
-import org.veupathdb.service.eda.ms.core.request.MergedTabularRequestResources;
-import org.veupathdb.service.eda.ms.core.stream.RootStreamingEntityNode;
+import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
+import org.veupathdb.service.eda.merge.core.request.MergedTabularRequestResources;
+import org.veupathdb.service.eda.merge.core.stream.RootStreamingEntityNode;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static org.gusdb.fgputil.FormatUtil.TAB;
-import static org.veupathdb.service.eda.ms.core.stream.RootStreamingEntityNode.COMPUTED_VAR_STREAM_NAME;
+import static org.veupathdb.service.eda.merge.core.stream.RootStreamingEntityNode.COMPUTED_VAR_STREAM_NAME;
 
 /**
  * Top-level tabular request processing class, responsible for (in execution order):

@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.ms.core.derivedvars;
+package org.veupathdb.service.eda.merge.core.derivedvars;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

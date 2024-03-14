@@ -75,7 +75,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(data=" + INPUT_DATA + 
+      connection.voidEval("abundDT <- microbiomeData::AbundanceData(data=" + INPUT_DATA + 
                                                                           ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
                                                                           ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ",imputeZero=TRUE)");

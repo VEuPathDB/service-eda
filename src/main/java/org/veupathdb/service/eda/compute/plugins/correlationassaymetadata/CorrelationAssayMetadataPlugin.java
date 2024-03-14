@@ -208,11 +208,11 @@ public class CorrelationAssayMetadataPlugin extends AbstractPlugin<CorrelationAs
       } else {
         // If we don't have eigengene data, for now we can assume the data is abundance data.
         // Abundance data can go through our microbiomeComputations pipeline.
-        connection.voidEval("sampleMetadata <- microbiomeComputations::SampleMetadata(data = sampleMetadata" +
+        connection.voidEval("sampleMetadata <- microbiomeData::SampleMetadata(data = sampleMetadata" +
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + "))");
 
-        connection.voidEval("abundanceData <- microbiomeComputations::AbundanceData(data=assayData" + 
+        connection.voidEval("abundanceData <- microbiomeData::AbundanceData(data=assayData" + 
                                   ", sampleMetadata=sampleMetadata" +
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +

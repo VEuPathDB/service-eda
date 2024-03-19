@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 @JsonDeserialize(
-    as = CorrelationAssaySelfPluginRequestImpl.class
+    as = CorrelationPluginRequestImpl.class
 )
-public interface CorrelationAssaySelfPluginRequest extends ComputeRequestBase {
+public interface CorrelationPluginRequest extends ComputeRequestBase {
   @JsonProperty("studyId")
   String getStudyId();
 
@@ -30,10 +30,10 @@ public interface CorrelationAssaySelfPluginRequest extends ComputeRequestBase {
   void setDerivedVariables(List<DerivedVariableSpec> derivedVariables);
 
   @JsonProperty("config")
-  CorrelationAssaySelfConfig getConfig();
+  CorrelationConfig getConfig();
 
   @JsonProperty("config")
-  void setConfig(CorrelationAssaySelfConfig config);
+  void setConfig(CorrelationConfig config);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

@@ -14,9 +14,9 @@ import java.util.Map;
     "prefilterThresholds",
     "collectionVariable"
 })
-public class CorrelationAssaySelfConfigImpl implements CorrelationAssaySelfConfig {
+public class SelfCorrelationConfigImpl implements SelfCorrelationConfig {
   @JsonProperty("correlationMethod")
-  private CorrelationAssaySelfConfig.CorrelationMethodType correlationMethod;
+  private CorrelationMethod correlationMethod;
 
   @JsonProperty("prefilterThresholds")
   private FeaturePrefilterThresholds prefilterThresholds;
@@ -28,13 +28,12 @@ public class CorrelationAssaySelfConfigImpl implements CorrelationAssaySelfConfi
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
   @JsonProperty("correlationMethod")
-  public CorrelationAssaySelfConfig.CorrelationMethodType getCorrelationMethod() {
+  public CorrelationMethod getCorrelationMethod() {
     return this.correlationMethod;
   }
 
   @JsonProperty("correlationMethod")
-  public void setCorrelationMethod(
-      CorrelationAssaySelfConfig.CorrelationMethodType correlationMethod) {
+  public void setCorrelationMethod(CorrelationMethod correlationMethod) {
     this.correlationMethod = correlationMethod;
   }
 

@@ -13,7 +13,7 @@ import java.util.Map;
     "correlationMethod",
     "prefilterThresholds"
 })
-public class CorrelationComputeConfigImpl implements CorrelationComputeConfig {
+public class BaseCorrelationComputeConfigImpl implements BaseCorrelationComputeConfig {
   @JsonProperty("correlationMethod")
   private CorrelationMethod correlationMethod;
 

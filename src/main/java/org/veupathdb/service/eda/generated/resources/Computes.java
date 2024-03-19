@@ -13,9 +13,7 @@ import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.AlphaDivPluginRequest;
 import org.veupathdb.service.eda.generated.model.BetaDivPluginRequest;
-import org.veupathdb.service.eda.generated.model.CorrelationAssayAssayPluginRequest;
-import org.veupathdb.service.eda.generated.model.CorrelationAssayMetadataPluginRequest;
-import org.veupathdb.service.eda.generated.model.CorrelationAssaySelfPluginRequest;
+import org.veupathdb.service.eda.generated.model.CorrelationPluginRequest;
 import org.veupathdb.service.eda.generated.model.CorrelationStatsResponse;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceStatsResponse;
@@ -23,6 +21,7 @@ import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 import org.veupathdb.service.eda.generated.model.JobResponse;
 import org.veupathdb.service.eda.generated.model.PluginOverview;
 import org.veupathdb.service.eda.generated.model.RankedAbundancePluginRequest;
+import org.veupathdb.service.eda.generated.model.SelfCorrelationPluginRequest;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
 @Path("/computes")
@@ -107,49 +106,34 @@ public interface Computes {
       DifferentialAbundancePluginRequest entity);
 
   @POST
-  @Path("/correlationassayassay")
+  @Path("/correlation")
   @Produces("application/json")
   @Consumes("application/json")
-  PostComputesCorrelationassayassayResponse postComputesCorrelationassayassay(
+  PostComputesCorrelationResponse postComputesCorrelation(
       @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
-      CorrelationAssayAssayPluginRequest entity);
+      CorrelationPluginRequest entity);
 
   @POST
-  @Path("/correlationassayassay/statistics")
+  @Path("/correlation/statistics")
   @Produces("application/json")
   @Consumes("application/json")
-  PostComputesCorrelationassayassayStatisticsResponse postComputesCorrelationassayassayStatistics(
-      CorrelationAssayAssayPluginRequest entity);
+  PostComputesCorrelationStatisticsResponse postComputesCorrelationStatistics(
+      CorrelationPluginRequest entity);
 
   @POST
-  @Path("/correlationassaymetadata")
+  @Path("/selfcorrelation")
   @Produces("application/json")
   @Consumes("application/json")
-  PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(
+  PostComputesSelfcorrelationResponse postComputesSelfcorrelation(
       @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
-      CorrelationAssayMetadataPluginRequest entity);
+      SelfCorrelationPluginRequest entity);
 
   @POST
-  @Path("/correlationassaymetadata/statistics")
+  @Path("/selfcorrelation/statistics")
   @Produces("application/json")
   @Consumes("application/json")
-  PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(
-      CorrelationAssayMetadataPluginRequest entity);
-
-  @POST
-  @Path("/correlationassayself")
-  @Produces("application/json")
-  @Consumes("application/json")
-  PostComputesCorrelationassayselfResponse postComputesCorrelationassayself(
-      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
-      CorrelationAssaySelfPluginRequest entity);
-
-  @POST
-  @Path("/correlationassayself/statistics")
-  @Produces("application/json")
-  @Consumes("application/json")
-  PostComputesCorrelationassayselfStatisticsResponse postComputesCorrelationassayselfStatistics(
-      CorrelationAssaySelfPluginRequest entity);
+  PostComputesSelfcorrelationStatisticsResponse postComputesSelfcorrelationStatistics(
+      SelfCorrelationPluginRequest entity);
 
   class GetComputesResponse extends ResponseDelegate {
     private GetComputesResponse(Response response, Object entity) {
@@ -331,106 +315,71 @@ public interface Computes {
     }
   }
 
-  class PostComputesCorrelationassayassayResponse extends ResponseDelegate {
-    private PostComputesCorrelationassayassayResponse(Response response, Object entity) {
+  class PostComputesCorrelationResponse extends ResponseDelegate {
+    private PostComputesCorrelationResponse(Response response, Object entity) {
       super(response, entity);
     }
 
-    private PostComputesCorrelationassayassayResponse(Response response) {
+    private PostComputesCorrelationResponse(Response response) {
       super(response);
     }
 
-    public static PostComputesCorrelationassayassayResponse respond200WithApplicationJson(
+    public static PostComputesCorrelationResponse respond200WithApplicationJson(
         JobResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
-      return new PostComputesCorrelationassayassayResponse(responseBuilder.build(), entity);
+      return new PostComputesCorrelationResponse(responseBuilder.build(), entity);
     }
   }
 
-  class PostComputesCorrelationassayassayStatisticsResponse extends ResponseDelegate {
-    private PostComputesCorrelationassayassayStatisticsResponse(Response response, Object entity) {
+  class PostComputesCorrelationStatisticsResponse extends ResponseDelegate {
+    private PostComputesCorrelationStatisticsResponse(Response response, Object entity) {
       super(response, entity);
     }
 
-    private PostComputesCorrelationassayassayStatisticsResponse(Response response) {
+    private PostComputesCorrelationStatisticsResponse(Response response) {
       super(response);
     }
 
-    public static PostComputesCorrelationassayassayStatisticsResponse respond200WithApplicationJson(
+    public static PostComputesCorrelationStatisticsResponse respond200WithApplicationJson(
         CorrelationStatsResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
-      return new PostComputesCorrelationassayassayStatisticsResponse(responseBuilder.build(), entity);
+      return new PostComputesCorrelationStatisticsResponse(responseBuilder.build(), entity);
     }
   }
 
-  class PostComputesCorrelationassaymetadataResponse extends ResponseDelegate {
-    private PostComputesCorrelationassaymetadataResponse(Response response, Object entity) {
+  class PostComputesSelfcorrelationResponse extends ResponseDelegate {
+    private PostComputesSelfcorrelationResponse(Response response, Object entity) {
       super(response, entity);
     }
 
-    private PostComputesCorrelationassaymetadataResponse(Response response) {
+    private PostComputesSelfcorrelationResponse(Response response) {
       super(response);
     }
 
-    public static PostComputesCorrelationassaymetadataResponse respond200WithApplicationJson(
+    public static PostComputesSelfcorrelationResponse respond200WithApplicationJson(
         JobResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
-      return new PostComputesCorrelationassaymetadataResponse(responseBuilder.build(), entity);
+      return new PostComputesSelfcorrelationResponse(responseBuilder.build(), entity);
     }
   }
 
-  class PostComputesCorrelationassaymetadataStatisticsResponse extends ResponseDelegate {
-    private PostComputesCorrelationassaymetadataStatisticsResponse(Response response,
-        Object entity) {
+  class PostComputesSelfcorrelationStatisticsResponse extends ResponseDelegate {
+    private PostComputesSelfcorrelationStatisticsResponse(Response response, Object entity) {
       super(response, entity);
     }
 
-    private PostComputesCorrelationassaymetadataStatisticsResponse(Response response) {
+    private PostComputesSelfcorrelationStatisticsResponse(Response response) {
       super(response);
     }
 
-    public static PostComputesCorrelationassaymetadataStatisticsResponse respond200WithApplicationJson(
+    public static PostComputesSelfcorrelationStatisticsResponse respond200WithApplicationJson(
         CorrelationStatsResponse entity) {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
-      return new PostComputesCorrelationassaymetadataStatisticsResponse(responseBuilder.build(), entity);
-    }
-  }
-
-  class PostComputesCorrelationassayselfResponse extends ResponseDelegate {
-    private PostComputesCorrelationassayselfResponse(Response response, Object entity) {
-      super(response, entity);
-    }
-
-    private PostComputesCorrelationassayselfResponse(Response response) {
-      super(response);
-    }
-
-    public static PostComputesCorrelationassayselfResponse respond200WithApplicationJson(
-        JobResponse entity) {
-      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
-      responseBuilder.entity(entity);
-      return new PostComputesCorrelationassayselfResponse(responseBuilder.build(), entity);
-    }
-  }
-
-  class PostComputesCorrelationassayselfStatisticsResponse extends ResponseDelegate {
-    private PostComputesCorrelationassayselfStatisticsResponse(Response response, Object entity) {
-      super(response, entity);
-    }
-
-    private PostComputesCorrelationassayselfStatisticsResponse(Response response) {
-      super(response);
-    }
-
-    public static PostComputesCorrelationassayselfStatisticsResponse respond200WithApplicationJson(
-        CorrelationStatsResponse entity) {
-      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
-      responseBuilder.entity(entity);
-      return new PostComputesCorrelationassayselfStatisticsResponse(responseBuilder.build(), entity);
+      return new PostComputesSelfcorrelationStatisticsResponse(responseBuilder.build(), entity);
     }
   }
 }

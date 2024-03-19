@@ -7,14 +7,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Map;
 
 @JsonDeserialize(
-    as = CorrelationAssaySelfConfigImpl.class
+    as = SelfCorrelationConfigImpl.class
 )
-public interface CorrelationAssaySelfConfig {
+public interface SelfCorrelationConfig extends Correlation1Collection {
   @JsonProperty("correlationMethod")
-  CorrelationMethodType getCorrelationMethod();
+  CorrelationMethod getCorrelationMethod();
 
   @JsonProperty("correlationMethod")
-  void setCorrelationMethod(CorrelationMethodType correlationMethod);
+  void setCorrelationMethod(CorrelationMethod correlationMethod);
 
   @JsonProperty("prefilterThresholds")
   FeaturePrefilterThresholds getPrefilterThresholds();
@@ -33,25 +33,4 @@ public interface CorrelationAssaySelfConfig {
 
   @JsonAnySetter
   void setAdditionalProperties(String key, Object value);
-
-  enum CorrelationMethodType {
-    @JsonProperty("spearman")
-    SPEARMAN("spearman"),
-
-    @JsonProperty("pearson")
-    PEARSON("pearson"),
-
-    @JsonProperty("sparcc")
-    SPARCC("sparcc");
-
-    public final String value;
-
-    public String getValue() {
-      return this.value;
-    }
-
-    CorrelationMethodType(String name) {
-      this.value = name;
-    }
-  }
 }

@@ -8,11 +8,11 @@ import java.util.function.Consumer;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.StreamingOutput;
 
-public class CorrelationComputeConfigStream extends CorrelationComputeConfigImpl implements StreamingOutput {
+public class SelfCorrelationPluginRequestStream extends SelfCorrelationPluginRequestImpl implements StreamingOutput {
 
   private final Consumer<OutputStream> _streamer;
 
-  public CorrelationComputeConfigStream(Consumer<OutputStream> streamer) {
+  public SelfCorrelationPluginRequestStream(Consumer<OutputStream> streamer) {
     _streamer = streamer;
   }
 

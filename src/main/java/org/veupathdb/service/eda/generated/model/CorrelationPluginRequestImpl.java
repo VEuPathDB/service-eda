@@ -16,7 +16,7 @@ import java.util.Map;
     "derivedVariables",
     "config"
 })
-public class CorrelationAssaySelfPluginRequestImpl implements CorrelationAssaySelfPluginRequest {
+public class CorrelationPluginRequestImpl implements CorrelationPluginRequest {
   @JsonProperty("studyId")
   private String studyId;
 
@@ -27,7 +27,7 @@ public class CorrelationAssaySelfPluginRequestImpl implements CorrelationAssaySe
   private List<DerivedVariableSpec> derivedVariables;
 
   @JsonProperty("config")
-  private CorrelationAssaySelfConfig config;
+  private CorrelationConfig config;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -63,12 +63,12 @@ public class CorrelationAssaySelfPluginRequestImpl implements CorrelationAssaySe
   }
 
   @JsonProperty("config")
-  public CorrelationAssaySelfConfig getConfig() {
+  public CorrelationConfig getConfig() {
     return this.config;
   }
 
   @JsonProperty("config")
-  public void setConfig(CorrelationAssaySelfConfig config) {
+  public void setConfig(CorrelationConfig config) {
     this.config = config;
   }
 

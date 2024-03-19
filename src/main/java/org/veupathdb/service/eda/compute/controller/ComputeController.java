@@ -22,12 +22,11 @@ import org.veupathdb.service.eda.compute.plugins.PluginProvider;
 import org.veupathdb.service.eda.compute.plugins.PluginRegistry;
 import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
-import org.veupathdb.service.eda.compute.plugins.correlationassayassay.CorrelationAssayAssayPluginProvider;
-import org.veupathdb.service.eda.compute.plugins.correlationassaymetadata.CorrelationAssayMetadataPluginProvider;
-import org.veupathdb.service.eda.compute.plugins.correlationassayself.CorrelationAssaySelfPluginProvider;
+import org.veupathdb.service.eda.compute.plugins.correlation.CorrelationPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
+import org.veupathdb.service.eda.compute.plugins.selfcorrelation.SelfCorrelationPluginProvider;
 import org.veupathdb.service.eda.compute.service.ServiceOptions;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
@@ -139,15 +138,15 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesCorrelationassayassayResponse postComputesCorrelationassayassay(Boolean autostart, CorrelationAssayAssayPluginRequest entity) {
-    return PostComputesCorrelationassayassayResponse.respond200WithApplicationJson(submitJob(new CorrelationAssayAssayPluginProvider(), entity, autostart));
+  public PostComputesCorrelationResponse postComputesCorrelation(Boolean autostart, CorrelationPluginRequest entity) {
+    return PostComputesCorrelationResponse.respond200WithApplicationJson(submitJob(new CorrelationPluginProvider(), entity, autostart));
   }
 
   @Override
-  public PostComputesCorrelationassayassayStatisticsResponse postComputesCorrelationassayassayStatistics(CorrelationAssayAssayPluginRequest entity) {
-    return PostComputesCorrelationassayassayStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
+  public PostComputesCorrelationStatisticsResponse postComputesCorrelationStatistics(CorrelationPluginRequest entity) {
+    return PostComputesCorrelationStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
         try {
-          getResultFileStreamer(new CorrelationAssayAssayPluginProvider(), STATISTICS, entity).write(out);
+          getResultFileStreamer(new CorrelationPluginProvider(), STATISTICS, entity).write(out);
         }
         catch (IOException e) {
           throw new RuntimeException(e);
@@ -156,32 +155,15 @@ public class ComputeController implements Computes {
   }
 
   @Override
-  public PostComputesCorrelationassaymetadataResponse postComputesCorrelationassaymetadata(Boolean autostart, CorrelationAssayMetadataPluginRequest entity) {
-    return PostComputesCorrelationassaymetadataResponse.respond200WithApplicationJson(submitJob(new CorrelationAssayMetadataPluginProvider(), entity, autostart));
+  public PostComputesSelfcorrelationResponse postComputesSelfcorrelation(Boolean autostart, SelfCorrelationPluginRequest entity) {
+    return PostComputesSelfcorrelationResponse.respond200WithApplicationJson(submitJob(new SelfCorrelationPluginProvider(), entity, autostart));
   }
 
   @Override
-  public PostComputesCorrelationassaymetadataStatisticsResponse postComputesCorrelationassaymetadataStatistics(CorrelationAssayMetadataPluginRequest entity) {
-    return PostComputesCorrelationassaymetadataStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
+  public PostComputesSelfcorrelationStatisticsResponse postComputesSelfcorrelationStatistics(SelfCorrelationPluginRequest entity) {
+    return PostComputesSelfcorrelationStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
         try {
-          getResultFileStreamer(new CorrelationAssayMetadataPluginProvider(), STATISTICS, entity).write(out);
-        }
-        catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }));
-  }
-
-  @Override
-  public PostComputesCorrelationassayselfResponse postComputesCorrelationassayself(Boolean autostart, CorrelationAssaySelfPluginRequest entity) {
-    return PostComputesCorrelationassayselfResponse.respond200WithApplicationJson(submitJob(new CorrelationAssaySelfPluginProvider(), entity, autostart));
-  }
-
-  @Override
-  public PostComputesCorrelationassayselfStatisticsResponse postComputesCorrelationassayselfStatistics(CorrelationAssaySelfPluginRequest entity) {
-    return PostComputesCorrelationassayselfStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
-        try {
-          getResultFileStreamer(new CorrelationAssaySelfPluginProvider(), STATISTICS, entity).write(out);
+          getResultFileStreamer(new SelfCorrelationPluginProvider(), STATISTICS, entity).write(out);
         }
         catch (IOException e) {
           throw new RuntimeException(e);

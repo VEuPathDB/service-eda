@@ -100,9 +100,6 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       // Filter metadata variables into only those that are appropriate for correlation
       List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
 
-      LOG.info("Using the following metadata variables for correlation: {}",
-          JsonUtil.serializeObject(metadataVariables));
-
       return List.of(new StreamSpec(INPUT_DATA, entityId)
           .addVars(getUtil().getCollectionMembers(assay))
           .addVars(metadataVariables)
@@ -196,6 +193,9 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         // Filter metadata variables into only those that are appropriate for correlation.
         List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
 
+        LOG.info("Using the following metadata variables for correlation: {}",
+          JsonUtil.serializeObject(metadataVariables));
+
         connection.voidEval("assayData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
         // Read in the sample metadata
@@ -266,10 +266,12 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
           entity2IdColumns.remove(entity2IdVarSpec);
         }
 
+        connection.voidEval("assayData <- " + INPUT_DATA);
         List<VariableSpec> assay2InputVars = ListBuilder.asList(revisedComputeEntityIdVarSpec);
         assay2InputVars.addAll(util.getCollectionMembers(assay2));
         assay2InputVars.addAll(entity2IdColumns);
         connection.voidEval(util.getVoidEvalFreadCommand(INPUT_2_DATA, assay2InputVars));
+        connection.voidEval("assay2Data <- " + INPUT_2_DATA);
 
         List<String> dotNotatedEntity2IdColumns = entity2IdColumns.stream().map(VariableDef::toDotNotation).toList();
         String dotNotatedEntity2IdColumnsString = util.listToRVector(dotNotatedEntity2IdColumns);
@@ -285,7 +287,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         if (isEigengene) {
           // If we have eigenegene data, we'll use our base correlation function in veupathUtils, so we
           // only need to make data frames for the assay data and sample metadata.
-          connection.voidEval("data1 <- assay1Data; " + 
+          connection.voidEval("data1 <- assayData; " + 
             "data1 <- data1[order(" + revisedComputeEntityIdColName + ")]; " + 
             "data1 <- data1[, -as.character(" + dotNotatedEntityIdColumnsString + "), with=FALSE];" +
             "data1 <- data1[, -" + singleQuote(revisedComputeEntityIdColName) + ", with=FALSE]");
@@ -301,7 +303,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         } else {
           // If we don't have eigengene data, for now we can assume the data is abundance data.
           // Abundance data can go through our microbiomeComputations pipeline.
-          connection.voidEval("data1 <- microbiomeData::AbundanceData(data=assay1Data" + 
+          connection.voidEval("data1 <- microbiomeData::AbundanceData(data=assayData" + 
                                     ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                     ", imputeZero=TRUE)");

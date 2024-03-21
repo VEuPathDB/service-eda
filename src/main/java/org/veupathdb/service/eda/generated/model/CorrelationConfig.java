@@ -1,71 +1,42 @@
 package org.veupathdb.service.eda.generated.model;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 
 @JsonDeserialize(
-    using = CorrelationConfig.CorrelationConfigDeserializer.class
+    as = CorrelationConfigImpl.class
 )
-@JsonSerialize(
-    using = CorrelationConfig.Serializer.class
-)
-public interface CorrelationConfig {
-  Correlation1Collection getCorrelation1Collection();
+public interface CorrelationConfig extends BaseCorrelationComputeConfig {
+  @JsonProperty("correlationMethod")
+  CorrelationMethod getCorrelationMethod();
 
-  Boolean isCorrelation1Collection();
+  @JsonProperty("correlationMethod")
+  void setCorrelationMethod(CorrelationMethod correlationMethod);
 
-  Correlation2Collections getCorrelation2Collections();
+  @JsonProperty("prefilterThresholds")
+  FeaturePrefilterThresholds getPrefilterThresholds();
 
-  Boolean isCorrelation2Collections();
+  @JsonProperty("prefilterThresholds")
+  void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds);
 
-  class Serializer extends StdSerializer<CorrelationConfig> {
-    public Serializer() {
-      super(CorrelationConfig.class);}
+  @JsonProperty("collectionVariable")
+  CollectionSpec getCollectionVariable();
 
-    public void serialize(CorrelationConfig object, JsonGenerator jsonGenerator,
-        SerializerProvider jsonSerializerProvider) throws IOException, JsonProcessingException {
-      if ( object.isCorrelation1Collection()) {
-        jsonGenerator.writeObject(object.getCorrelation1Collection());
-        return;
-      }
-      if ( object.isCorrelation2Collections()) {
-        jsonGenerator.writeObject(object.getCorrelation2Collections());
-        return;
-      }
-      throw new IOException("Can't figure out type of object" + object);
-    }
-  }
+  @JsonProperty("collectionVariable")
+  void setCollectionVariable(CollectionSpec collectionVariable);
 
-  class CorrelationConfigDeserializer extends StdDeserializer<CorrelationConfig> {
-    public CorrelationConfigDeserializer() {
-      super(CorrelationConfig.class);}
+  @JsonProperty("collectionVariable2")
+  CollectionSpec getCollectionVariable2();
 
-    private Boolean looksLikeCorrelation1Collection(Map<String, Object> map) {
-      return map.keySet().containsAll(Arrays.asList("correlationMethod","prefilterThresholds","collectionVariable"));
-    }
+  @JsonProperty("collectionVariable2")
+  void setCollectionVariable2(CollectionSpec collectionVariable2);
 
-    private Boolean looksLikeCorrelation2Collections(Map<String, Object> map) {
-      return map.keySet().containsAll(Arrays.asList("correlationMethod","prefilterThresholds","collectionVariable1","collectionVariable2"));
-    }
+  @JsonAnyGetter
+  Map<String, Object> getAdditionalProperties();
 
-    public CorrelationConfig deserialize(JsonParser jsonParser, DeserializationContext jsonContext)
-        throws IOException, JsonProcessingException {
-      ObjectMapper mapper  = new ObjectMapper();
-      Map<String, Object> map = mapper.readValue(jsonParser, Map.class);
-      if ( looksLikeCorrelation1Collection(map) ) return new CorrelationConfigImpl(mapper.convertValue(map, Correlation1CollectionImpl.class));
-      if ( looksLikeCorrelation2Collections(map) ) return new CorrelationConfigImpl(mapper.convertValue(map, Correlation2CollectionsImpl.class));
-      throw new IOException("Can't figure out type of object" + map);
-    }
-  }
+  @JsonAnySetter
+  void setAdditionalProperties(String key, Object value);
 }

@@ -30,6 +30,7 @@ public class InternalJobImpl implements InternalJob {
   @JsonProperty("owned")
   private Boolean owned;
 
+  @JsonProperty("created")
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
       pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
@@ -37,7 +38,6 @@ public class InternalJobImpl implements InternalJob {
   @JsonDeserialize(
       using = TimestampDeserializer.class
   )
-  @JsonProperty("created")
   private Date created;
 
   @JsonProperty("grabbed")
@@ -50,7 +50,6 @@ public class InternalJobImpl implements InternalJob {
   )
   private Date grabbed;
 
-  @JsonProperty("finished")
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
       pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
@@ -58,6 +57,7 @@ public class InternalJobImpl implements InternalJob {
   @JsonDeserialize(
       using = TimestampDeserializer.class
   )
+  @JsonProperty("finished")
   private Date finished;
 
   @JsonIgnore

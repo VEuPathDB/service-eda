@@ -9,7 +9,7 @@ import java.util.Map;
 @JsonDeserialize(
     as = SelfCorrelationConfigImpl.class
 )
-public interface SelfCorrelationConfig extends Correlation1Collection {
+public interface SelfCorrelationConfig extends BaseCorrelationComputeConfig {
   @JsonProperty("correlationMethod")
   CorrelationMethod getCorrelationMethod();
 

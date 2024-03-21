@@ -1,44 +1,83 @@
 package org.veupathdb.service.eda.generated.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import java.util.Map;
 
-@JsonDeserialize(
-    using = CorrelationConfig.CorrelationConfigDeserializer.class
-)
-@JsonSerialize(
-    using = CorrelationConfig.Serializer.class
-)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonPropertyOrder({
+    "correlationMethod",
+    "prefilterThresholds",
+    "collectionVariable",
+    "collectionVariable2"
+})
 public class CorrelationConfigImpl implements CorrelationConfig {
-  private Object anyType;
+  @JsonProperty("correlationMethod")
+  private CorrelationMethod correlationMethod;
 
-  private CorrelationConfigImpl() {
-    this.anyType = null;
+  @JsonProperty("prefilterThresholds")
+  private FeaturePrefilterThresholds prefilterThresholds;
+
+  @JsonProperty("collectionVariable")
+  private CollectionSpec collectionVariable;
+
+  @JsonProperty("collectionVariable2")
+  private CollectionSpec collectionVariable2;
+
+  @JsonIgnore
+  private Map<String, Object> additionalProperties = new ExcludingMap();
+
+  @JsonProperty("correlationMethod")
+  public CorrelationMethod getCorrelationMethod() {
+    return this.correlationMethod;
   }
 
-  public CorrelationConfigImpl(Correlation1Collection correlation1Collection) {
-    this.anyType = correlation1Collection;
+  @JsonProperty("correlationMethod")
+  public void setCorrelationMethod(CorrelationMethod correlationMethod) {
+    this.correlationMethod = correlationMethod;
   }
 
-  public CorrelationConfigImpl(Correlation2Collections correlation2Collections) {
-    this.anyType = correlation2Collections;
+  @JsonProperty("prefilterThresholds")
+  public FeaturePrefilterThresholds getPrefilterThresholds() {
+    return this.prefilterThresholds;
   }
 
-  public Correlation1Collection getCorrelation1Collection() {
-    if ( !(anyType instanceof  Correlation1Collection)) throw new IllegalStateException("fetching wrong type out of the union: org.veupathdb.service.eda.generated.model.Correlation1Collection");
-    return (Correlation1Collection) anyType;
+  @JsonProperty("prefilterThresholds")
+  public void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds) {
+    this.prefilterThresholds = prefilterThresholds;
   }
 
-  public Boolean isCorrelation1Collection() {
-    return anyType instanceof Correlation1Collection;
+  @JsonProperty("collectionVariable")
+  public CollectionSpec getCollectionVariable() {
+    return this.collectionVariable;
   }
 
-  public Correlation2Collections getCorrelation2Collections() {
-    if ( !(anyType instanceof  Correlation2Collections)) throw new IllegalStateException("fetching wrong type out of the union: org.veupathdb.service.eda.generated.model.Correlation2Collections");
-    return (Correlation2Collections) anyType;
+  @JsonProperty("collectionVariable")
+  public void setCollectionVariable(CollectionSpec collectionVariable) {
+    this.collectionVariable = collectionVariable;
   }
 
-  public Boolean isCorrelation2Collections() {
-    return anyType instanceof Correlation2Collections;
+  @JsonProperty("collectionVariable2")
+  public CollectionSpec getCollectionVariable2() {
+    return this.collectionVariable2;
+  }
+
+  @JsonProperty("collectionVariable2")
+  public void setCollectionVariable2(CollectionSpec collectionVariable2) {
+    this.collectionVariable2 = collectionVariable2;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getAdditionalProperties() {
+    return additionalProperties;
+  }
+
+  @JsonAnySetter
+  public void setAdditionalProperties(String key, Object value) {
+    this.additionalProperties.put(key, value);
   }
 }

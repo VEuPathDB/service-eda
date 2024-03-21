@@ -128,6 +128,8 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
 
   @Override
   protected void execute() {
+
+    // Get basic parameters of the correlation computation
     CorrelationConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
     ReferenceMetadata metadata = getContext().getReferenceMetadata();
@@ -147,7 +149,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       featureFilterThresholds.getStandardDeviation() != null ? 
         ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 
-    // Wrangle into helpful types
+    // Wrangle the (first) assay collection into helpful types
     CollectionSpec assay = computeConfig.getCollectionVariable();
     String entityId = assay.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
@@ -155,13 +157,13 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     CollectionDef collection = metadata.getCollection(assay).orElseThrow(); 
 
-    // Get record id columns
+    // Get record id columns for the (first) assay collection
     List<VariableDef> entityIdColumns = new ArrayList<>();
     for (EntityDef ancestor : metadata.getAncestors(entity)) {
       entityIdColumns.add(ancestor.getIdColumnDef());
     }
 
-    // Get data streams for Rserve
+    // Get data stream(s) for Rserve
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     boolean hasSecondCollection = computeConfig.getCollectionVariable2() != null;
@@ -172,7 +174,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
 
-      // Read in the assay data
+      // Read in the (first) assay data
       List<VariableSpec> assayInputVars = ListBuilder.asList(computeEntityIdVarSpec);
       assayInputVars.addAll(util.getCollectionMembers(assay));
       assayInputVars.addAll(entityIdColumns);
@@ -189,6 +191,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         isEigengene = true;
       }
 
+      // THIS CASE IS ASSAY X METADATA
       if (!hasSecondCollection) {
         // Filter metadata variables into only those that are appropriate for correlation.
         List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
@@ -221,7 +224,6 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
                                     ", method=" + singleQuote(method) +
                                     ", verbose=TRUE)");
         } else {
-          
           // If we don't have eigengene data, for now we can assume the data is abundance data.
           // Abundance data can go through our microbiomeComputations pipeline.
           connection.voidEval("sampleMetadata <- microbiomeData::SampleMetadata(data = sampleMetadata" +
@@ -242,7 +244,9 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
                                                               stdDevThresholdRParam +
                                                               ", verbose=TRUE)");
         }
+    // THIS CASE IS ASSAY X ASSAY
       } else {
+        // Get the second assay collection
         CollectionSpec assay2 = computeConfig.getCollectionVariable2();
         String entity2Id = assay2.getEntityId();
         boolean isSameEntity = entityId.equals(entity2Id);
@@ -266,6 +270,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
           entity2IdColumns.remove(entity2IdVarSpec);
         }
 
+        // read both sets of assay data into R
         connection.voidEval("assayData <- " + INPUT_DATA);
         List<VariableSpec> assay2InputVars = ListBuilder.asList(revisedComputeEntityIdVarSpec);
         assay2InputVars.addAll(util.getCollectionMembers(assay2));

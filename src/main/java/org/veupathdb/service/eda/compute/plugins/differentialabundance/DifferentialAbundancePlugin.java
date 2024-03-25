@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.compute.plugins.differentialabundance;
 import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.model.CollectionDef;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -48,6 +49,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     ReferenceMetadata meta = getContext().getReferenceMetadata();
 
     CollectionSpec collectionSpec = computeConfig.getCollectionVariable();
+    CollectionDef collection = meta.getCollection(collectionSpec).orElseThrow();
+    String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
     String entityId = collectionSpec.getEntityId();
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
@@ -125,7 +128,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       {
         abundanceDataClass = "AbsoluteAbundanceData";
       }
-      connection.voidEval("inputData <- microbiomeData::" + abundanceDataClass + "(data=abundanceData" + 
+      connection.voidEval("inputData <- microbiomeData::" + abundanceDataClass + "(name=" + singleQuote(collectionMemberType) + 
+                                                                          ", data=abundanceData" + 
                                                                           ", sampleMetadata=sampleMetadata" +
                                                                           ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +

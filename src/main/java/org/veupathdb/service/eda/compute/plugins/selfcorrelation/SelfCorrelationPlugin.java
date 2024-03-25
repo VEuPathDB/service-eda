@@ -129,7 +129,7 @@ public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginR
       } else {
         // If we don't have eigengene data, for now we can assume the data is abundance data.
         // Abundance data can go through our microbiomeComputations pipeline.
-        connection.voidEval("data <- microbiomeData::AbundanceData(data=assayData" + 
+        connection.voidEval("data <- microbiomeData::AbundanceData(name=" + singleQuote(collectionMemberType) + ",data=assayData" + 
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                   ", imputeZero=TRUE)");

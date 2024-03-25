@@ -230,7 +230,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
                                     ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + "))");
 
-          connection.voidEval("abundanceData <- microbiomeData::AbundanceData(data=assayData" + 
+          connection.voidEval("abundanceData <- microbiomeData::AbundanceData(name= " + singleQuote(assayType) + ",data=assayData" + 
                                     ", sampleMetadata=sampleMetadata" +
                                     ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
@@ -308,12 +308,12 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         } else {
           // If we don't have eigengene data, for now we can assume the data is abundance data.
           // Abundance data can go through our microbiomeComputations pipeline.
-          connection.voidEval("data1 <- microbiomeData::AbundanceData(data=assayData" + 
+          connection.voidEval("data1 <- microbiomeData::AbundanceData(name= " + singleQuote(assayType) + ",data=assayData" + 
                                     ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                     ", imputeZero=TRUE)");
       
-          connection.voidEval("data2 <- microbiomeData::AbundanceData(data = assay2Data" +
+          connection.voidEval("data2 <- microbiomeData::AbundanceData(name= " + singleQuote(collection2MemberType) + ",data = assay2Data" +
                                     ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + ")" +
                                     ", imputeZero=TRUE)");

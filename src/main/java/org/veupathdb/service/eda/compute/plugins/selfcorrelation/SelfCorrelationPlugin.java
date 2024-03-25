@@ -110,37 +110,23 @@ public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginR
       // i think we cross that bridge when we get there and know more.. 
       // NOTE: getMember tells us the member type, rather than gives us a literal member
       String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
-      boolean isEigengene = false;
+      String dataClassRString = "microbiomeData::AbundanceData";
       if (collectionMemberType.toLowerCase().contains("eigengene")) {
-        isEigengene = true;
+        dataClassRString = "veupathUtils::CollectionWithMetadata";
       }
       
-      // Prep data and run correlation
-      if (isEigengene)  {
-        // If we have eigenegene data, we'll use our base correlation function in veupathUtils, so we
-        // only need to make data frames for the assay data and sample metadata.
-        connection.voidEval("assayData <- assayData[order(" + computeEntityIdColName + ")]; " + 
-          "assayData <- assayData[, -as.character(" + dotNotatedEntityIdColumnsString +"), with=FALSE];" +
-          "assayData <- assayData[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE]");
-
-        connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=assayData" +
-                                  ", method=" + singleQuote(method) +
-                                  ", verbose=TRUE)");
-      } else {
-        // If we don't have eigengene data, for now we can assume the data is abundance data.
-        // Abundance data can go through our microbiomeComputations pipeline.
-        connection.voidEval("data <- microbiomeData::AbundanceData(name=" + singleQuote(collectionMemberType) + ",data=assayData" + 
+      connection.voidEval("data <- " + dataClassRString + "(name=" + singleQuote(collectionMemberType) + ",data=assayData" + 
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                   ", imputeZero=TRUE)");
-        // Run correlation!
-        connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=data" +
+
+      // Run correlation!
+      connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=data" +
                                                             ", method=" + singleQuote(method) +
                                                             proportionNonZeroThresholdRParam +
                                                             varianceThresholdRParam +
                                                             stdDevThresholdRParam +
                                                             ", verbose=TRUE)");
-      }
 
       String statsCmd = "writeStatistics(computeResult, NULL, TRUE)";
 

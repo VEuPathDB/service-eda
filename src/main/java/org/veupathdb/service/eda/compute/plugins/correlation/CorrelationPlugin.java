@@ -186,9 +186,9 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       // NOTE: getMember tells us the member type, rather than gives us a literal member
       String assayType = collection.getMember() == null ? "unknown" : collection.getMember();
 
-      boolean isEigengene = false;
+      String dataClassRString = "microbiomeData::AbundanceData";
       if (assayType.toLowerCase().contains("eigengene")) {
-        isEigengene = true;
+        dataClassRString = "veupathUtils::CollectionWithMetadata";
       }
 
       // THIS CASE IS ASSAY X METADATA
@@ -208,43 +208,24 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataInputVars));
         connection.voidEval("sampleMetadata <- " + INPUT_DATA); 
 
-         // Prep data and run correlation
-        if (isEigengene)  {
-          // If we have eigenegene data, we'll use our base correlation function in veupathUtils, so we
-          // only need to make data frames for the assay data and sample metadata.
-          connection.voidEval("eigengeneData <- assayData[order(" + computeEntityIdColName + ")]; " + 
-            "eigengeneData <- eigengeneData[, -as.character(" + dotNotatedEntityIdColumnsString + "), with=FALSE];" +
-            "eigengeneData <- eigengeneData[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE];");
-
-          connection.voidEval("sampleMetadata <- sampleMetadata[order(" + computeEntityIdColName + ")]; " + 
-            "sampleMetadata <- sampleMetadata[, -as.character(" + dotNotatedEntityIdColumnsString + "), with=FALSE];" +
-            "sampleMetadata <- sampleMetadata[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE];");
-        
-          connection.voidEval("computeResult <- veupathUtils::correlation(data1=eigengeneData, data2=sampleMetadata" +
-                                    ", method=" + singleQuote(method) +
-                                    ", verbose=TRUE)");
-        } else {
-          // If we don't have eigengene data, for now we can assume the data is abundance data.
-          // Abundance data can go through our microbiomeComputations pipeline.
-          connection.voidEval("sampleMetadata <- microbiomeData::SampleMetadata(data = sampleMetadata" +
+        connection.voidEval("sampleMetadata <- microbiomeData::SampleMetadata(data = sampleMetadata" +
                                     ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + "))");
 
-          connection.voidEval("abundanceData <- microbiomeData::AbundanceData(name= " + singleQuote(assayType) + ",data=assayData" + 
+        connection.voidEval("abundanceData <- " + dataClassRString + "(name= " + singleQuote(assayType) + ",data=assayData" + 
                                     ", sampleMetadata=sampleMetadata" +
                                     ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                     ", imputeZero=TRUE)");       
                                   
-          // Run correlation!
-          connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData" +
+        // Run correlation!
+        connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData" +
                                                               ", method=" + singleQuote(method) +
                                                               proportionNonZeroThresholdRParam +
                                                               varianceThresholdRParam +
                                                               stdDevThresholdRParam +
                                                               ", verbose=TRUE)");
-        }
-    // THIS CASE IS ASSAY X ASSAY
+      // THIS CASE IS ASSAY X ASSAY
       } else {
         // Get the second assay collection
         CollectionSpec assay2 = computeConfig.getCollectionVariable2();
@@ -282,50 +263,25 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         String dotNotatedEntity2IdColumnsString = util.listToRVector(dotNotatedEntity2IdColumns);
 
         String collection2MemberType = collection2.getMember() == null ? "unknown" : collection2.getMember();
-        // If either collection is an eigengene, we'll use our base correlation function in veupathUtils,
-        // so we want to set the isEigengene flag to true.
-        if (collection2MemberType.toLowerCase().contains("eigengene")) {
-          isEigengene = true;
-        }
+        String data2ClassRString = collection2MemberType.toLowerCase().contains("eigengene") ? "veupathUtils::CollectionWithMetadata" : "microbiomeData::AbundanceData";
 
-        // Prep data and run correlation
-        if (isEigengene) {
-          // If we have eigenegene data, we'll use our base correlation function in veupathUtils, so we
-          // only need to make data frames for the assay data and sample metadata.
-          connection.voidEval("data1 <- assayData; " + 
-            "data1 <- data1[order(" + revisedComputeEntityIdColName + ")]; " + 
-            "data1 <- data1[, -as.character(" + dotNotatedEntityIdColumnsString + "), with=FALSE];" +
-            "data1 <- data1[, -" + singleQuote(revisedComputeEntityIdColName) + ", with=FALSE]");
-
-          connection.voidEval("data2 <- assay2Data; " +
-            "data2 <- data2[order(" + revisedComputeEntityIdColName + ")]; " + 
-            "data2 <- data2[, -as.character(" + dotNotatedEntity2IdColumnsString + "), with=FALSE];" +
-            "data2 <- data2[, -" + singleQuote(revisedComputeEntityIdColName) + ", with=FALSE]");
-
-          connection.voidEval("computeResult <- veupathUtils::correlation(data1=data1, data2=data2" +
-                                                              ", method=" + singleQuote(method) +
-                                                              ", verbose=TRUE)");
-        } else {
-          // If we don't have eigengene data, for now we can assume the data is abundance data.
-          // Abundance data can go through our microbiomeComputations pipeline.
-          connection.voidEval("data1 <- microbiomeData::AbundanceData(name= " + singleQuote(assayType) + ",data=assayData" + 
+        connection.voidEval("data1 <- " + dataClassRString + "(name= " + singleQuote(assayType) + ",data=assayData" + 
                                     ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                     ", imputeZero=TRUE)");
       
-          connection.voidEval("data2 <- microbiomeData::AbundanceData(name= " + singleQuote(collection2MemberType) + ",data = assay2Data" +
+        connection.voidEval("data2 <- " + data2ClassRString + "(name= " + singleQuote(collection2MemberType) + ",data = assay2Data" +
                                     ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + ")" +
                                     ", imputeZero=TRUE)");
 
-          // Run correlation!
-          connection.voidEval("computeResult <- veupathUtils::correlation(data1=data1, data2=data2" +
+        // Run correlation!
+        connection.voidEval("computeResult <- veupathUtils::correlation(data1=data1, data2=data2" +
                                                               ", method=" + singleQuote(method) +
                                                               proportionNonZeroThresholdRParam +
                                                               varianceThresholdRParam +
                                                               stdDevThresholdRParam +
                                                               ", verbose=TRUE)");
-        }
       }
 
       // Write results

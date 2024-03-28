@@ -36,6 +36,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
 
   private static final String INPUT_DATA = "inputData";
   private static final String INPUT_2_DATA = "input2Data";
+  private static final String METADATA_COLLECTION_ID = "MetadataCollection";
 
   public CorrelationPlugin(@NotNull PluginContext<CorrelationPluginRequest, CorrelationConfig> context) {
     super(context);
@@ -96,7 +97,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     String entityId = assay.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
 
-    if (computeConfig.getCollectionVariable2() == null) {
+    if (computeConfig.getCollectionVariable2() == null || computeConfig.getCollectionVariable2().getCollectionId().equals(METADATA_COLLECTION_ID)) {
       // Filter metadata variables into only those that are appropriate for correlation
       List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
 
@@ -166,7 +167,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     // Get data stream(s) for Rserve
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
-    boolean hasSecondCollection = computeConfig.getCollectionVariable2() != null;
+    boolean hasSecondCollection = computeConfig.getCollectionVariable2() != null && !computeConfig.getCollectionVariable2().getCollectionId().equals(METADATA_COLLECTION_ID);
     if (hasSecondCollection) {
       dataStream.put(INPUT_2_DATA, getWorkspace().openStream(INPUT_2_DATA));
     }

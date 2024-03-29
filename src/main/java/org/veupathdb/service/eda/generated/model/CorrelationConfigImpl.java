@@ -12,8 +12,8 @@ import java.util.Map;
 @JsonPropertyOrder({
     "correlationMethod",
     "prefilterThresholds",
-    "collectionVariable",
-    "collectionVariable2"
+    "data1",
+    "data2"
 })
 public class CorrelationConfigImpl implements CorrelationConfig {
   @JsonProperty("correlationMethod")
@@ -22,11 +22,11 @@ public class CorrelationConfigImpl implements CorrelationConfig {
   @JsonProperty("prefilterThresholds")
   private FeaturePrefilterThresholds prefilterThresholds;
 
-  @JsonProperty("collectionVariable")
-  private CollectionSpec collectionVariable;
+  @JsonProperty("data1")
+  private CorrelationInputData data1;
 
-  @JsonProperty("collectionVariable2")
-  private CollectionSpec collectionVariable2;
+  @JsonProperty("data2")
+  private CorrelationInputData data2;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
@@ -51,24 +51,24 @@ public class CorrelationConfigImpl implements CorrelationConfig {
     this.prefilterThresholds = prefilterThresholds;
   }
 
-  @JsonProperty("collectionVariable")
-  public CollectionSpec getCollectionVariable() {
-    return this.collectionVariable;
+  @JsonProperty("data1")
+  public CorrelationInputData getData1() {
+    return this.data1;
   }
 
-  @JsonProperty("collectionVariable")
-  public void setCollectionVariable(CollectionSpec collectionVariable) {
-    this.collectionVariable = collectionVariable;
+  @JsonProperty("data1")
+  public void setData1(CorrelationInputData data1) {
+    this.data1 = data1;
   }
 
-  @JsonProperty("collectionVariable2")
-  public CollectionSpec getCollectionVariable2() {
-    return this.collectionVariable2;
+  @JsonProperty("data2")
+  public CorrelationInputData getData2() {
+    return this.data2;
   }
 
-  @JsonProperty("collectionVariable2")
-  public void setCollectionVariable2(CollectionSpec collectionVariable2) {
-    this.collectionVariable2 = collectionVariable2;
+  @JsonProperty("data2")
+  public void setData2(CorrelationInputData data2) {
+    this.data2 = data2;
   }
 
   @JsonAnyGetter

@@ -22,17 +22,17 @@ public interface CorrelationConfig extends BaseCorrelationComputeConfig {
   @JsonProperty("prefilterThresholds")
   void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds);
 
-  @JsonProperty("collectionVariable")
-  CollectionSpec getCollectionVariable();
+  @JsonProperty("data1")
+  CorrelationInputData getData1();
 
-  @JsonProperty("collectionVariable")
-  void setCollectionVariable(CollectionSpec collectionVariable);
+  @JsonProperty("data1")
+  void setData1(CorrelationInputData data1);
 
-  @JsonProperty("collectionVariable2")
-  CollectionSpec getCollectionVariable2();
+  @JsonProperty("data2")
+  CorrelationInputData getData2();
 
-  @JsonProperty("collectionVariable2")
-  void setCollectionVariable2(CollectionSpec collectionVariable2);
+  @JsonProperty("data2")
+  void setData2(CorrelationInputData data2);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

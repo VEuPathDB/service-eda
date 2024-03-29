@@ -36,7 +36,6 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
 
   private static final String INPUT_DATA = "inputData";
   private static final String INPUT_2_DATA = "input2Data";
-  private static final String METADATA_COLLECTION_ID = "MetadataCollection";
 
   public CorrelationPlugin(@NotNull PluginContext<CorrelationPluginRequest, CorrelationConfig> context) {
     super(context);
@@ -93,11 +92,12 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     CorrelationConfig computeConfig = getConfig();
     ReferenceMetadata metadata = getContext().getReferenceMetadata();
 
-    CollectionSpec assay = computeConfig.getCollectionVariable();
+    CollectionSpec assay = computeConfig.getData1().getCollectionSpec();
+
     String entityId = assay.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
 
-    if (computeConfig.getCollectionVariable2() == null || computeConfig.getCollectionVariable2().getCollectionId().equals(METADATA_COLLECTION_ID)) {
+    if (computeConfig.getData2().getDataType().equals("metadata")) {
       // Filter metadata variables into only those that are appropriate for correlation
       List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
 
@@ -106,7 +106,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
           .addVars(metadataVariables)
         );
     } else {
-      CollectionSpec assay2 = computeConfig.getCollectionVariable2();
+      CollectionSpec assay2 = computeConfig.getData2().getCollectionSpec();
       String entity2Id = assay2.getEntityId();
       EntityDef entity2 = metadata.getEntity(entity2Id).orElseThrow();
 
@@ -151,7 +151,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 
     // Wrangle the (first) assay collection into helpful types
-    CollectionSpec assay = computeConfig.getCollectionVariable();
+    CollectionSpec assay = computeConfig.getData1().getCollectionSpec();
     String entityId = assay.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
@@ -167,10 +167,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     // Get data stream(s) for Rserve
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
-    boolean hasSecondCollection = computeConfig.getCollectionVariable2() != null && !computeConfig.getCollectionVariable2().getCollectionId().equals(METADATA_COLLECTION_ID);
-    if (hasSecondCollection) {
-      dataStream.put(INPUT_2_DATA, getWorkspace().openStream(INPUT_2_DATA));
-    }
+
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
@@ -193,7 +190,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       }
 
       // THIS CASE IS ASSAY X METADATA
-      if (!hasSecondCollection) {
+      if (computeConfig.getData2().getDataType().equals("metadata")) {
         // Filter metadata variables into only those that are appropriate for correlation.
         List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
 
@@ -248,7 +245,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     // THIS CASE IS ASSAY X ASSAY
       } else {
         // Get the second assay collection
-        CollectionSpec assay2 = computeConfig.getCollectionVariable2();
+        CollectionSpec assay2 = computeConfig.getData2().getCollectionSpec();
         String entity2Id = assay2.getEntityId();
         boolean isSameEntity = entityId.equals(entity2Id);
     

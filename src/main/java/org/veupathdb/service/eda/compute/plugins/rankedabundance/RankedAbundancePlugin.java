@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.compute.plugins.rankedabundance;
 import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.model.CollectionDef;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -42,6 +43,8 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
     RankedAbundanceComputeConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
     ReferenceMetadata meta = getContext().getReferenceMetadata();
+    CollectionDef collection = meta.getCollection(computeConfig.getCollectionVariable()).orElseThrow();
+    String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
     String entityId = computeConfig.getCollectionVariable().getEntityId();
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
@@ -75,7 +78,7 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-      connection.voidEval("abundDT <- microbiomeData::AbundanceData(data=" + INPUT_DATA + 
+      connection.voidEval("abundDT <- microbiomeData::AbundanceData(name= " + util.singleQuote(collectionMemberType) + ",data=" + INPUT_DATA + 
                                                                           ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
                                                                           ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ",imputeZero=TRUE)");

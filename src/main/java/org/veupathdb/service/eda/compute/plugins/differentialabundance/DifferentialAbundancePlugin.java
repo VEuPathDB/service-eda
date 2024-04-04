@@ -55,7 +55,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    String method = computeConfig.getDifferentialAbundanceMethod().getValue();
+    // if we ever introduce ANCOM-BC or something else we'll need to change this
+    String method = computeConfig.getDifferentialAbundanceMethod().getValue().equals("Maaslin") ? "Maaslin2" : "DESeq2";
     VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
     String comparisonVariableDataShape = util.getVariableDataShape(comparisonVariableSpec);
     List<LabeledRange> groupA = computeConfig.getComparator().getGroupA();
@@ -134,8 +135,6 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
                                                                           ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ", imputeZero=TRUE)");
-
-
 
       connection.voidEval("computeResult <- differentialAbundance(data=inputData" +
                                                           ", comparator=comparator" +

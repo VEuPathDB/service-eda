@@ -97,7 +97,8 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     String entityId = assay.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
 
-    if (computeConfig.getData2().getDataType().equals("metadata")) {
+
+    if (computeConfig.getData2().getDataType().toString().toLowerCase().equals("metadata")) {
       // Filter metadata variables into only those that are appropriate for correlation
       List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
 
@@ -190,7 +191,8 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       }
 
       // THIS CASE IS ASSAY X METADATA
-      if (computeConfig.getData2().getDataType().equals("metadata")) {
+      if (computeConfig.getData2().getDataType().toString().toLowerCase().equals("metadata")) {
+
         // Filter metadata variables into only those that are appropriate for correlation.
         List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
 

@@ -97,16 +97,10 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     String entityId = assay.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
 
+    boolean hasSecondCollection = computeConfig.getData2().getDataType().toString().toLowerCase().equals("assay");
+    if (hasSecondCollection) {
+      // The Assay x Assay case. Both data types are "assay".
 
-    if (computeConfig.getData2().getDataType().toString().toLowerCase().equals("metadata")) {
-      // Filter metadata variables into only those that are appropriate for correlation
-      List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
-
-      return List.of(new StreamSpec(INPUT_DATA, entityId)
-          .addVars(getUtil().getCollectionMembers(assay))
-          .addVars(metadataVariables)
-        );
-    } else {
       CollectionSpec assay2 = computeConfig.getData2().getCollectionSpec();
       String entity2Id = assay2.getEntityId();
       EntityDef entity2 = metadata.getEntity(entity2Id).orElseThrow();
@@ -125,6 +119,16 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         new StreamSpec(INPUT_2_DATA, entity2Id)
           .addVars(getUtil().getCollectionMembers(assay2))
       );
+    } else {
+      // The assay x metadata case. The second data type is metadata.
+
+      // Filter metadata variables into only those that are appropriate for correlation
+      List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
+
+      return List.of(new StreamSpec(INPUT_DATA, entityId)
+          .addVars(getUtil().getCollectionMembers(assay))
+          .addVars(metadataVariables)
+        );
     }
   }
 
@@ -169,6 +173,11 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
 
+    boolean hasSecondCollection = computeConfig.getData2().getDataType().toString().toLowerCase().equals("assay");
+
+    if (hasSecondCollection) {
+      dataStream.put(INPUT_2_DATA, getWorkspace().openStream(INPUT_2_DATA));
+    }
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
@@ -190,43 +199,9 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         dataClassRString = "veupathUtils::CollectionWithMetadata";
       }
 
-      // THIS CASE IS ASSAY X METADATA
-      if (computeConfig.getData2().getDataType().toString().toLowerCase().equals("metadata")) {
+      if (hasSecondCollection) {
+        // The Assay x Assay case. Both data types are "assay".
 
-        // Filter metadata variables into only those that are appropriate for correlation.
-        List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
-
-        LOG.info("Using the following metadata variables for correlation: {}",
-          JsonUtil.serializeObject(metadataVariables));
-
-        connection.voidEval("assayData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
-
-        // Read in the sample metadata
-        List<VariableSpec> metadataInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-        metadataInputVars.addAll(metadataVariables);
-        metadataInputVars.addAll(entityIdColumns);
-        connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataInputVars));
-        connection.voidEval("sampleMetadata <- " + INPUT_DATA); 
-
-        connection.voidEval("sampleMetadata <- microbiomeData::SampleMetadata(data = sampleMetadata" +
-                                    ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                    ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + "))");
-
-        connection.voidEval("abundanceData <- " + dataClassRString + "(name= " + singleQuote(assayType) + ",data=assayData" + 
-                                    ", sampleMetadata=sampleMetadata" +
-                                    ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                    ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
-                                    ", imputeZero=TRUE)");       
-                                  
-        // Run correlation!
-        connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData" +
-                                                              ", method=" + singleQuote(method) +
-                                                              proportionNonZeroThresholdRParam +
-                                                              varianceThresholdRParam +
-                                                              stdDevThresholdRParam +
-                                                              ", verbose=TRUE)");
-      // THIS CASE IS ASSAY X ASSAY
-      } else {
         // Get the second assay collection
         CollectionSpec assay2 = computeConfig.getData2().getCollectionSpec();
         String entity2Id = assay2.getEntityId();
@@ -282,6 +257,43 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
                                                               varianceThresholdRParam +
                                                               stdDevThresholdRParam +
                                                               ", verbose=TRUE)");
+
+      } else {
+        // This is the Assay x Metadata case. The second data type is metadata.
+
+        // Filter metadata variables into only those that are appropriate for correlation.
+        List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
+
+        LOG.info("Using the following metadata variables for correlation: {}",
+          JsonUtil.serializeObject(metadataVariables));
+
+        connection.voidEval("assayData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
+
+        // Read in the sample metadata
+        List<VariableSpec> metadataInputVars = ListBuilder.asList(computeEntityIdVarSpec);
+        metadataInputVars.addAll(metadataVariables);
+        metadataInputVars.addAll(entityIdColumns);
+        connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataInputVars));
+        connection.voidEval("sampleMetadata <- " + INPUT_DATA); 
+
+        connection.voidEval("sampleMetadata <- microbiomeData::SampleMetadata(data = sampleMetadata" +
+                                    ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                    ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + "))");
+
+        connection.voidEval("abundanceData <- " + dataClassRString + "(name= " + singleQuote(assayType) + ",data=assayData" + 
+                                    ", sampleMetadata=sampleMetadata" +
+                                    ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                    ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
+                                    ", imputeZero=TRUE)");       
+                                  
+        // Run correlation!
+        connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData" +
+                                                              ", method=" + singleQuote(method) +
+                                                              proportionNonZeroThresholdRParam +
+                                                              varianceThresholdRParam +
+                                                              stdDevThresholdRParam +
+                                                              ", verbose=TRUE)");
+        
       }
 
       // Write results

@@ -146,14 +146,12 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       throw new IllegalArgumentException("Invalid data configuration. Any data type of `collection` must have a collection specification and data 1 and data 2 must not be the same.");
     }
 
-    // once validated we know at most one of these is metadata
-    // if one is metadata, we have only one collection
     boolean hasSecondCollection = 
-      computeConfig.getData1().getDataType().toString().toLowerCase().equals("metadata") ||
-      computeConfig.getData2().getDataType().toString().toLowerCase().equals("metadata") ?
-      false : true;
+      computeConfig.getData1().getDataType().getValue().equals("collection") &&
+      computeConfig.getData2().getDataType().getValue().equals("collection") ?
+      true : false;
 
-    // again bc of validation we know one or both is collection
+    // bc of validation we know one or both is collection
     // if both, take the first. otherwise take whichever is collection.
     CollectionSpec collection = 
     computeConfig.getData1().getDataType().toString().toLowerCase().equals("collection") ?
@@ -221,15 +219,13 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       featureFilterThresholds.getStandardDeviation() != null ? 
         ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 
-    // once validated we know at most one of these is metadata
-    // if one is metadata, we have only one collection
     boolean hasSecondCollection = 
-      computeConfig.getData1().getDataType().toString().toLowerCase().equals("metadata") ||
-      computeConfig.getData2().getDataType().toString().toLowerCase().equals("metadata") ?
-      false : true;
+      computeConfig.getData1().getDataType().getValue().equals("collection") &&
+      computeConfig.getData2().getDataType().getValue().equals("collection") ?
+      true : false;
 
     // Wrangle the (first) collection into helpful types
-    // again bc of validation we know one or both is collection
+    // bc of validation we know one or both is collection
     // if both, take the first. otherwise take whichever is collection.
     CollectionSpec collectionSpec = 
     computeConfig.getData1().getDataType().toString().toLowerCase().equals("collection") ?

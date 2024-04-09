@@ -40,6 +40,7 @@ public class InternalJobImpl implements InternalJob {
   )
   private Date created;
 
+  @JsonProperty("grabbed")
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
       pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
@@ -47,10 +48,8 @@ public class InternalJobImpl implements InternalJob {
   @JsonDeserialize(
       using = TimestampDeserializer.class
   )
-  @JsonProperty("grabbed")
   private Date grabbed;
 
-  @JsonProperty("finished")
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
       pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
@@ -58,6 +57,7 @@ public class InternalJobImpl implements InternalJob {
   @JsonDeserialize(
       using = TimestampDeserializer.class
   )
+  @JsonProperty("finished")
   private Date finished;
 
   @JsonIgnore

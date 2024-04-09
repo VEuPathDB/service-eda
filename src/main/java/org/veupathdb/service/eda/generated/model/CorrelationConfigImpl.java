@@ -10,17 +10,17 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "correlationMethod",
     "prefilterThresholds",
+    "correlationMethod",
     "data1",
     "data2"
 })
 public class CorrelationConfigImpl implements CorrelationConfig {
-  @JsonProperty("correlationMethod")
-  private CorrelationMethod correlationMethod;
-
   @JsonProperty("prefilterThresholds")
   private FeaturePrefilterThresholds prefilterThresholds;
+
+  @JsonProperty("correlationMethod")
+  private CorrelationMethod correlationMethod;
 
   @JsonProperty("data1")
   private CorrelationInputData data1;
@@ -31,16 +31,6 @@ public class CorrelationConfigImpl implements CorrelationConfig {
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
 
-  @JsonProperty("correlationMethod")
-  public CorrelationMethod getCorrelationMethod() {
-    return this.correlationMethod;
-  }
-
-  @JsonProperty("correlationMethod")
-  public void setCorrelationMethod(CorrelationMethod correlationMethod) {
-    this.correlationMethod = correlationMethod;
-  }
-
   @JsonProperty("prefilterThresholds")
   public FeaturePrefilterThresholds getPrefilterThresholds() {
     return this.prefilterThresholds;
@@ -49,6 +39,16 @@ public class CorrelationConfigImpl implements CorrelationConfig {
   @JsonProperty("prefilterThresholds")
   public void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds) {
     this.prefilterThresholds = prefilterThresholds;
+  }
+
+  @JsonProperty("correlationMethod")
+  public CorrelationMethod getCorrelationMethod() {
+    return this.correlationMethod;
+  }
+
+  @JsonProperty("correlationMethod")
+  public void setCorrelationMethod(CorrelationMethod correlationMethod) {
+    this.correlationMethod = correlationMethod;
   }
 
   @JsonProperty("data1")

@@ -10,12 +10,6 @@ import java.util.Map;
     as = BaseCorrelationComputeConfigImpl.class
 )
 public interface BaseCorrelationComputeConfig {
-  @JsonProperty("correlationMethod")
-  CorrelationMethod getCorrelationMethod();
-
-  @JsonProperty("correlationMethod")
-  void setCorrelationMethod(CorrelationMethod correlationMethod);
-
   @JsonProperty("prefilterThresholds")
   FeaturePrefilterThresholds getPrefilterThresholds();
 

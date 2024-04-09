@@ -10,17 +10,17 @@ import java.util.Map;
     as = CorrelationConfigImpl.class
 )
 public interface CorrelationConfig extends BaseCorrelationComputeConfig {
-  @JsonProperty("correlationMethod")
-  CorrelationMethod getCorrelationMethod();
-
-  @JsonProperty("correlationMethod")
-  void setCorrelationMethod(CorrelationMethod correlationMethod);
-
   @JsonProperty("prefilterThresholds")
   FeaturePrefilterThresholds getPrefilterThresholds();
 
   @JsonProperty("prefilterThresholds")
   void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds);
+
+  @JsonProperty("correlationMethod")
+  CorrelationMethod getCorrelationMethod();
+
+  @JsonProperty("correlationMethod")
+  void setCorrelationMethod(CorrelationMethod correlationMethod);
 
   @JsonProperty("data1")
   CorrelationInputData getData1();

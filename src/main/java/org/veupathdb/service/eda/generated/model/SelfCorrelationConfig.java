@@ -10,23 +10,23 @@ import java.util.Map;
     as = SelfCorrelationConfigImpl.class
 )
 public interface SelfCorrelationConfig extends BaseCorrelationComputeConfig {
-  @JsonProperty("correlationMethod")
-  CorrelationMethod getCorrelationMethod();
-
-  @JsonProperty("correlationMethod")
-  void setCorrelationMethod(CorrelationMethod correlationMethod);
-
   @JsonProperty("prefilterThresholds")
   FeaturePrefilterThresholds getPrefilterThresholds();
 
   @JsonProperty("prefilterThresholds")
   void setPrefilterThresholds(FeaturePrefilterThresholds prefilterThresholds);
 
-  @JsonProperty("collectionVariable")
-  CollectionSpec getCollectionVariable();
+  @JsonProperty("correlationMethod")
+  SelfCorrelationMethod getCorrelationMethod();
 
-  @JsonProperty("collectionVariable")
-  void setCollectionVariable(CollectionSpec collectionVariable);
+  @JsonProperty("correlationMethod")
+  void setCorrelationMethod(SelfCorrelationMethod correlationMethod);
+
+  @JsonProperty("data1")
+  CollectionSpec getData1();
+
+  @JsonProperty("data1")
+  void setData1(CollectionSpec data1);
 
   @JsonAnyGetter
   Map<String, Object> getAdditionalProperties();

@@ -10,32 +10,22 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "correlationMethod",
     "prefilterThresholds",
-    "collectionVariable"
+    "correlationMethod",
+    "data1"
 })
 public class SelfCorrelationConfigImpl implements SelfCorrelationConfig {
-  @JsonProperty("correlationMethod")
-  private CorrelationMethod correlationMethod;
-
   @JsonProperty("prefilterThresholds")
   private FeaturePrefilterThresholds prefilterThresholds;
 
-  @JsonProperty("collectionVariable")
-  private CollectionSpec collectionVariable;
+  @JsonProperty("correlationMethod")
+  private SelfCorrelationMethod correlationMethod;
+
+  @JsonProperty("data1")
+  private CollectionSpec data1;
 
   @JsonIgnore
   private Map<String, Object> additionalProperties = new ExcludingMap();
-
-  @JsonProperty("correlationMethod")
-  public CorrelationMethod getCorrelationMethod() {
-    return this.correlationMethod;
-  }
-
-  @JsonProperty("correlationMethod")
-  public void setCorrelationMethod(CorrelationMethod correlationMethod) {
-    this.correlationMethod = correlationMethod;
-  }
 
   @JsonProperty("prefilterThresholds")
   public FeaturePrefilterThresholds getPrefilterThresholds() {
@@ -47,14 +37,24 @@ public class SelfCorrelationConfigImpl implements SelfCorrelationConfig {
     this.prefilterThresholds = prefilterThresholds;
   }
 
-  @JsonProperty("collectionVariable")
-  public CollectionSpec getCollectionVariable() {
-    return this.collectionVariable;
+  @JsonProperty("correlationMethod")
+  public SelfCorrelationMethod getCorrelationMethod() {
+    return this.correlationMethod;
   }
 
-  @JsonProperty("collectionVariable")
-  public void setCollectionVariable(CollectionSpec collectionVariable) {
-    this.collectionVariable = collectionVariable;
+  @JsonProperty("correlationMethod")
+  public void setCorrelationMethod(SelfCorrelationMethod correlationMethod) {
+    this.correlationMethod = correlationMethod;
+  }
+
+  @JsonProperty("data1")
+  public CollectionSpec getData1() {
+    return this.data1;
+  }
+
+  @JsonProperty("data1")
+  public void setData1(CollectionSpec data1) {
+    this.data1 = data1;
   }
 
   @JsonAnyGetter

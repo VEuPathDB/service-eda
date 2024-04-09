@@ -267,7 +267,7 @@ public class UserService implements UsersUserId {
    * Compares the given lists of derived variable IDs and, if they differ,
    * unions them into a new list containing all the distinct ID values.
    *
-   * @param user Target user record.
+   * @param user Target userecord.
    * @param dataFactory User data factory used to perform database lookups to
    *   test the validity of any new derived variable IDs.
    * @param analysis Target analysis to which the derived variables are being

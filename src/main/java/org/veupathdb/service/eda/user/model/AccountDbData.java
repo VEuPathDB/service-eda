@@ -68,13 +68,13 @@ public class AccountDbData {
   /**
    * Copy of the method in the EuPathDB OAuth impl that performs this task
    *
-   * @param userProperties set of user properties
+   * @param useroperties set of user properties
    * @return displayable name value that combines first/middle/last name values
    */
-  private static String getDisplayName(Map<String,String> userProperties) {
-    String firstName = userProperties.get("firstName");
-    String middleName = userProperties.get("middleName");
-    String lastName = userProperties.get("lastName");
+  private static String getDisplayName(Map<String,String> useroperties) {
+    String firstName = useroperties.get("firstName");
+    String middleName = useroperties.get("middleName");
+    String lastName = useroperties.get("lastName");
     String name = null;
     if (firstName != null && !firstName.isEmpty()) name = firstName;
     if (middleName != null && !middleName.isEmpty()) {

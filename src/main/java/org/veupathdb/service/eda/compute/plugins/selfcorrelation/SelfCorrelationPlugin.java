@@ -33,7 +33,7 @@ import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuot
 public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginRequest, SelfCorrelationConfig> {
   private static final Logger LOG = LogManager.getLogger(SelfCorrelationPlugin.class);
 
-  private static final String ASSAY_DATA = "assayData";
+  private static final String INPUT_DATA = "inputData";
 
   public SelfCorrelationPlugin(@NotNull PluginContext<SelfCorrelationPluginRequest, SelfCorrelationConfig> context) {
     super(context);
@@ -44,11 +44,11 @@ public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginR
   public List<StreamSpec> getStreamSpecs() {
     // Get the collection variable and its entity
     SelfCorrelationConfig computeConfig = getConfig();
-    CollectionSpec assay = computeConfig.getCollectionVariable();
+    CollectionSpec collection = computeConfig.getData1();
 
     return List.of(
-      new StreamSpec(ASSAY_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getCollectionMembers(assay))
+      new StreamSpec(INPUT_DATA, getConfig().getData1().getEntityId())
+        .addVars(getUtil().getCollectionMembers(collection))
     );
   }
 
@@ -61,7 +61,7 @@ public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginR
 
     // Get compute parameters
     String method = computeConfig.getCorrelationMethod().getValue();
-    CollectionSpec assay = computeConfig.getCollectionVariable();
+    CollectionSpec collectionSpec = computeConfig.getData1();
     FeaturePrefilterThresholds featureFilterThresholds = computeConfig.getPrefilterThresholds();
     String proportionNonZeroThresholdRParam = 
       featureFilterThresholds != null &&
@@ -76,11 +76,11 @@ public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginR
       featureFilterThresholds.getStandardDeviation() != null ? 
         ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 
-    String entityId = assay.getEntityId();
+    String entityId = collectionSpec.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
     VariableDef entityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(entityIdVarSpec);
-    CollectionDef collection = metadata.getCollection(assay).orElseThrow(); 
+    CollectionDef collection = metadata.getCollection(collectionSpec).orElseThrow(); 
 
     // Get record id columns
     List<VariableDef> entityAncestorIdColumns = new ArrayList<>();
@@ -89,16 +89,16 @@ public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginR
     }    
 
     HashMap<String, InputStream> dataStream = new HashMap<>();
-    dataStream.put(ASSAY_DATA, getWorkspace().openStream(ASSAY_DATA));
+    dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
 
-      // Read in the assay data
-      List<VariableSpec> assayInputVars = ListBuilder.asList(entityIdVarSpec);
-      assayInputVars.addAll(util.getCollectionMembers(assay));
-      assayInputVars.addAll(entityAncestorIdColumns);
-      connection.voidEval(util.getVoidEvalFreadCommand(ASSAY_DATA, assayInputVars));
+      // Read in the collection data
+      List<VariableSpec> collectionInputVars = ListBuilder.asList(entityIdVarSpec);
+      collectionInputVars.addAll(util.getCollectionMembers(collection));
+      collectionInputVars.addAll(entityAncestorIdColumns);
+      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, collectionInputVars));
 
       // Turn the list of id columns into an array of strings for R
       List<String> dotNotatedEntityIdColumns = entityAncestorIdColumns.stream().map(VariableDef::toDotNotation).toList();
@@ -115,7 +115,7 @@ public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginR
         dataClassRString = "veupathUtils::CollectionWithMetadata";
       }
       
-      connection.voidEval("data <- " + dataClassRString + "(name=" + singleQuote(collectionMemberType) + ",data=assayData" + 
+      connection.voidEval("data <- " + dataClassRString + "(name=" + singleQuote(collectionMemberType) + ",data=collectionData" + 
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                   ", imputeZero=TRUE)");

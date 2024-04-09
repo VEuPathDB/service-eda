@@ -15,12 +15,7 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
-import org.veupathdb.service.eda.generated.model.CorrelationConfig;
-import org.veupathdb.service.eda.generated.model.CorrelationPluginRequest;
-import org.veupathdb.service.eda.generated.model.FeaturePrefilterThresholds;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
-import org.veupathdb.service.eda.generated.model.CollectionSpec;
+import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.InputStream;
 import java.util.stream.Collectors;
@@ -50,24 +45,24 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       return false;
     }
     
-    entity1Id = spec1.getEntityId();
-    entity2Id = spec2.getEntityId();
-    collection1Id = spec1.getCollectionId();
-    collection2Id = spec2.getCollectionId();
+    String entity1Id = spec1.getEntityId();
+    String entity2Id = spec2.getEntityId();
+    String collection1Id = spec1.getCollectionId();
+    String collection2Id = spec2.getCollectionId();
 
     return entity1Id.equals(entity2Id) && collection1Id.equals(collection2Id);
   }
 
   private boolean isValidDataConfig(CorrelationInputData data1, CorrelationInputData data2) {
-    String data1Type = config.getData1().getDataType().toString().toLowerCase();
-    CollectionSpec data1Spec = config.getData1().getCollectionSpec();
+    String data1Type = data1.getDataType().toString().toLowerCase();
+    CollectionSpec data1Spec = data1.getCollectionSpec();
     if (data1Type.equals("collection") && data1Spec == null) {
       LOG.info("Received CorrelationInputData for data1 with a data type of 'collection' but no collection specification. This is not allowed.");
       return false;
     }
 
-    String data2Type = config.getData2().getDataType().toString().toLowerCase();
-    CollectionSpec data2Spec = config.getData2().getCollectionSpec();
+    String data2Type = data2.getDataType().toString().toLowerCase();
+    CollectionSpec data2Spec = data2.getCollectionSpec();
     if (data2Type.equals("collection") && data2Spec == null) {
       LOG.info("Received CorrelationInputData for data2 with a data type of 'collection' but no collection specification. This is not allowed.");
       return false;

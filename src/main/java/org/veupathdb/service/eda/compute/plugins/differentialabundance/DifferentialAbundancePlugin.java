@@ -82,7 +82,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
       sampleMetadataVars.add(computeEntityIdVarSpec);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
-      connection.voidEval("sampleMetadata <- SampleMetadata(data = " + INPUT_DATA 
+      connection.voidEval("sampleMetadata <- microbiomeData::SampleMetadata(data = " + INPUT_DATA 
                                 + ", recordIdColumn = " + singleQuote(computeEntityIdColName)
                                 + ")");
 
@@ -125,7 +125,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       {
         abundanceDataClass = "AbsoluteAbundanceData";
       }
-      connection.voidEval("inputData <- microbiomeComputations::" + abundanceDataClass + "(data=abundanceData" + 
+      connection.voidEval("inputData <- microbiomeData::" + abundanceDataClass + "(data=abundanceData" + 
                                                                           ", sampleMetadata=sampleMetadata" +
                                                                           ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +

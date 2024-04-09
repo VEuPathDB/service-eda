@@ -115,7 +115,7 @@ public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginR
         dataClassRString = "veupathUtils::CollectionWithMetadata";
       }
       
-      connection.voidEval("data <- " + dataClassRString + "(name=" + singleQuote(collectionMemberType) + ",data=collectionData" + 
+      connection.voidEval("data <- " + dataClassRString + "(name=" + singleQuote(collectionMemberType) + ",data=inputData" + 
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                   ", imputeZero=TRUE)");

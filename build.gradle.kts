@@ -91,7 +91,7 @@ repositories {
 //
 
 // versions
-val coreLib       = "7.0.1"                    // Container core lib version
+val coreLib       = "7.0.6"                    // Container core lib version
 val fgputil       = "2.12.11-jakarta"           // FgpUtil version
 val libSubsetting = "4.13.10-package-rename"    // lib-eda-subsetting version
 

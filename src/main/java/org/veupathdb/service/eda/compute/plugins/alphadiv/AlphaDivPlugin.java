@@ -77,7 +77,7 @@ public class AlphaDivPlugin extends AbstractPlugin<AlphaDivPluginRequest, AlphaD
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-      connection.voidEval("abundDT <- microbiomeData::AbundanceData(name=" + util.singleQuote(collectionMemberType) + ",data=" + INPUT_DATA + 
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(name=" + util.singleQuote(collectionMemberType) + ",data=" + INPUT_DATA + 
                                                                           ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
                                                                           ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ",imputeZero=TRUE)");

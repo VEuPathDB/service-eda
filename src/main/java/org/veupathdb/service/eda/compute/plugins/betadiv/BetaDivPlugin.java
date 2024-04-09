@@ -79,7 +79,7 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-      connection.voidEval("abundDT <- microbiomeData::AbundanceData(name=" + singleQuote(collectionMemberType) + ",data=" + INPUT_DATA + 
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(name=" + singleQuote(collectionMemberType) + ",data=" + INPUT_DATA + 
                                                                           ",recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ",imputeZero=TRUE)");

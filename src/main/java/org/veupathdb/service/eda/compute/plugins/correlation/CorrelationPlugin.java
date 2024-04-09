@@ -54,6 +54,10 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
   }
 
   private boolean isValidDataConfig(CorrelationInputData data1, CorrelationInputData data2) {
+    if (data1 == null) {
+      LOG.info("Received CorrelationInputData for data1 is null. This is not allowed.");
+      return false;
+    }
     String data1Type = data1.getDataType().toString().toLowerCase();
     CollectionSpec data1Spec = data1.getCollectionSpec();
     if (data1Type.equals("collection") && data1Spec == null) {
@@ -61,6 +65,10 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       return false;
     }
 
+    if (data2 == null) {
+      LOG.info("Received CorrelationInputData for data2 is null. This is not allowed.");
+      return false;
+    }
     String data2Type = data2.getDataType().toString().toLowerCase();
     CollectionSpec data2Spec = data2.getCollectionSpec();
     if (data2Type.equals("collection") && data2Spec == null) {
@@ -261,7 +269,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       // NOTE: getMember tells us the member type, rather than gives us a literal member
       String collectionType = collection.getMember() == null ? "unknown" : collection.getMember();
 
-      String dataClassRString = "microbiomeData::AbundanceData";
+      String dataClassRString = "microbiomeComputations::AbundanceData";
       if (collectionType.toLowerCase().contains("eigengene")) {
         dataClassRString = "veupathUtils::CollectionWithMetadata";
       }
@@ -305,7 +313,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         String dotNotatedEntity2IdColumnsString = util.listToRVector(dotNotatedEntity2IdColumns);
 
         String collection2MemberType = collection2.getMember() == null ? "unknown" : collection2.getMember();
-        String data2ClassRString = collection2MemberType.toLowerCase().contains("eigengene") ? "veupathUtils::CollectionWithMetadata" : "microbiomeData::AbundanceData";
+        String data2ClassRString = collection2MemberType.toLowerCase().contains("eigengene") ? "veupathUtils::CollectionWithMetadata" : "microbiomeComputations::AbundanceData";
 
         connection.voidEval("data1 <- " + dataClassRString + "(name= " + singleQuote(collectionType) + ",data=collectionData" + 
                                     ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
@@ -343,7 +351,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataInputVars));
         connection.voidEval("sampleMetadata <- " + INPUT_DATA); 
 
-        connection.voidEval("sampleMetadata <- microbiomeData::SampleMetadata(data = sampleMetadata" +
+        connection.voidEval("sampleMetadata <- veupathUtils::SampleMetadata(data = sampleMetadata" +
                                     ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                     ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + "))");
 

@@ -107,7 +107,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
 
 
       // Create the comparator and input data objects
-      connection.voidEval("comparator <- microbiomeComputations::Comparator(" +
+      connection.voidEval("comparator <- microbiomeData::Comparator(" +
                                 "variable=veupathUtils::VariableMetadata(" + 
                                   "variableSpec=veupathUtils::VariableSpec(" +
                                     "variableId='" + comparisonVariableSpec.getVariableId() + "'," +
@@ -125,7 +125,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
       {
         abundanceDataClass = "AbsoluteAbundanceData";
       }
-      connection.voidEval("inputData <- microbiomeComputations::" + abundanceDataClass + "(data=abundanceData" + 
+      connection.voidEval("inputData <- microbiomeData::" + abundanceDataClass + "(data=abundanceData" + 
                                                                           ", sampleMetadata=sampleMetadata" +
                                                                           ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +

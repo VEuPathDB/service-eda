@@ -17,7 +17,7 @@ containerBuild {
   project {
 
     // Project Name
-    name = "service-eda"
+    name = "eda-service"
 
     // Project Group
     group = "org.veupathdb.service.eda"
@@ -42,7 +42,7 @@ containerBuild {
     dockerFile = "Dockerfile"
 
     // Resulting image tag
-    imageName = "service-eda"
+    imageName = "eda-service"
 
   }
 }

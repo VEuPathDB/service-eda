@@ -110,7 +110,7 @@ public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginR
       // i think we cross that bridge when we get there and know more.. 
       // NOTE: getMember tells us the member type, rather than gives us a literal member
       String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
-      String dataClassRString = "microbiomeData::AbundanceData";
+      String dataClassRString = "microbiomeComputations::AbundanceData";
       if (collectionMemberType.toLowerCase().contains("eigengene")) {
         dataClassRString = "veupathUtils::CollectionWithMetadata";
       }

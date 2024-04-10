@@ -79,13 +79,13 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       }
       dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
 
-      connection.voidEval("abundDT <- microbiomeData::AbundanceData(name=" + singleQuote(collectionMemberType) + ",data=" + INPUT_DATA +
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(name=" + singleQuote(collectionMemberType) + ",data=" + INPUT_DATA +
                                                                           ",recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                                                           ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ",imputeZero=TRUE)");
       connection.voidEval("betaDivDT <- betaDiv(abundDT, " +
                                                 singleQuote(dissimilarityMethod) + ")");
-      connection.voidEval("print(names(betaDivDT@data))");
+      
       String dataCmd = "writeData(betaDivDT, NULL, TRUE)";
       String metaCmd = "writeMeta(betaDivDT, NULL, TRUE)";
 

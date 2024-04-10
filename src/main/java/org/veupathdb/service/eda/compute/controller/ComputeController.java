@@ -27,7 +27,7 @@ import org.veupathdb.service.eda.compute.plugins.differentialabundance.Different
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.selfcorrelation.SelfCorrelationPluginProvider;
-import org.veupathdb.service.eda.compute.service.ServiceOptions;
+import org.veupathdb.service.eda.Main;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;

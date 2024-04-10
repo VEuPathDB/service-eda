@@ -35,7 +35,7 @@ private const val DefaultRServePort = 6311
 /**
  * EDA Compute Service CLI/Env Options
  */
-object ServiceOptions : Options() {
+object Main.config.: Options() {
 
   // region Postgres
 

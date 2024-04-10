@@ -5,7 +5,7 @@ import org.veupathdb.service.eda.compute.controller.ComputeController
 import org.veupathdb.service.eda.compute.controller.ExpirationController
 import org.veupathdb.service.eda.compute.controller.InternalJobsController
 
-class Resources : ContainerResources(ServiceOptions) {
+class Resources : ContainerResources(Main.config. {
   override fun resources(): Array<Any> = arrayOf(
     ComputeController::class.java,
     JobsController::class.java,

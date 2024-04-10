@@ -34,44 +34,44 @@ object Main : Server() {
   private fun initAsyncPlatform() {
     AsyncPlatform.init {
       dbConfig {
-        dbName   = ServiceOptions.queueDBName
-        host     = ServiceOptions.queueDBHost
-        port     = ServiceOptions.queueDBPort
-        username = ServiceOptions.queueDBUsername
-        password = ServiceOptions.queueDBPassword
-        poolSize = ServiceOptions.queueDBPoolSize
+        dbName   = Main.config.queueDBName
+        host     = Main.config.queueDBHost
+        port     = Main.config.queueDBPort
+        username = Main.config.queueDBUsername
+        password = Main.config.queueDBPassword
+        poolSize = Main.config.queueDBPoolSize
       }
 
       s3Config {
-        host        = ServiceOptions.s3Host
-        bucket      = ServiceOptions.s3Bucket
-        accessToken = ServiceOptions.s3AccessToken
-        secretKey   = ServiceOptions.s3SecretKey
-        port        = ServiceOptions.s3Port
-        https       = ServiceOptions.s3UseHttps
+        host        = Main.config.s3Host
+        bucket      = Main.config.s3Bucket
+        accessToken = Main.config.s3AccessToken
+        secretKey   = Main.config.s3SecretKey
+        port        = Main.config.s3Port
+        https       = Main.config.s3UseHttps
       }
 
       jobConfig {
         executorFactory = JobExecutorFactory { PluginExecutor() }
-        expirationDays  = ServiceOptions.jobCacheTimeoutDays
+        expirationDays  = Main.config.jobCacheTimeoutDays
       }
 
       addQueue {
-        id       = ServiceOptions.slowQueueName
-        username = ServiceOptions.jobQueueUsername
-        password = ServiceOptions.jobQueuePassword
-        host     = ServiceOptions.jobQueueHost
-        port     = ServiceOptions.jobQueuePort
-        workers  = ServiceOptions.slowQueueWorkers
+        id       = Main.config.slowQueueName
+        username = Main.config.jobQueueUsername
+        password = Main.config.jobQueuePassword
+        host     = Main.config.jobQueueHost
+        port     = Main.config.jobQueuePort
+        workers  = Main.config.slowQueueWorkers
       }
 
       addQueue {
-        id       = ServiceOptions.fastQueueName
-        username = ServiceOptions.jobQueueUsername
-        password = ServiceOptions.jobQueuePassword
-        host     = ServiceOptions.jobQueueHost
-        port     = ServiceOptions.jobQueuePort
-        workers  = ServiceOptions.fastQueueWorkers
+        id       = Main.config.fastQueueName
+        username = Main.config.jobQueueUsername
+        password = Main.config.jobQueuePassword
+        host     = Main.config.jobQueueHost
+        port     = Main.config.jobQueuePort
+        workers  = Main.config.fastQueueWorkers
       }
     }
   }

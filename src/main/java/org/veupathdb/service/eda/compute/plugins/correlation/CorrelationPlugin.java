@@ -337,7 +337,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
 
         LOG.info("Using the following metadata variables for correlation: {}",
           JsonUtil.serializeObject(metadataVariables));
-      connection.voidEval("print('I AM A TEST! SOMEBODY LOST A BABY! IGNORE ME!')");
+      
         connection.voidEval("collectionData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
         // Read in the sample metadata

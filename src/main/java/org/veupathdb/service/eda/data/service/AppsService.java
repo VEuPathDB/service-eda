@@ -18,13 +18,9 @@ import org.veupathdb.service.eda.common.client.NonEmptyResultStream.EmptyResultE
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
+import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayAssayBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
 import org.veupathdb.service.eda.data.plugin.betadiv.BetaDivScatterplotPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.correlationassayassay.CorrelationAssayAssayBipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.correlationassaymetadata.CorrelationAssayMetadataBipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.correlationassayself.CorrelationAssaySelfUnipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayAssayBipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayMetadataBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.selfcorrelation.SelfCorrelationUnipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivBoxplotPlugin;
@@ -362,19 +358,16 @@ public class AppsService implements Apps {
     return wrapPlugin(() -> PostAppsCorrelationassayassayVisualizationsBipartitenetworkResponse.respond200WithApplicationJson(
         new CorrelationBipartiteNetworkPostResponseStream(processRequest(new CorrelationAssayAssayBipartitenetworkPlugin(), entity))));
   }
-
-  @DisableJackson
-  @Override
-  public PostAppsCorrelationassaymetadataVisualizationsBipartitenetworkResponse postAppsCorrelationassaymetadataVisualizationsBipartitenetwork(CorrelationAssayMetadataBipartitenetworkPostRequest entity) {
-    return wrapPlugin(() -> PostAppsCorrelationassaymetadataVisualizationsBipartitenetworkResponse.respond200WithApplicationJson(
-        new CorrelationBipartiteNetworkPostResponseStream(processRequest(new CorrelationAssayMetadataBipartitenetworkPlugin(), entity))));
-  }
-
   @DisableJackson
   @Override
   public PostAppsSelfcorrelationVisualizationsUnipartitenetworkResponse postAppsSelfcorrelationVisualizationsUnipartitenetwork(SelfCorrelationUnipartitenetworkPostRequest entity) {
     return wrapPlugin(() -> PostAppsSelfcorrelationVisualizationsUnipartitenetworkResponse.respond200WithApplicationJson(
         new CorrelationNetworkPostResponseStream(processRequest(new SelfCorrelationUnipartitenetworkPlugin(), entity))));
+  }
+
+  @Override
+  public PostAppsCorrelationassaymetadataVisualizationsBipartitenetworkResponse postAppsCorrelationassaymetadataVisualizationsBipartitenetwork(CorrelationAssayMetadataBipartitenetworkPostRequest entity) {
+    return null;
   }
 
   @DisableJackson

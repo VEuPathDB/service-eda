@@ -450,7 +450,7 @@ securitySchemes:
             body:
               application/json: lib.DifferentialAbundanceStatsResponse
 
-  /correlationassayassay:
+  /correlation:
     post:
       queryParameters:
         autostart:
@@ -458,7 +458,7 @@ securitySchemes:
           required: false
           default: true
       body:
-        application/json: lib.CorrelationAssayAssayPluginRequest
+        application/json: lib.CorrelationPluginRequest
       responses:
         200:
           body:
@@ -466,14 +466,13 @@ securitySchemes:
     /statistics:
       post:
         body:
-          application/json: lib.CorrelationAssayAssayPluginRequest
+          application/json: lib.CorrelationPluginRequest
         responses:
           200:
             body:
               application/json: lib.CorrelationStatsResponse
 
-
-  /correlationassaymetadata:
+  /selfcorrelation:
     post:
       queryParameters:
         autostart:
@@ -481,7 +480,7 @@ securitySchemes:
           required: false
           default: true
       body:
-        application/json: lib.CorrelationAssayMetadataPluginRequest
+        application/json: lib.SelfCorrelationPluginRequest
       responses:
         200:
           body:
@@ -489,29 +488,7 @@ securitySchemes:
     /statistics:
       post:
         body:
-          application/json: lib.CorrelationAssayMetadataPluginRequest
-        responses:
-          200:
-            body:
-              application/json: lib.CorrelationStatsResponse
-
-  /correlationassayself:
-    post:
-      queryParameters:
-        autostart:
-          type: boolean
-          required: false
-          default: true
-      body:
-        application/json: lib.CorrelationAssaySelfPluginRequest
-      responses:
-        200:
-          body:
-            application/json: lib.JobResponse
-    /statistics:
-      post:
-        body:
-          application/json: lib.CorrelationAssaySelfPluginRequest
+          application/json: lib.SelfCorrelationPluginRequest
         responses:
           200:
             body:

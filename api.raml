@@ -1246,8 +1246,23 @@ securitySchemes:
               application/json:
                 type: lib.DifferentialAbundanceStatsResponse
 
-  /correlationassayassay/visualizations:
+  /correlation/visualizations:
     displayName: Visualizations for discovering correlations between various assay data
+
+    /bipartitenetwork:
+      post:
+        description: Returns data required to create a bipartite network from a correlation matrix.
+        body:
+          application/json:
+            type: lib.CorrelationBipartitenetworkPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.CorrelationBipartiteNetworkPostResponse
+
+  /correlationassayassay/visualizations:
+    displayName: Visualizations for discovering corrleations between various assay data
 
     /bipartitenetwork:
       post:
@@ -1261,20 +1276,18 @@ securitySchemes:
               application/json:
                 type: lib.CorrelationBipartiteNetworkPostResponse
 
-  /correlationassayself/visualizations:
-    displayName: Visualizations for discovering correlations between various assay data
+  /selfcorrelation/visualizations:
+    displayName: Visualizations for discovering correlations between variables within an assay
 
     /unipartitenetwork:
       post:
-        description: Returns data required to create a bipartite network from a correlation matrix.
+        description: Returns data required to create a unipartite network from a correlation matrix.
         body:
           application/json:
-            type: lib.CorrelationAssaySelfUnipartitenetworkPostRequest
+            type: lib.SelfCorrelationUnipartitenetworkPostRequest
         responses:
           200:
             body:
-              application/json:
-                type: lib.CorrelationNetworkPostResponse
 
   /correlationassaymetadata/visualizations:
     displayName: Visualizations for discovering corrleations between assay data and sample metadata

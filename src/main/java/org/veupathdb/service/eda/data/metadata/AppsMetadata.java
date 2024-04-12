@@ -6,11 +6,9 @@ import java.util.List;
 import org.gusdb.fgputil.ListBuilder;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
+import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
 import org.veupathdb.service.eda.data.plugin.betadiv.BetaDivScatterplotPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.correlationassayassay.CorrelationAssayAssayBipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.correlationassaymetadata.CorrelationAssayMetadataBipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.correlationassayself.CorrelationAssaySelfUnipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivBoxplotPlugin;
 import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivScatterplotPlugin;
 import org.veupathdb.service.eda.data.plugin.abundance.AbundanceBoxplotPlugin;
@@ -27,6 +25,7 @@ import org.veupathdb.service.eda.data.plugin.pass.MapMarkersOverlayPlugin;
 import org.veupathdb.service.eda.data.plugin.pass.ScatterplotPlugin;
 import org.veupathdb.service.eda.data.plugin.pass.TwoByTwoPlugin;
 import org.veupathdb.service.eda.data.plugin.sample.TestCollectionPlugin;
+import org.veupathdb.service.eda.data.plugin.selfcorrelation.SelfCorrelationUnipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.BubbleMapMarkersLegendPlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.BubbleMapMarkersPlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.CollectionFloatingBarplotPlugin;
@@ -130,18 +129,26 @@ public class AppsMetadata {
           "Find taxa or genes that are differentially abundant between two groups.",
           List.of(MICROBIOME_PROJECT),
           viz("volcanoplot", new DifferentialAbundanceVolcanoplotPlugin())),
-      app("correlationassaymetadata", "Correlation (Taxa, Functional Data v. Metadata)", "correlationassaymetadata",
+      app("correlationassaymetadata", "Correlation (Taxa, Functional Data v. Metadata)", "correlation",
           "Discover relationships between metadata variables and taxonomic abundance.",
-          MBIO_PLUS_GENOMICS_PROJECTS,
-          viz("bipartitenetwork", new CorrelationAssayMetadataBipartitenetworkPlugin())),
-      app("correlationassayassay", "Correlation (Taxa v. Functional Data)", "correlationassayassay",
+          List.of(MICROBIOME_PROJECT),
+          viz("bipartitenetwork", new CorrelationBipartitenetworkPlugin())),
+      app("correlationassayassay", "Correlation (Taxa v. Functional Data)", "correlation",
           "Uncover connections between taxonomic abundance and functional data such as genes or pathways.",
-          MBIO_PLUS_GENOMICS_PROJECTS,
-          viz("bipartitenetwork", new CorrelationAssayAssayBipartitenetworkPlugin())),
-      app("correlationassayself", "Correlation (Taxa v. Taxa)", "correlationassayself",
+          List.of(MICROBIOME_PROJECT),
+          viz("bipartitenetwork", new CorrelationBipartitenetworkPlugin())),
+      app("correlation", "Correlation (Eigengene v. Eigengene, Metadata)", "correlation",
+          "Discover relationships between eigenengenes and metadata or other eigengenes.",
+          NON_VB_GENOMICS_PROJECTS,
+          viz("bipartitenetwork", new CorrelationBipartitenetworkPlugin())),
+      app("selfcorrelation", "Correlation (Taxa v. Taxa)", "selfcorrelation",
           "Discover relationships between taxonomic data.",
           List.of(MICROBIOME_PROJECT),
-          viz("network", new CorrelationAssaySelfUnipartitenetworkPlugin())),
+          viz("unipartitenetwork", new SelfCorrelationUnipartitenetworkPlugin())),
+      app("selfcorrelation", "Correlation (Eigengene v. Eigengene)", "selfcorrelation",
+          "Discover relationships between eigengenes.",
+          NON_VB_GENOMICS_PROJECTS,
+          viz("unipartitenetwork", new SelfCorrelationUnipartitenetworkPlugin())),
       app("distributions", "Distributions", null,
           "Plot simple distributions for any continuous variable, including metadata (e.g. age, height, etc.) or microbial assay results.",
           MBIO_PLUS_GENOMICS_PROJECTS,

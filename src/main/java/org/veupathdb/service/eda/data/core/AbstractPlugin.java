@@ -66,6 +66,8 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
 
   // shared stream name for plugins that need request only a single stream
   protected static final String DEFAULT_SINGLE_STREAM_NAME = "single_tabular_dataset";
+  // shared stream name for plugins that need request multiple streams
+  protected static final String ADDITIONAL_STREAM_NAME = "second_tabular_dataset";
 
   protected class ClassGroup extends ThreeTuple<Class<T>,Class<S>,Class<R>> {
     public ClassGroup(Class<T> visualizationRequestClass, Class<S> visualizationSpecClass, Class<R> computeConfigClass) {
@@ -812,7 +814,7 @@ public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String
     }
   }
 
-  public String getRMegastudyAsString(String compressedDataHandle, String outputEntityId) {
+  public String getRMegastudyAsString(String compressedDataHandle, String outputEntityId, String collectionIdsDataHandle) {
     PluginUtil util = getUtil();
 
     // find and validate variables w study specific vocabs
@@ -824,9 +826,15 @@ public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String
     String megastudyAsRString = "veupathUtils::Megastudy(" + 
                                  "data = " + compressedDataHandle + "," +
                                  "ancestorIdColumns = rev(" + ancestorIdsAsRString + ")," +
-                                 "studySpecificVocabularies = " + studyVocabsAsRString + ")";
+                                 "studySpecificVocabularies = " + studyVocabsAsRString + "," +
+                                 "collectionsDT = " + collectionIdsDataHandle + ")";
 
     return megastudyAsRString;
+  }
+
+  // default to ADDITIONAL_STREAM_NAME for the collectionsDT data handle
+  public String getRMegastudyAsString(String compressedDataHandle, String outputEntityId) {
+    return getRMegastudyAsString(compressedDataHandle, outputEntityId, ADDITIONAL_STREAM_NAME);
   }
 
   public String getRInputDataWithImputedZeroesAsString(
@@ -1008,5 +1016,23 @@ public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String
 
   public List<DynamicDataSpec> getDynamicDataSpecsWithStudyDependentVocabs(String entityId) {
     return getDynamicDataSpecsWithStudyDependentVocabs(entityId, new ArrayList<>());
+  }
+
+  // reverseMatch is for when we want to find entities that are not the specified entity
+  // is this interesting enough to go in common?
+  public List<VariableSpec> filterVarSpecsByEntityId(List<VariableSpec> varSpecs, String entityId, boolean reverseMatch) {
+    if (varSpecs.isEmpty()) {
+      return varSpecs;
+    }
+
+    if (entityId == null) {
+      return varSpecs;
+    }
+
+    if (reverseMatch) {
+      return varSpecs.stream().filter(varSpec -> !varSpec.getEntityId().equals(entityId)).collect(Collectors.toList());
+    }
+
+    return varSpecs.stream().filter(varSpec -> varSpec.getEntityId().equals(entityId)).collect(Collectors.toList());
   }
 }

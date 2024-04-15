@@ -72,7 +72,7 @@ public class CollectionFloatingHistogramPlugin extends AbstractEmptyComputePlugi
     List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
     plotVariableSpecs.addAll(pluginSpec.getOverlayConfig().getSelectedMembers());
 
-    return ListBuilder.asList(
+    return List.of(
       new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, outputEntityId)
         .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, false))
         // TODO can we make this automagical?

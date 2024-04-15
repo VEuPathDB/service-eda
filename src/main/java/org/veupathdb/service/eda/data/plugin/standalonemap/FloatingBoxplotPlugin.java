@@ -92,7 +92,7 @@ public class FloatingBoxplotPlugin extends AbstractEmptyComputePlugin<FloatingBo
         .map(OverlayConfig::getOverlayVariable)
         .ifPresent(plotVariableSpecs::add);
 
-    return ListBuilder.asList(
+    return List.of(
       new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, outputEntityId)
         .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, false))
         // TODO can we make this automagical?

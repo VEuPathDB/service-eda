@@ -74,7 +74,7 @@ public class CollectionFloatingLineplotPlugin extends AbstractEmptyComputePlugin
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
     plotVariableSpecs.addAll(pluginSpec.getOverlayConfig().getSelectedMembers());
 
-    return ListBuilder.asList(
+    return List.of(
       new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, outputEntityId)
         .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, false))
         // TODO can we make this automagical?

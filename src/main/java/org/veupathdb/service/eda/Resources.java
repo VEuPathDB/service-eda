@@ -82,11 +82,17 @@ public class Resources extends ContainerResources {
   private static final String RAW_FILES_DIR_PROP = "RAW_FILES_DIR";
   private static Map<String,String> PROJECT_DIR_MAP;
 
+  private static final String SERVER_PORT = getRequiredVar("SERVER_PORT");
+  private static final String CONSOLIDATED_SERVICE_URL = "http://localhost:" + SERVER_PORT;
+
+
   // Service URLs -- these can be removed once inter-component communication is done in-memory.
-  public static final String SUBSETTING_SERVICE_URL = getRequiredVar("SUBSETTING_SERVICE_URL");
-  public static final String MERGING_SERVICE_URL = getRequiredVar("MERGING_SERVICE_URL");
-  public static final String COMPUTE_SERVICE_URL = getRequiredVar("COMPUTE_SERVICE_URL");
-  public static final String DATASET_ACCESS_SERVICE_URL = getRequiredVar("DATASET_ACCESS_SERVICE_URL");
+  // For ease of transition in EDA consolidation, communication between these components is still done via http.
+  public static final String SUBSETTING_SERVICE_URL = CONSOLIDATED_SERVICE_URL;
+  public static final String MERGING_SERVICE_URL = CONSOLIDATED_SERVICE_URL;
+  public static final String COMPUTE_SERVICE_URL = CONSOLIDATED_SERVICE_URL;
+  public static final String DATASET_ACCESS_SERVICE_URL = CONSOLIDATED_SERVICE_URL;
+
   public static final String RSERVE_URL = getRequiredVar("RSERVE_URL");
 
   public Resources(Options opts) {
@@ -195,6 +201,14 @@ public class Resources extends ContainerResources {
       throw new NotFoundException("Invalid project ID: " + projectId);
     }
     return SCHEMA_MAP.get(projectId);
+  }
+
+  public static String getVdiDatasetsSchema() {
+    return "vdi_datasets_" + Environment.getRequiredVar("VDI_SCHEMA_SUFFIX");
+  }
+
+  public static String getVdiControlSchema() {
+    return "vdi_control_" + Environment.getRequiredVar("VDI_SCHEMA_SUFFIX");
   }
 
   public static DBPlatform getUserPlatform() {

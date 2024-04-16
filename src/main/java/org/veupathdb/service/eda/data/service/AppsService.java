@@ -19,6 +19,7 @@ import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayAssayBipartitenetworkPlugin;
+import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayMetadataBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
 import org.veupathdb.service.eda.data.plugin.betadiv.BetaDivScatterplotPlugin;
 import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
@@ -166,6 +167,7 @@ public class AppsService implements Apps {
       throw new BadRequestException(e.getMessage());
     }
     catch (EmptyResultException e) {
+      LOG.info("Found empty body.", e);
       throw new WebApplicationException(e.getMessage(), 204);
     }
     catch (WebApplicationException e) {
@@ -365,11 +367,13 @@ public class AppsService implements Apps {
         new CorrelationNetworkPostResponseStream(processRequest(new SelfCorrelationUnipartitenetworkPlugin(), entity))));
   }
 
+  @DisableJackson
   @Override
   public PostAppsCorrelationassaymetadataVisualizationsBipartitenetworkResponse postAppsCorrelationassaymetadataVisualizationsBipartitenetwork(CorrelationAssayMetadataBipartitenetworkPostRequest entity) {
-    return null;
+    return wrapPlugin(() -> PostAppsCorrelationassaymetadataVisualizationsBipartitenetworkResponse.respond200WithApplicationJson(
+        new CorrelationBipartiteNetworkPostResponseStream(processRequest(new CorrelationAssayMetadataBipartitenetworkPlugin(), entity))));
   }
-
+  
   @DisableJackson
   @Override
   public PostAppsAbundanceVisualizationsBoxplotResponse postAppsAbundanceVisualizationsBoxplot(AbundanceBoxplotPostRequest entity) {

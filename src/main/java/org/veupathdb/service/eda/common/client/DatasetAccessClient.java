@@ -12,7 +12,6 @@ import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.runtime.Environment;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
-import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -118,7 +117,6 @@ public class DatasetAccessClient extends ServiceClient {
         JSONObject datasetInfoJson = datasetMap.getJSONObject(datasetId);
         StudyDatasetInfo datasetInfo = new StudyDatasetInfo(datasetId, datasetInfoJson);
         // reorganizing here; response JSON is keyed by dataset ID, but resulting map is keyed by study ID
-        LOG.info("STUDY: " + datasetInfo.getStudyId() + " DS: " + datasetInfoJson);
         infoMap.put(datasetInfo.getStudyId(), datasetInfo);
       }
       return infoMap;

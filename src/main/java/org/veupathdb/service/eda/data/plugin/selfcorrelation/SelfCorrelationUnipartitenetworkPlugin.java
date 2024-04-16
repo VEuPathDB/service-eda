@@ -1,11 +1,9 @@
-package org.veupathdb.service.eda.data.plugin.correlation.correlationassayself;
+package org.veupathdb.service.eda.data.plugin.selfcorrelation;
 
 import org.gusdb.fgputil.validation.ValidationException;
-import org.veupathdb.service.eda.common.client.spec.StreamSpec;
-import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
-import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
-import org.veupathdb.service.eda.common.plugin.util.RServeClient;
 import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.plugin.util.RServeClient;
 import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.generated.model.*;
@@ -16,13 +14,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
 
-public class CorrelationAssaySelfUnipartitenetworkPlugin extends AbstractPlugin<CorrelationAssaySelfUnipartitenetworkPostRequest, CorrelationNetworkSpec, CorrelationAssaySelfConfig> {
+public class SelfCorrelationUnipartitenetworkPlugin extends AbstractPlugin<SelfCorrelationUnipartitenetworkPostRequest, CorrelationNetworkSpec, SelfCorrelationConfig> {
   
   @Override
   public String getDisplayName() {
@@ -41,7 +38,7 @@ public class CorrelationAssaySelfUnipartitenetworkPlugin extends AbstractPlugin<
 
   @Override
   protected ClassGroup getTypeParameterClasses() {
-    return new ClassGroup(CorrelationAssaySelfUnipartitenetworkPostRequest.class, CorrelationNetworkSpec.class, CorrelationAssaySelfConfig.class);
+    return new ClassGroup(SelfCorrelationUnipartitenetworkPostRequest.class, CorrelationNetworkSpec.class, SelfCorrelationConfig.class);
   }
 
   @Override

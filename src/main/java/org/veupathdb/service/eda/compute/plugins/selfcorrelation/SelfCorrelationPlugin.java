@@ -1,4 +1,4 @@
-package org.veupathdb.service.eda.compute.plugins.correlationassayself;
+package org.veupathdb.service.eda.compute.plugins.selfcorrelation;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,8 +14,8 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
-import org.veupathdb.service.eda.generated.model.CorrelationAssaySelfConfig;
-import org.veupathdb.service.eda.generated.model.CorrelationAssaySelfPluginRequest;
+import org.veupathdb.service.eda.generated.model.SelfCorrelationConfig;
+import org.veupathdb.service.eda.generated.model.SelfCorrelationPluginRequest;
 import org.veupathdb.service.eda.generated.model.FeaturePrefilterThresholds;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
@@ -30,12 +30,12 @@ import java.util.List;
 
 import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
 
-public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssaySelfPluginRequest, CorrelationAssaySelfConfig> {
-  private static final Logger LOG = LogManager.getLogger(CorrelationAssaySelfPlugin.class);
+public class SelfCorrelationPlugin extends AbstractPlugin<SelfCorrelationPluginRequest, SelfCorrelationConfig> {
+  private static final Logger LOG = LogManager.getLogger(SelfCorrelationPlugin.class);
 
-  private static final String ASSAY_DATA = "assayData";
+  private static final String INPUT_DATA = "inputData";
 
-  public CorrelationAssaySelfPlugin(@NotNull PluginContext<CorrelationAssaySelfPluginRequest, CorrelationAssaySelfConfig> context) {
+  public SelfCorrelationPlugin(@NotNull PluginContext<SelfCorrelationPluginRequest, SelfCorrelationConfig> context) {
     super(context);
   }
 
@@ -43,25 +43,25 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
   @Override
   public List<StreamSpec> getStreamSpecs() {
     // Get the collection variable and its entity
-    CorrelationAssaySelfConfig computeConfig = getConfig();
-    CollectionSpec assay = computeConfig.getCollectionVariable();
+    SelfCorrelationConfig computeConfig = getConfig();
+    CollectionSpec collection = computeConfig.getData1();
 
     return List.of(
-      new StreamSpec(ASSAY_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getCollectionMembers(assay))
+      new StreamSpec(INPUT_DATA, getConfig().getData1().getEntityId())
+        .addVars(getUtil().getCollectionMembers(collection))
     );
   }
 
   @Override
   protected void execute() {
 
-    CorrelationAssaySelfConfig computeConfig = getConfig();
+    SelfCorrelationConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
     ReferenceMetadata metadata = getContext().getReferenceMetadata();
 
     // Get compute parameters
     String method = computeConfig.getCorrelationMethod().getValue();
-    CollectionSpec assay = computeConfig.getCollectionVariable();
+    CollectionSpec collectionSpec = computeConfig.getData1();
     FeaturePrefilterThresholds featureFilterThresholds = computeConfig.getPrefilterThresholds();
     String proportionNonZeroThresholdRParam = 
       featureFilterThresholds != null &&
@@ -76,11 +76,11 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
       featureFilterThresholds.getStandardDeviation() != null ? 
         ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 
-    String entityId = assay.getEntityId();
+    String entityId = collectionSpec.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
     VariableDef entityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(entityIdVarSpec);
-    CollectionDef collection = metadata.getCollection(assay).orElseThrow(); 
+    CollectionDef collection = metadata.getCollection(collectionSpec).orElseThrow(); 
 
     // Get record id columns
     List<VariableDef> entityAncestorIdColumns = new ArrayList<>();
@@ -89,16 +89,16 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
     }    
 
     HashMap<String, InputStream> dataStream = new HashMap<>();
-    dataStream.put(ASSAY_DATA, getWorkspace().openStream(ASSAY_DATA));
+    dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting correlation computation')");
 
-      // Read in the assay data
-      List<VariableSpec> assayInputVars = ListBuilder.asList(entityIdVarSpec);
-      assayInputVars.addAll(util.getCollectionMembers(assay));
-      assayInputVars.addAll(entityAncestorIdColumns);
-      connection.voidEval(util.getVoidEvalFreadCommand(ASSAY_DATA, assayInputVars));
+      // Read in the collection data
+      List<VariableSpec> collectionInputVars = ListBuilder.asList(entityIdVarSpec);
+      collectionInputVars.addAll(util.getCollectionMembers(collection));
+      collectionInputVars.addAll(entityAncestorIdColumns);
+      connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, collectionInputVars));
 
       // Turn the list of id columns into an array of strings for R
       List<String> dotNotatedEntityIdColumns = entityAncestorIdColumns.stream().map(VariableDef::toDotNotation).toList();
@@ -110,37 +110,23 @@ public class CorrelationAssaySelfPlugin extends AbstractPlugin<CorrelationAssayS
       // i think we cross that bridge when we get there and know more.. 
       // NOTE: getMember tells us the member type, rather than gives us a literal member
       String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
-      boolean isEigengene = false;
+      String dataClassRString = "microbiomeComputations::AbundanceData";
       if (collectionMemberType.toLowerCase().contains("eigengene")) {
-        isEigengene = true;
+        dataClassRString = "veupathUtils::CollectionWithMetadata";
       }
       
-      // Prep data and run correlation
-      if (isEigengene)  {
-        // If we have eigenegene data, we'll use our base correlation function in veupathUtils, so we
-        // only need to make data frames for the assay data and sample metadata.
-        connection.voidEval("assayData <- assayData[order(" + computeEntityIdColName + ")]; " + 
-          "assayData <- assayData[, -as.character(" + dotNotatedEntityIdColumnsString +"), with=FALSE];" +
-          "assayData <- assayData[, -" + singleQuote(computeEntityIdColName) + ", with=FALSE]");
-
-        connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=assayData" +
-                                  ", method=" + singleQuote(method) +
-                                  ", verbose=TRUE)");
-      } else {
-        // If we don't have eigengene data, for now we can assume the data is abundance data.
-        // Abundance data can go through our microbiomeComputations pipeline.
-        connection.voidEval("data <- microbiomeData::AbundanceData(data=assayData" + 
+      connection.voidEval("data <- " + dataClassRString + "(name=" + singleQuote(collectionMemberType) + ",data=inputData" + 
                                   ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
                                   ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
                                   ", imputeZero=TRUE)");
-        // Run correlation!
-        connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=data" +
+
+      // Run correlation!
+      connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=data" +
                                                             ", method=" + singleQuote(method) +
                                                             proportionNonZeroThresholdRParam +
                                                             varianceThresholdRParam +
                                                             stdDevThresholdRParam +
                                                             ", verbose=TRUE)");
-      }
 
       String statsCmd = "writeStatistics(computeResult, NULL, TRUE)";
 

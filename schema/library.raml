@@ -1068,6 +1068,17 @@ types:
     type: object
     properties:
       pcoaVariance: number[]
+  CorrelationMethod:
+    type: string
+    enum:
+      - spearman
+      - pearson
+  SelfCorrelationMethod:
+    type: string
+    enum:
+      - spearman
+      - pearson
+      - sparcc
   FeaturePrefilterThresholds:
     type: object
     additionalProperties: false
@@ -1075,52 +1086,39 @@ types:
       proportionNonZero?: number
       variance?: number
       standardDeviation?: number
-  CorrelationComputeConfig:
+  BaseCorrelationComputeConfig:
     type: object
     properties:
-      correlationMethod: CorrelationMethod
       prefilterThresholds?: FeaturePrefilterThresholds
-  CorrelationAssaySelfConfig:
-    type: object
-    properties:
-      correlationMethod:
-        type: string
-        enum:
-          - spearman
-          - pearson
-          - sparcc
-      prefilterThresholds?: FeaturePrefilterThresholds
-      collectionVariable: CollectionSpec
-  CorrelationMethod:
+  CorrelationInputDataTypes:
     type: string
     enum:
-      - spearman
-      - pearson
-  Correlation1Collection:
-    type: CorrelationComputeConfig
+      - metadata
+      - collection
+  CorrelationInputData:
+    type: object
     properties:
-      collectionVariable: CollectionSpec
-  Correlation2Collections:
-    type: CorrelationComputeConfig
+      dataType: CorrelationInputDataTypes
+      collectionSpec?: CollectionSpec
+  CorrelationConfig:
+    type: BaseCorrelationComputeConfig
     properties:
-      collectionVariable1: CollectionSpec
-      collectionVariable2: CollectionSpec
-  CorrelationAssaySelfPluginRequest:
+      correlationMethod: CorrelationMethod
+      data1: CorrelationInputData
+      data2: CorrelationInputData
+  CorrelationPluginRequest:
     type: ComputeRequestBase
     properties:
-      config: CorrelationAssaySelfConfig
-  CorrelationMetadataSelfPluginRequest:
+      config: CorrelationConfig
+  SelfCorrelationConfig:
+    type: BaseCorrelationComputeConfig
+    properties:
+      correlationMethod: SelfCorrelationMethod
+      data1: CollectionSpec #someday if we do metadata X metadata, make this CorrelationInputData
+  SelfCorrelationPluginRequest:
     type: ComputeRequestBase
     properties:
-      config: CorrelationComputeConfig
-  CorrelationAssayAssayPluginRequest:
-    type: ComputeRequestBase
-    properties:
-      config: Correlation2Collections
-  CorrelationAssayMetadataPluginRequest:
-    type: ComputeRequestBase
-    properties:
-      config: Correlation1Collection
+      config: SelfCorrelationConfig
   CorrelationStatsResponse:
     type: object
     additionalProperties: false
@@ -1325,28 +1323,41 @@ types:
     properties:
       significanceThreshold: number
       correlationCoefThreshold: number
+  CorrelationBipartitenetworkPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      computeConfig: CorrelationConfig
+      config: CorrelationNetworkSpec
+  CorrelationAssayAssayConfig:
+    type: BaseCorrelationComputeConfig
+    properties:
+      collectionVariable: CollectionSpec
+      collectionVariable2: CollectionSpec
+  CorrelationAssayAssayBipartitenetworkPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      computeConfig: CorrelationAssayAssayConfig
+      config: CorrelationNetworkSpec
+  CorrelationAssayMetadataConfig:
+    type: BaseCorrelationComputeConfig
+    properties:
+      collectionVariable: CollectionSpec
+  CorrelationAssayMetadataBipartitenetworkPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      computeConfig: CorrelationAssayMetadataConfig
+      config: CorrelationNetworkSpec
+  SelfCorrelationUnipartitenetworkPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      computeConfig: SelfCorrelationConfig
+      config: CorrelationNetworkSpec
   CorrelationNetworkPostResponse:
     type: NetworkPostResponse
     additionalProperties: false
     properties:
       significanceThreshold: number
       correlationCoefThreshold: number
-  CorrelationAssayAssayBipartitenetworkPostRequest:
-    type: DataPluginRequestBase
-    properties:
-      computeConfig: Correlation2Collections
-      config: CorrelationNetworkSpec
-  CorrelationAssayMetadataBipartitenetworkPostRequest:
-    type: DataPluginRequestBase
-    properties:
-      computeConfig: EmptyDataPluginSpec
-      config: CorrelationNetworkSpec
-  CorrelationAssayMetadataStatsResponse: DifferentialAbundanceStatsResponse
-  CorrelationAssaySelfUnipartitenetworkPostRequest:
-    type: DataPluginRequestBase
-    properties:
-      computeConfig: CorrelationAssaySelfConfig
-      config: CorrelationNetworkSpec
   DifferentialAbundanceVolcanoplotPostRequest:
     type: DataPluginRequestBase
     properties:

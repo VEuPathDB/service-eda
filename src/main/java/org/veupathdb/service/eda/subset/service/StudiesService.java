@@ -90,7 +90,7 @@ public class StudiesService implements Studies {
         UserProvider.getSubmittedAuth(_request).orElseThrow()
     ).getStudyDatasetInfoMapForUser();
     Set<String> visibleStudyIds = visibleStudyMap.keySet();
-
+    
     // filter overviews by visible studies
     Map<String, StudyOverview> visibleOverviewMap = getStudyResolver()
         .getStudyOverviews().stream()
@@ -433,14 +433,14 @@ public class StudiesService implements Studies {
     final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();
     final MetadataFileBinaryProvider metadataFileBinaryProvider = new MetadataFileBinaryProvider(binaryFilesManager);
     final VariableFactory variableFactory = new VariableFactory(Resources.getApplicationDataSource(),
-        Resources.getUserStudySchema(),
+        Resources.getVdiDatasetsSchema() + ".",
         metadataFileBinaryProvider,
         binaryFilesManager::studyHasFiles);
     return new StudyResolver(
         Resources.getMetadataCache(),
         new StudyFactory(
             Resources.getApplicationDataSource(),
-            Resources.getUserStudySchema(),
+            Resources.getVdiDatasetsSchema() + ".",
             StudyOverview.StudySourceType.USER_SUBMITTED,
             variableFactory)
     );
@@ -448,7 +448,7 @@ public class StudiesService implements Studies {
 
   private static String resolveSchema(Study study) {
     return switch(study.getStudySourceType()) {
-      case USER_SUBMITTED -> Resources.getUserStudySchema();
+      case USER_SUBMITTED -> Resources.getVdiDatasetsSchema() + ".";
       case CURATED -> Resources.getAppDbSchema();
     };
   }

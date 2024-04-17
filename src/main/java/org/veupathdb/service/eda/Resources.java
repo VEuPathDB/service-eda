@@ -170,10 +170,6 @@ public class Resources extends ContainerResources {
     return USE_IN_MEMORY_TEST_DATABASE ? "" : SUBSET_ENV.getAppDbSchema();
   }
 
-  public static String getUserStudySchema() {
-    return USE_IN_MEMORY_TEST_DATABASE ? "" : SUBSET_ENV.getUserStudySchema();
-  }
-
   public static Path getBinaryFilesDirectory() {
     return Path.of(SUBSET_ENV.getBinaryFilesMount(), SUBSET_ENV.getBinaryFilesDirectory().replace("%DB_BUILD%", SUBSET_ENV.getDbBuild()));
   }

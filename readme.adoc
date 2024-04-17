@@ -14,8 +14,8 @@ To bring up the eda project via docker-compose, you'll need a few things.
 
 ### bring up the eda project
 
-* clone this repo, and add any required environment variables to your `.env` file. (TODO: explain what those variables do)
-* `docker-compose up` in your clone of this repo.
+* clone the https://github.com/VEuPathDB/stack-eda-services[stack-eda-services] repo, and add any required environment variables to your `.env` file. There is an example env file in that repo.
+* `docker-compose up` in your clone of the repo.
 
 When everything comes up successfully, you'll be able to reach this service at:
 

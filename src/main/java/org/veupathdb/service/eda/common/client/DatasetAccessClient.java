@@ -4,6 +4,8 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.RequestFailure;
 import org.gusdb.fgputil.functional.Either;
@@ -18,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 public class DatasetAccessClient extends ServiceClient {
+  private static final Logger LOG = LogManager.getLogger(DatasetAccessClient.class);
 
   private static final String ENABLE_DATASET_ACCESS_RESTRICTIONS = "ENABLE_DATASET_ACCESS_RESTRICTIONS";
 

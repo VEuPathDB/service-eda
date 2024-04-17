@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.access.repo;
 
+import org.veupathdb.service.eda.Resources;
+
 public interface DB
 {
   interface Schema
@@ -14,16 +16,17 @@ public interface DB
   interface Table
   {
     String
-      Accounts          = Schema.UserAccounts + ".accounts",
-      ApprovalStatus    = Schema.StudyAccess + ".approval_status",
-      Datasets          = Schema.Tuning + ".datasetpresenter",
-      EndUsers          = Schema.StudyAccess + ".end_users",
-      EndUserHistory    = Schema.StudyAccess + ".end_user_history",
-      Providers         = Schema.StudyAccess + ".providers",
-      RestrictionLevel  = Schema.StudyAccess + ".restriction_level",
-      Staff             = Schema.StudyAccess + ".staff",
-      DatasetProperties = Schema.Tuning + ".datasetproperty",
-      UserDatasetAttributes = Schema.UserDatasets + ".datasetattributes";
+      Accounts                     = Schema.UserAccounts + ".accounts",
+      ApprovalStatus               = Schema.StudyAccess + ".approval_status",
+      Datasets                     = Schema.Tuning + ".datasetpresenter",
+      EndUsers                     = Schema.StudyAccess + ".end_users",
+      EndUserHistory               = Schema.StudyAccess + ".end_user_history",
+      Providers                    = Schema.StudyAccess + ".providers",
+      RestrictionLevel             = Schema.StudyAccess + ".restriction_level",
+      Staff                        = Schema.StudyAccess + ".staff",
+      DatasetProperties            = Schema.Tuning + ".datasetproperty",
+      AvailableUserDatasets        = "vdicontrol.availableuserdatasets",
+      UserDatasetStudyId           = "vdidatasets.userstudydatasetid";
   }
 
   interface Column
@@ -112,7 +115,7 @@ public interface DB
         Value     = "value";
     }
 
-    interface UserDatasetAttributes
+    interface AvailableUserDatasets
     {
       String
         DatasetId = "dataset_stable_id",

@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.access.service.userdataset;
 
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
+import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.access.repo.DB;
 import org.veupathdb.service.eda.access.repo.SQL;
@@ -15,6 +16,8 @@ public class UserDatasetIsaStudies {
 
   // pseudo column name returned by SQL
   private static final String IS_OWNER_COL = "is_owner";
+  private static final String VDI_CONTROL_SCHEMA_TEMPLATE_STRING = "\\$VDI_CONTROL_SCHEMA\\$";
+  private static final String VDI_DATASETS_SCHEMA_TEMPLATE_STRING = "\\$VDI_DATASETS_SCHEMA\\$";
 
   /**
    * Looks up the ISA Study user datasets owned by or shared with the user
@@ -25,16 +28,17 @@ public class UserDatasetIsaStudies {
    */
   public static Map<String, DatasetPermissionEntry> getUserDatasetPermissions(long userId) throws Exception {
     return new BasicPreparedReadQuery<>(
-        SQL.Select.UserDatasets.ByUserAccess,
+        String.format(SQL.Select.UserDatasets.ByUserAccess,
+            Resources.getVdiControlSchema(), Resources.getVdiDatasetsSchema(), Resources.getVdiControlSchema()),
         QueryUtil.getInstance()::getAppDbConnection,
         rs -> {
           Map<String, DatasetPermissionEntry> userStudies = new HashMap<>();
           while (rs.next()) {
-            String datasetId = rs.getString(DB.Column.UserDatasetAttributes.DatasetId);
-            String studyId = rs.getString(DB.Column.UserDatasetAttributes.StudyId);
+            String datasetId = rs.getString(DB.Column.AvailableUserDatasets.DatasetId);
+            String studyId = rs.getString(DB.Column.AvailableUserDatasets.StudyId);
             boolean isOwner = rs.getBoolean(IS_OWNER_COL);
-            String name = rs.getString(DB.Column.UserDatasetAttributes.Name);
-            String description = rs.getString(DB.Column.UserDatasetAttributes.Description);
+            String name = rs.getString(DB.Column.AvailableUserDatasets.Name);
+            String description = rs.getString(DB.Column.AvailableUserDatasets.Description);
             userStudies.put(datasetId, createDatasetPermissionEntry(studyId, isOwner, name, description));
           }
           return userStudies;
@@ -90,7 +94,7 @@ public class UserDatasetIsaStudies {
           nullActions.setSubsetting(false);
           StudyPermissionInfo info = new StudyPermissionInfoImpl();
           info.setDatasetId(datasetId);
-          info.setStudyId(rs.getString(DB.Column.UserDatasetAttributes.StudyId));
+          info.setStudyId(rs.getString(DB.Column.AvailableUserDatasets.StudyId));
           info.setIsUserStudy(true);
           info.setActionAuthorization(nullActions);
           return info;

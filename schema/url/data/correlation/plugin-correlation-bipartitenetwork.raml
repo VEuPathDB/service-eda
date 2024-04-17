@@ -32,11 +32,26 @@ types:
   # these are flavors of CorrelationBipartitenetworkPostRequest
   # they are intended to help the /apps endpoint users distinguish
   # different variations of this compute + viz combo
+
+  CorrelationInputDataCollection:
+    properties:
+      dataType: 
+        type: string
+        enum: ['collection']
+      collectionSpec: CollectionSpec
+
+  CorrelationInputDataMetadata:
+    properties:
+      dataType: 
+        type: string
+        enum: ['metadata']
+
   CorrelationAssayAssayConfig:
     type: BaseCorrelationComputeConfig
     properties:
-      collectionVariable: CollectionSpec
-      collectionVariable2: CollectionSpec
+      correlationMethod: CorrelationMethod
+      data1: CorrelationInputDataCollection
+      data2: CorrelationInputDataCollection
 
   CorrelationAssayAssayBipartitenetworkPostRequest:
     type: DataPluginRequestBase
@@ -44,10 +59,14 @@ types:
       computeConfig: CorrelationAssayAssayConfig
       config: CorrelationNetworkSpec
 
+# The Correlation Assay Metadata viz requires a collection as data1
+# and metadata as data2. Note this is different than the standard CorrelationConfig
   CorrelationAssayMetadataConfig:
     type: BaseCorrelationComputeConfig
     properties:
-      collectionVariable: CollectionSpec
+      correlationMethod: CorrelationMethod
+      data1: CorrelationInputDataCollection
+      data2: CorrelationInputDataMetadata
 
   CorrelationAssayMetadataBipartitenetworkPostRequest:
     type: DataPluginRequestBase

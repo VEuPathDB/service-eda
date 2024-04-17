@@ -1328,11 +1328,27 @@ types:
     properties:
       computeConfig: CorrelationConfig
       config: CorrelationNetworkSpec
+  CorrelationInputDataCollection:
+    type: object
+    properties:
+      dataType:
+        type: string
+        enum:
+          - collection
+      collectionSpec: CollectionSpec
+  CorrelationInputDataMetadata:
+    type: object
+    properties:
+      dataType:
+        type: string
+        enum:
+          - metadata
   CorrelationAssayAssayConfig:
     type: BaseCorrelationComputeConfig
     properties:
-      collectionVariable: CollectionSpec
-      collectionVariable2: CollectionSpec
+      correlationMethod: CorrelationMethod
+      data1: CorrelationInputDataCollection
+      data2: CorrelationInputDataCollection
   CorrelationAssayAssayBipartitenetworkPostRequest:
     type: DataPluginRequestBase
     properties:
@@ -1341,7 +1357,9 @@ types:
   CorrelationAssayMetadataConfig:
     type: BaseCorrelationComputeConfig
     properties:
-      collectionVariable: CollectionSpec
+      correlationMethod: CorrelationMethod
+      data1: CorrelationInputDataCollection
+      data2: CorrelationInputDataMetadata
   CorrelationAssayMetadataBipartitenetworkPostRequest:
     type: DataPluginRequestBase
     properties:

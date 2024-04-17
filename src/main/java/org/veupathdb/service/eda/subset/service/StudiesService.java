@@ -90,7 +90,7 @@ public class StudiesService implements Studies {
         UserProvider.getSubmittedAuth(_request).orElseThrow()
     ).getStudyDatasetInfoMapForUser();
     Set<String> visibleStudyIds = visibleStudyMap.keySet();
-    
+
     // filter overviews by visible studies
     Map<String, StudyOverview> visibleOverviewMap = getStudyResolver()
         .getStudyOverviews().stream()
@@ -442,7 +442,8 @@ public class StudiesService implements Studies {
             Resources.getApplicationDataSource(),
             Resources.getVdiDatasetsSchema() + ".",
             StudyOverview.StudySourceType.USER_SUBMITTED,
-            variableFactory)
+            variableFactory,
+            false)
     );
   }
 

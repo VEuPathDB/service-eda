@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 public class MetadataCache implements StudyProvider {
   private static final Logger LOG = LogManager.getLogger(MetadataCache.class);
+  public static final boolean SORT_ENTITIES_ENABLED = true;
 
   // instance fields
   private List<StudyOverview> _studyOverviews;  // cache the overviews
@@ -82,7 +83,8 @@ public class MetadataCache implements StudyProvider {
             Resources.getApplicationDataSource(),
             Resources.getAppDbSchema(),
             new MetadataFileBinaryProvider(_binaryFilesManager),
-            this::studyHasFiles)
+            this::studyHasFiles),
+        SORT_ENTITIES_ENABLED
         );
   }
 

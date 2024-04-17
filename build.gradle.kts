@@ -93,7 +93,7 @@ repositories {
 // versions
 val coreLib       = "7.0.6"                    // Container core lib version
 val fgputil       = "2.12.11-jakarta"           // FgpUtil version
-val libSubsetting = "4.13.10-package-rename"    // lib-eda-subsetting version
+val libSubsetting = "4.13.14"    // lib-eda-subsetting version
 
 // use local EDA compute compiled schema if project exists, else use released version;
 //    this mirrors the way we use local EdaCommon code if available
@@ -112,7 +112,7 @@ dependencies {
 
   // VEuPathDB libs, prefer local checkouts if available
   implementation(findProject(":core") ?: "org.veupathdb.lib:jaxrs-container-core:${coreLib}")
-  implementation(findProject(":libSubsetting") ?: "org.veupathdb.eda:lib-eda-subsetting:${libSubsetting}")
+  implementation(findProject(":libEdaSubsetting") ?: "org.veupathdb.eda:lib-eda-subsetting:${libSubsetting}")
   implementation( "org.veupathdb.lib:compute-platform:1.7.0")
 
   // published VEuPathDB libs

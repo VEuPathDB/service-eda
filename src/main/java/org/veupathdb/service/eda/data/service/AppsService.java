@@ -141,9 +141,8 @@ public class AppsService implements Apps {
         new FloatingHistogramPostResponseStream(processRequest(new FloatingHistogramPlugin(), entity))));
   }
 
-  @Override
-  public PostAppsStandaloneMapDistributionsVisualizationsHistogramResponse postAppsStandaloneMapDistributionsVisualizationsDateHistogram(FloatingHistogramPostRequest entity) {
-    return wrapPlugin(() -> PostAppsStandaloneMapDistributionsVisualizationsHistogramResponse.respond200WithApplicationJson(
+  public PostAppsStandaloneMapDistributionsVisualizationsTimelineResponse postAppsStandaloneMapDistributionsVisualizationsTimeline(FloatingHistogramPostRequest entity) {
+    return wrapPlugin(() -> PostAppsStandaloneMapDistributionsVisualizationsTimelineResponse.respond200WithApplicationJson(
         new FloatingHistogramPostResponseStream(processRequest(new FloatingDateHistogramPlugin(), entity))));
   }
 

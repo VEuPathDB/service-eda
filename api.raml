@@ -849,6 +849,18 @@ securitySchemes:
               application/json:
                 type: lib.FloatingHistogramPostResponse
 
+    /timeline:
+      post:
+        description: Returns data required to create a floating histogram visualization for date variables only in the Standalone Map
+        body:
+          application/json:
+            type: lib.FloatingHistogramPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.FloatingHistogramPostResponse
+
     /boxplot:
       post:
         description: Returns data required to create a floating boxplot visualization in the Standalone Map

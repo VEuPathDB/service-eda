@@ -91,11 +91,13 @@ public class FloatingLineplotPlugin extends AbstractEmptyComputePlugin<FloatingL
         .map(OverlayConfig::getOverlayVariable)
         .ifPresent(plotVariableSpecs::add);
 
-    return ListBuilder.asList(
+    return List.of(
       new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, outputEntityId)
-        .addVars(plotVariableSpecs)
+        .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, false))
         // TODO can we make this automagical?
-        .addVars(getVariableSpecsWithStudyDependentVocabs(pluginSpec.getOutputEntityId(), plotVariableSpecs)));
+        .addVars(getVariableSpecsWithStudyDependentVocabs(pluginSpec.getOutputEntityId(), plotVariableSpecs)),
+      new StreamSpec(ADDITIONAL_STREAM_NAME, outputEntityId)
+        .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, true)));
   }
 
   @Override

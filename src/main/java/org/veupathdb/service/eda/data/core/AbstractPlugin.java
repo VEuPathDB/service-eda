@@ -827,7 +827,7 @@ public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String
                                  "data = " + compressedDataHandle + "," +
                                  "ancestorIdColumns = rev(" + ancestorIdsAsRString + ")," +
                                  "studySpecificVocabularies = " + studyVocabsAsRString + "," +
-                                 "collectionsDT = " + collectionIdsDataHandle + ")";
+                                 "collectionsDT = data.table::fread('" + collectionIdsDataHandle + "'))";
 
     return megastudyAsRString;
   }

@@ -38,6 +38,7 @@ import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingBarplotPlugin
 import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingBoxplotPlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingContTablePlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingHistogramPlugin;
+import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingDateHistogramPlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingLineplotPlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingScatterplotPlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingTimeSeriesPlugin;
@@ -75,6 +76,7 @@ public class AppsMetadata {
           List.of(VECTORBASE_PROJECT),
           viz("lineplot", new FloatingLineplotPlugin()),
           viz("timeseries", new FloatingTimeSeriesPlugin())),
+          viz("timeline", new FloatingDateHistogramPlugin()),
       app("standalone-map-distributions", "Distributions", null,
           "Plot simple distributions for any continuous variable, including metadata (e.g. age, height).",
           List.of(VECTORBASE_PROJECT),

@@ -139,7 +139,7 @@ public class AppsMetadata {
           "Uncover connections between taxonomic abundance and functional data such as genes or pathways.",
           List.of(MICROBIOME_PROJECT),
           viz("bipartitenetwork", new CorrelationBipartitenetworkPlugin())),
-      app("correlation", "Correlation (Eigengene v. Eigengene, Metadata)", "correlation",
+      app("correlation", "WGCNA Correlation (Eigengene v. Eigengene, Metadata)", "correlation",
           "Discover relationships between eigenengenes and metadata or other eigengenes.",
           NON_VB_GENOMICS_PROJECTS,
           viz("bipartitenetwork", new CorrelationBipartitenetworkPlugin())),

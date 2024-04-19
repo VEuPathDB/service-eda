@@ -1035,4 +1035,22 @@ public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String
 
     return varSpecs.stream().filter(varSpec -> varSpec.getEntityId().equals(entityId)).collect(Collectors.toList());
   }
+
+  // yea i suck, no need to tell me 
+  public List<VariableSpec> getVarSpecsForStandaloneMapMainStream(String outputEntityId, List<VariableSpec> plotVariableSpecs) {
+    PluginUtil util = getUtil();
+
+    List<VariableSpec> varSpecsWithStudyDependentVocabs = getVariableSpecsWithStudyDependentVocabs(outputEntityId);
+    VariableSpec weightingVariableSpec = varSpecsWithStudyDependentVocabs.isEmpty() ? null : util.getVariableSpecToImputeZeroesFor(varSpecsWithStudyDependentVocabs.get(0));
+    boolean needToImputeZeroes = weightingVariableSpec == null ? false : varSpecsWithStudyDependentVocabs.stream().anyMatch(var -> areSameVariableSpec(var, weightingVariableSpec));
+    List<VariableSpec> varSpecsForMainRequest = new ArrayList<>(getVariableSpecsWithStudyDependentVocabs(outputEntityId, plotVariableSpecs));
+    
+    if (needToImputeZeroes) {
+      varSpecsForMainRequest.addAll(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, false));
+    } else {
+      varSpecsForMainRequest.addAll(plotVariableSpecs);
+    }
+    
+    return varSpecsForMainRequest;
+  }
 }

@@ -72,14 +72,14 @@ public class CollectionFloatingBarplotPlugin extends AbstractEmptyComputePlugin<
     List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
     plotVariableSpecs.addAll(pluginSpec.getOverlayConfig().getSelectedMembers());
 
+    List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
+
     return List.of(
       new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, outputEntityId)
-        .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, false))
-        // TODO can we make this automagical?
-        // this will probably need revisited when/ if we introduce study-dependent vocabs for collections
-        .addVars(getVariableSpecsWithStudyDependentVocabs(pluginSpec.getOutputEntityId(), plotVariableSpecs)),
+        .addVars(varSpecsForMainRequest),
       new StreamSpec(ADDITIONAL_STREAM_NAME, outputEntityId)
-        .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, true)));
+        .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, true))
+    );
   }
 
   @Override

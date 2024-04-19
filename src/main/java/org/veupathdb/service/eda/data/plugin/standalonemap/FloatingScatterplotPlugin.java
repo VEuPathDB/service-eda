@@ -99,13 +99,14 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
         .map(OverlayConfig::getOverlayVariable)
         .ifPresent(plotVariableSpecs::add);
 
+    List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
+
     return List.of(
       new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, outputEntityId)
-        .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, false))
-        // TODO can we make this automagical?
-        .addVars(getVariableSpecsWithStudyDependentVocabs(pluginSpec.getOutputEntityId(), plotVariableSpecs)),
+        .addVars(varSpecsForMainRequest),
       new StreamSpec(ADDITIONAL_STREAM_NAME, outputEntityId)
-        .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, true)));
+        .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, true))
+    );
   }
 
   @Override

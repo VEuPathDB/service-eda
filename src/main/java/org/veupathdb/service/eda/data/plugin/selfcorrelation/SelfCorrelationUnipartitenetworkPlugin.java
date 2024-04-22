@@ -66,10 +66,16 @@ public class SelfCorrelationUnipartitenetworkPlugin extends AbstractPlugin<SelfC
     ByteArrayInputStream statsIn = new ByteArrayInputStream(statsBytes.toByteArray());
     dataStreams.put("statsFile.json", statsIn);
 
+    // some default filtering thresholds
+    Number correlationCoefThreshold = getPluginSpec().getCorrelationCoefThreshold() != null ? getPluginSpec().getCorrelationCoefThreshold() : 0.2;
+    Number pValueThreshold = getPluginSpec().getSignificanceThreshold() != null ? getPluginSpec().getSignificanceThreshold() : 0.05;
+
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval("corrResult <- jsonlite::read_json('statsFile.json', simplifyVector = TRUE)");
       connection.voidEval("edgeList <- corrResult$statistics");
       connection.voidEval("names(edgeList) <- c('source', 'target', 'weight', 'pValue')");
+      connection.voidEval("edgeList <- edgeList[edgeList$pValue <= " + pValueThreshold + "]");
+      connection.voidEval("edgeList <- edgeList[abs(edgeList$weight) >= " + correlationCoefThreshold + "]");
       String command = "plot.data::writeNetworkJSON(plot.data::Network(edgeList" + layout + "))";
       RServeClient.streamResult(connection, command, out);
     }); 

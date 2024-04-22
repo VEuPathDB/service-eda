@@ -10,11 +10,15 @@
 provider-register:
   subject: $dataset.displayName$ Provider Account
   body: |
-    Hi,
+    Hello,
+    <p>
+    We would like to add you as a "Study team member" for <i>$dataset.displayName$</i> so you can access the study 
+    and manage data requests in ClinEpiDB.org. This requires that you register for a ClinEpiDB account.</p>
+     
+    <p>If you do not already have a ClinEpiDB or VEuPathDB account, please register at the <a href="$sign-up-link$">ClinEpiDB registration page</a>.</p>
 
-    We would like to add you as a "Study team member" so you can access the data and manage data access requests for $dataset.displayName$ in ClinEpiDB. However, there is currently no ClinEpiDB account associated with this email address in our system.
-
-    Please register for an account at $sign-up-link$ or, if you already have an account, please provide the email address linked to your account.
+    <p>Once your account has been created, please email <a href="mailto:help@clinepidb.org">help@clinepidb.org</a> and provide the email address linked 
+    to your account so that we can add you as a study team member.</p>
 
 # Email sent when a new end user creation was attempted but the given end user
 # email address was not in our user db.

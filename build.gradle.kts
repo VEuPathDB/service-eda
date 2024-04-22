@@ -91,12 +91,12 @@ repositories {
 //
 
 // versions
-val coreLib       = "7.0.6"                    // Container core lib version
-val fgputil       = "2.12.11-jakarta"           // FgpUtil version
-val libSubsetting = "4.13.14"    // lib-eda-subsetting version
+val coreLib       = "7.0.6"            // Container core lib version
+val fgputil       = "2.12.11-jakarta"  // FgpUtil version
+val libSubsetting = "4.14.1"          // lib-eda-subsetting version
 
 // use local EDA compute compiled schema if project exists, else use released version;
-//    this mirrors the way we use local EdaCommon code if available
+// this mirrors the way we use local EdaCommon code if available
 val commonRamlOutFileName = "$projectDir/schema/eda-compute-lib.raml"
 
 // ensures changing modules are never cached

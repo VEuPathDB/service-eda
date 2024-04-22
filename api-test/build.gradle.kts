@@ -1,8 +1,7 @@
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
-  kotlin("jvm") version "1.7.0" // needed for local compute import
-  java
+  kotlin("jvm") version "1.9.20"
 }
 
 java {
@@ -11,6 +10,11 @@ java {
   }
 }
 
+kotlin {
+  jvmToolchain {
+    languageVersion.set(JavaLanguageVersion.of(17))
+  }
+}
 
 dependencies {
   implementation(kotlin("stdlib-jdk8"))

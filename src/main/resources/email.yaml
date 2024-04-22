@@ -15,7 +15,7 @@ provider-register:
     We would like to add you as a "Study team member" for <i>$dataset.displayName$</i> so you can access the study 
     and manage data requests in ClinEpiDB.org. This requires that you register for a ClinEpiDB account.</p>
      
-    <p>If you do not already have a ClinEpiDB or VEuPathDB account, please register at <a href="$sign-up-link$">the ClinEpiDB registration page</a>.</p>
+    <p>If you do not already have a ClinEpiDB or VEuPathDB account, please register at the <a href="$sign-up-link$">ClinEpiDB registration page</a>.</p>
 
     <p>Once your account has been created, please email <a href="mailto:help@clinepidb.org">help@clinepidb.org</a> and provide the email address linked 
     to your account so that we can add you as a study team member.</p>

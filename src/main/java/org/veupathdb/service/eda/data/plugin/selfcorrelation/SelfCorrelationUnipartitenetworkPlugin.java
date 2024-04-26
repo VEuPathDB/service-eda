@@ -73,8 +73,8 @@ public class SelfCorrelationUnipartitenetworkPlugin extends AbstractPlugin<SelfC
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval("corrResult <- jsonlite::read_json('statsFile.json', simplifyVector = TRUE)");
       connection.voidEval("edgeList <- corrResult$statistics");
-      connection.voidEval("names(edgeList) <- c('source', 'target', 'weight', 'pValue')");
-      String command = "plot.data::writeNetworkJSON(plot.data::Network(edgeList" + 
+      connection.voidEval("names(edgeList) <- c('source', 'target', 'correlationCoef', 'pValue')");
+      String command = "plot.data::writeNetworkJSON(plot.data::CorrelationNetwork(edgeList" + 
           ", correlationCoefThreshold = " + correlationCoefThreshold + 
           ", pValueThreshold = " + pValueThreshold + 
           layout + "))";

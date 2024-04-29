@@ -28,6 +28,7 @@ import org.veupathdb.service.eda.download.Service;
 import org.veupathdb.service.eda.merge.ServiceExternal;
 import org.veupathdb.service.eda.merge.ServiceInternal;
 import org.veupathdb.service.eda.subset.EnvironmentVars;
+import org.veupathdb.service.eda.subset.model.reducer.BinaryValuesStreamer;
 import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.subset.model.variable.binary.SimpleStudyFinder;
 import org.veupathdb.service.eda.subset.service.ClearMetadataCacheService;
@@ -229,6 +230,9 @@ public class Resources extends ContainerResources {
     throw new RuntimeException("Configured data dir '" + dirPath + "' is not a readable directory.");
   }
 
+  public static BinaryValuesStreamer getBinaryValuesStreamer() {
+    return new BinaryValuesStreamer(BINARY_FILES_MANAGER, FILE_READ_THREAD_POOL, DESERIALIZER_THREAD_POOL);
+  }
 
   /**
    * Returns an array of JaxRS endpoints, providers, and contexts.

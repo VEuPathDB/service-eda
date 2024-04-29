@@ -72,32 +72,33 @@ class ApiTest {
         logger().info("Received count values: $overlayValues")
     }
 
-//    @Test
-//    fun variableMetaTest() {
-//        val studyIds = given()
-//            .contentType(ContentType.JSON)
-//            .header(AuthTokenKey, AuthToken)
-//            .`when`()
-//            .get("studies")
-//            .then()
-//            .statusCode(200)
-//            .contentType(ContentType.JSON)
-//            .extract()
-//            .path<List<String>>("studies.id")
-//
-//        logger().info("Found studies: $studyIds")
-//
-//        studyIds.stream()
-//            .forEach {
-//                given()
-//                    .contentType(ContentType.JSON)
-//                    .header(AuthTokenKey, AuthToken)
-//                    .`when`()
-//                    .get("studies/${it}")
-//                    .then()
-//                    .statusCode(200)
-//            }
-//    }
+    // TODO: RE-enable when studies with empty metadata are removed or fully loaded.
+    //    @Test
+    fun variableMetaTest() {
+        val studyIds = given()
+            .contentType(ContentType.JSON)
+            .header(AuthTokenKey, AuthToken)
+            .`when`()
+            .get("studies")
+            .then()
+            .statusCode(200)
+            .contentType(ContentType.JSON)
+            .extract()
+            .path<List<String>>("studies.id")
+
+        logger().info("Found studies: $studyIds")
+
+        studyIds.stream()
+            .forEach {
+                given()
+                    .contentType(ContentType.JSON)
+                    .header(AuthTokenKey, AuthToken)
+                    .`when`()
+                    .get("studies/${it}")
+                    .then()
+                    .statusCode(200)
+            }
+    }
 
     /**
      * Provide bubble test cases from YAML file.

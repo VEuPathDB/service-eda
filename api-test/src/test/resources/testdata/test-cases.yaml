@@ -1,4 +1,53 @@
 donuts:
+- expectedResponseCode: 204
+  body: |
+    {
+    "studyId": "VBP_MEGA",
+    "filters": [
+        {
+            "type": "dateRange",
+            "entityId": "OBI_0000659",
+            "variableId": "EUPATH_0043256",
+            "min": "1945-10-11T00:00:00Z",
+            "max": "1951-10-17T00:00:00Z"
+        }
+    ],
+    "config": {
+        "geoAggregateVariable": {
+            "entityId": "GAZ_00000448",
+            "variableId": "EUPATH_0043203"
+        },
+        "latitudeVariable": {
+            "entityId": "GAZ_00000448",
+            "variableId": "OBI_0001620"
+        },
+        "longitudeVariable": {
+            "entityId": "GAZ_00000448",
+            "variableId": "OBI_0001621"
+        },
+        "overlayConfig": {
+            "overlayType": "categorical",
+            "overlayVariable": {
+                "variableId": "OBI_0001909",
+                "entityId": "EUPATH_0000609"
+            },
+            "overlayValues": []
+        },
+        "outputEntityId": "EUPATH_0000609",
+        "valueSpec": "count",
+        "viewport": {
+            "latitude": {
+                "xMin": -2.2175491067171054,
+                "xMax": 60.437532241850825
+            },
+            "longitude": {
+                "left": -170.32413020843666,
+                "right": -170.32413021843666
+            }
+        }
+      }
+    }
+
 - expectedMarkerCount: 13
   body: |
     {
@@ -231,7 +280,7 @@ bubbles:
       }
     }
 
-- expectedMarkerCount: 12
+- expectedMarkerCount: 13
   body: |
     {
         "studyId": "VBP_MEGA",

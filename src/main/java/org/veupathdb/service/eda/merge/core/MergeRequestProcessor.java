@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.merge.core;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.Functions;
@@ -77,6 +78,9 @@ public class MergeRequestProcessor {
         // all other streams come from subsetting service
         : _resources.getSubsettingTabularStream(spec);
 
+    final List<StreamSpec> requiredStreamSpecs = new ArrayList<>(requiredStreams.values());
+    AutoCloseableList<InputStream> closeableDataStreams = StreamingDataClient.buildDataStreams(requiredStreamSpecs, streamGenerator);
+
     return out -> {
 
       // create stream processor
@@ -86,7 +90,7 @@ public class MergeRequestProcessor {
           : dataStreams -> writeMergedStream(targetStream, dataStreams, out);
 
       // build and process streams
-      StreamingDataClient.buildAndProcessStreams(new ArrayList<>(requiredStreams.values()), streamGenerator, streamProcessor);
+      StreamingDataClient.processDataStreams(requiredStreamSpecs, closeableDataStreams, streamProcessor);
     };
   }
 

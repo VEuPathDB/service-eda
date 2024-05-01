@@ -123,7 +123,7 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
     String showMissingness = spec.getShowMissingness() != null ? spec.getShowMissingness().getValue() : "noVariables";
     String deprecatedShowMissingness = showMissingness.equals("FALSE") ? "noVariables" : showMissingness.equals("TRUE") ? "strataVariables" : showMissingness;
     String yVarType = util.getVariableType(spec.getYAxisVariable());
-    String correlationMethod = spec.getCorrelationMethod() != null ? spec.getCorrelationMethod().getValue() : "pearson";
+    String correlationMethod = spec.getCorrelationMethod() != null ? spec.getCorrelationMethod().getValue() : "none";
     
     if (yVarType.equals("DATE") && !valueSpec.equals("raw")) {
       LOG.error("Cannot calculate trend lines for y-axis date variables. The `valueSpec` property must be set to `raw`.");

@@ -1884,6 +1884,13 @@ types:
     type: DataPluginRequestBase
     properties:
       config: ScatterplotSpec
+  ScatterCorrelationMethod:
+    type: string
+    enum:
+      - none
+      - spearman
+      - pearson
+      - sparcc
   ScatterplotSpec:
     type: object
     additionalProperties: false
@@ -1911,6 +1918,7 @@ types:
         type: integer
         required: false
         format: int64
+      correlationMethod: ScatterCorrelationMethod
   Scatterplot:
     type: object
     additionalProperties: false

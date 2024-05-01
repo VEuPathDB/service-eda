@@ -136,7 +136,9 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ", imputeZero=TRUE)");
 
-      connection.voidEval("computeResult <- differentialAbundance(data=inputData" +
+      // there is also a user-facing differentialAbundance method in MicrobiomeDB r package
+      // we dont want to use that one, were using the internal one directly. the api is more explicit.
+      connection.voidEval("computeResult <- microbiomeComputations::internalDiffAbund(data=inputData" +
                                                           ", comparator=comparator" +
                                                           ", method=" + singleQuote(method) +
                                                           ", pValueFloor=as.numeric(" + singleQuote(pValueFloor) + ")" +

@@ -63,6 +63,15 @@ public class MergedTabularRequestResources extends RequestResources {
     validateIncomingRequest();
   }
 
+  /**
+   * TODO migrate this to directly use compute functionality:
+   *  org.veupathdb.service.eda.compute.controller.ComputeController#resultFile(
+   *  org.veupathdb.service.eda.compute.plugins.PluginMeta, java.lang.String,
+   *  org.veupathdb.service.eda.generated.model.ComputeRequestBase, java.util.function.Function)
+   *
+   *  This isn't expected to provide a particularly noticable performance improvement, but it will avoid overhead
+   *  of HTTP.
+   */
   public CloseableIterator<Map<String, String>> getComputeStreamIterator(Study study) {
     Entity computeEntity = study.getEntity(_computeInfo.get().getComputeEntity()).orElseThrow();
 
@@ -151,24 +160,6 @@ public class MergedTabularRequestResources extends RequestResources {
         throw new ValidationException("Entity of computed variable must be the same as, or ancestor of, the target entity");
       }
     }
-  }
-  
-  public ResponseFuture getSubsettingTabularStream(StreamSpec spec) {
-
-    // for derived var plugins, need to ensure filters overrides produce set of rows which are a subset of the rows
-    //   produced by the "global" filters.  Easiest way to do that is to simply combine the filters, resulting in
-    //   an intersection of the global subset and the overridden subset
-    if (spec.getFiltersOverride().isPresent() && !_subsetFilters.isEmpty()) {
-      StreamSpec modifiedSpec = new StreamSpec(spec.getStreamName(), spec.getEntityId());
-      modifiedSpec.addAll(spec);
-      List<APIFilter> combinedFilters = new ArrayList<>();
-      combinedFilters.addAll(_subsetFilters);
-      combinedFilters.addAll(spec.getFiltersOverride().get());
-      modifiedSpec.setFiltersOverride(combinedFilters);
-      spec = modifiedSpec;
-    }
-
-    return _subsetSvc.getTabularDataStream(_metadata, _subsetFilters, spec);
   }
 
   public ResponseFuture getComputeTabularStream() {

@@ -66,14 +66,13 @@ public class MergeRequestProcessor {
     // request validated; convert requested entity and vars to defs
     EntityDef targetEntity = metadata.getEntity(targetEntityId).orElseThrow();
     List<VariableDef> outputVarDefs = metadata.getTabularColumns(targetEntity, outputVarSpecs);
-    List<VariableSpec> outputVars = new ArrayList<>(outputVarDefs.stream().map(v -> (VariableSpec)v).toList());
 
     // build entity node tree to aggregate the data into a streaming response
     RootStreamingEntityNode targetStream = new RootStreamingEntityNode(targetEntity, outputVarDefs,
         _resources.getSubsetFilters(), metadata, _resources.getDerivedVariableFactory(), computeInfo);
     LOG.info("Created the following entity node tree: " + targetStream);
 
-    final boolean fileBasedSubsetting = Resources.isFileBasedSubsettingEnabled() && Resources.getMetadataCache().studyHasFiles(study.getStudyId());
+    final boolean fileBasedSubsetting = Resources.getMetadataCache().studyHasFiles(study.getStudyId());
 
     // get stream specs for streams needed by the node tree, which will be merged into this request's response
     Map<String, StreamSpec> requiredStreams = Functions.getMapFromValues(targetStream.getRequiredStreamSpecs(), StreamSpec::getStreamName);

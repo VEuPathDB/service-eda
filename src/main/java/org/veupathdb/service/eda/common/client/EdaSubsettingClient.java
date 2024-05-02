@@ -6,6 +6,7 @@ import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.web.MimeTypes;
+import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
@@ -14,6 +15,7 @@ import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -50,12 +52,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
    * @return optional study detail for the found study
    */
   public Optional<APIStudyDetail> getStudy(String studyId) {
-    if (!getStudies().contains(studyId)) return Optional.empty(); // invalid name
-    if (!_studyDetailCache.containsKey(studyId)) {
-      _studyDetailCache.put(studyId, swallowAndGet(() -> ClientUtil
-          .getResponseObject(getUrl("/studies/" + studyId), StudyIdGetResponse.class, getAuthHeaderMap()).getStudy()));
-    }
-    return Optional.of(_studyDetailCache.get(studyId));
+    return Optional.of(ApiConversionUtil.getApiStudyDetail(Resources.getMetadataCache().getStudyById(studyId)));
   }
 
   @Override

@@ -2,6 +2,8 @@ package org.veupathdb.service.eda.common.auth;
 
 import jakarta.ws.rs.ForbiddenException;
 import org.json.JSONObject;
+import org.veupathdb.lib.container.jaxrs.model.User;
+import org.veupathdb.service.eda.access.service.permissions.PermissionService;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 
 import java.util.Map.Entry;

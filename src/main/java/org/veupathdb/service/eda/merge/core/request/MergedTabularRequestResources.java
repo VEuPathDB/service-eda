@@ -55,7 +55,6 @@ public class MergedTabularRequestResources extends RequestResources {
     _computeInfo = Optional.ofNullable(request.getComputeSpec())
         .map(spec -> new ComputeInfo(spec.getComputeName(),
             new EdaComputeClient.ComputeRequestBody(_metadata.getStudyId(), _subsetFilters, _derivedVariableSpecs, spec.getComputeConfig())));
-
     // incorporate computed metadata (if compute info present)
     incorporateCompute();
 
@@ -153,7 +152,7 @@ public class MergedTabularRequestResources extends RequestResources {
       }
     }
   }
-
+  
   public ResponseFuture getSubsettingTabularStream(StreamSpec spec) {
 
     // for derived var plugins, need to ensure filters overrides produce set of rows which are a subset of the rows

@@ -55,7 +55,6 @@ public class MergeRequestProcessor {
   }
 
   public Consumer<OutputStream> createMergedResponseSupplier() throws ValidationException {
-
     // gather request resources
     String targetEntityId = _resources.getTargetEntityId();
     List<VariableSpec> outputVarSpecs = _resources.getOutputVariableSpecs();
@@ -80,16 +79,13 @@ public class MergeRequestProcessor {
     // create stream generator
     Function<StreamSpec, CloseableIterator<Map<String, String>>> streamGenerator = spec ->
         COMPUTED_VAR_STREAM_NAME.equals(spec.getStreamName())
-        // need to get compute stream from compute service
-        ? _resources.getComputeStreamIterator(study)
-        // all other streams come from subsetting service
-        : FilteredResultFactory.tabularSubsetIterator(study,
-        study.getEntity(spec.getEntityId()).orElseThrow(),
-        spec.stream()
-            .map(varSpec -> study.getEntity(spec.getEntityId()).orElseThrow().getVariableOrThrow(varSpec.getVariableId()))
-            .map(var -> (VariableWithValues) var)
-            .collect(Collectors.toList()),
-            ApiConversionUtil.toInternalFilters(study, spec.getFiltersOverride().orElse(_resources.getSubsetFilters()), Resources.getAppDbSchema()), // Move this up?
+            // need to get compute stream from compute service
+            ? _resources.getComputeStreamIterator(study)
+            // all other streams come from subsetting service
+            : FilteredResultFactory.tabularSubsetIterator(study,
+            study.getEntity(spec.getEntityId()).orElseThrow(),
+            getVariablesFromStreamSpec(spec, study),
+            ApiConversionUtil.toInternalFilters(study, spec.getFiltersOverride().orElse(_resources.getSubsetFilters()), Resources.getAppDbSchema()),
             Resources.getBinaryValuesStreamer(), fileBasedSubsetting, Resources.getApplicationDataSource(), Resources.getAppDbSchema());
 
     return out -> {
@@ -101,6 +97,13 @@ public class MergeRequestProcessor {
       // build and process streams
       StreamingDataClient.buildAndProcessIteratorStreams(new ArrayList<>(requiredStreams.values()), streamGenerator, streamProcessor);
     };
+  }
+
+  private static List<VariableWithValues> getVariablesFromStreamSpec(StreamSpec spec, Study study) {
+    return spec.stream()
+        .map(varSpec -> study.getEntity(spec.getEntityId()).orElseThrow().getVariableOrThrow(varSpec.getVariableId()))
+        .map(var -> (VariableWithValues) var)
+        .collect(Collectors.toList());
   }
 
   private static void writeMergedStream(RootStreamingEntityNode targetEntityStream,

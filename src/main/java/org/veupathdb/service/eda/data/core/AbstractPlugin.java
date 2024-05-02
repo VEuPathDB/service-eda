@@ -183,7 +183,6 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     Function<StreamSpec, ResponseFuture> streamGenerator = spec -> _mergingClient
         .getTabularDataStream(_referenceMetadata, _subsetFilters, _derivedVariableSpecs, typedTuple, spec);
 
-    StreamingDataClient.buildAndProcessIteratorStreams(_requiredStreams, );
     final AutoCloseableList<InputStream> dataStreams = StreamingDataClient.buildDataStreams(_requiredStreams, streamGenerator);
 
     return out -> {

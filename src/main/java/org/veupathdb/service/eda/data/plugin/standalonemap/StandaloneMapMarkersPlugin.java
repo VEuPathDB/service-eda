@@ -50,7 +50,6 @@ public class StandaloneMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
         .element("overlayVariable")
           .shapes(APIVariableDataShape.ORDINAL)
           .types(APIVariableType.STRING)
-      .done()
       .pattern()
         .element("geoAggregateVariable")
           .types(APIVariableType.STRING)

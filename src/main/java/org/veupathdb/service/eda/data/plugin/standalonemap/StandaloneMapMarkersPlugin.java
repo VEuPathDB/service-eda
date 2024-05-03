@@ -48,6 +48,18 @@ public class StandaloneMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
         .element("longitudeVariable")
           .types(APIVariableType.LONGITUDE)
         .element("overlayVariable")
+          .shapes(APIVariableDataShape.ORDINAL)
+          .types(APIVariableType.STRING)
+      .done()
+      .pattern()
+        .element("geoAggregateVariable")
+          .types(APIVariableType.STRING)
+        .element("latitudeVariable")
+          .types(APIVariableType.NUMBER)
+        .element("longitudeVariable")
+          .types(APIVariableType.LONGITUDE)
+        .element("overlayVariable")
+          .shapes(APIVariableDataShape.CONTINUOUS, APIVariableDataShape.CATEGORICAL, APIVariableDataShape.BINARY)
       .done();
   }
 

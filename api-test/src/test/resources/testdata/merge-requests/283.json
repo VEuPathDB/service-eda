@@ -1,0 +1,1 @@
+{"studyId":"DiabImmune-1","derivedVariables":[],"filters":[],"entityId":"OBI_0002623","outputVariables":[{"entityId":"EUPATH_0000096","variableId":"EUPATH_0009045"}],"computeSpec":{"computeName":"betadiv","computeConfig":{"collectionVariable":{"entityId":"OBI_0002623","collectionId":"EUPATH_0009248"},"betaDivDissimilarityMethod":"bray"}}}

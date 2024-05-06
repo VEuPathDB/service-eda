@@ -1,0 +1,1 @@
+{"studyId":"VBP_MEGA","derivedVariables":[],"filters":[{"entityId":"OBI_0000659","type":"dateRange","variableId":"EUPATH_0043256","min":"1998-01-01T00:00:00Z","max":"2006-12-31T00:00:00.000Z"}],"entityId":"OBI_0000659","outputVariables":[{"entityId":"OBI_0000659","variableId":"EUPATH_0043256"}]}

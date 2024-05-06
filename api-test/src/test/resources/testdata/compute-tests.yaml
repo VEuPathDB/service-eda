@@ -1,0 +1,37 @@
+computeTests:
+  - computeBody: |
+      {
+          "config": {
+              "collectionVariable": {
+                  "collectionId": "EUPATH_0009255",
+                  "entityId": "EUPATH_0000813"
+              },
+              "alphaDivMethod": "shannon"
+          },
+          "derivedVariables": [],
+          "filters": [],
+          "studyId": "Bangladesh_healthy_5yr-1"
+      }
+    vizBody: |
+        {
+            "studyId": "Bangladesh_healthy_5yr-1",
+            "filters": [],
+            "config": {
+                "outputEntityId": "EUPATH_0000813",
+                "points": "outliers",
+                "mean": "TRUE",
+                "xAxisVariable": {
+                    "entityId": "EUPATH_0000813",
+                    "variableId": "EUPATH_0009252_Bacteria_Abditibacteriota"
+                },
+                "facetVariable": [],
+                "showMissingness": "FALSE"
+            },
+            "computeConfig": {
+                "collectionVariable": {
+                    "collectionId": "EUPATH_0009255",
+                    "entityId": "EUPATH_0000813"
+                },
+                "alphaDivMethod": "shannon"
+            }
+        }

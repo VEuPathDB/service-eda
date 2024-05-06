@@ -1,1 +1,2 @@
-data class TestSuite(val bubbles: List<BubbleMarkerTestCase>, val donuts: List<DonutMarkerTestCase>)
+data class TestSuite(val bubbles: List<BubbleMarkerTestCase>,
+                     val donuts: List<DonutMarkerTestCase>)

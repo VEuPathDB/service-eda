@@ -39,6 +39,8 @@ tasks.register<Test>("api-test") {
   systemProperty("AUTH_TOKEN", System.getenv("AUTH_TOKEN"))
   systemProperty("BASE_URL", System.getenv("EDA_BASE_URL"))
   systemProperty("SERVICE_PORT", System.getenv("EDA_SERVICE_PORT"))
+  systemProperty("TEST_REPORT_OUTPUT_FILE", "${layout.buildDirectory.get().asFile.toPath().toAbsolutePath().toString()}/test-results/perf-report.csv")
+
 
   useJUnitPlatform()
   testLogging {

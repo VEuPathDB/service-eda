@@ -1,0 +1,1 @@
+{"studyId":"DiabImmune-1","derivedVariables":[],"filters":[],"entityId":"EUPATH_0000813","outputVariables":[],"computeSpec":{"computeName":"rankedabundance","computeConfig":{"collectionVariable":{"entityId":"EUPATH_0000813","collectionId":"EUPATH_0009252"},"rankingMethod":"q3"}}}

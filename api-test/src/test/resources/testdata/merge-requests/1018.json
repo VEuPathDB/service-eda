@@ -1,0 +1,1 @@
+{"studyId":"HMPWgs-1","derivedVariables":[],"filters":[],"entityId":"OBI_0002623","outputVariables":[],"computeSpec":{"computeName":"betadiv","computeConfig":{"collectionVariable":{"entityId":"OBI_0002623","collectionId":"EUPATH_0009257"},"betaDivDissimilarityMethod":"bray"}}}

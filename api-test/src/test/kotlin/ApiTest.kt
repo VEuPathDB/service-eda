@@ -25,6 +25,7 @@ class ApiTest {
 
     @BeforeAll
     internal fun setup() {
+        logger().info("Found URL: ${System.getProperty("BASE_URL")}:${System.getProperty("SERVICE_PORT").toInt()}")
         RestAssured.baseURI = System.getProperty("BASE_URL")
         RestAssured.port = System.getProperty("SERVICE_PORT").toInt()
         RestAssured.useRelaxedHTTPSValidation()

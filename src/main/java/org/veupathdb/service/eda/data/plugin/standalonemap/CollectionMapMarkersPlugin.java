@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
@@ -27,6 +29,7 @@ import static org.gusdb.fgputil.FormatUtil.TAB;
 import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
 
 public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<StandaloneCollectionMapMarkerPostRequest, StandaloneCollectionMapMarkerSpec> {
+  private static final Logger LOG = LogManager.getLogger(CollectionMapMarkersPlugin.class);
 
   private QuantitativeAggregateConfiguration _aggregateConfig;
 
@@ -77,7 +80,10 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
   @Override
   protected List<StreamSpec> getRequestedStreams(StandaloneCollectionMapMarkerSpec pluginSpec) {
     StreamSpec streamSpec = new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, pluginSpec.getOutputEntityId());
-    streamSpec.addVars(pluginSpec.getCollection().getSelectedMembers());
+    streamSpec.addVars(pluginSpec.getCollection().getSelectedMembers())
+        .addVar(pluginSpec.getGeoAggregateVariable())
+        .addVar(pluginSpec.getLatitudeVariable())
+        .addVar(pluginSpec.getLongitudeVariable());
     return List.of(streamSpec);
   }
 
@@ -87,8 +93,11 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
     BufferedReader reader = new BufferedReader(isReader);
     DelimitedDataParser parser = new DelimitedDataParser(reader.readLine(), TAB, true);
 
+    LOG.info("Columns: " + parser.getColumnNames());
     StandaloneCollectionMapMarkerSpec spec = getPluginSpec();
-    Function<String, Integer> indexOf = var -> parser.indexOfColumn(var).orElseThrow();
+    Function<String, Integer> indexOf = var ->
+      parser.indexOfColumn(var).orElseThrow(() -> new RuntimeException("Looking for variable " + var + " but found columns " + parser.getColumnNames()));
+
     Function<Integer, String> indexToVarId = index -> parser.getColumnNames().get(index);
     List<String> memberVarColNames = spec.getCollection().getSelectedMembers().stream()
         .map(getUtil()::toColNameOrEmpty)

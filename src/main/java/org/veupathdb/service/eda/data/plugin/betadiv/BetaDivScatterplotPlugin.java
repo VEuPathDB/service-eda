@@ -101,7 +101,10 @@ public class BetaDivScatterplotPlugin extends AbstractPlugin<BetaDivScatterplotP
       connection.voidEval(getVoidEvalComputedVariableMetadataList(metadata));
       connection.voidEval("variables <- veupathUtils::merge(variables, computedVariables)");
 
-      String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" + valueSpec + "', NULL, TRUE, TRUE, '" + deprecatedShowMissingness + "')";
+      String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" + 
+        valueSpec + 
+        "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" + 
+        deprecatedShowMissingness + "')";
       RServeClient.streamResult(connection, command, out);
     }); 
   }

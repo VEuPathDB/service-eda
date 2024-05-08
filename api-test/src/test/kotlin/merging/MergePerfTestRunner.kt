@@ -78,7 +78,7 @@ class MergePerfTestRunner {
                 .lines()
                 .count()
         }
-        val checksum = Hex.encodeHex(MessageDigest.getInstance("SHA-1").digest(body.toString().toByteArray()))
+        val checksum = Hex.encodeHexString(MessageDigest.getInstance("SHA-1").digest(body.toString().toByteArray()))
         OutputWriter?.write("$study,$numFilters,$distinctOutputEntityCount,$timeTaken,$numLines,$checksum\n")
         logger().info("$study, $numFilters, $distinctOutputEntityCount, $timeTaken, $numLines, $checksum")
     }

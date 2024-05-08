@@ -7,6 +7,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import compute.ComputeTestCase
 import io.restassured.RestAssured
 import io.restassured.http.ContentType
+import org.apache.commons.codec.binary.Hex
 import org.apache.logging.log4j.kotlin.logger
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
@@ -17,6 +18,7 @@ import java.io.BufferedWriter
 import java.io.File
 import java.net.URL
 import java.nio.file.Path
+import java.security.MessageDigest
 import java.util.*
 import java.util.stream.Stream
 import kotlin.time.measureTime
@@ -76,8 +78,9 @@ class MergePerfTestRunner {
                 .lines()
                 .count()
         }
-        OutputWriter?.write("$study,$numFilters,$distinctOutputEntityCount,$timeTaken,$numLines\n")
-        logger().info("$study, $numFilters, $distinctOutputEntityCount, $timeTaken, $numLines")
+        val checksum = Hex.encodeHex(MessageDigest.getInstance("SHA-1").digest(body.toString().toByteArray()))
+        OutputWriter?.write("$study,$numFilters,$distinctOutputEntityCount,$timeTaken,$numLines,$checksum\n")
+        logger().info("$study, $numFilters, $distinctOutputEntityCount, $timeTaken, $numLines, $checksum")
     }
 
     private fun mergeRequestProvider(): Stream<JsonNode> {

@@ -28,7 +28,13 @@ import org.veupathdb.service.eda.download.Service;
 import org.veupathdb.service.eda.merge.ServiceExternal;
 import org.veupathdb.service.eda.merge.ServiceInternal;
 import org.veupathdb.service.eda.subset.EnvironmentVars;
+import org.veupathdb.service.eda.subset.model.StudyOverview;
+import org.veupathdb.service.eda.subset.model.db.StudyFactory;
+import org.veupathdb.service.eda.subset.model.db.StudyProvider;
+import org.veupathdb.service.eda.subset.model.db.StudyResolver;
+import org.veupathdb.service.eda.subset.model.db.VariableFactory;
 import org.veupathdb.service.eda.subset.model.reducer.BinaryValuesStreamer;
+import org.veupathdb.service.eda.subset.model.reducer.MetadataFileBinaryProvider;
 import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.subset.model.variable.binary.SimpleStudyFinder;
 import org.veupathdb.service.eda.subset.service.ClearMetadataCacheService;
@@ -151,6 +157,24 @@ public class Resources extends ContainerResources {
 
   public static MetadataCache getMetadataCache() {
     return METADATA_CACHE;
+  }
+
+  public static StudyResolver getStudyResolver() {
+    final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();
+    final MetadataFileBinaryProvider metadataFileBinaryProvider = new MetadataFileBinaryProvider(binaryFilesManager);
+    final VariableFactory variableFactory = new VariableFactory(Resources.getApplicationDataSource(),
+        Resources.getVdiDatasetsSchema() + ".",
+        metadataFileBinaryProvider,
+        binaryFilesManager::studyHasFiles);
+    return new StudyResolver(
+        METADATA_CACHE,
+        new StudyFactory(
+            Resources.getApplicationDataSource(),
+            Resources.getVdiDatasetsSchema() + ".",
+            StudyOverview.StudySourceType.USER_SUBMITTED,
+            variableFactory,
+            false)
+    );
   }
 
   public static boolean isFileBasedSubsettingEnabled() {

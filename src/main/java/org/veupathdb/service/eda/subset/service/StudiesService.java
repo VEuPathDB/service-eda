@@ -92,7 +92,7 @@ public class StudiesService implements Studies {
     Set<String> visibleStudyIds = visibleStudyMap.keySet();
 
     // filter overviews by visible studies
-    Map<String, StudyOverview> visibleOverviewMap = getStudyResolver()
+    Map<String, StudyOverview> visibleOverviewMap = Resources.getStudyResolver()
         .getStudyOverviews().stream()
         .filter(overview -> visibleStudyIds.contains(overview.getStudyId()))
         .collect(Collectors.toMap(StudyOverview::getStudyId, Function.identity()));
@@ -106,7 +106,7 @@ public class StudiesService implements Studies {
   @Override
   public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) {
     checkPerms(_request, studyId, StudyAccess::allowStudyMetadata);
-    Study study = getStudyResolver().getStudyById(studyId);
+    Study study = Resources.getStudyResolver().getStudyById(studyId);
     APIStudyDetail apiStudyDetail = ApiConversionUtil.getApiStudyDetail(study);
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
     response.setStudy(apiStudyDetail);
@@ -116,7 +116,7 @@ public class StudiesService implements Studies {
   @Override
   public GetStudiesEntitiesByStudyIdAndEntityIdResponse getStudiesEntitiesByStudyIdAndEntityId(String studyId, String entityId) {
     checkPerms(_request, studyId, StudyAccess::allowStudyMetadata);
-    APIStudyDetail apiStudyDetail = ApiConversionUtil.getApiStudyDetail(getStudyResolver().getStudyById(studyId));
+    APIStudyDetail apiStudyDetail = ApiConversionUtil.getApiStudyDetail(Resources.getStudyResolver().getStudyById(studyId));
     APIEntity entity = findEntityById(apiStudyDetail.getRootEntity(), entityId).orElseThrow(NotFoundException::new);
     EntityIdGetResponse response = new EntityIdGetResponseImpl();
     // copy properties of found entity, skipping children
@@ -146,7 +146,7 @@ public class StudiesService implements Studies {
   public static VariableDistributionPostResponse handleDistributionRequest(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
     try {
-      Study study = getStudyResolver().getStudyById(studyId);
+      Study study = Resources.getStudyResolver().getStudyById(studyId);
       String dataSchema = resolveSchema(study);
 
       // unpack data from API input to model objects
@@ -194,7 +194,7 @@ public class StudiesService implements Studies {
       PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse typedResponse =
           postStudiesEntitiesTabularByStudyIdAndEntityId(studyId, entityId, request);
       // success so far; add header to response
-      String entityDisplay = getStudyResolver().getStudyById(studyId).getEntity(entityId).orElseThrow().getDisplayName();
+      String entityDisplay = Resources.getStudyResolver().getStudyById(studyId).getEntity(entityId).orElseThrow().getDisplayName();
       String fileName = studyId + "_" + entityDisplay + "_subsettedData.txt";
       String dispositionHeaderValue = "attachment; filename=\"" + fileName + "\"";
       ServiceMetrics.reportSubsetDownload(studyId, UserProvider.lookupUser(_request)
@@ -213,7 +213,7 @@ public class StudiesService implements Studies {
   @Override
   public PostStudiesEntitiesVariablesRootVocabByStudyIdAndEntityIdAndVariableIdResponse postStudiesEntitiesVariablesRootVocabByStudyIdAndEntityIdAndVariableId(String studyId, String entityId, String variableId, VocabByRootEntityPostRequest body) {
     checkPerms(_request, studyId, StudyAccess::allowSubsetting);
-    Study study = getStudyResolver().getStudyById(studyId);
+    Study study = Resources.getStudyResolver().getStudyById(studyId);
     String dataSchema = resolveSchema(study);
 
 
@@ -262,7 +262,7 @@ public class StudiesService implements Studies {
       EntityTabularPostRequest requestBody, boolean checkUserPermissions,
       BiFunction<EntityTabularPostResponseStream,TabularResponses.Type,T> responseConverter) {
     LOG.debug("Handling tabular request for study {} and entity {}.", studyId, entityId);
-    Study study = getStudyResolver().getStudyById(studyId);
+    Study study = Resources.getStudyResolver().getStudyById(studyId);
     String dataSchema = resolveSchema(study);
     RequestBundle request = RequestBundle.unpack(dataSchema, study, entityId, requestBody.getFilters(), requestBody.getOutputVariableIds(), requestBody.getReportConfig());
 
@@ -331,7 +331,7 @@ public class StudiesService implements Studies {
       return false;
     }
 
-    if (!binaryFilesManager.studyHasFiles(requestBundle.getStudy())) {
+    if (!binaryFilesManager.studyHasCompatibleFiles(requestBundle.getStudy())) {
       LOG.debug("Unable to find study dir for " + requestBundle.getStudy().getStudyId() + " in study files.");
       return false;
     }
@@ -377,7 +377,7 @@ public class StudiesService implements Studies {
 
   public static EntityCountPostResponse handleCountRequest(String studyId, String entityId, EntityCountPostRequest rawRequest) {
     LOG.info("Handling count request with filters: {}", () -> JsonUtil.serializeObject(rawRequest.getFilters()));
-    Study study = getStudyResolver().getStudyById(studyId);
+    Study study = Resources.getStudyResolver().getStudyById(studyId);
     String dataSchema = resolveSchema(study);
 
     // unpack data from API input to model objects
@@ -410,25 +410,6 @@ public class StudiesService implements Studies {
   private static void checkPerms(ContainerRequest request, String studyId, Predicate<StudyAccess> accessPredicate) {
     Entry<String, String> authHeader = UserProvider.getSubmittedAuth(request).orElseThrow();
     StudyAccess.confirmPermission(authHeader, Resources.getDatasetAccessServiceUrl(), studyId, accessPredicate);
-  }
-
-
-  private static StudyProvider getStudyResolver() {
-    final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();
-    final MetadataFileBinaryProvider metadataFileBinaryProvider = new MetadataFileBinaryProvider(binaryFilesManager);
-    final VariableFactory variableFactory = new VariableFactory(Resources.getApplicationDataSource(),
-        Resources.getVdiDatasetsSchema() + ".",
-        metadataFileBinaryProvider,
-        binaryFilesManager::studyHasFiles);
-    return new StudyResolver(
-        Resources.getMetadataCache(),
-        new StudyFactory(
-            Resources.getApplicationDataSource(),
-            Resources.getVdiDatasetsSchema() + ".",
-            StudyOverview.StudySourceType.USER_SUBMITTED,
-            variableFactory,
-            false)
-    );
   }
 
   private static String resolveSchema(Study study) {

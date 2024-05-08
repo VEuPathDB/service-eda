@@ -60,7 +60,7 @@ public class MergeRequestProcessor {
     List<VariableSpec> outputVarSpecs = _resources.getOutputVariableSpecs();
     ReferenceMetadata metadata = _resources.getMetadata();
     Optional<ComputeInfo> computeInfo = _resources.getComputeInfo();
-    Study study = Resources.getMetadataCache().getStudyById(_resources.getMetadata().getStudyId());
+    Study study = Resources.getStudyResolver().getStudyById(_resources.getMetadata().getStudyId());
 
     // request validated; convert requested entity and vars to defs
     EntityDef targetEntity = metadata.getEntity(targetEntityId).orElseThrow();
@@ -71,6 +71,7 @@ public class MergeRequestProcessor {
         _resources.getSubsetFilters(), metadata, _resources.getDerivedVariableFactory(), computeInfo);
     LOG.info("Created the following entity node tree: " + targetStream);
 
+    // Use metadata cache directly, which bypasses user studies, since user studies don't currently have files.
     final boolean fileBasedSubsetting = Resources.getMetadataCache().studyHasFiles(study.getStudyId());
 
     // get stream specs for streams needed by the node tree, which will be merged into this request's response

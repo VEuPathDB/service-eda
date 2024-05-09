@@ -163,7 +163,7 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
       // make sure ID matches
       if (!row.get(getEntityIdColumnName()).equals(nextComputedRow.get(getEntityIdColumnName()))) {
         throw new IllegalStateException("Computed row entity ID '" + nextComputedRow.get(getEntityIdColumnName()) +
-            " does not match expected ID " + row.get(getEntityIdColumnName()));
+            " does not match expected ID " + row.get(getEntityIdColumnName()) + ". Row: " + row + ". Computed: " + new HashMap<>(nextComputedRow));
       }
       // add values to row
       row.putAll(nextComputedRow);

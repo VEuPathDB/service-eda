@@ -68,7 +68,6 @@ public class EntityStream implements Iterator<Map<String,String>> {
     // cache the name of the column used to identify records that match the current row
     _entityIdColumnName = VariableDef.toDotNotation(entity.getIdColumnDef());
     _expectedNativeColumns = _metadata.getTabularColumns(entity, streamSpec);
-    List<String> nativeHeaders = VariableDef.toDotNotation(_expectedNativeColumns);
     return this;
   }
 

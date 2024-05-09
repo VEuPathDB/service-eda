@@ -7,7 +7,6 @@ import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.fgputil.validation.ValidationException;
-import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.StreamingDataClient;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.EntityDef;
@@ -18,12 +17,9 @@ import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 import org.veupathdb.service.eda.merge.core.request.MergedTabularRequestResources;
 import org.veupathdb.service.eda.merge.core.stream.RootStreamingEntityNode;
 import org.veupathdb.service.eda.subset.model.Study;
-import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
-import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -60,7 +56,6 @@ public class MergeRequestProcessor {
     List<VariableSpec> outputVarSpecs = _resources.getOutputVariableSpecs();
     ReferenceMetadata metadata = _resources.getMetadata();
     Optional<ComputeInfo> computeInfo = _resources.getComputeInfo();
-    Study study = Resources.getStudyResolver().getStudyById(_resources.getMetadata().getStudyId());
 
     // request validated; convert requested entity and vars to defs
     EntityDef targetEntity = metadata.getEntity(targetEntityId).orElseThrow();
@@ -71,9 +66,6 @@ public class MergeRequestProcessor {
         _resources.getSubsetFilters(), metadata, _resources.getDerivedVariableFactory(), computeInfo);
     LOG.info("Created the following entity node tree: " + targetStream);
 
-    // Use metadata cache directly, which bypasses user studies, since user studies don't currently have files.
-    final boolean fileBasedSubsetting = Resources.getMetadataCache().studyHasFiles(study.getStudyId());
-
     // get stream specs for streams needed by the node tree, which will be merged into this request's response
     Map<String, StreamSpec> requiredStreams = Functions.getMapFromValues(targetStream.getRequiredStreamSpecs(), StreamSpec::getStreamName);
 
@@ -81,14 +73,9 @@ public class MergeRequestProcessor {
     Function<StreamSpec, CloseableIterator<Map<String, String>>> streamGenerator = spec ->
         COMPUTED_VAR_STREAM_NAME.equals(spec.getStreamName())
             // need to get compute stream from compute service
-            ? _resources.getComputeStreamIterator(study)
+            ? _resources.getComputeStreamIterator()
             // all other streams come from subsetting service
-            : FilteredResultFactory.tabularSubsetIterator(study,
-            study.getEntity(spec.getEntityId()).orElseThrow(),
-            getVariablesFromStreamSpec(spec, study),
-            ApiConversionUtil.toInternalFilters(study, spec.getFiltersOverride().orElse(_resources.getSubsetFilters()), Resources.getAppDbSchema()),
-            Resources.getBinaryValuesStreamer(), fileBasedSubsetting, Resources.getApplicationDataSource(), Resources.getAppDbSchema());
-
+            : _resources.getSubsettingTabularStream(spec);
     return out -> {
 
       // create stream processor

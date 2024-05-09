@@ -16,6 +16,8 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.subset.model.Entity;
 import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
+import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -63,69 +65,31 @@ public class MergedTabularRequestResources extends RequestResources {
     validateIncomingRequest();
   }
 
-  /**
-   * TODO migrate this to directly use compute functionality:
-   *  org.veupathdb.service.eda.compute.controller.ComputeController#resultFile(
-   *  org.veupathdb.service.eda.compute.plugins.PluginMeta, java.lang.String,
-   *  org.veupathdb.service.eda.generated.model.ComputeRequestBase, java.util.function.Function)
-   *
-   *  This isn't expected to provide a particularly noticable performance improvement, but it will avoid overhead
-   *  of HTTP.
-   */
-  public CloseableIterator<Map<String, String>> getComputeStreamIterator(Study study) {
-    Entity computeEntity = study.getEntity(_computeInfo.get().getComputeEntity()).orElseThrow();
-
-    // Construct headers from metadata.
-    List<String> headers = Stream.concat(Stream.of(computeEntity.getId() + "." + computeEntity.getPKColName()), Stream.concat(
-            computeEntity.getAncestorPkColNames().stream()
-                .map(pk -> computeEntity.getId() + "." + pk),
-            _computeInfo.get().getVariables().stream()
-                .map(var -> VariableDef.toDotNotation(var.getVariableSpec()))
-        ))
-        .toList();
-
-    DelimitedDataParser d = new DelimitedDataParser(headers, TAB, true);
-    try {
-      InputStream is = _computeSvc.getJobTabularOutput(_computeInfo.orElseThrow().getComputeName(), _computeInfo.get().getRequestBody()).getInputStream();
-      InputStreamReader isReader = new InputStreamReader(is);
-      BufferedReader bufferedReader = new BufferedReader(isReader);
-      String headerLine = bufferedReader.readLine();
-
-      // Validate header line exists, but skip in favor of using metadata to construct column names.
-      if (headerLine == null) {
-        throw new RuntimeException("Compute stream is empty.");
-      }
-
-      // Convert from InputStream to iterator.
-      return new CloseableIterator<>() {
-        private String nextLine = bufferedReader.readLine();
-
-        @Override
-        public void close() throws Exception {
-          is.close();
-          isReader.close();
-          bufferedReader.close();
-        }
-
-        @Override
-        public boolean hasNext() {
-          return nextLine != null;
-        }
-
-        @Override
-        public Map<String, String> next() {
-          Map<String, String> record = d.parseLine(nextLine);
-          try {
-            nextLine = bufferedReader.readLine();
-          } catch (IOException e) {
-            throw new RuntimeException("Failed to read from compute stream buffered reader.", e);
-          }
-          return record;
-        }
-      };
-    } catch (Exception e) {
-      throw new RuntimeException(e);
+  public CloseableIterator<Map<String, String>> getSubsettingTabularStream(StreamSpec spec) {
+    // for derived var plugins, need to ensure filters overrides produce set of rows which are a subset of the rows
+    //   produced by the "global" filters.  Easiest way to do that is to simply combine the filters, resulting in
+    //   an intersection of the global subset and the overridden subset
+    if (spec.getFiltersOverride().isPresent() && !_subsetFilters.isEmpty()) {
+      StreamSpec modifiedSpec = new StreamSpec(spec.getStreamName(), spec.getEntityId());
+      modifiedSpec.addAll(spec);
+      List<APIFilter> combinedFilters = new ArrayList<>();
+      combinedFilters.addAll(_subsetFilters);
+      combinedFilters.addAll(spec.getFiltersOverride().get());
+      modifiedSpec.setFiltersOverride(combinedFilters);
+      spec = modifiedSpec;
     }
+
+    return _subsetSvc.getTabularDataIterator(_metadata.getStudyId(), _subsetFilters, spec);
+  }
+
+  public CloseableIterator<Map<String, String>> getComputeStreamIterator() {
+    return _computeInfo.map(computeInfo -> _computeSvc.getJobTabularIteratorOutput(
+            _metadata.getAncestors(_metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow()),
+            computeInfo.getComputeName(),
+            _metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow(),
+            computeInfo.getVariables(),
+            computeInfo.getRequestBody()))
+        .orElseThrow(() -> new IllegalStateException("Cannot get compute stream iterator if no compute is specified in request."));
   }
 
   private void incorporateCompute() {

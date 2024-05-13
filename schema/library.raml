@@ -2454,7 +2454,7 @@ types:
       viewport:
         description: Viewport used to filter markers. Only entities that are contained in the viewport will be grouped into markers.
         type: GeolocationViewport
-      collection:
+      collectionOverlay:
         description: Collection variable to use for markers.
         type: CollectionOverlayConfig
       aggregatorConfig:
@@ -2464,7 +2464,7 @@ types:
     type: object
     properties:
       collection: CollectionSpec
-      selectedMembers: VariableSpec[]
+      selectedMembers: string[]
   CollectionMapMarkerElement:
     description: |
       Data needed to render a collection map marker. Contains geographical data as well as per-variable collection var

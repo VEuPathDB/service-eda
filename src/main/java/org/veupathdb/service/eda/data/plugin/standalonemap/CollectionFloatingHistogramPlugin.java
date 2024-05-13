@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.variablesFromCollectionMembers;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.streamResult;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
 import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
@@ -58,9 +59,12 @@ public class CollectionFloatingHistogramPlugin extends AbstractEmptyComputePlugi
 
   @Override
   protected void validateVisualizationSpec(CollectionFloatingHistogramSpec pluginSpec) throws ValidationException {
-    ValidationUtils.validateCollectionMembers(getUtil(),
+    List<VariableSpec> collectionMembers = variablesFromCollectionMembers(
         pluginSpec.getOverlayConfig().getCollection(),
         pluginSpec.getOverlayConfig().getSelectedMembers());
+    ValidationUtils.validateCollectionMembers(getUtil(),
+        pluginSpec.getOverlayConfig().getCollection(),
+        collectionMembers);
     if (pluginSpec.getBarMode() == null) {
       throw new ValidationException("Property 'barMode' is required.");
     }
@@ -68,9 +72,12 @@ public class CollectionFloatingHistogramPlugin extends AbstractEmptyComputePlugi
 
   @Override
   protected List<StreamSpec> getRequestedStreams(CollectionFloatingHistogramSpec pluginSpec) {
+    List<VariableSpec> collectionMembers = variablesFromCollectionMembers(
+        pluginSpec.getOverlayConfig().getCollection(),
+        pluginSpec.getOverlayConfig().getSelectedMembers());
     String outputEntityId = pluginSpec.getOutputEntityId();
     List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
-    plotVariableSpecs.addAll(pluginSpec.getOverlayConfig().getSelectedMembers());
+    plotVariableSpecs.addAll(collectionMembers);
 
     List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
 

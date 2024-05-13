@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.variablesFromCollectionMembers;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.streamResult;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
 import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
@@ -54,14 +55,16 @@ public class CollectionFloatingContTablePlugin extends AbstractEmptyComputePlugi
   protected void validateVisualizationSpec(CollectionFloatingContTableSpec pluginSpec) throws ValidationException {
     ValidationUtils.validateCollectionMembers(getUtil(),
         pluginSpec.getXAxisVariable().getCollection(),
-        pluginSpec.getXAxisVariable().getSelectedMembers());
+        variablesFromCollectionMembers(pluginSpec.getXAxisVariable().getCollection(), pluginSpec.getXAxisVariable().getSelectedMembers()));
   }
 
   @Override
   protected List<StreamSpec> getRequestedStreams(CollectionFloatingContTableSpec pluginSpec) {   
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
-    plotVariableSpecs.addAll(pluginSpec.getXAxisVariable().getSelectedMembers());
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>(
+        variablesFromCollectionMembers(
+            pluginSpec.getXAxisVariable().getCollection(),
+            pluginSpec.getXAxisVariable().getSelectedMembers()));
 
     List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
 

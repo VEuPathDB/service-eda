@@ -4,8 +4,10 @@ import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.MediaType;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.web.MimeTypes;
+import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
@@ -14,6 +16,10 @@ import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
+import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -50,12 +56,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
    * @return optional study detail for the found study
    */
   public Optional<APIStudyDetail> getStudy(String studyId) {
-    if (!getStudies().contains(studyId)) return Optional.empty(); // invalid name
-    if (!_studyDetailCache.containsKey(studyId)) {
-      _studyDetailCache.put(studyId, swallowAndGet(() -> ClientUtil
-          .getResponseObject(getUrl("/studies/" + studyId), StudyIdGetResponse.class, getAuthHeaderMap()).getStudy()));
-    }
-    return Optional.of(_studyDetailCache.get(studyId));
+    return Optional.of(ApiConversionUtil.getApiStudyDetail(Resources.getMetadataCache().getStudyById(studyId)));
   }
 
   @Override
@@ -87,6 +88,39 @@ public class EdaSubsettingClient extends StreamingDataClient {
 
     // make request
     return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
+  }
+
+  /**
+   * Make a subsetting request without a network hop. This directly uses subsetting's FilteredResultFactory to
+   * produce a stream of records that can be used by internal clients (i.e. the merging component).
+   * @param studyId
+   * @param streamSpec
+   * @param variableFilters
+   * @return
+   */
+  public CloseableIterator<Map<String, String>> getTabularDataIterator(String studyId,
+                                                                       List<APIFilter> variableFilters,
+                                                                       StreamSpec streamSpec) {
+    final Study study = Resources.getStudyResolver().getStudyById(studyId);
+
+    // Use metadata cache directly, which bypasses user studies, since user studies don't currently have files.
+    final boolean fileBasedSubsetting = Resources.getMetadataCache().studyHasFiles(study.getStudyId());
+
+    return FilteredResultFactory.tabularSubsetIterator(study,
+        study.getEntity(streamSpec.getEntityId()).orElseThrow(),
+        getVariablesFromStreamSpec(streamSpec, study),
+        ApiConversionUtil.toInternalFilters(study, variableFilters, Resources.getAppDbSchema()),
+        Resources.getBinaryValuesStreamer(),
+        fileBasedSubsetting,
+        Resources.getApplicationDataSource(),
+        Resources.getAppDbSchema());
+  }
+
+  private static List<VariableWithValues> getVariablesFromStreamSpec(StreamSpec spec, Study study) {
+    return spec.stream()
+        .map(varSpec -> study.getEntity(spec.getEntityId()).orElseThrow().getVariableOrThrow(varSpec.getVariableId()))
+        .map(var -> (VariableWithValues) var)
+        .collect(Collectors.toList());
   }
 
   public long getSubsetCount(

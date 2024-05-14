@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.variablesFromCollectionMembers;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.streamResult;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithProcessedRemoteFiles;
 import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
@@ -63,20 +64,26 @@ public class CollectionFloatingBoxplotPlugin extends AbstractEmptyComputePlugin<
 
   @Override
   protected void validateVisualizationSpec(CollectionFloatingBoxplotSpec pluginSpec) throws ValidationException {
+    List<VariableSpec> collectionMembers = variablesFromCollectionMembers(
+        pluginSpec.getOverlayConfig().getCollection(),
+        pluginSpec.getOverlayConfig().getSelectedMembers());
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable()));
     ValidationUtils.validateCollectionMembers(getUtil(),
         pluginSpec.getOverlayConfig().getCollection(),
-        pluginSpec.getOverlayConfig().getSelectedMembers());
+        collectionMembers);
   }
 
   @Override
   protected List<StreamSpec> getRequestedStreams(CollectionFloatingBoxplotSpec pluginSpec) {
+    List<VariableSpec> collectionMembers = variablesFromCollectionMembers(
+        pluginSpec.getOverlayConfig().getCollection(),
+        pluginSpec.getOverlayConfig().getSelectedMembers());
     String outputEntityId = pluginSpec.getOutputEntityId();
     List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
-    plotVariableSpecs.addAll(pluginSpec.getOverlayConfig().getSelectedMembers());
+    plotVariableSpecs.addAll(collectionMembers);
 
     List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
 
@@ -93,7 +100,10 @@ public class CollectionFloatingBoxplotPlugin extends AbstractEmptyComputePlugin<
     PluginUtil util = getUtil();
     CollectionFloatingBoxplotSpec spec = getPluginSpec();
     String outputEntityId = spec.getOutputEntityId();
-    List<VariableSpec> inputVarSpecs = new ArrayList<>(spec.getOverlayConfig().getSelectedMembers());
+    List<VariableSpec> inputVarSpecs = variablesFromCollectionMembers(
+        spec.getOverlayConfig().getCollection(),
+        spec.getOverlayConfig().getSelectedMembers());
+
     inputVarSpecs.add(spec.getXAxisVariable());
     CollectionSpec overlayVariable = spec.getOverlayConfig().getCollection();
     Map<String, DynamicDataSpec> varMap = new HashMap<>();

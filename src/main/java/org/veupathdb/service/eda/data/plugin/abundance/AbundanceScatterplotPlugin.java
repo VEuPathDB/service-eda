@@ -115,7 +115,7 @@ public class AbundanceScatterplotPlugin extends AbstractPlugin<AbundanceScatterp
       connection.voidEval("variables[[overlayVarIndex]] <- overlayVarMetadata");
 
       String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
-          valueSpec + "', NULL, TRUE, TRUE, '" + 
+          valueSpec + "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" + 
           deprecatedShowMissingness + "')";
       RServeClient.streamResult(connection, command, out);
     }); 

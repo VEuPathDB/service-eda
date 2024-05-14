@@ -80,7 +80,7 @@ public class AppsMetadata {
           "Plot simple distributions for any continuous variable, including metadata (e.g. age, height).",
           List.of(VECTORBASE_PROJECT),
           viz("histogram", new FloatingHistogramPlugin()),
-          viz("timeline", new FloatingDateHistogramPlugin()),
+	  viz("timeline", new FloatingDateHistogramPlugin()),
           viz("boxplot", new FloatingBoxplotPlugin())),
       app("standalone-map-countsandproportions", "Counts and Proportions", null,
           "Use standard bar plots and contingency tables to examine and compare frequencies in the data.",

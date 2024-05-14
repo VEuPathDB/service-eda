@@ -53,7 +53,7 @@ class ApiTest {
     @MethodSource("donutTestCaseProvider")
     fun parameterizedDonutTest(input: DonutMarkerTestCase) {
         logger().info("BODY: " + input.body)
-        val overlayValues = given() // Setup request
+        val validatableResponse = given()
             .contentType(ContentType.JSON)
             .header(AuthTokenKey, AuthToken)
             .body(input.body)
@@ -61,14 +61,19 @@ class ApiTest {
             .`when`()
             .post("apps/standalone-map/visualizations/map-markers")
             .then()
-            .statusCode(200)
+            .statusCode(input.expectedResponseCode ?: 200)
+        if (input.expectedResponseCode != 200) {
+            return
+        }
+        val overlayValues = validatableResponse
             .contentType(ContentType.JSON)
             .extract()
             .path<List<Int>>("mapElements.entityCount")
         logger().info("Received count values: $overlayValues")
     }
 
-    @Test
+    // TODO: RE-enable when studies with empty metadata are removed or fully loaded.
+    //    @Test
     fun variableMetaTest() {
         val studyIds = given()
             .contentType(ContentType.JSON)
@@ -116,7 +121,8 @@ class ApiTest {
             .map {
                 DonutMarkerTestCase(
                     expectedMarkerCount = it.expectedMarkerCount,
-                    body = it.body
+                    body = it.body,
+                    expectedResponseCode = it.expectedResponseCode
                 )
             }
     }

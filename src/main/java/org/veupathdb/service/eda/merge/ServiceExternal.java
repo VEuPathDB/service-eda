@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.merge;
 
 import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +13,7 @@ import org.veupathdb.lib.container.jaxrs.server.annotations.DisableJackson;
 import org.veupathdb.lib.container.jaxrs.utils.RequestKeys;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
+import org.veupathdb.service.eda.common.client.NonEmptyResultStream;
 import org.veupathdb.service.eda.common.model.Units;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
@@ -19,6 +21,7 @@ import org.veupathdb.service.eda.generated.resources.Merging;
 import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
 import org.veupathdb.service.eda.merge.core.request.MergedTabularRequestResources;
 import org.veupathdb.service.eda.merge.core.request.RequestResources;
+import org.veupathdb.service.eda.merge.core.stream.RootStreamingEntityNode;
 
 import java.util.Arrays;
 import java.util.List;
@@ -134,7 +137,9 @@ public class ServiceExternal implements Merging {
     catch (ValidationException e) {
       LOG.error("Invalid request", e);
       throw new BadRequestException(e.getMessage());
+    } catch (NonEmptyResultStream.EmptyResultException e) {
+      // This will be caught and handled by data service.
+      return new EntityTabularPostResponseStream(out -> LOG.info("Returning empty response."));
     }
   }
-
 }

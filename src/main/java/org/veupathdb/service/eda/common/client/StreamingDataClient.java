@@ -42,12 +42,17 @@ public abstract class StreamingDataClient extends ServiceClient {
     processDataStreams(requiredStreams, dataStreams, streamProcessor);
   }
 
-  public static void buildAndProcessIteratorStreams(ArrayList<StreamSpec> requiredStreams,
-                                                    Function<StreamSpec, CloseableIterator<Map<String, String>>> streamGenerator,
-                                                    FunctionalInterfaces.ConsumerWithException<Map<String, CloseableIterator<Map<String, String>>>> streamProcessor) {
-    try (AutoCloseableList<CloseableIterator<Map<String, String>>> streams = new AutoCloseableList<>(requiredStreams.stream()
+  public static AutoCloseableList<CloseableIterator<Map<String, String>>> buildIteratorStreams(List<StreamSpec> requiredStreams,
+                                                                                               Function<StreamSpec, CloseableIterator<Map<String, String>>> streamGenerator) {
+    return new AutoCloseableList<>(requiredStreams.stream()
         .map(streamGenerator)
-        .collect(Collectors.toList()))) {
+        .collect(Collectors.toList()));
+  }
+
+  public static void processIteratorStreams(List<StreamSpec> requiredStreams,
+                                            AutoCloseableList<CloseableIterator<Map<String, String>>> streams,
+                                            FunctionalInterfaces.ConsumerWithException<Map<String, CloseableIterator<Map<String, String>>>> streamProcessor) {
+    try {
       // convert auto-closeable list into a named stream map for processing
       Map<String, CloseableIterator<Map<String, String>>> streamMap = new LinkedHashMap<>();
 
@@ -55,7 +60,16 @@ public abstract class StreamingDataClient extends ServiceClient {
         streamMap.put(requiredStreams.get(i).getStreamName(), streams.get(i));
       }
       cSwallow(streamProcessor).accept(streamMap);
+    } finally {
+      streams.close();
     }
+  }
+
+  public static void buildAndProcessIteratorStreams(ArrayList<StreamSpec> requiredStreams,
+                                                    Function<StreamSpec, CloseableIterator<Map<String, String>>> streamGenerator,
+                                                    FunctionalInterfaces.ConsumerWithException<Map<String, CloseableIterator<Map<String, String>>>> streamProcessor) {
+      AutoCloseableList<CloseableIterator<Map<String, String>>> streams = buildIteratorStreams(requiredStreams, streamGenerator);
+      processIteratorStreams(requiredStreams, streams, streamProcessor);
   }
 
 

@@ -151,7 +151,8 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
       String cmd = 
           "plot.data::scattergl(data=" + inputData + ", " + 
                                   "variables=variables, " + 
-                                  "value='" + valueSpec + "', " + 
+                                  "value='" + valueSpec + "', " +
+                                  "correlationMethod = 'none', " +
                                   "sampleSizes=FALSE, " +
                                   "completeCases=FALSE, " + 
                                   "overlayValues=" + overlayValues + ", " + 

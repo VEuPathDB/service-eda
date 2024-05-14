@@ -1,1 +1,3 @@
-data class DonutMarkerTestCase(val expectedMarkerCount: Int, val body: String)
+data class DonutMarkerTestCase(val expectedMarkerCount: Int,
+                               val body: String,
+                               val expectedResponseCode: Int?)

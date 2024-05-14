@@ -127,7 +127,7 @@ public class AlphaDivScatterplotPlugin extends AbstractPlugin<AlphaDivScatterplo
       
       String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" + 
                                                   valueSpec + 
-                                                  "', overlayValues=NULL, sampleSizes=TRUE, completeCases=TRUE, '" + 
+                                                  "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" + 
                                                   deprecatedShowMissingness + "')";
       RServeClient.streamResult(connection, command, out);
     }); 

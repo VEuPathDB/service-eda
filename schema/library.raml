@@ -1354,6 +1354,8 @@ types:
     properties:
       computeConfig: CorrelationAssayAssayConfig
       config: CorrelationNetworkSpec
+      # The Correlation Assay Metadata viz requires a collection as data1
+      # and metadata as data2. Note this is different than the standard CorrelationConfig
   CorrelationAssayMetadataConfig:
     type: BaseCorrelationComputeConfig
     properties:
@@ -1882,6 +1884,13 @@ types:
     type: DataPluginRequestBase
     properties:
       config: ScatterplotSpec
+  ScatterCorrelationMethod:
+    type: string
+    enum:
+      - none
+      - spearman
+      - pearson
+      - sparcc
   ScatterplotSpec:
     type: object
     additionalProperties: false
@@ -1909,6 +1918,7 @@ types:
         type: integer
         required: false
         format: int64
+      correlationMethod: ScatterCorrelationMethod
   Scatterplot:
     type: object
     additionalProperties: false
@@ -2444,7 +2454,7 @@ types:
       viewport:
         description: Viewport used to filter markers. Only entities that are contained in the viewport will be grouped into markers.
         type: GeolocationViewport
-      collection:
+      collectionOverlay:
         description: Collection variable to use for markers.
         type: CollectionOverlayConfig
       aggregatorConfig:
@@ -2454,7 +2464,7 @@ types:
     type: object
     properties:
       collection: CollectionSpec
-      selectedMembers: VariableSpec[]
+      selectedMembers: string[]
   CollectionMapMarkerElement:
     description: |
       Data needed to render a collection map marker. Contains geographical data as well as per-variable collection var

@@ -13,6 +13,7 @@ import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.DynamicDataSpec;
 import org.veupathdb.service.eda.generated.model.LabeledRange;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
 import java.lang.StringBuilder;
 import java.util.ArrayList;
@@ -145,6 +146,16 @@ public class PluginUtil {
   public List<String> getCollectionVocabulary(CollectionSpec collection) {
     return collection == null ? null : _metadata.getCollection(collection).orElseThrow().getVocabulary();
 
+  }
+
+  public static List<VariableSpec> variablesFromCollectionMembers(CollectionSpec collection, List<String> memberIds) {
+    return memberIds.stream()
+        .map(memberVarId -> {
+          VariableSpec varSpec = new VariableSpecImpl();
+          varSpec.setEntityId(collection.getEntityId());
+          varSpec.setVariableId(memberVarId);
+          return varSpec;
+        }).toList();
   }
 
   //deprecated

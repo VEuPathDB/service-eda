@@ -8,6 +8,10 @@ types:
     properties:
       config: ScatterplotSpec
 
+  ScatterCorrelationMethod:
+    type: string
+    enum: ['none','spearman','pearson','sparcc']
+
   ScatterplotSpec:
     additionalProperties: false
     properties:
@@ -34,6 +38,8 @@ types:
         type: integer
         format: int64
         required: false
+      correlationMethod:
+        type: ScatterCorrelationMethod
 
   Scatterplot:
     additionalProperties: false

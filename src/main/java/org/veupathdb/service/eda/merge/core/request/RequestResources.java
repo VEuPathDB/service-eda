@@ -12,6 +12,7 @@ import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariable;
 import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.subset.service.MetadataCache;
 
 import java.util.List;
 import java.util.Map.Entry;

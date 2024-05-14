@@ -3,9 +3,9 @@ package org.veupathdb.service.eda.merge.core;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
-import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.iterator.IteratorUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.StreamingDataClient;
@@ -17,12 +17,14 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 import org.veupathdb.service.eda.merge.core.request.MergedTabularRequestResources;
 import org.veupathdb.service.eda.merge.core.stream.RootStreamingEntityNode;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.FormatUtil.TAB;
 import static org.veupathdb.service.eda.merge.core.stream.RootStreamingEntityNode.COMPUTED_VAR_STREAM_NAME;
@@ -50,7 +52,6 @@ public class MergeRequestProcessor {
   }
 
   public Consumer<OutputStream> createMergedResponseSupplier() throws ValidationException {
-
     // gather request resources
     String targetEntityId = _resources.getTargetEntityId();
     List<VariableSpec> outputVarSpecs = _resources.getOutputVariableSpecs();
@@ -60,7 +61,6 @@ public class MergeRequestProcessor {
     // request validated; convert requested entity and vars to defs
     EntityDef targetEntity = metadata.getEntity(targetEntityId).orElseThrow();
     List<VariableDef> outputVarDefs = metadata.getTabularColumns(targetEntity, outputVarSpecs);
-    List<VariableSpec> outputVars = new ArrayList<>(outputVarDefs.stream().map(v -> (VariableSpec)v).toList());
 
     // build entity node tree to aggregate the data into a streaming response
     RootStreamingEntityNode targetStream = new RootStreamingEntityNode(targetEntity, outputVarDefs,
@@ -71,53 +71,35 @@ public class MergeRequestProcessor {
     Map<String, StreamSpec> requiredStreams = Functions.getMapFromValues(targetStream.getRequiredStreamSpecs(), StreamSpec::getStreamName);
 
     // create stream generator
-    Function<StreamSpec, ResponseFuture> streamGenerator = spec ->
+    Function<StreamSpec, CloseableIterator<Map<String, String>>> streamGenerator = spec ->
         COMPUTED_VAR_STREAM_NAME.equals(spec.getStreamName())
-        // need to get compute stream from compute service
-        ? _resources.getComputeTabularStream()
-        // all other streams come from subsetting service
-        : _resources.getSubsettingTabularStream(spec);
+            // need to get compute stream from compute service
+            ? _resources.getComputeStreamIterator()
+            // all other streams come from subsetting service
+            : _resources.getSubsettingTabularStream(spec);
 
     final List<StreamSpec> requiredStreamSpecs = new ArrayList<>(requiredStreams.values());
-    AutoCloseableList<InputStream> closeableDataStreams = StreamingDataClient.buildDataStreams(requiredStreamSpecs, streamGenerator);
+    AutoCloseableList<CloseableIterator<Map<String, String>>> closeableDataStreams = StreamingDataClient.buildIteratorStreams(requiredStreamSpecs, streamGenerator);
 
     return out -> {
 
       // create stream processor
-      ConsumerWithException<Map<String,InputStream>> streamProcessor =
-          targetStream.requiresNoDataManipulation()
-          ? dataStreams -> writePassThroughStream(outputVars, dataStreams.values().iterator().next(), out)
-          : dataStreams -> writeMergedStream(targetStream, dataStreams, out);
+      ConsumerWithException<Map<String, CloseableIterator<Map<String, String>>>> streamProcessor =
+          dataStreams -> writeMergedStream(targetStream, dataStreams, out);
 
       // build and process streams
-      StreamingDataClient.processDataStreams(requiredStreamSpecs, closeableDataStreams, streamProcessor);
+      StreamingDataClient.processIteratorStreams(requiredStreamSpecs, closeableDataStreams, streamProcessor);
     };
   }
 
-  private static void writePassThroughStream(List<VariableSpec> outputVars, InputStream in, OutputStream out) {
-    try (BufferedInputStream is = new BufferedInputStream(in);
-         BufferedOutputStream os = new BufferedOutputStream(out)) {
-      do {
-        // Skip over header line to re-write with dot notation.
-      } while (is.read() != '\n');
-      String headerRow = String.join(TAB, VariableDef.toDotNotation(outputVars));
-      os.write(headerRow.getBytes(StandardCharsets.UTF_8));
-      os.write('\n');
-
-      LOG.info("Transferring subsetting stream to output since there is only one stream.");
-      is.transferTo(os);
-    }
-    catch (IOException e) {
-      throw new RuntimeException("Unable to write output stream", e);
-    }
-  }
-
-  private static void writeMergedStream(RootStreamingEntityNode targetEntityStream, Map<String, InputStream> dataStreams, OutputStream out) {
+  private static void writeMergedStream(RootStreamingEntityNode targetEntityStream,
+                                        Map<String, CloseableIterator<Map<String, String>>> dataStreams,
+                                        OutputStream out) {
 
     LOG.info("All requested streams (" + dataStreams.size() + ") ready for consumption");
 
     // distribute the streams to their processors and make sure they all get claimed
-    Map<String, InputStream> distributionMap = new HashMap<>(dataStreams); // make a copy which will get cleared out
+    Map<String, CloseableIterator<Map<String, String>>> distributionMap = new HashMap<>(dataStreams); // make a copy which will get cleared out
     targetEntityStream.acceptDataStreams(distributionMap);
     if (!distributionMap.isEmpty())
       throw new IllegalStateException("Not all requested data streams were claimed by the processor tree.  " +

@@ -170,6 +170,8 @@ public class VariableDef extends VariableSpecImpl {
     return JsonUtil.serializeObject(this);
   }
 
+
+
   public static String toDotNotation(VariableSpec var) {
     return var.getEntityId() + "." + var.getVariableId();
   }

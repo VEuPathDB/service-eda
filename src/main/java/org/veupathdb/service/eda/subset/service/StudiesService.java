@@ -337,7 +337,7 @@ public class StudiesService implements Studies {
       return false;
     }
 
-    if (!binaryFilesManager.studyHasFiles(requestBundle.getStudy())) {
+    if (!binaryFilesManager.studyHasCompatibleFiles(requestBundle.getStudy())) {
       LOG.debug("Unable to find study dir for " + requestBundle.getStudy().getStudyId() + " in study files.");
       return false;
     }

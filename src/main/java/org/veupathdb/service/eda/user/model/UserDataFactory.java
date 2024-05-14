@@ -104,10 +104,12 @@ public class UserDataFactory {
 
   private final String _userSchema;
   private final String _metricsReportsSchema;
+  private final String _projectId;
 
   public UserDataFactory(String projectId) {
     _userSchema = Resources.getUserDbSchema(projectId);
     _metricsReportsSchema = Resources.getMetricsReportSchema();
+    _projectId = projectId;
   }
 
   private String addSchema(String sqlConstant) {
@@ -749,11 +751,12 @@ public class UserDataFactory {
           m.shares_count
         FROM %sanalysismetricsperstudy m
         JOIN (
-          SELECT MAX(report_id) report_id, report_month, report_year, MAX(report_time) FROM %sreports
-          GROUP BY report_month, report_year
+          SELECT MAX(report_id) report_id, report_month, report_year, project_id, MAX(report_time) FROM %sreports
+          GROUP BY report_month, report_year, project_id
           HAVING report_month = ? AND report_year = ?
         ) r 
         ON r.report_id = m.report_id
+        WHERE r.project_id = ?
     """.formatted(_metricsReportsSchema, _metricsReportsSchema);
     try {
       tabularFormatter.write("dataset_id", "analysis_count", "shares_count", REPORT_MONTH_COL);
@@ -767,7 +770,7 @@ public class UserDataFactory {
             sql,
             "read-analysis-study"
         ).executeQuery(
-            new Object[]{ month, year },
+            new Object[]{ month, year, _projectId },
             rs -> {
               while (rs.next()) {
                 try {
@@ -800,11 +803,12 @@ public class UserDataFactory {
           s.%s
         FROM %saggregateuserstats s
         JOIN (
-          SELECT MAX(report_id) report_id, report_month, report_year, MAX(report_time) FROM %sreports
-          GROUP BY report_month, report_year
+          SELECT MAX(report_id) report_id, report_month, report_year, project_id, MAX(report_time) FROM %sreports
+          GROUP BY report_month, report_year, project_id
           HAVING report_month = ? AND report_year = ?
         ) r 
         ON r.report_id = s.report_id
+        WHERE r.project_id = ?
         """.formatted(categoryCol, numUserCol, numFiltersCol, numAnalysesCol, numVizCol,
         _metricsReportsSchema, _metricsReportsSchema);
     try {
@@ -820,7 +824,7 @@ public class UserDataFactory {
             sql,
             "read-analysis-totals"
         ).executeQuery(
-            new Integer[]{ month, year },
+            new Object[]{ month, year, _projectId },
             rs -> {
               while (rs.next()) {
                 try {
@@ -851,11 +855,12 @@ public class UserDataFactory {
           d.%s
         FROM %sdownloadsperstudy d
         JOIN (
-          SELECT MAX(report_id) report_id, report_month, report_year, MAX(report_time) FROM %sreports
-          GROUP BY report_month, report_year
+          SELECT MAX(report_id) report_id, report_month, report_year, project_id, MAX(report_time) FROM %sreports
+          GROUP BY report_month, report_year, project_id
           HAVING report_month = ? AND report_year = ?
         ) r 
         ON r.report_id = d.report_id
+        WHERE r.project_id = ?
     """.formatted(studyIdCol, numUsersFullDownloadCol, numUsersSubsetDownloadCol, _metricsReportsSchema, _metricsReportsSchema);
 
     try {
@@ -871,7 +876,7 @@ public class UserDataFactory {
             sql,
             "read-download-report"
         ).executeQuery(
-            new Integer[]{ month, year },
+            new Object[] { month, year, _projectId },
             rs -> {
               while (rs.next()) {
                 try {
@@ -901,11 +906,12 @@ public class UserDataFactory {
           h.guest_users_visualizations
         FROM %sanalysishistogram h
         JOIN (
-          SELECT MAX(report_id) report_id, report_month, report_year, MAX(report_time) FROM %sreports
-          GROUP BY report_month, report_year
+          SELECT MAX(report_id) report_id, report_month, report_year, project_id, MAX(report_time) FROM %sreports
+          GROUP BY report_month, report_year, project_id
           HAVING report_month = ? AND report_year = ?
         ) r 
         ON r.report_id = h.report_id
+        WHERE r.project_id = ?
     """.formatted(_metricsReportsSchema, _metricsReportsSchema);
     try {
       tabularFormatter.write("count_bucket", "registered_users_analyses", "guests_analyses",
@@ -920,7 +926,7 @@ public class UserDataFactory {
             sql,
             "read-analysis-histogram"
         ).executeQuery(
-            new Integer[]{ month, year },
+            new Object[]{ month, year, _projectId },
             rs -> {
               while (rs.next()) {
                 try {

@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
@@ -169,7 +170,7 @@ public class StreamingEntityNode extends EntityStream {
   }
 
   @Override
-  public void acceptDataStreams(Map<String, InputStream> dataStreams) {
+  public void acceptDataStreams(Map<String, CloseableIterator<Map<String, String>>> dataStreams) {
     // order matters here; incoming data must be initialized before this node
     //   initializes its first row or required columns will not be present
     _ancestorStreams.forEach(s -> s.acceptDataStreams(dataStreams));

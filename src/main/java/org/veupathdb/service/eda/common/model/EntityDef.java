@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.ws.rs.BadRequestException;
@@ -157,21 +158,21 @@ public class EntityDef {
   }
 
   public void addVariable(VariableDef variable) {
-    VariableDef existingItem = _variables.put(new EntityChildUniquenessKey(variable.getEntityId(), variable.getVariableId()), variable);
-    if (existingItem != null) {
-      throw new BadRequestException("Tried to add element " + existingItem + " to entity def with name that already exists.");
-    }
+    addIfUnique(_categories, EntityChildUniquenessKey::fromVar, variable);
   }
 
   public void addCategory(VariableDef category) {
-    VariableDef existingItem = _categories.put(new EntityChildUniquenessKey(category.getEntityId(), category.getVariableId()), category);
-    if (existingItem != null) {
-      throw new BadRequestException("Tried to add element " + existingItem + " to entity def with name that already exists.");
-    }
+    addIfUnique(_categories, EntityChildUniquenessKey::fromVar, category);
   }
 
   public void addCollection(CollectionDef collection) {
-    CollectionDef existingItem = _collections.put(new EntityChildUniquenessKey(collection.getEntityId(), collection.getCollectionId()), collection);
+    addIfUnique(_collections, EntityChildUniquenessKey::fromCollection, collection);
+  }
+
+  private <T> void addIfUnique(LinkedHashMap<EntityChildUniquenessKey, T> entityChildHolder,
+                               Function<T, EntityChildUniquenessKey> uniquenessKeyConstructor,
+                               T child) {
+    T existingItem = entityChildHolder.put(uniquenessKeyConstructor.apply(child), child);
     if (existingItem != null) {
       throw new BadRequestException("Tried to add element " + existingItem + " to entity def with name that already exists.");
     }
@@ -184,6 +185,14 @@ public class EntityDef {
     public EntityChildUniquenessKey(String entityId, String childId) {
       this.entityId = entityId;
       this.childId = childId;
+    }
+
+    static EntityChildUniquenessKey fromVar(VariableDef variableDef) {
+      return new EntityChildUniquenessKey(variableDef.getEntityId(), variableDef.getVariableId());
+    }
+
+    static EntityChildUniquenessKey fromCollection(CollectionDef collectionDef) {
+      return new EntityChildUniquenessKey(collectionDef.getEntityId(), collectionDef.getCollectionId());
     }
 
     @Override

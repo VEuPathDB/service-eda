@@ -1,11 +1,14 @@
 package org.veupathdb.service.eda.common.model;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.ws.rs.BadRequestException;
@@ -31,9 +34,11 @@ public class EntityDef {
   private final String _displayName;
   private final Boolean _isManyToOneWithParent;
   private final VariableDef _idColumnDef;
-  private final List<VariableDef> _variables;
-  private final List<VariableDef> _categories;
-  private final List<CollectionDef> _collections;
+
+  // Use linked hash map to maintain ordering in which entries are inserted.
+  private final LinkedHashMap<EntityChildUniquenessKey, VariableDef> _variables;
+  private final LinkedHashMap<EntityChildUniquenessKey, VariableDef> _categories;
+  private final LinkedHashMap<EntityChildUniquenessKey, CollectionDef> _collections;
 
   public EntityDef(String id, String displayName, String idColumnName, Boolean isManyToOneWithParent) {
     _id = id;
@@ -41,10 +46,10 @@ public class EntityDef {
     _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING,
         APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), Optional.empty(), null, null, false, null, VariableSource.ID);
     _isManyToOneWithParent = isManyToOneWithParent;
-    _variables = new ArrayList<>();
-    _variables.add(_idColumnDef);
-    _categories = new ArrayList<>();
-    _collections = new ArrayList<>();
+    _variables = new LinkedHashMap<>();
+    _variables.put(new EntityChildUniquenessKey(_idColumnDef.getEntityId(), _idColumnDef.getVariableId()), _idColumnDef);
+    _categories = new LinkedHashMap<>();
+    _collections = new LinkedHashMap<>();
   }
 
   public String getId() {
@@ -59,16 +64,16 @@ public class EntityDef {
     return _isManyToOneWithParent;
   }
 
-  public List<VariableDef> getVariables() {
-    return _variables;
+  public Collection<VariableDef> getVariables() {
+    return _variables.values();
   }
 
-  public List<CollectionDef> getCollections() {
-    return _collections;
+  public Collection<CollectionDef> getCollections() {
+    return _collections.values();
   }
 
   public Optional<VariableDef> getVariable(VariableSpec var) {
-    return _variables.stream()
+    return _variables.values().stream()
       .filter(v -> VariableDef.isSameVariable(v, var))
       .findFirst();
   }
@@ -77,7 +82,7 @@ public class EntityDef {
     if (!colSpec.getEntityId().equals(_id)) {
       return Optional.empty();
     }
-    return _collections.stream()
+    return _collections.values().stream()
       .filter(c -> c.getCollectionId().equals(colSpec.getCollectionId()))
       .findFirst();
   }
@@ -93,7 +98,7 @@ public class EntityDef {
   public TreeNode<VariableDef> getNativeVariableTree() {
 
     // add only native vars (not IDs or inherited or derived vars)
-    Map<String, TreeNode<VariableDef>> allVarNodes = _variables.stream()
+    Map<String, TreeNode<VariableDef>> allVarNodes = _variables.values().stream()
         .filter(var -> var.getSource() == VariableSource.NATIVE)
         .collect(Collectors.toMap(
             VariableSpecImpl::getVariableId,
@@ -101,7 +106,7 @@ public class EntityDef {
         ));
 
     // add categories for proper tree structure
-    _categories.forEach(cat -> allVarNodes.put(cat.getVariableId(), new TreeNode<>(cat)));
+    _categories.values().forEach(cat -> allVarNodes.put(cat.getVariableId(), new TreeNode<>(cat)));
 
     List<TreeNode<VariableDef>> parentlessNodes = new ArrayList<>();
     for (TreeNode<VariableDef> varNode : allVarNodes.values()) {
@@ -146,31 +151,62 @@ public class EntityDef {
       .put("id", _id)
       .put("displayName", _displayName)
       .put("idColumnName", _idColumnDef.getVariableId())
-      .put("variables", _variables.stream()
+      .put("variables", _variables.values().stream()
         .map(var -> VariableDef.toDotNotation(var) + ":" + var.getType().toString().toLowerCase())
         .collect(Collectors.toList()))
       .toString(2);
   }
 
   public void addVariable(VariableDef variable) {
-    addIfUniqueName(variable, _variables, VariableDef::isSameVariable);
+    addIfUnique(_categories, EntityChildUniquenessKey::fromVar, variable);
   }
 
   public void addCategory(VariableDef category) {
-    addIfUniqueName(category, _categories, VariableDef::isSameVariable);
+    addIfUnique(_categories, EntityChildUniquenessKey::fromVar, category);
   }
 
   public void addCollection(CollectionDef collection) {
-    addIfUniqueName(collection, _collections, CollectionDef::isSameCollection);
+    addIfUnique(_collections, EntityChildUniquenessKey::fromCollection, collection);
   }
 
-  private <T> void addIfUniqueName(T newItem, List<T> existingItems, BiPredicate<T,T> equals) {
-    for (T existingItem : existingItems) {
-      if (equals.test(existingItem, newItem)) {
-        throw new BadRequestException("Tried to add element " + existingItem.toString() + " to entity def with name that already exists.");
-      }
+  private <T> void addIfUnique(LinkedHashMap<EntityChildUniquenessKey, T> entityChildHolder,
+                               Function<T, EntityChildUniquenessKey> uniquenessKeyConstructor,
+                               T child) {
+    T existingItem = entityChildHolder.put(uniquenessKeyConstructor.apply(child), child);
+    if (existingItem != null) {
+      throw new BadRequestException("Tried to add element " + existingItem + " to entity def with name that already exists.");
     }
-    existingItems.add(newItem);
+  }
+
+  private static class EntityChildUniquenessKey {
+    private final String entityId;
+    private final String childId;
+
+    public EntityChildUniquenessKey(String entityId, String childId) {
+      this.entityId = entityId;
+      this.childId = childId;
+    }
+
+    static EntityChildUniquenessKey fromVar(VariableDef variableDef) {
+      return new EntityChildUniquenessKey(variableDef.getEntityId(), variableDef.getVariableId());
+    }
+
+    static EntityChildUniquenessKey fromCollection(CollectionDef collectionDef) {
+      return new EntityChildUniquenessKey(collectionDef.getEntityId(), collectionDef.getCollectionId());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      EntityChildUniquenessKey that = (EntityChildUniquenessKey) o;
+      return Objects.equals(entityId, that.entityId) && Objects.equals(childId, that.childId);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(entityId, childId);
+    }
   }
 
 }

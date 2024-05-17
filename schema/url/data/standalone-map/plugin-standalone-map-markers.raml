@@ -61,23 +61,8 @@ types:
         type: string[]
 
   StandaloneMapElementInfo:
+    type: BaseMarker
     additionalProperties: false
     properties:
-      geoAggregateValue:
-        type: string
-      entityCount:
-        type: number
       overlayValues:
         type: LegacyLabeledRangeWithCountAndValue[]
-      avgLat:
-        type: number
-      avgLon:
-        type: number
-      minLat:
-        type: number
-      minLon:
-        type: number
-      maxLat:
-        type: number
-      maxLon:
-        type: number

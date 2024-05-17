@@ -19,6 +19,7 @@ import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggregator;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.QualitativeOverlayAggregator;
+import org.veupathdb.service.eda.data.plugin.standalonemap.conversion.ApiConverter;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.MapMarkerRowProcessor;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.MarkerData;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.OverlaySpecification;
@@ -135,15 +136,7 @@ public class StandaloneMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
     for (String key : aggregator.keySet()) {
       StandaloneMapElementInfo mapEle = new StandaloneMapElementInfoImpl();
       MarkerData<Map<String, QualitativeOverlayAggregator.CategoricalOverlayData>> data = aggregator.get(key);
-      GeographicPoint avgLatLon = data.getLatLonAvg().getCurrentAverage();
-      mapEle.setGeoAggregateValue(key);
-      mapEle.setEntityCount(data.getCount());
-      mapEle.setAvgLat(avgLatLon.getLatitude());
-      mapEle.setAvgLon(avgLatLon.getLongitude());
-      mapEle.setMinLat(data.getMinLat());
-      mapEle.setMaxLat(data.getMaxLat());
-      mapEle.setMinLon(data.getMinLon());
-      mapEle.setMaxLon(data.getMaxLon());
+      ApiConverter.populateBaseMarkerData(key, mapEle, data);
       if (data.getMarkerAggregator() != null) {
         mapEle.setOverlayValues(convertAggregator(data.getMarkerAggregator(), valueSpec));
       }

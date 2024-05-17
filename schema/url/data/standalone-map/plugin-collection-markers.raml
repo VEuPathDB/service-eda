@@ -44,18 +44,12 @@ types:
       selectedMembers: string[]
 
   CollectionMapMarkerElement:
+    type: BaseMarker
     description: |
       Data needed to render a collection map marker. Contains geographical data as well as per-variable collection var
       aggregates needed to render bar plots with error bar.
     properties:
-      entityCount: number
-      avgLat: number
-      avgLon: number
-      minLat: number
-      minLon: number
-      maxLat: number
-      maxLon: number
-      values: CollectionMemberAggregate[]
+      overlayValues: CollectionMemberAggregate[]
 
   CollectionMemberAggregate:
     properties:

@@ -12,6 +12,7 @@ import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.AveragesWithConfidence;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.CollectionAveragesWithConfidenceAggregator;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggregator;
+import org.veupathdb.service.eda.data.plugin.standalonemap.conversion.ApiConverter;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.GeolocationViewport;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.MapMarkerRowProcessor;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.MarkerData;
@@ -123,17 +124,15 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
 
     // Construct response, serialize and flush output
     final StandaloneCollectionMapMarkerPostResponse response = new StandaloneCollectionMapMarkerPostResponseImpl();
-    response.setMarkers(markerDataById.entrySet().stream().map(entry -> {
-      final CollectionMapMarkerElement ele = new CollectionMapMarkerElementImpl();
-      ele.setAvgLat(entry.getValue().getLatLonAvg().getCurrentAverage().getLatitude());
-      ele.setAvgLon(entry.getValue().getLatLonAvg().getCurrentAverage().getLongitude());
-      ele.setMaxLat(entry.getValue().getMaxLat());
-      ele.setMaxLon(entry.getValue().getMaxLon());
-      ele.setEntityCount(ele.getEntityCount());
-      ele.setValues(entry.getValue().getMarkerAggregator().finish().values().stream()
-          .map(markerAggregate -> translateToOutput(markerAggregate, entry.getKey()))
-          .collect(Collectors.toList()));
-      return ele;
+    response.setMarkers(markerDataById.entrySet().stream()
+        .filter(marker -> marker.getValue().getCount() != 0)
+        .map(entry -> {
+          final CollectionMapMarkerElement ele = new CollectionMapMarkerElementImpl();
+          ApiConverter.populateBaseMarkerData(entry.getKey(), ele, entry.getValue());
+          ele.setOverlayValues(entry.getValue().getMarkerAggregator().finish().values().stream()
+              .map(markerAggregate -> translateToOutput(markerAggregate, entry.getKey()))
+              .collect(Collectors.toList()));
+          return ele;
     }).collect(Collectors.toList()));
 
     JsonUtil.Jackson.writeValue(out, response);

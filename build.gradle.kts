@@ -113,7 +113,7 @@ dependencies {
   // VEuPathDB libs, prefer local checkouts if available
   implementation(findProject(":core") ?: "org.veupathdb.lib:jaxrs-container-core:${coreLib}")
   implementation(findProject(":libEdaSubsetting") ?: "org.veupathdb.eda:lib-eda-subsetting:${libSubsetting}")
-  implementation( "org.veupathdb.lib:compute-platform:1.7.0")
+  implementation( "org.veupathdb.lib:compute-platform:1.7.2")
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")

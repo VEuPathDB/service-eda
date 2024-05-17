@@ -158,7 +158,7 @@ public class EntityDef {
   }
 
   public void addVariable(VariableDef variable) {
-    addIfUnique(_categories, EntityChildUniquenessKey::fromVar, variable);
+    addIfUnique(_variables, EntityChildUniquenessKey::fromVar, variable);
   }
 
   public void addCategory(VariableDef category) {

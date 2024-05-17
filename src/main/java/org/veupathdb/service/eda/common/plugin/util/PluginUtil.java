@@ -63,7 +63,9 @@ public class PluginUtil {
   }
 
   private String getVariableAttribute(Function<VariableDef, ?> getter, VariableSpec var) {
-    return var == null ? "" : getter.apply(_metadata.getVariable(var).orElseThrow()).toString();
+    return var == null ? "" : getter.apply(_metadata.getVariable(var)
+        .orElseThrow(() -> new IllegalArgumentException(
+            String.format("Unable to find variable with spec %s, %s", var.getEntityId(), var.getVariableId())))).toString();
   }
 
   public String getCollectionType(CollectionSpec collection) {

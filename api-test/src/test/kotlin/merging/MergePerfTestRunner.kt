@@ -52,6 +52,12 @@ class MergePerfTestRunner {
         logger().info("Results can be found in ${System.getProperty("TEST_REPORT_OUTPUT_FILE")}")
     }
 
+    @ParameterizedTest
+    @MethodSource("mergeRequestProvider")
+    fun createMapping(body: JsonNode) {
+        val checksum = Hex.encodeHexString(MessageDigest.getInstance("SHA-1").digest(body.toString().toByteArray()))
+        println("$checksum:$body")
+    }
 
     @Test
     fun testConcatDerivedVar() {
@@ -110,6 +116,10 @@ class MergePerfTestRunner {
     fun test(body: JsonNode) {
         val study = body.get("studyId").asText()
         val numFilters = body.get("filters").elements().asSequence().count()
+        val filters = body.get("filters").elements().asSequence()
+            .map { filter -> filter.get("type").textValue() }
+            .joinToString("|")
+
         val distinctOutputEntityCount = body.get("outputVariables").elements().asSequence()
             .distinctBy { varSpec -> varSpec.get("entityId") }
             .count()
@@ -131,8 +141,8 @@ class MergePerfTestRunner {
                 .count()
         }
         val checksum = Hex.encodeHexString(MessageDigest.getInstance("SHA-1").digest(body.toString().toByteArray()))
-        OutputWriter?.write("$study,$numFilters,$distinctOutputEntityCount,${timeTaken.inWholeMilliseconds},$numLines,$checksum\n")
-        logger().info("$study, $numFilters, $distinctOutputEntityCount, $timeTaken, $numLines, $checksum")
+        OutputWriter?.write("$study,$numFilters,$distinctOutputEntityCount,${timeTaken.inWholeMilliseconds},$numLines,$checksum,$filters\n")
+        logger().info("$study, $numFilters, $distinctOutputEntityCount, $timeTaken, $numLines, $checksum, $filters")
     }
 
     private fun mergeRequestProvider(): Stream<JsonNode> {
@@ -140,6 +150,7 @@ class MergePerfTestRunner {
         val url: URL = loader.getResource(TestFilesDir)!!
         val testDataDir: String = url.path
         return Arrays.stream(Path.of(testDataDir).toFile().listFiles())
+            .flatMap { file -> Stream.generate { file }.limit(3) } // Use each one 5 times.
             .map { file -> JsonMapper.readTree(file) }
     }
 }

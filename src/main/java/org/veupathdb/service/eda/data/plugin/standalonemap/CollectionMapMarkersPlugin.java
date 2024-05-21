@@ -129,8 +129,8 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
         .map(entry -> {
           final CollectionMapMarkerElement ele = new CollectionMapMarkerElementImpl();
           ApiConverter.populateBaseMarkerData(entry.getKey(), ele, entry.getValue());
-          ele.setOverlayValues(entry.getValue().getMarkerAggregator().finish().values().stream()
-              .map(markerAggregate -> translateToOutput(markerAggregate, entry.getKey()))
+          ele.setOverlayValues(entry.getValue().getMarkerAggregator().finish().entrySet().stream()
+              .map(markerAggregate -> translateToOutput(markerAggregate.getValue(), markerAggregate.getKey()))
               .collect(Collectors.toList()));
           return ele;
     }).collect(Collectors.toList()));
@@ -139,11 +139,11 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
     out.flush();
   }
 
-  private CollectionMemberAggregate translateToOutput(AveragesWithConfidence averagesWithConfidence, String variableId) {
+  private CollectionMemberAggregate translateToOutput(AveragesWithConfidence averagesWithConfidence, String variableDotNotation) {
     final CollectionMemberAggregate collectionMemberResult = new CollectionMemberAggregateImpl();
     collectionMemberResult.setValue(averagesWithConfidence.getAverage());
     collectionMemberResult.setN(averagesWithConfidence.getN());
-    collectionMemberResult.setVariableId(variableId);
+    collectionMemberResult.setVariableId(variableDotNotation.split("[.]")[1]);
     final NumberRange range = new NumberRangeImpl();
     range.setMin(averagesWithConfidence.getIntervalLowerBound());
     range.setMax(averagesWithConfidence.getIntervalUpperBound());

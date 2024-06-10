@@ -88,7 +88,8 @@ public class MergedTabularRequestResources extends RequestResources {
             computeInfo.getComputeName(),
             _metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow(),
             computeInfo.getVariables(),
-            computeInfo.getRequestBody()))
+            computeInfo.getRequestBody(),
+            _metadata))
         .orElseThrow(() -> new IllegalStateException("Cannot get compute stream iterator if no compute is specified in request."));
   }
 

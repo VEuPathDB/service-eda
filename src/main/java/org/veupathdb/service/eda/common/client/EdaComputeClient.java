@@ -3,6 +3,8 @@ package org.veupathdb.service.eda.common.client;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.ws.rs.core.MediaType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.client.ClientUtil;
@@ -11,8 +13,10 @@ import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.model.EntityDef;
+import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
 import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 import org.veupathdb.service.eda.subset.model.Entity;
 import org.veupathdb.service.eda.subset.model.Study;
@@ -22,15 +26,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.gusdb.fgputil.FormatUtil.TAB;
 
 public class EdaComputeClient {
+  private static final Logger LOG = LogManager.getLogger(EdaComputeClient.class);
 
   public static class ComputeRequestBody extends ComputeRequestBaseImpl {
 
@@ -83,6 +90,36 @@ public class EdaComputeClient {
     return readJsonResponse(getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody), expectedStatsClass);
   }
 
+
+  private List<VariableSpec> getComputeVars(EntityDef targetEntity, List<VariableMapping> varMappings, ReferenceMetadata metadata) {
+
+    // if no computed vars present, nothing to do
+    if (varMappings.isEmpty()) return Collections.emptyList();
+
+    // create variable specs from computed var metadata
+    List<VariableSpec> computedVars = new ArrayList<>();
+
+    // first column is the ID col for the returned entity
+    computedVars.add(targetEntity.getIdColumnDef());
+
+    // next cols are the ID cols for ancestor entities (up the tree)
+    for (EntityDef ancestor : metadata.getAncestors(targetEntity)) {
+      computedVars.add(ancestor.getIdColumnDef());
+    }
+
+    varMappings.forEach(varMapping -> {
+      if (varMapping.getIsCollection()) {
+        // for collection vars, expect columns for each member
+        computedVars.addAll(varMapping.getMembers());
+      }
+      else {
+        // for non-collections, add the mapping's spec
+        computedVars.add(varMapping.getVariableSpec());
+      }
+    });
+
+    return computedVars;
+  }
   /**
    * TODO migrate this to directly use compute functionality:
    *  org.veupathdb.service.eda.compute.controller.ComputeController#resultFile(
@@ -96,20 +133,10 @@ public class EdaComputeClient {
                                                                             String computeName,
                                                                             EntityDef computeEntity,
                                                                             List<VariableMapping> variables,
-                                                                            ComputeRequestBody requestBody) {
-    // Construct expected headers from metadata. These are used for validation of the incoming compute stream.
-    List<String> expectedHeaders = new ArrayList<>();
-    expectedHeaders.add(computeEntity.getIdColumnDef().getVariableId());
-    ancestors.forEach(anc -> expectedHeaders.add(anc.getIdColumnDef().getVariableId()));
-    variables.forEach(var -> expectedHeaders.add(var.getVariableSpec().getVariableId()));
+                                                                            ComputeRequestBody requestBody,
+                                                                            ReferenceMetadata referenceMetadata) {
+    List<String> headers = VariableDef.toDotNotation(getComputeVars(computeEntity, variables, referenceMetadata));
 
-    // Output rows should have dot-notation, so we construct the data parser with these headers.
-    List<String> outputHeaders = new ArrayList<>();
-    outputHeaders.add(toDotNotation(computeEntity.getIdColumnDef()));
-    ancestors.forEach(anc -> outputHeaders.add(toDotNotation(anc.getIdColumnDef())));
-    variables.forEach(var -> outputHeaders.add(toDotNotation(var.getVariableSpec())));
-
-    DelimitedDataParser d = new DelimitedDataParser(outputHeaders, TAB, true);
     try {
       InputStream is = getJobTabularOutput(computeName, requestBody).getInputStream();
       InputStreamReader isReader = new InputStreamReader(is);
@@ -120,16 +147,7 @@ public class EdaComputeClient {
         throw new RuntimeException("Compute stream is empty.");
       }
 
-      List<String> received = List.of(headerLine.split(TAB));
-
-      for (int i = 0; i < received.size(); i++) {
-        if (!received.get(i).equals(expectedHeaders.get(i))) { // validates header names
-
-          throw new RuntimeException("Tabular subsetting result of type '" +
-              computeEntity.getId() + "' contained unexpected header. Expected:" +
-              expectedHeaders + ". Found: " + String.join(",", received));
-        }
-      }
+      DelimitedDataParser d = new DelimitedDataParser(headers, TAB, true);
 
       // Convert from InputStream to iterator.
       return new CloseableIterator<>() {

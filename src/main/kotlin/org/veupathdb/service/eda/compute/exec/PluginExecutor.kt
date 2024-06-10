@@ -174,10 +174,12 @@ class PluginExecutor : JobExecutor {
     return if (plugin.run()) {
       // If the plugin executed successfully, look for the known target files to
       // persist to S3.
+      Log.debug("Completed execution of plugin with successful result.")
       JobResult.success(*OutputFiles)
     } else {
       // If the plugin execution failed, try and persist everything in the local
       // workspace.
+      Log.debug("Completed execution of plugin with failed result.")
       JobResult.failure(ctx.workspace.path.toFile().listFiles()!!.map { it.name })
     }
   }

@@ -65,7 +65,13 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
 
     // header names for values we will return (computed vars go at the end)
     List<VariableSpec> fullOutputVarDefs = new ArrayList<>(outputVarDefs); // make a copy
-    computeStreamSpec.ifPresent(fullOutputVarDefs::addAll);
+
+    // Only add compute variables if they're not already in the spec.
+    computeStreamSpec.ifPresent(compute -> fullOutputVarDefs.forEach(var -> {
+      if (fullOutputVarDefs.stream().noneMatch(existingVar -> VariableDef.isSameVariable(existingVar, var))) {
+        fullOutputVarDefs.add(var);
+      }
+    }));
 
     _outputVars = getOrderedOutputColumns(fullOutputVarDefs);
     LOG.info("Root stream final output vars: " + String.join(", ", _outputVars));

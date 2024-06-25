@@ -119,8 +119,10 @@ public class MetadataCache implements StudyProvider {
         .toList();
 
     synchronized (this) {
-      LOG.info("Removing the following out of date or missing studies from cache: "
-          + studiesToRemove.stream().map(StudyOverview::getStudyId).collect(Collectors.joining(",")));
+      if (!studiesToRemove.isEmpty()) {
+        LOG.info("Removing the following out of date or missing studies from cache: "
+            + studiesToRemove.stream().map(StudyOverview::getStudyId).collect(Collectors.joining(",")));
+      }
 
       dbStudies.forEach(study -> {
         boolean studyHasFiles = _binaryFilesManager.studyHasFiles(study.getStudyId());

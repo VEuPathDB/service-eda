@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.veupathdb.lib.compute.platform.AsyncPlatform;
+import org.veupathdb.lib.compute.platform.job.AsyncJob;
 import org.veupathdb.lib.compute.platform.job.JobFileReference;
 import org.veupathdb.lib.compute.platform.job.JobStatus;
 import org.veupathdb.lib.compute.platform.model.JobReference;
@@ -21,6 +22,7 @@ import org.veupathdb.service.eda.generated.resources.ExpireComputeJobs;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
@@ -66,8 +68,16 @@ public class ExpirationController implements ExpireComputeJobs {
         // convert to job ID
         .map(JobReference::getJobID)
 
+        // get job details
+        .map(AsyncPlatform::getJob)
+
+        // filter out jobs that no longer exist?  (race condition?)
+        .filter(Objects::nonNull)
+
         // filter out already-expired jobs
-        .filter(jobId -> !JobStatus.Expired.equals(AsyncPlatform.getJob(jobId).getStatus()))
+        .filter(job -> JobStatus.Expired != job.getStatus())
+
+        .map(AsyncJob::getJobID)
 
         // filter jobs by requested criteria
         .filter(jobId ->

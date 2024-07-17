@@ -56,7 +56,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
    * @return optional study detail for the found study
    */
   public Optional<APIStudyDetail> getStudy(String studyId) {
-    return Optional.of(ApiConversionUtil.getApiStudyDetail(Resources.getMetadataCache().getStudyById(studyId)));
+    return Optional.of(ApiConversionUtil.getApiStudyDetail(Resources.getStudyResolver().getStudyById(studyId)));
   }
 
   @Override

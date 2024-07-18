@@ -113,7 +113,14 @@ public class EdaSubsettingClient extends StreamingDataClient {
         Resources.getBinaryValuesStreamer(),
         fileBasedSubsetting,
         Resources.getApplicationDataSource(),
-        Resources.getAppDbSchema());
+        resolveSchema(study));
+  }
+
+  private static String resolveSchema(Study study) {
+    return switch(study.getStudySourceType()) {
+      case USER_SUBMITTED -> Resources.getVdiDatasetsSchema() + ".";
+      case CURATED -> Resources.getAppDbSchema();
+    };
   }
 
   private static List<VariableWithValues> getVariablesFromStreamSpec(StreamSpec spec, Study study) {

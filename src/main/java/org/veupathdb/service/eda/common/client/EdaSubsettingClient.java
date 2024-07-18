@@ -123,6 +123,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
     };
   }
 
+
   private static List<VariableWithValues> getVariablesFromStreamSpec(StreamSpec spec, Study study) {
     return spec.stream()
         .map(varSpec -> study.getEntity(spec.getEntityId()).orElseThrow().getVariableOrThrow(varSpec.getVariableId()))

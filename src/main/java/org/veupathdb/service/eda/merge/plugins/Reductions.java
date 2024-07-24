@@ -2,10 +2,7 @@ package org.veupathdb.service.eda.merge.plugins;
 
 import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
 import org.veupathdb.service.eda.merge.core.derivedvars.Reduction;
-import org.veupathdb.service.eda.merge.plugins.reductions.Mean;
-import org.veupathdb.service.eda.merge.plugins.reductions.RelativeObservationAggregator;
-import org.veupathdb.service.eda.merge.plugins.reductions.SubsetMembership;
-import org.veupathdb.service.eda.merge.plugins.reductions.Sum;
+import org.veupathdb.service.eda.merge.plugins.reductions.*;
 
 import static org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory.pluginsOf;
 
@@ -19,7 +16,8 @@ public class Reductions {
         Sum.class,
         Mean.class,
         SubsetMembership.class,
-        RelativeObservationAggregator.class
+        RelativeObservationAggregator.class,
+        FirstChildValue.class
     );
   }
 }

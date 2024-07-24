@@ -3031,6 +3031,7 @@ types:
       subsetMembership: SubsetMembershipConfig
       advancedSubset: AdvancedSubsetConfig
       unitConversion: UnitConversionConfig
+      firstChildValue: FirstChildValueConfig
       bodyMassIndex: BodyMassIndexConfig
       categoricalRecoding: CategoricalRecodingConfig
       continuousToOrdinal: ContinuousNumericRecodingConfig
@@ -3099,6 +3100,10 @@ types:
     properties:
       inputVariable: VariableSpec
       outputUnits: string
+  FirstChildValueConfig:
+    type: object
+    properties:
+      inputVariable: VariableSpec
   SetOperation:
     type: string
     enum:

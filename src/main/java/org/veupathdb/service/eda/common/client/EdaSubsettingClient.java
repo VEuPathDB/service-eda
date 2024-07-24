@@ -2,6 +2,8 @@ package org.veupathdb.service.eda.common.client;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.MediaType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.iterator.CloseableIterator;
@@ -16,6 +18,7 @@ import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
 import org.veupathdb.service.eda.subset.model.Study;
 import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
 
 public class EdaSubsettingClient extends StreamingDataClient {
+  private static final Logger LOG = LogManager.getLogger(EdaSubsettingClient.class);
 
   // request-scope cache for subsetting service metadata responses
   private List<String> _validStudyNameCache;
@@ -106,6 +110,9 @@ public class EdaSubsettingClient extends StreamingDataClient {
     // Use metadata cache directly, which bypasses user studies, since user studies don't currently have files.
     final boolean fileBasedSubsetting = Resources.getMetadataCache().studyHasFiles(study.getStudyId());
 
+    final String schemaName = resolveSchema(study);
+    LOG.info("Resolved schema name: {} from study: {} with study source type: {}", schemaName, studyId, study.getStudySourceType());
+
     return FilteredResultFactory.tabularSubsetIterator(study,
         study.getEntity(streamSpec.getEntityId()).orElseThrow(),
         getVariablesFromStreamSpec(streamSpec, study),
@@ -113,7 +120,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
         Resources.getBinaryValuesStreamer(),
         fileBasedSubsetting,
         Resources.getApplicationDataSource(),
-        resolveSchema(study));
+        schemaName);
   }
 
   private static String resolveSchema(Study study) {
@@ -122,7 +129,6 @@ public class EdaSubsettingClient extends StreamingDataClient {
       case CURATED -> Resources.getAppDbSchema();
     };
   }
-
 
   private static List<VariableWithValues> getVariablesFromStreamSpec(StreamSpec spec, Study study) {
     return spec.stream()

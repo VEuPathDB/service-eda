@@ -21,6 +21,7 @@ import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
 import org.veupathdb.service.eda.subset.model.Study;
 import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
+import org.veupathdb.service.eda.subset.model.filter.Filter;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 
@@ -105,18 +106,21 @@ public class EdaSubsettingClient extends StreamingDataClient {
   public CloseableIterator<Map<String, String>> getTabularDataIterator(String studyId,
                                                                        List<APIFilter> variableFilters,
                                                                        StreamSpec streamSpec) {
+    // Convert everything to internal subsetting classes to bridge the gap from merging/data services.
     final Study study = Resources.getStudyResolver().getStudyById(studyId);
 
     // Use metadata cache directly, which bypasses user studies, since user studies don't currently have files.
     final boolean fileBasedSubsetting = Resources.getMetadataCache().studyHasFiles(study.getStudyId());
 
+    // Resolve schema based on whether study is user or curated.
     final String schemaName = resolveSchema(study);
-    LOG.info("Resolved schema name: {} from study: {} with study source type: {}", schemaName, studyId, study.getStudySourceType());
+    LOG.debug("Resolved schema name: {} from study: {} with study source type: {}", schemaName, studyId, study.getStudySourceType());
+    final List<Filter> internalFilters = ApiConversionUtil.toInternalFilters(study, variableFilters, schemaName);
 
     return FilteredResultFactory.tabularSubsetIterator(study,
         study.getEntity(streamSpec.getEntityId()).orElseThrow(),
         getVariablesFromStreamSpec(streamSpec, study),
-        ApiConversionUtil.toInternalFilters(study, variableFilters, Resources.getAppDbSchema()),
+        internalFilters,
         Resources.getBinaryValuesStreamer(),
         fileBasedSubsetting,
         Resources.getApplicationDataSource(),

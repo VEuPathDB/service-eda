@@ -96,8 +96,8 @@ public class UserDataFactory {
       Types.INTEGER, // num_filters
       Types.INTEGER, // num_computations
       Types.INTEGER, // num_visualizations
-      Types.CLOB, // provenance
-      Types.CLOB, // descriptor
+      Resources.getUserPlatform().getBlobSqlType(), // provenance
+      Resources.getUserPlatform().getClobDataType(), // descriptor
       Types.CLOB // notes
   };
   private static final String REPORT_MONTH_COL = "report_month";
@@ -339,7 +339,7 @@ public class UserDataFactory {
 
   private static final String INSERT_USER_SQL =
       "insert into " + TABLE_USERS +
-      " select %d as user_id, %d as is_guest, '{}' as preferences from dual" +
+      " select %d as user_id, %s as is_guest, '{}' as preferences" + Resources.getUserPlatform().getDummyTable() +
       " where not exists (select user_id from " + TABLE_USERS + " where user_id = %d)";
 
   public void addUserIfAbsent(User user) {

@@ -96,8 +96,8 @@ public class UserDataFactory {
       Types.INTEGER, // num_filters
       Types.INTEGER, // num_computations
       Types.INTEGER, // num_visualizations
-      Resources.getUserPlatform().getBlobSqlType(), // provenance
-      Resources.getUserPlatform().getClobDataType(), // descriptor
+      Types.CLOB, // provenance
+      Types.CLOB, // descriptor
       Types.CLOB // notes
   };
   private static final String REPORT_MONTH_COL = "report_month";

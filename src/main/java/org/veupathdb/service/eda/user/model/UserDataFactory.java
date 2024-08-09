@@ -339,7 +339,7 @@ public class UserDataFactory {
 
   private static final String INSERT_USER_SQL =
       "insert into " + TABLE_USERS +
-      " select %d as user_id, %d as is_guest, '{}' as preferences from dual" +
+      " select %d as user_id, %s as is_guest, '{}' as preferences" + Resources.getUserPlatform().getDummyTable() +
       " where not exists (select user_id from " + TABLE_USERS + " where user_id = %d)";
 
   public void addUserIfAbsent(User user) {

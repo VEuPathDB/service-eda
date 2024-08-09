@@ -233,7 +233,7 @@ public class Resources extends ContainerResources {
   }
 
   public static DBPlatform getUserPlatform() {
-    return new Oracle();
+    return DbManager.userDatabase().getPlatform();
   }
 
   public static String getMetricsReportSchema() {

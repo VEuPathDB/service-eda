@@ -27,12 +27,23 @@ containerBuild {
 
     // Project Root Package
     projectPackage = "org.veupathdb.service.eda"
+
+    // Main Class Name
+    mainClassName = "Main"
   }
 
   // Docker build configuration.
   docker {
+
+    // Docker build context
+    context = "."
+
+    // Name of the target docker file
+    dockerFile = "Dockerfile"
+
     // Resulting image tag
     imageName = "eda-service"
+
   }
 }
 

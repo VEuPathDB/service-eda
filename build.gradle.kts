@@ -27,23 +27,12 @@ containerBuild {
 
     // Project Root Package
     projectPackage = "org.veupathdb.service.eda"
-
-    // Main Class Name
-    mainClassName = "Main"
   }
 
   // Docker build configuration.
   docker {
-
-    // Docker build context
-    context = "."
-
-    // Name of the target docker file
-    dockerFile = "Dockerfile"
-
     // Resulting image tag
     imageName = "eda-service"
-
   }
 }
 
@@ -113,13 +102,13 @@ dependencies {
   // VEuPathDB libs, prefer local checkouts if available
   implementation(findProject(":core") ?: "org.veupathdb.lib:jaxrs-container-core:${coreLib}")
   implementation(findProject(":libEdaSubsetting") ?: "org.veupathdb.eda:lib-eda-subsetting:${libSubsetting}")
-  implementation( "org.veupathdb.lib:compute-platform:1.7.4")
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")
   implementation("org.gusdb:fgputil-accountdb:${fgputil}")
   implementation("org.gusdb:fgputil-client:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
+  implementation("org.veupathdb.lib:compute-platform:1.8.0")
 
   // Jersey
   implementation("org.glassfish.jersey.core:jersey-server:3.1.1")

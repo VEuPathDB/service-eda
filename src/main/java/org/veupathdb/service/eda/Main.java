@@ -110,7 +110,7 @@ public class Main extends Server {
         .workers(config.getFastQueueWorkers())
         .messageAckTimeoutMinutes(config.getFastQueueJobTimeout())
         .build())
-        .build();
+      .build();
     AsyncPlatform.init(asyncConfig);
   }
 }

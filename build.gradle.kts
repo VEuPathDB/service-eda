@@ -119,7 +119,7 @@ dependencies {
   implementation("org.gusdb:fgputil-accountdb:${fgputil}")
   implementation("org.gusdb:fgputil-client:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
-  implementation("org.veupathdb.lib:compute-platform:1.8.1")
+  implementation("org.veupathdb.lib:compute-platform:1.8.2")
   implementation("org.veupathdb.lib.s3:s34k-minio:0.7.2+s34k-0.11.0")
 
   // Jersey

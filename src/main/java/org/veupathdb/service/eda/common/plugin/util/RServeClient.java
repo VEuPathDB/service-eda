@@ -24,14 +24,21 @@ public class RServeClient {
 
   public static void useRConnection(String rServeUrlStr, ConsumerWithException<RConnection> consumer) {
     RConnection c = null;
+    boolean connectionEstablished = false;
     try {
       URL rServeUrl = new URL(rServeUrlStr);
       LOG.info("Connecting to RServe at " + rServeUrlStr);
       c = new RConnection(rServeUrl.getHost(), rServeUrl.getPort());
       LOG.info("Connection established");
+      connectionEstablished = true;
       consumer.accept(c);
     }
     catch (Exception e) {
+      if (connectionEstablished) {
+        // successfully established connection to R; assume any further error is due to bad data selection and throw 400
+        throw new BadRequestException(e.getMessage());
+      }
+      // otherwise throw 500 with generic message
       throw e instanceof RuntimeException ? (RuntimeException)e :
           new RuntimeException("Unable to complete processing", e);
     }

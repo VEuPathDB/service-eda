@@ -91,9 +91,9 @@ repositories {
 //
 
 // versions
-val coreLib       = "7.0.6"            // Container core lib version
-val fgputil       = "2.12.11-jakarta"  // FgpUtil version
-val libSubsetting = "4.14.1"          // lib-eda-subsetting version
+val coreLib       = "7.1.5"            // Container core lib version
+val fgputil       = "2.14.2-jakarta"   // FgpUtil version
+val libSubsetting = "4.16.9"           // lib-eda-subsetting version
 
 // use local EDA compute compiled schema if project exists, else use released version;
 // this mirrors the way we use local EdaCommon code if available
@@ -113,13 +113,14 @@ dependencies {
   // VEuPathDB libs, prefer local checkouts if available
   implementation(findProject(":core") ?: "org.veupathdb.lib:jaxrs-container-core:${coreLib}")
   implementation(findProject(":libEdaSubsetting") ?: "org.veupathdb.eda:lib-eda-subsetting:${libSubsetting}")
-  implementation( "org.veupathdb.lib:compute-platform:1.7.0")
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")
   implementation("org.gusdb:fgputil-accountdb:${fgputil}")
   implementation("org.gusdb:fgputil-client:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
+  implementation("org.veupathdb.lib:compute-platform:1.8.2")
+  implementation("org.veupathdb.lib.s3:s34k-minio:0.7.2+s34k-0.11.0")
 
   // Jersey
   implementation("org.glassfish.jersey.core:jersey-server:3.1.1")

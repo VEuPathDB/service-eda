@@ -2343,6 +2343,18 @@ types:
     type: DataPluginRequestBase
     properties:
       config: CollectionSpec
+  BaseMarker:
+    type: object
+    additionalProperties: false
+    properties:
+      geoAggregateValue: string
+      entityCount: number
+      avgLat: number
+      avgLon: number
+      minLat: number
+      minLon: number
+      maxLat: number
+      maxLon: number
   CollectionFloatingBarplotPostRequest:
     type: DataPluginRequestBase
     properties:
@@ -2440,7 +2452,7 @@ types:
     properties:
       config: StandaloneCollectionMapMarkerSpec
   StandaloneCollectionMapMarkerSpec:
-    description: Specification for a map marker
+    description: Specification for a collection-level map marker visualization.
     type: object
     additionalProperties: false
     properties:
@@ -2459,31 +2471,26 @@ types:
       viewport:
         description: Viewport used to filter markers. Only entities that are contained in the viewport will be grouped into markers.
         type: GeolocationViewport
-      collection:
+      collectionOverlay:
         description: Collection variable to use for markers.
         type: CollectionOverlayConfig
       aggregatorConfig:
         description: Specification for how variable values will be aggregated into quantiative value shown in bar plot marker.
         type: QuantitativeAggregationConfig
   CollectionOverlayConfig:
+    description: |
+      Overlay configuration for the collection. Note that the variable IDs indicated must be members of the collection.
     type: object
     properties:
       collection: CollectionSpec
-      selectedMembers: VariableSpec[]
+      selectedMembers: string[]
   CollectionMapMarkerElement:
     description: |
       Data needed to render a collection map marker. Contains geographical data as well as per-variable collection var
       aggregates needed to render bar plots with error bar.
-    type: object
+    type: BaseMarker
     properties:
-      entityCount: number
-      avgLat: number
-      avgLon: number
-      minLat: number
-      minLon: number
-      maxLat: number
-      maxLon: number
-      values: CollectionMemberAggregate[]
+      overlayValues: CollectionMemberAggregate[]
   CollectionMemberAggregate:
     type: object
     properties:
@@ -2686,6 +2693,7 @@ types:
       scatterplot: FloatingScatterplot
   StandaloneMapBubblesLegendPostRequest:
     type: DataPluginRequestBase
+    additionalProperties: false
     properties:
       config: StandaloneMapBubblesLegendSpec
   StandaloneMapBubblesLegendSpec:
@@ -2748,18 +2756,10 @@ types:
     properties:
       mapElements: ColoredMapElementInfo[]
   ColoredMapElementInfo:
-    type: object
+    type: BaseMarker
     additionalProperties: false
     properties:
-      geoAggregateValue: string
-      entityCount: number
       overlayValue: string
-      avgLat: number
-      avgLon: number
-      minLat: number
-      minLon: number
-      maxLat: number
-      maxLon: number
   StandaloneMapMarkersPostRequest:
     type: DataPluginRequestBase
     properties:
@@ -2807,18 +2807,11 @@ types:
       overlayValues:
         type: string[]
   StandaloneMapElementInfo:
-    type: object
+    type: BaseMarker
     additionalProperties: false
     properties:
-      geoAggregateValue: string
-      entityCount: number
-      overlayValues: LegacyLabeledRangeWithCountAndValue[]
-      avgLat: number
-      avgLon: number
-      minLat: number
-      minLon: number
-      maxLat: number
-      maxLon: number
+      overlayValues:
+        type: LegacyLabeledRangeWithCountAndValue[]
   DataPluginRequestBase:
     type: object
     additionalProperties: false

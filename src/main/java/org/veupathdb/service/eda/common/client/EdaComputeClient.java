@@ -3,19 +3,41 @@ package org.veupathdb.service.eda.common.client;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.ws.rs.core.MediaType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.json.JsonUtil;
+import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.common.model.EntityDef;
+import org.veupathdb.service.eda.common.model.ReferenceMetadata;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
+import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
+import org.veupathdb.service.eda.subset.model.Entity;
+import org.veupathdb.service.eda.subset.model.Study;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.gusdb.fgputil.FormatUtil.TAB;
 
 public class EdaComputeClient {
+  private static final Logger LOG = LogManager.getLogger(EdaComputeClient.class);
 
   public static class ComputeRequestBody extends ComputeRequestBaseImpl {
 
@@ -66,6 +88,103 @@ public class EdaComputeClient {
 
   public <T> T getJobStatistics(String computeName, ComputeRequestBody requestBody, Class<T> expectedStatsClass) {
     return readJsonResponse(getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody), expectedStatsClass);
+  }
+
+
+  private List<VariableSpec> getComputeVars(EntityDef targetEntity, List<VariableMapping> varMappings, ReferenceMetadata metadata) {
+
+    // if no computed vars present, nothing to do
+    if (varMappings.isEmpty()) return Collections.emptyList();
+
+    // create variable specs from computed var metadata
+    List<VariableSpec> computedVars = new ArrayList<>();
+
+    // first column is the ID col for the returned entity
+    computedVars.add(targetEntity.getIdColumnDef());
+
+    // next cols are the ID cols for ancestor entities (up the tree)
+    for (EntityDef ancestor : metadata.getAncestors(targetEntity)) {
+      computedVars.add(ancestor.getIdColumnDef());
+    }
+
+    varMappings.forEach(varMapping -> {
+      if (varMapping.getIsCollection()) {
+        // for collection vars, expect columns for each member
+        computedVars.addAll(varMapping.getMembers());
+      }
+      else {
+        // for non-collections, add the mapping's spec
+        computedVars.add(varMapping.getVariableSpec());
+      }
+    });
+
+    return computedVars;
+  }
+  /**
+   * TODO migrate this to directly use compute functionality:
+   *  org.veupathdb.service.eda.compute.controller.ComputeController#resultFile(
+   *  org.veupathdb.service.eda.compute.plugins.PluginMeta, java.lang.String,
+   *  org.veupathdb.service.eda.generated.model.ComputeRequestBase, java.util.function.Function)
+   *
+   *  This isn't expected to provide a particularly noticable performance improvement, but it will avoid overhead
+   *  of HTTP.
+   */
+  public CloseableIterator<Map<String, String>> getJobTabularIteratorOutput(List<EntityDef> ancestors,
+                                                                            String computeName,
+                                                                            EntityDef computeEntity,
+                                                                            List<VariableMapping> variables,
+                                                                            ComputeRequestBody requestBody,
+                                                                            ReferenceMetadata referenceMetadata) {
+    List<String> headers = VariableDef.toDotNotation(getComputeVars(computeEntity, variables, referenceMetadata));
+
+    try {
+      InputStream is = getJobTabularOutput(computeName, requestBody).getInputStream();
+      InputStreamReader isReader = new InputStreamReader(is);
+      BufferedReader bufferedReader = new BufferedReader(isReader);
+      String headerLine = bufferedReader.readLine();
+
+      if (headerLine == null) {
+        throw new RuntimeException("Compute stream is empty.");
+      }
+
+      DelimitedDataParser d = new DelimitedDataParser(headers, TAB, true);
+
+      // Convert from InputStream to iterator.
+      return new CloseableIterator<>() {
+        private String nextLine = bufferedReader.readLine();
+
+        @Override
+        public void close() throws Exception {
+          bufferedReader.close();
+        }
+
+        @Override
+        public boolean hasNext() {
+          return nextLine != null;
+        }
+
+        @Override
+        public Map<String, String> next() {
+          Map<String, String> record = d.parseLine(nextLine);
+          try {
+            nextLine = bufferedReader.readLine();
+          } catch (IOException e) {
+            throw new RuntimeException("Failed to read from compute stream buffered reader.", e);
+          }
+          return record;
+        }
+      };
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private String toDotNotation(VariableDef variableDef) {
+    return variableDef.getEntityId() + "." + variableDef.getVariableId();
+  }
+
+  private String toDotNotation(VariableSpec variableSpec) {
+    return variableSpec.getEntityId() + "." + variableSpec.getVariableId();
   }
 
   public ResponseFuture getJobTabularOutput(String computeName, ComputeRequestBody requestBody) {

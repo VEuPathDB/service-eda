@@ -1,13 +1,13 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
 import org.gusdb.fgputil.DelimitedDataParser;
-import org.gusdb.fgputil.geo.GeographyUtil.GeographicPoint;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
+import org.veupathdb.service.eda.data.plugin.standalonemap.conversion.ApiConverter;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.GeolocationViewport;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggregator;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.QuantitativeAggregateConfiguration;
@@ -140,23 +140,15 @@ public class BubbleMapMarkersPlugin extends AbstractEmptyComputePlugin<Standalon
     for (String key : aggregatedDataByGeoVal.keySet()) {
       ColoredMapElementInfo mapEle = new ColoredMapElementInfoImpl();
       MarkerData<Double> data = aggregatedDataByGeoVal.get(key);
-      GeographicPoint avgLatLon = data.getLatLonAvg().getCurrentAverage();
-      mapEle.setGeoAggregateValue(key);
-      mapEle.setEntityCount(data.getCount());
-      mapEle.setAvgLat(avgLatLon.getLatitude());
-      mapEle.setAvgLon(avgLatLon.getLongitude());
-      mapEle.setMinLat(data.getMinLat());
-      mapEle.setMaxLat(data.getMaxLat());
-      mapEle.setMinLon(data.getMinLon());
-      mapEle.setMaxLon(data.getMaxLon());
+      ApiConverter.populateBaseMarkerData(key, mapEle, data);
       MarkerAggregator<Double> aggregator = data.getMarkerAggregator();
       if (aggregator != null) {
         Double aggregation = aggregator.finish();
         if (aggregation != null) {
           mapEle.setOverlayValue(overlayConfig.map(oc -> oc.serializeAverage(aggregation)).orElse(null));
-	  // only output marker data where there are overlay values (issue #334)
-	  output.add(mapEle);
-	}
+          // only output marker data where there are overlay values (issue #334)
+          output.add(mapEle);
+        }
       }
     }
     StandaloneMapBubblesPostResponse response = new StandaloneMapBubblesPostResponseImpl();

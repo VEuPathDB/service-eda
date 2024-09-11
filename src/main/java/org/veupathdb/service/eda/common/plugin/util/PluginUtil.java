@@ -13,6 +13,7 @@ import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.DynamicDataSpec;
 import org.veupathdb.service.eda.generated.model.LabeledRange;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
 import java.lang.StringBuilder;
 import java.util.ArrayList;
@@ -62,7 +63,9 @@ public class PluginUtil {
   }
 
   private String getVariableAttribute(Function<VariableDef, ?> getter, VariableSpec var) {
-    return var == null ? "" : getter.apply(_metadata.getVariable(var).orElseThrow()).toString();
+    return var == null ? "" : getter.apply(_metadata.getVariable(var)
+        .orElseThrow(() -> new IllegalArgumentException(
+            String.format("Unable to find variable with spec %s, %s", var.getEntityId(), var.getVariableId())))).toString();
   }
 
   public String getCollectionType(CollectionSpec collection) {
@@ -145,6 +148,16 @@ public class PluginUtil {
   public List<String> getCollectionVocabulary(CollectionSpec collection) {
     return collection == null ? null : _metadata.getCollection(collection).orElseThrow().getVocabulary();
 
+  }
+
+  public static List<VariableSpec> variablesFromCollectionMembers(CollectionSpec collection, List<String> memberIds) {
+    return memberIds.stream()
+        .map(memberVarId -> {
+          VariableSpec varSpec = new VariableSpecImpl();
+          varSpec.setEntityId(collection.getEntityId());
+          varSpec.setVariableId(memberVarId);
+          return varSpec;
+        }).toList();
   }
 
   //deprecated

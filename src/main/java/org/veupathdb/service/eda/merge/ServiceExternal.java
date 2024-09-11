@@ -96,6 +96,7 @@ public class ServiceExternal implements Merging {
   public PostMergingQueryResponse postMergingQuery(MergedEntityTabularPostRequest requestBody) {
     // check access to full tabular results since this endpoint is intended to be exposed through traefik
     Entry<String,String> authHeader = checkPermissions(getAuthHeader(_request), requestBody.getStudyId());
+    // TODO Remove auth header once compute interface is intra-process (not over http).
     return PostMergingQueryResponse.respond200WithTextTabSeparatedValues(processMergedTabularRequest(requestBody, authHeader));
   }
 

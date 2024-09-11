@@ -9,7 +9,7 @@ types:
 
   StandaloneCollectionMapMarkerSpec:
     additionalProperties: false
-    description: Specification for a map marker
+    description: Specification for a collection-level map marker visualization.
     properties:
       outputEntityId:
         required: true
@@ -27,7 +27,7 @@ types:
       viewport:
         type: GeolocationViewport
         description: Viewport used to filter markers. Only entities that are contained in the viewport will be grouped into markers.
-      collection:
+      collectionOverlay:
         required: true
         type: CollectionOverlayConfig
         description: Collection variable to use for markers.
@@ -37,23 +37,19 @@ types:
         description: Specification for how variable values will be aggregated into quantiative value shown in bar plot marker.
 
   CollectionOverlayConfig:
+    description: | 
+      Overlay configuration for the collection. Note that the variable IDs indicated must be members of the collection.
     properties:
       collection: CollectionSpec
-      selectedMembers: VariableSpec[]
+      selectedMembers: string[]
 
   CollectionMapMarkerElement:
+    type: BaseMarker
     description: |
       Data needed to render a collection map marker. Contains geographical data as well as per-variable collection var
       aggregates needed to render bar plots with error bar.
     properties:
-      entityCount: number
-      avgLat: number
-      avgLon: number
-      minLat: number
-      minLon: number
-      maxLat: number
-      maxLon: number
-      values: CollectionMemberAggregate[]
+      overlayValues: CollectionMemberAggregate[]
 
   CollectionMemberAggregate:
     properties:

@@ -1,14 +1,18 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
+import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.AveragesWithConfidence;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.CollectionAveragesWithConfidenceAggregator;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggregator;
+import org.veupathdb.service.eda.data.plugin.standalonemap.conversion.ApiConverter;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.GeolocationViewport;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.MapMarkerRowProcessor;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.MarkerData;
@@ -27,6 +31,7 @@ import static org.gusdb.fgputil.FormatUtil.TAB;
 import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
 
 public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<StandaloneCollectionMapMarkerPostRequest, StandaloneCollectionMapMarkerSpec> {
+  private static final Logger LOG = LogManager.getLogger(CollectionMapMarkersPlugin.class);
 
   private QuantitativeAggregateConfiguration _aggregateConfig;
 
@@ -56,18 +61,18 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
 
   @Override
   protected void validateVisualizationSpec(StandaloneCollectionMapMarkerSpec pluginSpec) throws ValidationException {
-    if (pluginSpec.getCollection() == null) {
+    if (pluginSpec.getCollectionOverlay() == null) {
       throw new ValidationException("Collection information must be specified.");
     }
-    ValidationUtils.validateCollectionMembers(getUtil(),
-        pluginSpec.getCollection().getCollection(),
-        pluginSpec.getCollection().getSelectedMembers());
+    CollectionSpec collection = pluginSpec.getCollectionOverlay().getCollection();
+    List<VariableSpec> collectionMembers = PluginUtil.variablesFromCollectionMembers(collection, pluginSpec.getCollectionOverlay().getSelectedMembers());
+    ValidationUtils.validateCollectionMembers(getUtil(), collection, collectionMembers);
     if (pluginSpec.getAggregatorConfig() != null) {
       try {
         _aggregateConfig = new QuantitativeAggregateConfiguration(pluginSpec.getAggregatorConfig(),
-            getUtil().getCollectionDataShape(pluginSpec.getCollection().getCollection()),
-            getUtil().getCollectionType(pluginSpec.getCollection().getCollection()),
-            () -> getUtil().getCollectionVocabulary(pluginSpec.getCollection().getCollection()));
+            getUtil().getCollectionDataShape(collection),
+            getUtil().getCollectionType(collection),
+            () -> getUtil().getCollectionVocabulary(collection));
       } catch (IllegalArgumentException e) {
         throw new ValidationException(e.getMessage());
       }
@@ -77,7 +82,12 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
   @Override
   protected List<StreamSpec> getRequestedStreams(StandaloneCollectionMapMarkerSpec pluginSpec) {
     StreamSpec streamSpec = new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, pluginSpec.getOutputEntityId());
-    streamSpec.addVars(pluginSpec.getCollection().getSelectedMembers());
+    List<VariableSpec> collectionMembers = PluginUtil.variablesFromCollectionMembers(pluginSpec.getCollectionOverlay().getCollection(),
+        pluginSpec.getCollectionOverlay().getSelectedMembers());
+    streamSpec.addVars(collectionMembers)
+        .addVar(pluginSpec.getGeoAggregateVariable())
+        .addVar(pluginSpec.getLatitudeVariable())
+        .addVar(pluginSpec.getLongitudeVariable());
     return List.of(streamSpec);
   }
 
@@ -88,9 +98,14 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
     DelimitedDataParser parser = new DelimitedDataParser(reader.readLine(), TAB, true);
 
     StandaloneCollectionMapMarkerSpec spec = getPluginSpec();
-    Function<String, Integer> indexOf = var -> parser.indexOfColumn(var).orElseThrow();
+    Function<String, Integer> indexOf = var ->
+      parser.indexOfColumn(var).orElseThrow(() -> new RuntimeException("Looking for variable " + var + " but found columns " + parser.getColumnNames()));
+
     Function<Integer, String> indexToVarId = index -> parser.getColumnNames().get(index);
-    List<String> memberVarColNames = spec.getCollection().getSelectedMembers().stream()
+    List<VariableSpec> collectionMembers = PluginUtil.variablesFromCollectionMembers(spec.getCollectionOverlay().getCollection(),
+        spec.getCollectionOverlay().getSelectedMembers());
+
+    List<String> memberVarColNames = collectionMembers.stream()
         .map(getUtil()::toColNameOrEmpty)
         .toList();
 
@@ -109,28 +124,26 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
 
     // Construct response, serialize and flush output
     final StandaloneCollectionMapMarkerPostResponse response = new StandaloneCollectionMapMarkerPostResponseImpl();
-    response.setMarkers(markerDataById.entrySet().stream().map(entry -> {
-      final CollectionMapMarkerElement ele = new CollectionMapMarkerElementImpl();
-      ele.setAvgLat(entry.getValue().getLatLonAvg().getCurrentAverage().getLatitude());
-      ele.setAvgLon(entry.getValue().getLatLonAvg().getCurrentAverage().getLongitude());
-      ele.setMaxLat(entry.getValue().getMaxLat());
-      ele.setMaxLon(entry.getValue().getMaxLon());
-      ele.setEntityCount(ele.getEntityCount());
-      ele.setValues(entry.getValue().getMarkerAggregator().finish().values().stream()
-          .map(markerAggregate -> translateToOutput(markerAggregate, entry.getKey()))
-          .collect(Collectors.toList()));
-      return ele;
+    response.setMarkers(markerDataById.entrySet().stream()
+        .filter(marker -> marker.getValue().getCount() != 0)
+        .map(entry -> {
+          final CollectionMapMarkerElement ele = new CollectionMapMarkerElementImpl();
+          ApiConverter.populateBaseMarkerData(entry.getKey(), ele, entry.getValue());
+          ele.setOverlayValues(entry.getValue().getMarkerAggregator().finish().entrySet().stream()
+              .map(markerAggregate -> translateToOutput(markerAggregate.getValue(), markerAggregate.getKey()))
+              .collect(Collectors.toList()));
+          return ele;
     }).collect(Collectors.toList()));
 
     JsonUtil.Jackson.writeValue(out, response);
     out.flush();
   }
 
-  private CollectionMemberAggregate translateToOutput(AveragesWithConfidence averagesWithConfidence, String variableId) {
+  private CollectionMemberAggregate translateToOutput(AveragesWithConfidence averagesWithConfidence, String variableDotNotation) {
     final CollectionMemberAggregate collectionMemberResult = new CollectionMemberAggregateImpl();
     collectionMemberResult.setValue(averagesWithConfidence.getAverage());
     collectionMemberResult.setN(averagesWithConfidence.getN());
-    collectionMemberResult.setVariableId(variableId);
+    collectionMemberResult.setVariableId(variableDotNotation.split("[.]")[1]);
     final NumberRange range = new NumberRangeImpl();
     range.setMin(averagesWithConfidence.getIntervalLowerBound());
     range.setMax(averagesWithConfidence.getIntervalUpperBound());

@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda;
 
-import org.jetbrains.annotations.Nullable;
 import org.veupathdb.lib.container.jaxrs.config.Options;
 import picocli.CommandLine;
 
@@ -15,22 +14,25 @@ public class EnvConfig extends Options {
   private static final int DefaultQueueDBPort = 5432;
   private static final int DefaultQueueDBPoolSize = 10;
 
-// Job Queue Defaults
+  // Job Queue Defaults
   private static final int DefaultJobQueuePort = 5672;
+
   private static final String DefaultSlowQueueName = "slow-jobs";
   private static final int DefaultSlowQueueWorkers = 5;
+  private static final int DefaultSlowQueueJobTimeoutMinutes = 30;
+
   private static final String DefaultFastQueueName = "fast-jobs";
   private static final int DefaultFastQueueWorkers = 5;
+  private static final int DefaultFastQueueJobTimeoutMinutes = 30;
 
-
-// S3 Defaults
+  // S3 Defaults
   private static final int DefaultS3Port     = 80;
   private static final boolean DefaultS3UseHttps = true;
 
-// Job Cache Defaults
+  // Job Cache Defaults
   private static final int DefaultJobCacheTimeoutDays = 30;
 
-// RServe Defaults
+  // RServe Defaults
   private static final int DefaultRServePort = 6311;
 
 
@@ -91,7 +93,7 @@ public class EnvConfig extends Options {
   )
   @SuppressWarnings("FieldMayBeFinal")
   private String applicationPath = DEFAULT_APPLICATION_PATH;
-  
+
   /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
     ┃  Service URLs                                                        ┃
   \*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
@@ -133,6 +135,8 @@ public class EnvConfig extends Options {
   )
   @SuppressWarnings("FieldMayBeFinal")
   private String rserveHost = UnconfiguredStringValue;
+
+  // region Postgres
 
   /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
     ┃  Queue PostgreSQL                                                    ┃
@@ -206,7 +210,6 @@ public class EnvConfig extends Options {
       required = true
   )
   String jobQueueUsername;
-  
 
   @CommandLine.Option(
       names = "--job-queue-password",
@@ -216,7 +219,6 @@ public class EnvConfig extends Options {
       required = true
   )
   String jobQueuePassword;
-  
 
   @CommandLine.Option(
       names = "--job-queue-host",
@@ -226,7 +228,6 @@ public class EnvConfig extends Options {
       required = true
   )
   String jobQueueHost;
-  
 
   @CommandLine.Option(
       names = "--job-queue-port",
@@ -234,8 +235,7 @@ public class EnvConfig extends Options {
       description = "Host port for the RabbitMQ instance.",
       arity = "1"
   )
-  int jobQueuePort;
-  
+  int jobQueuePort = DefaultJobQueuePort;
 
   @CommandLine.Option(
       names = "--slow-queue-name",
@@ -243,8 +243,7 @@ public class EnvConfig extends Options {
       description = "Name of the slow jobs queue.",
       arity = "1"
   )
-  String slowQueueName;
-  
+  String slowQueueName = DefaultSlowQueueName;
 
   @CommandLine.Option(
       names = "--slow-queue-workers",
@@ -252,8 +251,7 @@ public class EnvConfig extends Options {
       description = "Number of worker threads used by the slow job queue.",
       arity = "1"
   )
-  int slowQueueWorkers;
-  
+  int slowQueueWorkers = DefaultSlowQueueWorkers;
 
   @CommandLine.Option(
       names = "--fast-queue-name",
@@ -262,7 +260,6 @@ public class EnvConfig extends Options {
       arity = "1"
   )
   String fastQueueName = DefaultFastQueueName;
-  
 
   @CommandLine.Option(
       names = "--fast-queue-workers",
@@ -271,7 +268,6 @@ public class EnvConfig extends Options {
       arity = "1"
   )
   int fastQueueWorkers = DefaultFastQueueWorkers;
-  
 
   // endregion RabbitMQ
 
@@ -289,7 +285,6 @@ public class EnvConfig extends Options {
       required = true
   )
   String s3Host = UnconfiguredStringValue;
-  
 
   @CommandLine.Option(
       names = "--s3-bucket",
@@ -299,7 +294,6 @@ public class EnvConfig extends Options {
       required = true
   )
   String s3Bucket = UnconfiguredStringValue;
-  
 
   @CommandLine.Option(
       names = "--s3-access-token",
@@ -309,7 +303,6 @@ public class EnvConfig extends Options {
       required = true
   )
   String s3AccessToken = UnconfiguredStringValue;
-  
 
   @CommandLine.Option(
       names = "--s3-secret-key",
@@ -319,7 +312,6 @@ public class EnvConfig extends Options {
       required = true
   )
   String s3SecretKey = UnconfiguredStringValue;
-  
 
   @CommandLine.Option(
       names = "--s3-port",
@@ -328,7 +320,6 @@ public class EnvConfig extends Options {
       arity = "1"
   )
   int s3Port = DefaultS3Port;
-  
 
   @CommandLine.Option(
       names = "--s3-use-https",
@@ -337,7 +328,6 @@ public class EnvConfig extends Options {
       arity = "1"
   )
   boolean s3UseHttps = DefaultS3UseHttps;
-  
 
   // endregion Minio (S3)
 
@@ -354,24 +344,24 @@ public class EnvConfig extends Options {
       arity = "1"
   )
   int jobCacheTimeoutDays = DefaultJobCacheTimeoutDays;
-  
+
+  @CommandLine.Option(
+    names = "--slow-queue-job-timeout",
+    defaultValue = "${env:SLOW_QUEUE_JOB_TIMEOUT_MINUTES}",
+    description = "Max number of minutes a slow queue job may take to complete before the job message from the queue is skipped.",
+    arity = "1"
+  )
+  int slowQueueJobTimeout = DefaultSlowQueueJobTimeoutMinutes;
+
+  @CommandLine.Option(
+    names = "--fast-queue-job-timeout",
+    defaultValue = "${env:FAST_QUEUE_JOB_TIMEOUT_MINUTES}",
+    description = "Max number of minutes a fast queue job may take to complete before the job message from the queue is skipped.",
+    arity = "1"
+  )
+  int fastQueueJobTimeout = DefaultFastQueueJobTimeoutMinutes;
 
   // endregion Job Configuration
-
-  // region EDA Services
-
-  /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
-    ┃  External EDA Service Connection Configuration                       ┃
-  \*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
-
-  // endregion EDA Services
-
-  // region RServe
-
-  /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
-    ┃  RServe Connection Configuration                                     ┃
-  \*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
-
 
   public boolean isEmailEnabled() {
     return enableEmail;
@@ -501,4 +491,11 @@ public class EnvConfig extends Options {
     return rserveHost;
   }
 
+  public int getSlowQueueJobTimeout() {
+    return slowQueueJobTimeout;
+  }
+
+  public int getFastQueueJobTimeout() {
+    return fastQueueJobTimeout;
+  }
 }

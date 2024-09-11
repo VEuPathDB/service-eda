@@ -21,7 +21,7 @@ public class Main extends Server {
   }
 
   public Main() {
-    QueryLogger.initialize(new QLF(){});
+    QueryLogger.initialize(new QLF() {});
   }
 
   @Override
@@ -68,45 +68,49 @@ public class Main extends Server {
 
   private void initAsyncPlatform() {
     AsyncDBConfig dbConfig = new AsyncDBConfig(
-        config.getQueueDBName(),
-        config.getQueueDBUsername(),
-        config.getQueueDBPassword(),
-        config.getQueueDBHost(),
-        config.getQueueDBPort(),
-        config.getQueueDBPoolSize()
+      config.getQueueDBName(),
+      config.getQueueDBUsername(),
+      config.getQueueDBPassword(),
+      config.getQueueDBHost(),
+      config.getQueueDBPort(),
+      config.getQueueDBPoolSize()
     );
     AsyncS3Config s3Config = new AsyncS3Config(
-        config.getS3Host(),
-        config.getS3Port(),
-        config.getS3UseHttps(),
-        config.getS3Bucket(),
-        config.getS3AccessToken(),
-        config.getS3SecretKey(),
-        "/"
+      config.getS3Host(),
+      config.getS3Port(),
+      config.getS3UseHttps(),
+      config.getS3Bucket(),
+      config.getS3AccessToken(),
+      config.getS3SecretKey(),
+      "/"
     );
     AsyncJobConfig jobConfig = new AsyncJobConfig(
-        (ctx) -> new PluginExecutor(),
-        config.getJobCacheTimeoutDays()
+      (ctx) -> new PluginExecutor(),
+      config.getJobCacheTimeoutDays()
     );
     AsyncPlatformConfig asyncConfig = AsyncPlatformConfig.builder()
-        .dbConfig(dbConfig)
-        .s3Config(s3Config)
-        .jobConfig(jobConfig)
-        .addQueue(new AsyncQueueConfig(
-            config.getSlowQueueName(),
-            config.getJobQueueUsername(),
-            config.getJobQueuePassword(),
-            config.getJobQueueHost(),
-            config.getJobQueuePort(),
-            config.getSlowQueueWorkers()))
-        .addQueue(new AsyncQueueConfig(
-            config.getFastQueueName(),
-            config.getJobQueueUsername(),
-            config.getJobQueuePassword(),
-            config.getJobQueueHost(),
-            config.getJobQueuePort(),
-            config.getFastQueueWorkers()))
-        .build();
+      .dbConfig(dbConfig)
+      .s3Config(s3Config)
+      .jobConfig(jobConfig)
+      .addQueue(AsyncQueueConfig.builder()
+        .id(config.getSlowQueueName())
+        .username(config.getJobQueueUsername())
+        .password(config.getJobQueuePassword())
+        .host(config.getJobQueueHost())
+        .port(config.getJobQueuePort())
+        .workers(config.getSlowQueueWorkers())
+        .messageAckTimeoutMinutes(config.getSlowQueueJobTimeout())
+        .build())
+      .addQueue(AsyncQueueConfig.builder()
+        .id(config.getFastQueueName())
+        .username(config.getJobQueueUsername())
+        .password(config.getJobQueuePassword())
+        .host(config.getJobQueueHost())
+        .port(config.getJobQueuePort())
+        .workers(config.getFastQueueWorkers())
+        .messageAckTimeoutMinutes(config.getFastQueueJobTimeout())
+        .build())
+      .build();
     AsyncPlatform.init(asyncConfig);
   }
 }

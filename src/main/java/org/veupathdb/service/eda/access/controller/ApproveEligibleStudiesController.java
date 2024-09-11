@@ -51,11 +51,7 @@ public class ApproveEligibleStudiesController implements ApproveEligibleAccessRe
   ContainerRequest _request;
 
   @Override
-  public PostApproveEligibleAccessRequestsResponse postApproveEligibleAccessRequests(String adminAuthToken) {
-    if (!Main.config.getAdminAuthToken().equals(adminAuthToken)) {
-      LOG.info("Unauthorized user attempted to access admin endpoint.");
-      throw new ForbiddenException();
-    }
+  public PostApproveEligibleAccessRequestsResponse postApproveEligibleAccessRequests() {
     try {
       // Only protected studies can be auto-approved.
       final List<DatasetProps> eligibleDatasets = DatasetRepo.Select.getInstance().datasetProps().stream()

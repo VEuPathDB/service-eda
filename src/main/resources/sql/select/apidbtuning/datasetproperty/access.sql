@@ -20,9 +20,9 @@ FROM (
 LEFT JOIN (
   SELECT
     dataset_presenter_id,
-    MAX(DECODE(property, 'studyAccess', value)) AS study_access,
-    MAX(DECODE(property, 'daysForApproval', value)) AS days_for_approval,
-    MAX(DECODE(property, 'customApprovalEmailBody', value)) AS custom_approval_email_body
+    max(CASE WHEN property = 'studyAccess' THEN value END) as study_access,
+    max(CASE WHEN property = 'daysForApproval' THEN value END) as days_for_approval,
+    max(CASE WHEN property = 'customApprovalEmailBody' THEN value END) as custom_approval_email_body
   FROM apidbtuning.datasetproperty
   GROUP BY dataset_presenter_id
 ) prop

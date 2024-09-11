@@ -1,23 +1,38 @@
 package org.veupathdb.service.eda.merge.core.request;
 
 import jakarta.ws.rs.BadRequestException;
+import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.client.ResponseFuture;
+import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.EdaComputeClient;
 import org.veupathdb.service.eda.common.client.spec.EdaMergingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.subset.model.Entity;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
+import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import static org.gusdb.fgputil.FormatUtil.TAB;
 
 /**
  * Subclass of RequestResources which supplements the superclass's resources with target entity, subset filters, and
@@ -42,13 +57,40 @@ public class MergedTabularRequestResources extends RequestResources {
     _computeInfo = Optional.ofNullable(request.getComputeSpec())
         .map(spec -> new ComputeInfo(spec.getComputeName(),
             new EdaComputeClient.ComputeRequestBody(_metadata.getStudyId(), _subsetFilters, _derivedVariableSpecs, spec.getComputeConfig())));
-
     // incorporate computed metadata (if compute info present)
     incorporateCompute();
 
     // validation of incoming request
     //  (validation based specifically on the requested entity done during spec creation)
     validateIncomingRequest();
+  }
+
+  public CloseableIterator<Map<String, String>> getSubsettingTabularStream(StreamSpec spec) {
+    // for derived var plugins, need to ensure filters overrides produce set of rows which are a subset of the rows
+    //   produced by the "global" filters.  Easiest way to do that is to simply combine the filters, resulting in
+    //   an intersection of the global subset and the overridden subset
+    if (spec.getFiltersOverride().isPresent() && !_subsetFilters.isEmpty()) {
+      StreamSpec modifiedSpec = new StreamSpec(spec.getStreamName(), spec.getEntityId());
+      modifiedSpec.addAll(spec);
+      List<APIFilter> combinedFilters = new ArrayList<>();
+      combinedFilters.addAll(_subsetFilters);
+      combinedFilters.addAll(spec.getFiltersOverride().get());
+      modifiedSpec.setFiltersOverride(combinedFilters);
+      spec = modifiedSpec;
+    }
+
+    return _subsetSvc.getTabularDataIterator(_metadata.getStudyId(), _subsetFilters, spec);
+  }
+
+  public CloseableIterator<Map<String, String>> getComputeStreamIterator() {
+    return _computeInfo.map(computeInfo -> _computeSvc.getJobTabularIteratorOutput(
+            _metadata.getAncestors(_metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow()),
+            computeInfo.getComputeName(),
+            _metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow(),
+            computeInfo.getVariables(),
+            computeInfo.getRequestBody(),
+            _metadata))
+        .orElseThrow(() -> new IllegalStateException("Cannot get compute stream iterator if no compute is specified in request."));
   }
 
   private void incorporateCompute() {
@@ -83,24 +125,6 @@ public class MergedTabularRequestResources extends RequestResources {
         throw new ValidationException("Entity of computed variable must be the same as, or ancestor of, the target entity");
       }
     }
-  }
-
-  public ResponseFuture getSubsettingTabularStream(StreamSpec spec) {
-
-    // for derived var plugins, need to ensure filters overrides produce set of rows which are a subset of the rows
-    //   produced by the "global" filters.  Easiest way to do that is to simply combine the filters, resulting in
-    //   an intersection of the global subset and the overridden subset
-    if (spec.getFiltersOverride().isPresent() && !_subsetFilters.isEmpty()) {
-      StreamSpec modifiedSpec = new StreamSpec(spec.getStreamName(), spec.getEntityId());
-      modifiedSpec.addAll(spec);
-      List<APIFilter> combinedFilters = new ArrayList<>();
-      combinedFilters.addAll(_subsetFilters);
-      combinedFilters.addAll(spec.getFiltersOverride().get());
-      modifiedSpec.setFiltersOverride(combinedFilters);
-      spec = modifiedSpec;
-    }
-
-    return _subsetSvc.getTabularDataStream(_metadata, _subsetFilters, spec);
   }
 
   public ResponseFuture getComputeTabularStream() {

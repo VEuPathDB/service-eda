@@ -17,4 +17,4 @@ JOIN
 ON
 	a.user_dataset_id = d.dataset_id
 WHERE
-	a.user_id = ?
+	a.user_id = ? or a.is_public = '1'

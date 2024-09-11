@@ -2293,6 +2293,11 @@ types:
     properties:
       countDistribution: CategoricalDistributionBin[]
       proportionDistribution: CategoricalDistributionBin[]
+  ChildVarToParentPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      config: VariableSpec
+  ChildVarToParentPostResponse: object
   ExampleComputeVizPostRequest:
     type: DataPluginRequestBase
     properties:

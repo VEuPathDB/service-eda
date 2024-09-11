@@ -50,18 +50,19 @@ containerBuild {
 java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(17))
+    vendor.set(JvmVendorSpec.AMAZON)
   }
 }
 
 kotlin {
   jvmToolchain {
     languageVersion.set(JavaLanguageVersion.of(17))
+    vendor.set(JvmVendorSpec.AMAZON)
   }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
   kotlinOptions {
-    jvmTarget = "17"
     freeCompilerArgs = listOf(
       "-Xjvm-default=all"
     )

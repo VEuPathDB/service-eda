@@ -2,6 +2,7 @@
 
 Public-facing service providing all EDA data to EDA client apps
 
+
 ## docker-compose
 
 ### preliminary requirements

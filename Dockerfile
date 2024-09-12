@@ -3,7 +3,7 @@
 #   Build Service & Dependencies
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-FROM veupathdb/alpine-dev-base:jdk-18-gradle-7.6 AS prep
+FROM veupathdb/alpine-dev-base:jdk-22-gradle-8.7 AS prep
 
 LABEL service="eda-build"
 

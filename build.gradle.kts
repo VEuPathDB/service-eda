@@ -59,6 +59,10 @@ kotlin {
     languageVersion = JavaLanguageVersion.of(21)
     vendor = JvmVendorSpec.AMAZON
   }
+
+  compilerOptions {
+    freeCompilerArgs = listOf("-Xjvm-default=all")
+  }
 }
 
 tasks.shadowJar {

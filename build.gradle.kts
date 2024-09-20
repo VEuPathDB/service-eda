@@ -1,7 +1,7 @@
 import org.veupathdb.lib.gradle.container.util.Logger.Level
 
 plugins {
-  kotlin("jvm") version "1.9.20" // needed for local compute import
+  kotlin("jvm") version "2.0.20" // needed for local compute import
   java
   id("org.veupathdb.lib.gradle.container.container-utils") version "4.8.9"
   id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -49,23 +49,15 @@ containerBuild {
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
-    vendor.set(JvmVendorSpec.AMAZON)
+    languageVersion = JavaLanguageVersion.of(21)
+    vendor = JvmVendorSpec.AMAZON
   }
 }
 
 kotlin {
   jvmToolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
-    vendor.set(JvmVendorSpec.AMAZON)
-  }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-  kotlinOptions {
-    freeCompilerArgs = listOf(
-      "-Xjvm-default=all"
-    )
+    languageVersion = JavaLanguageVersion.of(21)
+    vendor = JvmVendorSpec.AMAZON
   }
 }
 
@@ -120,7 +112,7 @@ dependencies {
   implementation("org.gusdb:fgputil-accountdb:${fgputil}")
   implementation("org.gusdb:fgputil-client:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
-  implementation("org.veupathdb.lib:compute-platform:1.8.2")
+  implementation("org.veupathdb.lib:compute-platform:1.8.3")
   implementation("org.veupathdb.lib.s3:s34k-minio:0.7.2+s34k-0.11.0")
 
   // Jersey
@@ -129,13 +121,13 @@ dependencies {
   // Jackson
   implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
   implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.1")
-  implementation("org.veupathdb.lib:jackson-singleton:3.0.0")
+  implementation("org.veupathdb.lib:jackson-singleton:3.2.0")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
 
   // Log4J
-  implementation("org.apache.logging.log4j:log4j-api:2.20.0")
-  implementation("org.apache.logging.log4j:log4j-core:2.20.0")
-  runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
+  implementation("org.apache.logging.log4j:log4j-api:2.24.0")
+  implementation("org.apache.logging.log4j:log4j-core:2.24.0")
+  runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.24.0")
   implementation("org.slf4j:slf4j-api:1.7.36")
 
   // Metrics

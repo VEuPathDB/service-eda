@@ -3,7 +3,7 @@
 #   Build Service & Dependencies
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-FROM veupathdb/alpine-dev-base:jdk-22-gradle-8.7 AS prep
+FROM veupathdb/alpine-dev-base:jdk-21-gradle-8.7 AS prep
 
 LABEL service="eda-build"
 
@@ -41,7 +41,7 @@ RUN gradle clean test shadowJar
 #   Run the service
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-FROM amazoncorretto:17-alpine3.20
+FROM amazoncorretto:21-alpine3.20
 
 LABEL service="eda-service"
 

@@ -116,17 +116,15 @@ dependencies {
   implementation("org.gusdb:fgputil-accountdb:${fgputil}")
   implementation("org.gusdb:fgputil-client:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
-  implementation("org.veupathdb.lib:compute-platform:1.8.3")
+  implementation("org.veupathdb.lib:compute-platform:1.8.4")
   implementation("org.veupathdb.lib.s3:s34k-minio:0.7.2+s34k-0.11.0")
 
   // Jersey
   implementation("org.glassfish.jersey.core:jersey-server:3.1.1")
 
   // Jackson
-  implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
-  implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.1")
-  implementation("org.veupathdb.lib:jackson-singleton:3.2.0")
-  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
+  implementation("org.veupathdb.lib:jackson-singleton:3.2.1")
+  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.2")
 
   // Log4J
   implementation("org.apache.logging.log4j:log4j-api:2.24.0")

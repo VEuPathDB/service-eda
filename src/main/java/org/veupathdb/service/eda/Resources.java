@@ -21,6 +21,7 @@ import org.veupathdb.service.eda.access.repo.ApprovalStatusRepo;
 import org.veupathdb.service.eda.access.repo.RestrictionLevelRepo;
 import org.veupathdb.service.eda.compute.controller.ComputeController;
 import org.veupathdb.service.eda.compute.controller.ExpirationController;
+import org.veupathdb.service.eda.compute.controller.InternalJobsController;
 import org.veupathdb.service.eda.compute.service.JobsController;
 import org.veupathdb.service.eda.data.service.AppsService;
 import org.veupathdb.service.eda.data.service.FilterAwareMetadataService;
@@ -61,7 +62,7 @@ import static org.gusdb.fgputil.runtime.ProjectSpecificProperties.PropertySpec.r
 
 /**
  * Service Resource Registration.
- *
+ * <p>
  * This is where all the individual service specific resources and middleware
  * should be registered.
  */
@@ -69,35 +70,39 @@ public class Resources extends ContainerResources {
   private static final Logger LOG = LogManager.getLogger(Resources.class);
 
   // Subsetting Config
-  private static final EnvironmentVars SUBSET_ENV = new EnvironmentVars();
-  private static final CountDownLatch APP_DB_INIT_SIGNAL = new CountDownLatch(1);
-  private static final BinaryFilesManager BINARY_FILES_MANAGER = new BinaryFilesManager(
-      new SimpleStudyFinder(Resources.getBinaryFilesDirectory().toString()));
-  private static final MetadataCache METADATA_CACHE = new MetadataCache(BINARY_FILES_MANAGER, APP_DB_INIT_SIGNAL);
-  private static final ExecutorService FILE_READ_THREAD_POOL = Executors.newCachedThreadPool();
-  private static final ExecutorService DESERIALIZER_THREAD_POOL = Executors.newFixedThreadPool(16);
+  private static final EnvironmentVars    SUBSET_ENV               = new EnvironmentVars();
+  private static final CountDownLatch     APP_DB_INIT_SIGNAL       = new CountDownLatch(1);
+  private static final BinaryFilesManager BINARY_FILES_MANAGER     = new BinaryFilesManager(
+    new SimpleStudyFinder(Resources.getBinaryFilesDirectory().toString()));
+  private static final MetadataCache      METADATA_CACHE           = new MetadataCache(
+    BINARY_FILES_MANAGER,
+    APP_DB_INIT_SIGNAL
+  );
+  private static final ExecutorService    FILE_READ_THREAD_POOL    = Executors.newCachedThreadPool();
+  private static final ExecutorService    DESERIALIZER_THREAD_POOL = Executors.newFixedThreadPool(16);
 
   // use in-memory test DB unless "real" application DB is configured
   private static boolean USE_IN_MEMORY_TEST_DATABASE = true;
 
   // Download Files Config
-  public static final Path DOWNLOAD_FILES_MOUNT_PATH = getReadableDir(Paths.get(Environment.getRequiredVar("DOWNLOAD_FILES_MOUNT_PATH")));
-  private static final String USER_SCHEMA_PROP = "USER_SCHEMA";
+  public static final  Path   DOWNLOAD_FILES_MOUNT_PATH = getReadableDir(Paths.get(Environment.getRequiredVar(
+    "DOWNLOAD_FILES_MOUNT_PATH")));
+  private static final String USER_SCHEMA_PROP          = "USER_SCHEMA";
 
   // Project-specific config
-  private static Map<String,String> SCHEMA_MAP;
-  private static final String RAW_FILES_DIR_PROP = "RAW_FILES_DIR";
-  private static Map<String,String> PROJECT_DIR_MAP;
+  private static       Map<String, String> SCHEMA_MAP;
+  private static final String              RAW_FILES_DIR_PROP = "RAW_FILES_DIR";
+  private static       Map<String, String> PROJECT_DIR_MAP;
 
-  private static final String SERVER_PORT = getRequiredVar("SERVER_PORT");
+  private static final String SERVER_PORT              = getRequiredVar("SERVER_PORT");
   private static final String CONSOLIDATED_SERVICE_URL = "http://localhost:" + SERVER_PORT;
 
 
   // Service URLs -- these can be removed once inter-component communication is done in-memory.
   // For ease of transition in EDA consolidation, communication between these components is still done via http.
-  public static final String SUBSETTING_SERVICE_URL = CONSOLIDATED_SERVICE_URL;
-  public static final String MERGING_SERVICE_URL = CONSOLIDATED_SERVICE_URL;
-  public static final String COMPUTE_SERVICE_URL = CONSOLIDATED_SERVICE_URL;
+  public static final String SUBSETTING_SERVICE_URL     = CONSOLIDATED_SERVICE_URL;
+  public static final String MERGING_SERVICE_URL        = CONSOLIDATED_SERVICE_URL;
+  public static final String COMPUTE_SERVICE_URL        = CONSOLIDATED_SERVICE_URL;
   public static final String DATASET_ACCESS_SERVICE_URL = CONSOLIDATED_SERVICE_URL;
 
   public static final String RSERVE_URL = getRequiredVar("RSERVE_URL");
@@ -112,33 +117,33 @@ public class Resources extends ContainerResources {
 
     // Project-specific user schemas.
     SCHEMA_MAP = new ProjectSpecificProperties<>(
-        new ProjectSpecificProperties.PropertySpec[] { required(USER_SCHEMA_PROP) },
-        map -> {
-          // add trailing '.' to schema names for convenience later
-          String rawSchemaName = map.get(USER_SCHEMA_PROP);
-          return rawSchemaName + (rawSchemaName.endsWith(".") ? "" : ".");
-        }
+      new ProjectSpecificProperties.PropertySpec[]{required(USER_SCHEMA_PROP)},
+      map -> {
+        // add trailing '.' to schema names for convenience later
+        String rawSchemaName = map.get(USER_SCHEMA_PROP);
+        return rawSchemaName + (rawSchemaName.endsWith(".") ? "" : ".");
+      }
     ).toMap();
 
     // Project-specific download directories. Study download files have a project-aware directory structure.
     PROJECT_DIR_MAP = new ProjectSpecificProperties<>(
-        new ProjectSpecificProperties.PropertySpec[] { required(RAW_FILES_DIR_PROP) },
-        map -> map.get(RAW_FILES_DIR_PROP)
+      new ProjectSpecificProperties.PropertySpec[]{required(RAW_FILES_DIR_PROP)},
+      map -> map.get(RAW_FILES_DIR_PROP)
     ).toMap();
 
     if (opts.getAppDbOpts().name().isPresent() || opts.getAppDbOpts().tnsName().isPresent()) {
       // application database configured; use it
       USE_IN_MEMORY_TEST_DATABASE = false;
     } else {
-      LOG.warn("No application database configured! Using in-memory database. This should only appear in test environments.");
+      LOG.warn(
+        "No application database configured! Using in-memory database. This should only appear in test environments.");
     }
 
     // load cached permissions data.
     try {
       ApprovalStatusRepo.Select.populateApprovalStatusCache();
       RestrictionLevelRepo.Select.populateRestrictionLevelCache();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
 
@@ -150,7 +155,7 @@ public class Resources extends ContainerResources {
     if (!USE_IN_MEMORY_TEST_DATABASE) {
       DbManager.initApplicationDatabase(opts);
       LOG.info("Using application DB connection URL: " +
-          DbManager.getInstance().getApplicationDatabase().getConfig().getConnectionUrl());
+        DbManager.getInstance().getApplicationDatabase().getConfig().getConnectionUrl());
       APP_DB_INIT_SIGNAL.countDown();
     }
   }
@@ -160,20 +165,23 @@ public class Resources extends ContainerResources {
   }
 
   public static StudyResolver getStudyResolver() {
-    final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();
+    final BinaryFilesManager         binaryFilesManager         = Resources.getBinaryFilesManager();
     final MetadataFileBinaryProvider metadataFileBinaryProvider = new MetadataFileBinaryProvider(binaryFilesManager);
-    final VariableFactory variableFactory = new VariableFactory(Resources.getApplicationDataSource(),
-        Resources.getVdiDatasetsSchema() + ".",
-        metadataFileBinaryProvider,
-        binaryFilesManager::studyHasFiles);
+    final VariableFactory variableFactory = new VariableFactory(
+      Resources.getApplicationDataSource(),
+      Resources.getVdiDatasetsSchema() + ".",
+      metadataFileBinaryProvider,
+      binaryFilesManager::studyHasFiles
+    );
     return new StudyResolver(
-        METADATA_CACHE,
-        new StudyFactory(
-            Resources.getApplicationDataSource(),
-            Resources.getVdiDatasetsSchema() + ".",
-            StudyOverview.StudySourceType.USER_SUBMITTED,
-            variableFactory,
-            false)
+      METADATA_CACHE,
+      new StudyFactory(
+        Resources.getApplicationDataSource(),
+        Resources.getVdiDatasetsSchema() + ".",
+        StudyOverview.StudySourceType.USER_SUBMITTED,
+        variableFactory,
+        false
+      )
     );
   }
 
@@ -196,7 +204,10 @@ public class Resources extends ContainerResources {
   }
 
   public static Path getBinaryFilesDirectory() {
-    return Path.of(SUBSET_ENV.getBinaryFilesMount(), SUBSET_ENV.getBinaryFilesDirectory().replace("%DB_BUILD%", SUBSET_ENV.getDbBuild()));
+    return Path.of(
+      SUBSET_ENV.getBinaryFilesMount(),
+      SUBSET_ENV.getBinaryFilesDirectory().replace("%DB_BUILD%", SUBSET_ENV.getDbBuild())
+    );
   }
 
   public static ExecutorService getFileChannelThreadPool() {
@@ -215,7 +226,7 @@ public class Resources extends ContainerResources {
     return DbManager.userDatabase().getDataSource();
   }
 
-  public static DataSource getAccountsDataSource() { return DbManager.accountDatabase().getDataSource(); }
+  public static DataSource getAccountsDataSource() {return DbManager.accountDatabase().getDataSource();}
 
   public static String getUserDbSchema(String projectId) {
     if (!SCHEMA_MAP.containsKey(projectId)) {
@@ -260,40 +271,41 @@ public class Resources extends ContainerResources {
 
   /**
    * Returns an array of JaxRS endpoints, providers, and contexts.
-   *
+   * <p>
    * Entries in the array can be either classes or instances.
    */
   @Override
   protected Object[] resources() {
     return new Object[]{
-        // Subsetting
-        StudiesService.class,
-        InternalClientsService.class,
-        ClearMetadataCacheService.class,
-        // Visualization
-        AppsService.class,
-        FilterAwareMetadataService.class,
-        // Merging
-        ServiceExternal.class,
-        ServiceInternal.class,
-        // Compute
-        JobsController.class,
-        ComputeController.class,
-        ExpirationController.class,
-        // Access
-        ApproveEligibleStudiesController.class,
-        ProviderController.class,
-        StaffController.class,
-        EndUserController.class,
-        PermissionController.class,
-        HistoryController.class,
-        // User
-        UserService.class,
-        PublicDataService.class,
-        ImportAnalysisService.class,
-        MetricsService.class,
-        // Download
-        Service.class
+      // Subsetting
+      StudiesService.class,
+      InternalClientsService.class,
+      ClearMetadataCacheService.class,
+      // Visualization
+      AppsService.class,
+      FilterAwareMetadataService.class,
+      // Merging
+      ServiceExternal.class,
+      ServiceInternal.class,
+      // Compute
+      JobsController.class,
+      ComputeController.class,
+      ExpirationController.class,
+      InternalJobsController.class,
+      // Access
+      ApproveEligibleStudiesController.class,
+      ProviderController.class,
+      StaffController.class,
+      EndUserController.class,
+      PermissionController.class,
+      HistoryController.class,
+      // User
+      UserService.class,
+      PublicDataService.class,
+      ImportAnalysisService.class,
+      MetricsService.class,
+      // Download
+      Service.class
     };
   }
 }

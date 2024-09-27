@@ -3,7 +3,9 @@ package org.veupathdb.service.eda.common.plugin.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.URL;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,19 +25,27 @@ public class RServeClient {
   private static final Logger LOG = LogManager.getLogger(RServeClient.class);
 
   public static void useRConnection(String rServeUrlStr, ConsumerWithException<RConnection> consumer) {
+    SocketChannel channel = null;
     RConnection c = null;
     boolean connectionEstablished = false;
     try {
+      channel = SocketChannel.open();
       URL rServeUrl = new URL(rServeUrlStr);
       LOG.info("Connecting to RServe at " + rServeUrlStr);
-      c = new RConnection(rServeUrl.getHost(), rServeUrl.getPort());
+      channel.connect(new InetSocketAddress(rServeUrl.getHost(), rServeUrl.getPort()));
+      c = new RConnection(channel.socket());
       LOG.info("Connection established");
       connectionEstablished = true;
       consumer.accept(c);
     }
     catch (Exception e) {
       if (connectionEstablished) {
-        // successfully established connection to R; assume any further error is due to bad data selection and throw 400
+        // successfully established connection to R; assume any further error is
+        // due to bad data selection and throw 400
+        //
+        // NOTE: when the useRConnection method is called from the context of a
+        // compute job, the user will not get a 400, they will instead see their
+        // compute as failed.
         throw new BadRequestException(e.getMessage());
       }
       // otherwise throw 500 with generic message
@@ -46,6 +56,8 @@ public class RServeClient {
       if (c != null) {
         c.close();
       }
+      if (channel != null)
+        try { channel.close(); } catch (IOException e) { LOG.error("failed to close SocketChannel", e); }
     }
   }
 
@@ -103,7 +115,7 @@ public class RServeClient {
         // this is an estimate at best. the allVariables option isnt consistent across vizs
         // but its also the worst case estimate so thats something i guess...
         numPlottableRows = connection.eval("nrow("+ name + ")").asInteger();
-      } else {  
+      } else {
         numPlottableRows = connection.eval("sum(complete.cases("+ name + "))").asInteger();
       }
         LOG.info("R found " + numPlottableRows + " plottable rows in file " + name);

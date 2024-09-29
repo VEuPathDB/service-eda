@@ -1,13 +1,11 @@
 package org.veupathdb.service.eda.data.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ser.std.StdKeySerializers.Dynamic;
-
 import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.WebApplicationException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
+import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -16,6 +14,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
+import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.*;
 import org.veupathdb.service.eda.common.client.EdaComputeClient.ComputeRequestBody;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -27,7 +26,6 @@ import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementValidator;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
-import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.model.BinSpec.RangeType;
@@ -40,12 +38,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
@@ -168,6 +163,21 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     // ask subclass to validate the configuration
     validateVisualizationSpec(_pluginSpec);
 
+    // ask subclass for any additional derived variable specs and incorporate them
+    List<DerivedVariableSpec> supplementalDerivedVariableSpecs = getRequestedDerivedVariableSpecs();
+    if (!supplementalDerivedVariableSpecs.isEmpty()) {
+      _derivedVariableSpecs = new ListBuilder<DerivedVariableSpec>()
+          .addAll(_derivedVariableSpecs)
+          .addAll(supplementalDerivedVariableSpecs)
+          .toList();
+      _mergingClient.getDerivedVariableMetadata(_studyId, _derivedVariableSpecs)
+          .stream()
+          .filter(meta ->
+              // passes predicate if meta is the same as one of the vars in supplemental list
+              supplementalDerivedVariableSpecs.stream().anyMatch(spec -> VariableDef.isSameVariable(spec, meta)))
+          .forEach(_referenceMetadata::incorporateDerivedVariable);
+    }
+
     // get list of data streams required by this subclass
     _requiredStreams = getRequestedStreams(_pluginSpec);
 
@@ -202,6 +212,13 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
       StreamingDataClient.processDataStreams(_requiredStreams, dataStreams, streamProcessor);
       logRequestTime("Data streams processed; response written; request complete");
     };
+  }
+
+  /**
+   * @return any additional derived variables this plugin needs to perform its task (to be overridden when necessary)
+   */
+  protected List<DerivedVariableSpec> getRequestedDerivedVariableSpecs() {
+    return Collections.emptyList();
   }
 
   /**
@@ -352,7 +369,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     PluginUtil util = getUtil();
     ResponseFuture response = _subsettingClient.getVocabByRootEntity(_referenceMetadata, dataSpec, subsetFilters);
 
-    Map<String, InputStream> vocab = new HashMap<String, InputStream>();
+    Map<String, InputStream> vocab = new HashMap<>();
     try {
       InputStream vocabStream = response.getInputStream();
       vocab.put(util.toColNameOrEmpty(dataSpec), vocabStream);
@@ -621,7 +638,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   public String getVoidEvalDynamicDataMetadataListWithStudyDependentVocabs(Map<String, DynamicDataSpec> dataSpecs, String outputEntityId) {
-    List<DynamicDataSpec> dataSpecsFromMap = dataSpecs.values().stream().collect(Collectors.toList());
+    List<DynamicDataSpec> dataSpecsFromMap = new ArrayList<>(dataSpecs.values());
     List<DynamicDataSpec> dataSpecsWithStudyDependentVocabs = getDynamicDataSpecsWithStudyDependentVocabs(outputEntityId, dataSpecsFromMap);
     // for each new data spec with study dependent vocabs, add it to the map
     for (DynamicDataSpec dataSpec : dataSpecsWithStudyDependentVocabs) {
@@ -658,14 +675,12 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   public Map<String, DynamicDataSpec> varMapToDynamicDataMap(Map<String, VariableSpec> varSpecs) {
-    Map<String, DynamicDataSpec> dataSpecs = varSpecs.entrySet().stream()
-     .collect(Collectors.toMap(Map.Entry::getKey, e -> new DynamicDataSpecImpl(e.getValue())));
-
-     return(dataSpecs);
+    return varSpecs.entrySet().stream()
+     .collect(Collectors.toMap(Entry::getKey, e -> new DynamicDataSpecImpl(e.getValue())));
   }
 
 public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String, VariableSpec> varSpecs, String outputEntityId) {
-  List<VariableSpec> varSpecsFromMap = varSpecs.values().stream().collect(Collectors.toList());
+  List<VariableSpec> varSpecsFromMap = new ArrayList<>(varSpecs.values());
   List<VariableSpec> varSpecsWithStudyDependentVocabs = getVariableSpecsWithStudyDependentVocabs(outputEntityId, varSpecsFromMap);
   // for each new varSpec with studyDependentVocabs, add it to varSpecs
   for (VariableSpec varSpec : varSpecsWithStudyDependentVocabs) {
@@ -683,14 +698,12 @@ public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String
   }
 
   public Map<String, DynamicDataSpec> collectionMapToDynamicDataMap(Map<String, CollectionSpec> collectionSpecs) {
-    Map<String, DynamicDataSpec> dataSpecs = collectionSpecs.entrySet().stream()
-     .collect(Collectors.toMap(Map.Entry::getKey, e -> new DynamicDataSpecImpl(e.getValue())));
-
-     return(dataSpecs);
+    return collectionSpecs.entrySet().stream()
+     .collect(Collectors.toMap(Entry::getKey, e -> new DynamicDataSpecImpl(e.getValue())));
   }
 
   public String getVoidEvalCollectionMetadataListWithStudyDependentVocabs(Map<String, CollectionSpec> collectionSpecs, String outputEntityId) {
-    List<CollectionSpec> collectionSpecsFromMap = collectionSpecs.values().stream().collect(Collectors.toList());
+    List<CollectionSpec> collectionSpecsFromMap = new ArrayList<>(collectionSpecs.values());
     List<CollectionSpec> collectionSpecsWithStudyDependentVocabs = getCollectionSpecsWithStudyDependentVocabs(outputEntityId, collectionSpecsFromMap);
    
     for (CollectionSpec collectionSpec : collectionSpecsWithStudyDependentVocabs) {
@@ -730,15 +743,10 @@ public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String
   public boolean validateImputeZeroesRequest(Map<String, DynamicDataSpec> dataSpecs) {
     // TODO keep adding checks as i think of them
 
-    List<DynamicDataSpec> dataSpecsWithStudyDependentVocabs = dataSpecs.entrySet().stream().filter(entry -> hasStudyDependentVocabulary(entry.getValue())).map(Map.Entry::getValue).toList();
-    List<String> entities = dataSpecsWithStudyDependentVocabs.stream().map(data -> getDynamicDataSpecEntityId(data)).toList();
+    List<DynamicDataSpec> dataSpecsWithStudyDependentVocabs = dataSpecs.values().stream().filter(this::hasStudyDependentVocabulary).toList();
+    List<String> entities = dataSpecsWithStudyDependentVocabs.stream().map(this::getDynamicDataSpecEntityId).toList();
 
-    boolean allEqualEntities = entities.isEmpty() || Collections.frequency(entities, entities.get(0)) == entities.size();
-    if (!allEqualEntities) { 
-      return false; 
-    }
-
-    return true;
+    return entities.isEmpty() || Collections.frequency(entities, entities.get(0)) == entities.size();
   }
 
   public String getRStudyVocabsAsString(DynamicDataSpec dataSpec) {
@@ -990,14 +998,14 @@ public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String
     List<DynamicDataSpec> dynamicDataSpecsWithStudyDependentVocabs = new ArrayList<>();
 
     List<VariableSpec> varSpecsToIgnore = dataSpecsToIgnore.stream()
-      .filter(dataSpec -> dataSpec.isVariableSpec())
-      .map(dataSpec -> dataSpec.getVariableSpec())
+      .filter(DynamicDataSpec::isVariableSpec)
+      .map(DynamicDataSpec::getVariableSpec)
       .collect(Collectors.toList());
     List<VariableSpec> varSpecsWithStudyDependentVocabs = getVariableSpecsWithStudyDependentVocabs(entityId, varSpecsToIgnore);
 
     List<CollectionSpec> collectionSpecsToIgnore = dataSpecsToIgnore.stream()
-      .filter(dataSpec -> dataSpec.isCollectionSpec())
-      .map(dataSpec -> dataSpec.getCollectionSpec())
+      .filter(DynamicDataSpec::isCollectionSpec)
+      .map(DynamicDataSpec::getCollectionSpec)
       .collect(Collectors.toList());
     List<CollectionSpec> collectionSpecsWithStudyDependentVocabs = getCollectionSpecsWithStudyDependentVocabs(entityId, collectionSpecsToIgnore);
 
@@ -1042,7 +1050,7 @@ public String getVoidEvalVariableMetadataListWithStudyDependentVocabs(Map<String
 
     List<VariableSpec> varSpecsWithStudyDependentVocabs = getVariableSpecsWithStudyDependentVocabs(outputEntityId);
     VariableSpec weightingVariableSpec = varSpecsWithStudyDependentVocabs.isEmpty() ? null : util.getVariableSpecToImputeZeroesFor(varSpecsWithStudyDependentVocabs.get(0));
-    boolean needToImputeZeroes = weightingVariableSpec == null ? false : varSpecsWithStudyDependentVocabs.stream().anyMatch(var -> areSameVariableSpec(var, weightingVariableSpec));
+    boolean needToImputeZeroes = weightingVariableSpec != null && varSpecsWithStudyDependentVocabs.stream().anyMatch(var -> areSameVariableSpec(var, weightingVariableSpec));
     List<VariableSpec> varSpecsForMainRequest = new ArrayList<>(getVariableSpecsWithStudyDependentVocabs(outputEntityId, plotVariableSpecs));
     
     if (needToImputeZeroes) {

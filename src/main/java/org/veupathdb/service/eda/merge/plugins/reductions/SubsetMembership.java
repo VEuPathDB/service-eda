@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.merge.plugins.reductions;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.merge.core.derivedvars.Reduction;
 import org.veupathdb.service.eda.generated.model.*;
 
@@ -25,7 +24,7 @@ public class SubsetMembership extends Reduction<SubsetMembershipConfig> {
   }
 
   @Override
-  protected void performSupplementalDependedVariableValidation() throws ValidationException {
+  protected void performSupplementalDependedVariableValidation() {
     // nothing to do here
   }
 

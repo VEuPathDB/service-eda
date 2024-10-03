@@ -45,7 +45,7 @@ public class DerivedVariableProvenance {
 
   public org.veupathdb.service.eda.generated.model.DerivedVariableProvenance toAPIType() {
     return also(new DerivedVariableProvenanceImpl(), it -> {
-      it.setCopyDate(Date.from(copyDate.toInstant()));
+      it.setCopyDate(copyDate);
       it.setCopiedFrom(copiedFrom);
     });
   }

@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.differentialabundance;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
@@ -8,7 +7,6 @@ import org.veupathdb.service.eda.generated.model.DifferentialAbundanceComputeCon
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceVolcanoplotPostRequest;
 import org.veupathdb.service.eda.generated.model.EmptyDataPluginSpec;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -43,7 +41,7 @@ public class DifferentialAbundanceVolcanoplotPlugin extends AbstractPlugin<Diffe
   }
 
   @Override
-  protected void validateVisualizationSpec(EmptyDataPluginSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(EmptyDataPluginSpec pluginSpec) {
     // nothing to do here
   }
 
@@ -54,7 +52,7 @@ public class DifferentialAbundanceVolcanoplotPlugin extends AbstractPlugin<Diffe
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     writeComputeStatsResponseToOutput(out);
   }
 }

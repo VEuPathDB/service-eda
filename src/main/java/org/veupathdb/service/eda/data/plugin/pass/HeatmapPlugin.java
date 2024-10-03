@@ -9,7 +9,6 @@ import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -48,23 +47,23 @@ public class HeatmapPlugin extends AbstractEmptyComputePlugin<HeatmapPostRequest
     return new ConstraintSpec()
       .dependencyOrder(List.of("zAxisVariable"), List.of("yAxisVariable"), List.of("xAxisVariable"), List.of("facetVariable"))
       .pattern()
-        .element("zAxisVariable")
-          .types(APIVariableType.NUMBER, APIVariableType.INTEGER)
-          .description("Variable must be a number.")
-        .element("yAxisVariable")
-          .maxValues(1000)
-          .description("Variable must have 1000 or fewer unique values and be of the same or a parent entity as the Z-axis variable.")
-        .element("xAxisVariable")
-          .maxValues(1000)
-          .description("Variable must have 1000 or fewer unique values and be of the same or a parent entity as the Y-axis variable.")
-        .element("facetVariable")
-          .required(false)
-          .maxVars(2)
-          .maxValues(10)
-          .description("Variable(s) must have 10 or fewer unique values and be of the same or a parent entity as the X-axis variable.")
+      .element("zAxisVariable")
+      .types(APIVariableType.NUMBER, APIVariableType.INTEGER)
+      .description("Variable must be a number.")
+      .element("yAxisVariable")
+      .maxValues(1000)
+      .description("Variable must have 1000 or fewer unique values and be of the same or a parent entity as the Z-axis variable.")
+      .element("xAxisVariable")
+      .maxValues(1000)
+      .description("Variable must have 1000 or fewer unique values and be of the same or a parent entity as the Y-axis variable.")
+      .element("facetVariable")
+      .required(false)
+      .maxVars(2)
+      .maxValues(10)
+      .description("Variable(s) must have 10 or fewer unique values and be of the same or a parent entity as the X-axis variable.")
       .done();
   }
-  
+
   @Override
   protected void validateVisualizationSpec(HeatmapSpec pluginSpec) throws ValidationException {
     validateInputs(new DataElementSet()
@@ -90,7 +89,7 @@ public class HeatmapPlugin extends AbstractEmptyComputePlugin<HeatmapPostRequest
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       PluginUtil util = getUtil();
       HeatmapSpec spec = getPluginSpec();
@@ -101,11 +100,11 @@ public class HeatmapPlugin extends AbstractEmptyComputePlugin<HeatmapPostRequest
       varMap.put("facet1", util.getVariableSpecFromList(spec.getFacetVariable(), 0));
       varMap.put("facet2", util.getVariableSpecFromList(spec.getFacetVariable(), 1));
       connection.voidEval(util.getVoidEvalFreadCommand(DEFAULT_SINGLE_STREAM_NAME,
-          spec.getXAxisVariable(),
-          spec.getYAxisVariable(),
-          spec.getZAxisVariable(),
-          util.getVariableSpecFromList(spec.getFacetVariable(), 0),
-          util.getVariableSpecFromList(spec.getFacetVariable(), 1)));
+        spec.getXAxisVariable(),
+        spec.getYAxisVariable(),
+        spec.getZAxisVariable(),
+        util.getVariableSpecFromList(spec.getFacetVariable(), 0),
+        util.getVariableSpecFromList(spec.getFacetVariable(), 1)));
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
       String cmd = "plot.data::heatmap(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" + spec.getValueSpec().toString().toLowerCase() + "')";
       streamResult(connection, cmd, out);

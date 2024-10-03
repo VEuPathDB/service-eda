@@ -16,15 +16,15 @@ public class ValidationUtils {
   public static void validateCollectionMembers(PluginUtil pluginUtil, CollectionSpec collectionSpec, List<VariableSpec> members) throws ValidationException {
     final List<VariableDef> allMembers = pluginUtil.getCollectionMembers(collectionSpec);
     final Set<String> selectedMemberIds = members.stream()
-        .map(VariableSpec::getVariableId)
-        .collect(Collectors.toSet());
+      .map(VariableSpec::getVariableId)
+      .collect(Collectors.toSet());
     final Set<String> allMemberIds = allMembers.stream()
-        .map(VariableDef::getVariableId)
-        .collect(Collectors.toSet());
+      .map(VariableDef::getVariableId)
+      .collect(Collectors.toSet());
     final Set<String> invalidMemberIds = Sets.difference(selectedMemberIds, allMemberIds);
     if (!invalidMemberIds.isEmpty()) {
       throw new ValidationException("Specified member variables must belong to the specified collection. " +
-          "The following were not found in collection: " + invalidMemberIds);
+        "The following were not found in collection: " + invalidMemberIds);
     }
   }
 }

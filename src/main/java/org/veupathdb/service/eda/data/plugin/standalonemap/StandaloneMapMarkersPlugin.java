@@ -7,10 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.DelimitedDataParser;
-import org.gusdb.fgputil.geo.GeographyUtil.GeographicPoint;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -115,9 +113,9 @@ public class StandaloneMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
     int lonIndex     = indexOf.apply(spec.getLongitudeVariable());
     Optional<OverlaySpecification> overlayConfig = Optional.ofNullable(_overlaySpecification);
     Integer overlayIndex = overlayConfig
-        .map(OverlaySpecification::getOverlayVariable)
-        .map(indexOf)
-        .orElse(null);
+      .map(OverlaySpecification::getOverlayVariable)
+      .map(indexOf)
+      .orElse(null);
 
     // get map markers config
     String valueSpec = spec.getValueSpec().getValue();
@@ -127,10 +125,10 @@ public class StandaloneMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
     MapMarkerRowProcessor<Map<String, QualitativeOverlayAggregator.CategoricalOverlayData>> processor = new MapMarkerRowProcessor<>(geoVarIndex, latIndex, lonIndex);
 
     Supplier<MarkerAggregator<Map<String, QualitativeOverlayAggregator.CategoricalOverlayData>>> aggregatorSupplier = () ->
-        new QualitativeOverlayAggregator(overlayConfig.map(OverlaySpecification::getOverlayRecoder).orElse(null), overlayIndex);
+      new QualitativeOverlayAggregator(overlayConfig.map(OverlaySpecification::getOverlayRecoder).orElse(null), overlayIndex);
 
     Map<String, MarkerData<Map<String, QualitativeOverlayAggregator.CategoricalOverlayData>>> aggregator = processor.process(
-        reader, parser, viewport, aggregatorSupplier);
+      reader, parser, viewport, aggregatorSupplier);
 
     List<StandaloneMapElementInfo> output = new ArrayList<>();
     for (String key : aggregator.keySet()) {
@@ -150,13 +148,13 @@ public class StandaloneMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
 
   private List<LegacyLabeledRangeWithCountAndValue> convertAggregator(MarkerAggregator<Map<String, QualitativeOverlayAggregator.CategoricalOverlayData>> aggregator, String valueSpec) {
     return aggregator.finish().entrySet().stream()
-        .map(entry -> {
-          LegacyLabeledRangeWithCountAndValue bin = new LegacyLabeledRangeWithCountAndValueImpl();
-          bin.setValue(valueSpec.equals(ValueSpec.PROPORTION.getValue()) ? entry.getValue().getProportion() : entry.getValue().getCount());
-          bin.setBinLabel(entry.getKey());
-          bin.setCount(entry.getValue().getCount());
-          return bin;
-        })
-        .collect(Collectors.toList());
+      .map(entry -> {
+        LegacyLabeledRangeWithCountAndValue bin = new LegacyLabeledRangeWithCountAndValueImpl();
+        bin.setValue(valueSpec.equals(ValueSpec.PROPORTION.getValue()) ? entry.getValue().proportion() : entry.getValue().count());
+        bin.setBinLabel(entry.getKey());
+        bin.setCount(entry.getValue().count());
+        return bin;
+      })
+      .toList();
   }
 }

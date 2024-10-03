@@ -31,8 +31,8 @@ public class DerivedVariableFactory {
   private final List<DerivedVariableSpec> _incomingSpecs;
 
   // maps from owning entity to each derived variable type
-  private final Map<String, List<Transform>> _transforms = new HashMap<>();
-  private final Map<String, List<Reduction>> _reductions = new HashMap<>();
+  private final Map<String, List<Transform<?>>> _transforms = new HashMap<>();
+  private final Map<String, List<Reduction<?>>> _reductions = new HashMap<>();
 
   private final List<DerivedVariable> _allDerivedVariablesOrdered;
 
@@ -99,7 +99,7 @@ public class DerivedVariableFactory {
   }
 
   @SafeVarargs
-  public static <T extends AbstractDerivedVariable<?>> PluginMap<T> pluginsOf(Class<T> subtype, Class<? extends T>... implementations) {
+  public static <T extends AbstractDerivedVariable<?>> PluginMap<T> pluginsOf(Class<? extends T>... implementations) {
     PluginMap<T> map = new PluginMap<>();
     for (Class<? extends T> plugin : implementations) {
       Supplier<T> supplier = () -> wrapException(() -> plugin.getConstructor().newInstance());
@@ -124,23 +124,23 @@ public class DerivedVariableFactory {
     return _allDerivedVariablesOrdered;
   }
 
-  public Optional<Transform> getTransform(VariableDef var) {
+  public Optional<Transform<?>> getTransform(VariableDef var) {
     return getTransforms(_metadata.getEntity(var.getEntityId()).orElseThrow()).stream()
         .filter(t -> VariableDef.isSameVariable(t, var))
         .findAny();
   }
 
-  public Optional<Reduction> getReduction(VariableDef var) {
+  public Optional<Reduction<?>> getReduction(VariableDef var) {
     return getReductions(_metadata.getEntity(var.getEntityId()).orElseThrow()).stream()
         .filter(t -> VariableDef.isSameVariable(t, var))
         .findAny();
   }
 
-  public List<Transform> getTransforms(EntityDef targetEntity) {
+  public List<Transform<?>> getTransforms(EntityDef targetEntity) {
     return _transforms.computeIfAbsent(targetEntity.getId(), entityId -> new ArrayList<>());
   }
 
-  public List<Reduction> getReductions(EntityDef targetEntity) {
+  public List<Reduction<?>> getReductions(EntityDef targetEntity) {
     return _reductions.computeIfAbsent(targetEntity.getId(), entityId -> new ArrayList<>());
   }
 
@@ -151,7 +151,7 @@ public class DerivedVariableFactory {
   private static class DerivedVariableNode implements DependencyElement<DerivedVariableNode> {
 
     public final DerivedVariable var;
-    public Set<DerivedVariableNode> dependencies;
+    public final Set<DerivedVariableNode> dependencies;
 
     public DerivedVariableNode(DerivedVariable var) {
       this.var = var;

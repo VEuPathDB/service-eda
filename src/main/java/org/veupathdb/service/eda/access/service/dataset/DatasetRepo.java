@@ -33,7 +33,7 @@ public final class DatasetRepo
       try (
         final var cn = QueryUtil.appDbConnection();
         final var stmt = cn.createStatement();
-        final var rs = QueryUtil.executeQueryLogged(stmt, sql);
+        final var rs = QueryUtil.executeQueryLogged(stmt, sql)
       ) {
         List<DatasetProps> datasetProps = new ArrayList<>();
         while (rs.next()) {
@@ -82,6 +82,7 @@ public final class DatasetRepo
       }
     }
 
+    @SuppressWarnings("resource")
     public Optional<Dataset> selectDataset(final String datasetId) throws Exception {
       return new BasicPreparedReadQuery<>(
         SQL.Select.Datasets.ById,

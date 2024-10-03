@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.selfcorrelation;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.util.RServeClient;
@@ -10,7 +9,6 @@ import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -20,7 +18,7 @@ import java.util.Map;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
 
 public class SelfCorrelationUnipartitenetworkPlugin extends AbstractPlugin<SelfCorrelationUnipartitenetworkPostRequest, CorrelationNetworkSpec, SelfCorrelationConfig> {
-  
+
   @Override
   public String getDisplayName() {
     return "Network";
@@ -47,7 +45,7 @@ public class SelfCorrelationUnipartitenetworkPlugin extends AbstractPlugin<SelfC
   }
 
   @Override
-  protected void validateVisualizationSpec(CorrelationNetworkSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(CorrelationNetworkSpec pluginSpec) {
     // nothing to do here
   }
 
@@ -58,7 +56,7 @@ public class SelfCorrelationUnipartitenetworkPlugin extends AbstractPlugin<SelfC
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     CorrelationNetworkSpec spec = getPluginSpec();
     String layout = spec.getLayout() != null ? ", layout = '" + spec.getLayout().getValue() + "'" : "";
     ByteArrayOutputStream statsBytes = new ByteArrayOutputStream();
@@ -76,13 +74,13 @@ public class SelfCorrelationUnipartitenetworkPlugin extends AbstractPlugin<SelfC
       connection.voidEval("names(edgeList) <- c('source', 'target', 'correlationCoef', 'pValue')");
       connection.voidEval("edgeList$pValue <- as.numeric(edgeList$pValue)");
       connection.voidEval("edgeList$correlationCoef <- as.numeric(edgeList$correlationCoef)");
-      connection.voidEval("net <- plot.data::CorrelationNetwork(edgeList" + 
+      connection.voidEval("net <- plot.data::CorrelationNetwork(edgeList" +
           ", correlationCoefThreshold = as.numeric(" + correlationCoefThreshold + ")" +
           ", pValueThreshold = as.numeric(" + pValueThreshold + ")" +
           layout + ")");
 
       String command = "plot.data::writeNetworkJSON(net)";
       RServeClient.streamResult(connection, command, out);
-    }); 
+    });
   }
 }

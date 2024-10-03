@@ -28,52 +28,54 @@ public class DataRanges extends Tuples.TwoTuple<DataRange, DataRange> {
   }
 
   public static Optional<DataRanges> getDataRanges(APICollection obj) {
-    return obj.getDataShape() != APIVariableDataShape.CONTINUOUS ? Optional.empty() :
-      switch (obj.getType()) {
+    return obj.getDataShape() != APIVariableDataShape.CONTINUOUS
+      ? Optional.empty()
+      : switch (obj.getType()) {
         case NUMBER -> getNumberRanges(((APINumberCollection)obj).getDistributionDefaults());
         case INTEGER -> getIntegerRanges(((APIIntegerCollection)obj).getDistributionDefaults());
         case DATE -> getDateRanges(((APIDateCollection)obj).getDistributionDefaults());
         default -> Optional.empty();
-    };
+      };
   }
 
   public static Optional<DataRanges> getDataRanges(APIVariableWithValues obj) {
-    return obj.getDataShape() != APIVariableDataShape.CONTINUOUS ? Optional.empty() :
-      switch(obj.getType()) {
+    return obj.getDataShape() != APIVariableDataShape.CONTINUOUS
+      ? Optional.empty()
+      : switch(obj.getType()) {
         case NUMBER -> getNumberRanges(((APINumberVariable)obj).getDistributionDefaults());
         case INTEGER -> getIntegerRanges(((APIIntegerVariable)obj).getDistributionDefaults());
         case DATE -> getDateRanges(((APIDateVariable)obj).getDistributionDefaults());
         default -> Optional.empty();
-    };
+      };
   }
 
   private static Optional<DataRanges> getDateRanges(APIDateDistributionDefaults dist) {
     return Optional.of(new DataRanges(
-        new DataRange(
-            dist.getRangeMin(),
-            dist.getRangeMax()),
-        new DataRange(
-            Optional.ofNullable(dist.getDisplayRangeMin()).orElse(dist.getRangeMin()),
-            Optional.ofNullable(dist.getDisplayRangeMax()).orElse(dist.getRangeMax()))));
+      new DataRange(
+        dist.getRangeMin(),
+        dist.getRangeMax()),
+      new DataRange(
+        Optional.ofNullable(dist.getDisplayRangeMin()).orElse(dist.getRangeMin()),
+        Optional.ofNullable(dist.getDisplayRangeMax()).orElse(dist.getRangeMax()))));
   }
 
   private static Optional<DataRanges> getIntegerRanges(APIIntegerDistributionDefaults dist) {
     return Optional.of(new DataRanges(
-        new DataRange(
-            dist.getRangeMin().toString(),
-            dist.getRangeMax().toString()),
-        new DataRange(
-            Optional.ofNullable(dist.getDisplayRangeMin()).orElse(dist.getRangeMin()).toString(),
-            Optional.ofNullable(dist.getDisplayRangeMax()).orElse(dist.getRangeMax()).toString())));
+      new DataRange(
+        dist.getRangeMin().toString(),
+        dist.getRangeMax().toString()),
+      new DataRange(
+        Optional.ofNullable(dist.getDisplayRangeMin()).orElse(dist.getRangeMin()).toString(),
+        Optional.ofNullable(dist.getDisplayRangeMax()).orElse(dist.getRangeMax()).toString())));
   }
 
   private static Optional<DataRanges> getNumberRanges(APINumberDistributionDefaults dist) {
     return Optional.of(new DataRanges(
-        new DataRange(
-            dist.getRangeMin().toString(),
-            dist.getRangeMax().toString()),
-        new DataRange(
-            Optional.ofNullable(dist.getDisplayRangeMin()).orElse(dist.getRangeMin()).toString(),
-            Optional.ofNullable(dist.getDisplayRangeMax()).orElse(dist.getRangeMax()).toString())));
+      new DataRange(
+        dist.getRangeMin().toString(),
+        dist.getRangeMax().toString()),
+      new DataRange(
+        Optional.ofNullable(dist.getDisplayRangeMin()).orElse(dist.getRangeMin()).toString(),
+        Optional.ofNullable(dist.getDisplayRangeMax()).orElse(dist.getRangeMax()).toString())));
   }
 }

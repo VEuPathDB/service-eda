@@ -60,7 +60,7 @@ public class ProviderController implements DatasetProviders
     if (!userIsOwner(currentUser.getUserId()) && !userIsManager(currentUser.getUserId(), provider.getDatasetId()))
       throw new ForbiddenException();
 
-    provider.setManager(entity.get(0).getValue());
+    provider.setManager(entity.getFirst().getValue());
     updateProvider(provider);
 
     return PatchDatasetProvidersByProviderIdResponse.respond204();

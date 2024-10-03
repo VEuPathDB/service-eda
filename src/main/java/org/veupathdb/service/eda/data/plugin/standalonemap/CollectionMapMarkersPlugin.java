@@ -1,7 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
@@ -25,14 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.FormatUtil.TAB;
 import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
 
 public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<StandaloneCollectionMapMarkerPostRequest, StandaloneCollectionMapMarkerSpec> {
-  private static final Logger LOG = LogManager.getLogger(CollectionMapMarkersPlugin.class);
-
   private QuantitativeAggregateConfiguration _aggregateConfig;
 
   @Override
@@ -43,15 +38,15 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
   @Override
   public ConstraintSpec getConstraintSpec() {
     return new ConstraintSpec()
-        .dependencyOrder(List.of("geoAggregateVariable", "latitudeVariable", "longitudeVariable"))
-        .pattern()
-          .element("geoAggregateVariable")
-            .types(APIVariableType.STRING)
-          .element("latitudeVariable")
-            .types(APIVariableType.NUMBER)
-          .element("longitudeVariable")
-            .types(APIVariableType.NUMBER)
-        .done();
+      .dependencyOrder(List.of("geoAggregateVariable", "latitudeVariable", "longitudeVariable"))
+      .pattern()
+        .element("geoAggregateVariable")
+          .types(APIVariableType.STRING)
+        .element("latitudeVariable")
+          .types(APIVariableType.NUMBER)
+        .element("longitudeVariable")
+          .types(APIVariableType.NUMBER)
+      .done();
   }
 
   @Override
@@ -70,9 +65,9 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
     if (pluginSpec.getAggregatorConfig() != null) {
       try {
         _aggregateConfig = new QuantitativeAggregateConfiguration(pluginSpec.getAggregatorConfig(),
-            getUtil().getCollectionDataShape(collection),
-            getUtil().getCollectionType(collection),
-            () -> getUtil().getCollectionVocabulary(collection));
+          getUtil().getCollectionDataShape(collection),
+          getUtil().getCollectionType(collection),
+          () -> getUtil().getCollectionVocabulary(collection));
       } catch (IllegalArgumentException e) {
         throw new ValidationException(e.getMessage());
       }
@@ -83,11 +78,11 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
   protected List<StreamSpec> getRequestedStreams(StandaloneCollectionMapMarkerSpec pluginSpec) {
     StreamSpec streamSpec = new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, pluginSpec.getOutputEntityId());
     List<VariableSpec> collectionMembers = PluginUtil.variablesFromCollectionMembers(pluginSpec.getCollectionOverlay().getCollection(),
-        pluginSpec.getCollectionOverlay().getSelectedMembers());
+      pluginSpec.getCollectionOverlay().getSelectedMembers());
     streamSpec.addVars(collectionMembers)
-        .addVar(pluginSpec.getGeoAggregateVariable())
-        .addVar(pluginSpec.getLatitudeVariable())
-        .addVar(pluginSpec.getLongitudeVariable());
+      .addVar(pluginSpec.getGeoAggregateVariable())
+      .addVar(pluginSpec.getLatitudeVariable())
+      .addVar(pluginSpec.getLongitudeVariable());
     return List.of(streamSpec);
   }
 
@@ -103,15 +98,15 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
 
     Function<Integer, String> indexToVarId = index -> parser.getColumnNames().get(index);
     List<VariableSpec> collectionMembers = PluginUtil.variablesFromCollectionMembers(spec.getCollectionOverlay().getCollection(),
-        spec.getCollectionOverlay().getSelectedMembers());
+      spec.getCollectionOverlay().getSelectedMembers());
 
     List<String> memberVarColNames = collectionMembers.stream()
-        .map(getUtil()::toColNameOrEmpty)
-        .toList();
+      .map(getUtil()::toColNameOrEmpty)
+      .toList();
 
     // For each marker, aggregate all data into a Map of collection member ID to stats containing averages and confidence intervals
     final Supplier<MarkerAggregator<Map<String, AveragesWithConfidence>>> aggSupplier = () -> new CollectionAveragesWithConfidenceAggregator(indexToVarId,
-        indexOf, memberVarColNames, _aggregateConfig);
+      indexOf, memberVarColNames, _aggregateConfig);
 
     // Establish column header indexes
     int geoVarIndex = indexOf.apply(getUtil().toColNameOrEmpty(spec.getGeoAggregateVariable()));
@@ -125,15 +120,15 @@ public class CollectionMapMarkersPlugin extends AbstractEmptyComputePlugin<Stand
     // Construct response, serialize and flush output
     final StandaloneCollectionMapMarkerPostResponse response = new StandaloneCollectionMapMarkerPostResponseImpl();
     response.setMarkers(markerDataById.entrySet().stream()
-        .filter(marker -> marker.getValue().getCount() != 0)
-        .map(entry -> {
-          final CollectionMapMarkerElement ele = new CollectionMapMarkerElementImpl();
-          ApiConverter.populateBaseMarkerData(entry.getKey(), ele, entry.getValue());
-          ele.setOverlayValues(entry.getValue().getMarkerAggregator().finish().entrySet().stream()
-              .map(markerAggregate -> translateToOutput(markerAggregate.getValue(), markerAggregate.getKey()))
-              .collect(Collectors.toList()));
-          return ele;
-    }).collect(Collectors.toList()));
+      .filter(marker -> marker.getValue().getCount() != 0)
+      .map(entry -> {
+        final CollectionMapMarkerElement ele = new CollectionMapMarkerElementImpl();
+        ApiConverter.populateBaseMarkerData(entry.getKey(), ele, entry.getValue());
+        ele.setOverlayValues(entry.getValue().getMarkerAggregator().finish().entrySet().stream()
+          .map(markerAggregate -> translateToOutput(markerAggregate.getValue(), markerAggregate.getKey()))
+          .toList());
+        return ele;
+    }).toList());
 
     JsonUtil.Jackson.writeValue(out, response);
     out.flush();

@@ -1,7 +1,5 @@
 package org.veupathdb.service.eda.merge.core.stream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.iterator.CloseableIterator;
@@ -17,7 +15,6 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 
-import java.io.InputStream;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Predicate;
@@ -26,31 +23,29 @@ import java.util.stream.Collectors;
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
- * Child class of EntityStream which handles the generation and application of inherited and derived variables.  It is
- * through this class that the entity stream tree's structure is built; i.e. each instance is a node in the tree, and
- * data flows through these nodes from the leaves to the root, which is a special subclass instance
- * (RootStreamingEntityNode).
+ * Child class of EntityStream which handles the generation and application of
+ * inherited and derived variables.  It is through this class that the entity
+ * stream tree's structure is built; i.e. each instance is a node in the tree,
+ * and data flows through these nodes from the leaves to the root, which is a
+ * special subclass instance (RootStreamingEntityNode).
  */
 public class StreamingEntityNode extends EntityStream {
-
-  private static final Logger LOG = LogManager.getLogger(StreamingEntityNode.class);
-
   protected static final int INITIAL_DEPENDENCY_DEPTH = 0;
   private static final int MAX_ENTITY_DEPENDENCY_DEPTH = 15;
 
   private final String _entityIdColName;
   private final List<StreamingEntityNode> _ancestorStreams = new ArrayList<>();
-  private final List<TwoTuple<Reduction,StreamingEntityNode>> _reductionStreams = new ArrayList<>();
-  private final List<Transform> _orderedTransforms = new ArrayList<>();
+  private final List<TwoTuple<Reduction<?>, StreamingEntityNode>> _reductionStreams = new ArrayList<>();
+  private final List<Transform<?>> _orderedTransforms = new ArrayList<>();
   private final DerivedVariableFactory _derivedVariableFactory;
 
   public StreamingEntityNode(
-      EntityDef targetEntity,
-      List<VariableDef> outputVarDefs,
-      List<APIFilter> subsetFilters,
-      ReferenceMetadata metadata,
-      DerivedVariableFactory derivedVariableFactory,
-      int entityDependencyDepth
+    EntityDef targetEntity,
+    List<VariableDef> outputVarDefs,
+    List<APIFilter> subsetFilters,
+    ReferenceMetadata metadata,
+    DerivedVariableFactory derivedVariableFactory,
+    int entityDependencyDepth
   ) throws ValidationException {
     super(metadata);
     _derivedVariableFactory = derivedVariableFactory;
@@ -65,7 +60,7 @@ public class StreamingEntityNode extends EntityStream {
 
     // organize vars needed from ancestor entities; will use to create ancestor child nodes
     Map<String, List<VariableDef>> ancestorEntityOutputVars = Functions.getMapFromKeys(
-        metadata.getAncestors(targetEntity).stream().map(EntityDef::getId).toList(), k -> new ArrayList<>());
+      metadata.getAncestors(targetEntity).stream().map(EntityDef::getId).toList(), k -> new ArrayList<>());
 
     // create base stream spec for this node with passed filters (will add this entity's required native vars below)
     StreamSpec streamSpec = new StreamSpec(UUID.randomUUID().toString(), targetEntity.getId()).setFiltersOverride(subsetFilters);
@@ -94,21 +89,21 @@ public class StreamingEntityNode extends EntityStream {
         }
         else if (var.getSource() == VariableSource.DERIVED_TRANSFORM) {
           // find transform derived variable instance
-          Transform transform = _derivedVariableFactory.getTransform(var).orElseThrow();
+          Transform<?> transform = _derivedVariableFactory.getTransform(var).orElseThrow();
           // any vars the transform needs can be added to those needed by this entity overall
           varsToConsider.addAll(metadata.toVariableDefs(transform.getRequiredInputVars()));
         }
         else if (var.getSource() == VariableSource.DERIVED_REDUCTION) {
           // find reduction derived variable instance
-          Reduction reduction = _derivedVariableFactory.getReduction(var).orElseThrow();
+          Reduction<?> reduction = _derivedVariableFactory.getReduction(var).orElseThrow();
           StreamSpec reductionStreamSpec = reduction.getInputStreamSpec();
           _reductionStreams.add(new TwoTuple<>(reduction, new StreamingEntityNode(
-              _metadata.getEntity(reductionStreamSpec.getEntityId()).orElseThrow(),
-              _metadata.toVariableDefs(reductionStreamSpec),
-              reductionStreamSpec.getFiltersOverride().orElse(subsetFilters),
-              metadata,
-              _derivedVariableFactory,
-              entityDependencyDepth + 1
+            _metadata.getEntity(reductionStreamSpec.getEntityId()).orElseThrow(),
+            _metadata.toVariableDefs(reductionStreamSpec),
+            reductionStreamSpec.getFiltersOverride().orElse(subsetFilters),
+            metadata,
+            _derivedVariableFactory,
+            entityDependencyDepth + 1
           )));
         }
         else {
@@ -135,12 +130,12 @@ public class StreamingEntityNode extends EntityStream {
       if (!ancestor.getValue().isEmpty()) {
         // at least one needed var; add entity stream
         _ancestorStreams.add(new StreamingEntityNode(
-            _metadata.getEntity(ancestor.getKey()).orElseThrow(),
-            ancestor.getValue(),
-            subsetFilters,
-            metadata,
-            _derivedVariableFactory,
-            entityDependencyDepth + 1
+          _metadata.getEntity(ancestor.getKey()).orElseThrow(),
+          ancestor.getValue(),
+          subsetFilters,
+          metadata,
+          _derivedVariableFactory,
+          entityDependencyDepth + 1
         ));
       }
     }
@@ -148,9 +143,9 @@ public class StreamingEntityNode extends EntityStream {
     // create a dependency-ordered list of transforms (most dependent vars last)
     for (DerivedVariable derivedVar : _derivedVariableFactory.getAllDerivedVars()) {
       if (derivedVar instanceof Transform                                           // is a transform
-          && derivedVar.getEntity().getId().equals(derivedVar.getEntityId())        // assigned to this entity
-          && varsAlreadyHandled.contains(VariableDef.toDotNotation(derivedVar))) {  // that has been directly or indirectly requested
-        _orderedTransforms.add((Transform)derivedVar);
+        && derivedVar.getEntity().getId().equals(derivedVar.getEntityId())        // assigned to this entity
+        && varsAlreadyHandled.contains(VariableDef.toDotNotation(derivedVar))) {  // that has been directly or indirectly requested
+        _orderedTransforms.add((Transform<?>)derivedVar);
       }
     }
   }
@@ -165,8 +160,8 @@ public class StreamingEntityNode extends EntityStream {
 
   protected boolean requiresNoDataManipulation() {
     return _ancestorStreams.isEmpty()
-        && _reductionStreams.isEmpty()
-        && _derivedVariableFactory.getAllDerivedVars().isEmpty();
+      && _reductionStreams.isEmpty()
+      && _derivedVariableFactory.getAllDerivedVars().isEmpty();
   }
 
   @Override
@@ -190,7 +185,7 @@ public class StreamingEntityNode extends EntityStream {
     applyReductions(row);
 
     // apply transforms to this row
-    for (Transform transform : _orderedTransforms) {
+    for (Transform<?> transform : _orderedTransforms) {
       row.put(transform.getColumnName(), transform.getValue(row));
     }
 
@@ -214,7 +209,7 @@ public class StreamingEntityNode extends EntityStream {
       // Still empty and ancestor stream is exhausted.  We expect every target entity row to
       // have a matching row in each ancestor entity's stream.  Not having one is a fatal error.
       throw new IllegalStateException("Ancestor stream '" + ancestorStream.getStreamSpec().getEntityId() +
-          "' could not provide a row matching '" + ancestorIdColName + "' with value '" + row.get(ancestorIdColName) + "'.");
+        "' could not provide a row matching '" + ancestorIdColName + "' with value '" + row.get(ancestorIdColName) + "'.");
     }
 
     row.putAll(ancestorRow.get());
@@ -223,16 +218,16 @@ public class StreamingEntityNode extends EntityStream {
   private void applyReductions(Map<String, String> row) {
 
     // predicate tells the descendant streams how to match our row's ID
-    Predicate<Map<String,String>> isMatch = r -> r.get(_entityIdColName).equals(row.get(_entityIdColName));
+    Predicate<Map<String, String>> isMatch = r -> r.get(_entityIdColName).equals(row.get(_entityIdColName));
 
     // pull reduction derived vars from each descendant stream
-    for (TwoTuple<Reduction,StreamingEntityNode> reduction : _reductionStreams) {
+    for (TwoTuple<Reduction<?>, StreamingEntityNode> reduction : _reductionStreams) {
 
       // create a reducer for this row
       Reduction.Reducer reducer = reduction.getFirst().createReducer();
 
       // read rows until no longer matching this entity's ID column
-      Optional<Map<String,String>> descendantRow = reduction.getSecond().getNextRowIf(isMatch);
+      Optional<Map<String, String>> descendantRow = reduction.getSecond().getNextRowIf(isMatch);
       while (descendantRow.isPresent()) {
 
         // apply this row to the reducer
@@ -255,23 +250,23 @@ public class StreamingEntityNode extends EntityStream {
   public String toString(int indentSize) {
     String indent = " ".repeat(indentSize);
     return indent + "{" + NL +
-        indent + "  entityIdColName: " + _entityIdColName + NL +
-        indent + "  entityStreamProps: " + NL +
-        super.toString(indentSize + 2) + NL +
-        indent + "  ancestorStreams: [" + NL +
-        _ancestorStreams.stream().map(s -> s.toString(indentSize + 2) + NL).collect(Collectors.joining()) +
-        indent + "  ]" + NL +
-        indent + "  transforms: [" + NL +
-        _orderedTransforms.stream().map(t -> indent + "  " + t + NL).collect(Collectors.joining()) +
-        indent + "  ]" + NL +
-        indent + "  reductions: [" + NL +
-        _reductionStreams.stream().map(pair ->
-            indent + "  {" + NL +
-            indent + "    reduction: " + pair.getFirst() + NL +
-            indent + "    stream:" + NL +
-            indent + pair.getSecond().toString(indentSize + 4) + NL +
-            indent + "  }" + NL).collect(Collectors.joining()) +
-        indent + "  ]" + NL +
-        indent + "}";
+      indent + "  entityIdColName: " + _entityIdColName + NL +
+      indent + "  entityStreamProps: " + NL +
+      super.toString(indentSize + 2) + NL +
+      indent + "  ancestorStreams: [" + NL +
+      _ancestorStreams.stream().map(s -> s.toString(indentSize + 2) + NL).collect(Collectors.joining()) +
+      indent + "  ]" + NL +
+      indent + "  transforms: [" + NL +
+      _orderedTransforms.stream().map(t -> indent + "  " + t + NL).collect(Collectors.joining()) +
+      indent + "  ]" + NL +
+      indent + "  reductions: [" + NL +
+      _reductionStreams.stream().map(pair ->
+        indent + "  {" + NL +
+          indent + "    reduction: " + pair.getFirst() + NL +
+          indent + "    stream:" + NL +
+          indent + pair.getSecond().toString(indentSize + 4) + NL +
+          indent + "  }" + NL).collect(Collectors.joining()) +
+      indent + "  ]" + NL +
+      indent + "}";
   }
 }

@@ -5,8 +5,8 @@ import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.WebApplicationException;
 
-import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
+import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.service.eda.generated.model.ApprovalStatus;

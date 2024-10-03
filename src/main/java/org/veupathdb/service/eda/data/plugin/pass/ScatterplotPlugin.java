@@ -12,7 +12,6 @@ import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -27,7 +26,7 @@ import static org.veupathdb.service.eda.data.metadata.AppsMetadata.CLINEPI_PROJE
 public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPostRequest, ScatterplotSpec> {
 
   private static final Logger LOG = LogManager.getLogger(ScatterplotPlugin.class);
-  
+
   @Override
   public String getDisplayName() {
     return "Scatter plot";
@@ -54,7 +53,7 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
       .dependencyOrder(List.of("yAxisVariable"), List.of("xAxisVariable", "overlayVariable", "facetVariable"))
       .pattern()
         .element("yAxisVariable")
-          .types(APIVariableType.NUMBER, APIVariableType.DATE, APIVariableType.INTEGER) 
+          .types(APIVariableType.NUMBER, APIVariableType.DATE, APIVariableType.INTEGER)
           .description("Variable must be a number or date.")
         .element("xAxisVariable")
           .types(APIVariableType.NUMBER, APIVariableType.DATE, APIVariableType.INTEGER)
@@ -70,13 +69,13 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
           .description("Variable(s) must have 10 or fewer unique values and be of the same or a parent entity as the Overlay variable.")
       .pattern()
         .element("yAxisVariable")
-          .types(APIVariableType.NUMBER, APIVariableType.DATE, APIVariableType.INTEGER) 
+          .types(APIVariableType.NUMBER, APIVariableType.DATE, APIVariableType.INTEGER)
           .description("Variable must be a number or date.")
         .element("xAxisVariable")
           .types(APIVariableType.NUMBER, APIVariableType.DATE, APIVariableType.INTEGER)
           .description("Variable must be a number or date and be of the same or a parent entity as the Y-axis variable.")
         .element("overlayVariable")
-          .types(APIVariableType.NUMBER, APIVariableType.INTEGER) 
+          .types(APIVariableType.NUMBER, APIVariableType.INTEGER)
           .description("Variable must be a number, or have 8 or fewer values, and be of the same or a parent entity as the X-axis variable.")
         .element("facetVariable")
           .required(false)
@@ -85,7 +84,7 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
           .description("Variable(s) must have 10 or fewer unique values and be of the same or a parent entity as the Overlay variable.")
       .done();
   }
-  
+
   @Override
   protected void validateVisualizationSpec(ScatterplotSpec pluginSpec) throws ValidationException {
     validateInputs(new DataElementSet()
@@ -110,7 +109,7 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     ScatterplotSpec spec = getPluginSpec();
     Map<String, VariableSpec> varMap = new HashMap<>();
@@ -124,20 +123,20 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
     String deprecatedShowMissingness = showMissingness.equals("FALSE") ? "noVariables" : showMissingness.equals("TRUE") ? "strataVariables" : showMissingness;
     String yVarType = util.getVariableType(spec.getYAxisVariable());
     String correlationMethod = spec.getCorrelationMethod() != null ? spec.getCorrelationMethod().getValue() : "none";
-    
+
     if (yVarType.equals("DATE") && !valueSpec.equals("raw")) {
       LOG.error("Cannot calculate trend lines for y-axis date variables. The `valueSpec` property must be set to `raw`.");
     }
-    
+
     List<String> nonStrataVarColNames = new ArrayList<>();
     nonStrataVarColNames.add(util.toColNameOrEmpty(spec.getXAxisVariable()));
     nonStrataVarColNames.add(util.toColNameOrEmpty(spec.getYAxisVariable()));
 
     RFileSetProcessor filesProcessor = new RFileSetProcessor(dataStreams)
-      .add(DEFAULT_SINGLE_STREAM_NAME, 
-        spec.getMaxAllowedDataPoints(), 
-        deprecatedShowMissingness, 
-        nonStrataVarColNames, 
+      .add(DEFAULT_SINGLE_STREAM_NAME,
+        spec.getMaxAllowedDataPoints(),
+        deprecatedShowMissingness,
+        nonStrataVarColNames,
         (name, conn) ->
         conn.voidEval(util.getVoidEvalFreadCommand(name,
           spec.getXAxisVariable(),
@@ -149,11 +148,11 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
 
     useRConnectionWithProcessedRemoteFiles(Resources.RSERVE_URL, filesProcessor, connection -> {
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
-      String cmd = 
-          "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" + 
-              valueSpec + "', NULL, correlationMethod = '" + correlationMethod + "', TRUE, TRUE, '" + 
+      String cmd =
+          "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
+              valueSpec + "', NULL, correlationMethod = '" + correlationMethod + "', TRUE, TRUE, '" +
               deprecatedShowMissingness + "')";
       streamResult(connection, cmd, out);
-    }); 
+    });
   }
 }

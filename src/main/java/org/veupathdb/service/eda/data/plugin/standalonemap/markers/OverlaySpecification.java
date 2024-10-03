@@ -37,11 +37,11 @@ public class OverlaySpecification {
       binRanges = NormalizedBinRange.fromOverlayConfig((ContinousOverlayConfig) overlayConfig, variableType);
       validateContinuousBinRanges((ContinousOverlayConfig) overlayConfig, binRanges, varDatashapeFinder);
       labels = binRanges.stream()
-          .map(NormalizedBinRange::getLabel)
-          .collect(Collectors.toList());
+        .map(NormalizedBinRange::getLabel)
+        .collect(Collectors.toList());
     }
     if (variableType.equalsIgnoreCase(APIVariableType.NUMBER.getValue())
-        || variableType.equalsIgnoreCase(APIVariableType.LONGITUDE.getValue())) {
+      || variableType.equalsIgnoreCase(APIVariableType.LONGITUDE.getValue())) {
       overlayRecoder = input -> recodeNumeric(Double.parseDouble(input));
     } else if (variableType.equalsIgnoreCase(APIVariableType.INTEGER.getValue())) {
       overlayRecoder = input -> recodeNumeric(Integer.parseInt(input));
@@ -53,22 +53,22 @@ public class OverlaySpecification {
   }
 
   public String getRBinListAsString() {
-    String rBinList = "veupathUtils::BinList(S4Vectors::SimpleList(";
+    StringBuilder rBinList = new StringBuilder("veupathUtils::BinList(S4Vectors::SimpleList(");
 
     boolean first = true;
     for (int i = 0; i < labels.size(); i++) {
       String rBin = "veupathUtils::Bin(binLabel=\"" + labels.get(i) + "\"";
       if (binRanges != null) {
-        rBin += ",binStart=" + String.valueOf(binRanges.get(i).getMin()) +
-                ",binEnd=" + String.valueOf(binRanges.get(i).getMax());
+        rBin += ",binStart=" + binRanges.get(i).getMin() +
+          ",binEnd=" + binRanges.get(i).getMax();
       }
       rBin += ")";
 
       if (first) {
-        rBinList += rBin;
+        rBinList.append(rBin);
         first = false;
       } else {
-        rBinList += "," + rBin;
+        rBinList.append(",").append(rBin);
       }
     }
 
@@ -93,10 +93,10 @@ public class OverlaySpecification {
   private void validateCategoricalOverlayValues(CategoricalOverlayConfig overlayConfig, Function<VariableSpec, String> varSpecFinder) {
     String overlayShape = varSpecFinder.apply(overlayConfig.getOverlayVariable());
     if (!overlayShape.equalsIgnoreCase(APIVariableDataShape.CATEGORICAL.toString()) &&
-        !overlayShape.equalsIgnoreCase(APIVariableDataShape.BINARY.toString()) &&
-        !overlayShape.equalsIgnoreCase(APIVariableDataShape.ORDINAL.toString())) {
+      !overlayShape.equalsIgnoreCase(APIVariableDataShape.BINARY.toString()) &&
+      !overlayShape.equalsIgnoreCase(APIVariableDataShape.ORDINAL.toString())) {
       throw new IllegalArgumentException("Input overlay variable %s is %s, but provided overlay configuration is for a categorical variable"
-          .formatted(overlayConfig.getOverlayVariable().getVariableId(), varSpecFinder.apply(overlayConfig.getOverlayVariable())));
+        .formatted(overlayConfig.getOverlayVariable().getVariableId(), varSpecFinder.apply(overlayConfig.getOverlayVariable())));
     }
     int numDistinctOverlayVals = new HashSet<>(overlayConfig.getOverlayValues()).size();
     if (numDistinctOverlayVals != overlayConfig.getOverlayValues().size()) {
@@ -108,7 +108,7 @@ public class OverlaySpecification {
     final String dataShape = varSpecFinder.apply(overlayConfig.getOverlayVariable());
     if (!dataShape.equalsIgnoreCase(APIVariableDataShape.CONTINUOUS.toString())) {
       throw new IllegalArgumentException("Input overlay variable %s is %s, but provided overlay configuration is for a continuous variable"
-          .formatted(overlayConfig.getOverlayVariable().getVariableId(), dataShape));
+        .formatted(overlayConfig.getOverlayVariable().getVariableId(), dataShape));
     }
     boolean anyMissingBinStart = overlayConfig.getOverlayValues().stream().anyMatch(bin -> bin.getBinStart() == null);
     boolean anyMissingBinEnd = overlayConfig.getOverlayValues().stream().anyMatch(bin -> bin.getBinEnd() == null);
@@ -116,13 +116,13 @@ public class OverlaySpecification {
       throw new IllegalArgumentException("All numeric bin ranges must have start and end.");
     }
     Map<Double, Double> binEdges = normalizedRanges.stream()
-        .collect(Collectors.toMap(
-            NormalizedBinRange::getMin,
-            NormalizedBinRange::getMax,
-            (u, v) -> {
-               throw new IllegalStateException(String.format("Duplicate key %s", u));
-            }, 
-            LinkedHashMap::new));
+      .collect(Collectors.toMap(
+        NormalizedBinRange::getMin,
+        NormalizedBinRange::getMax,
+        (u, v) -> {
+          throw new IllegalStateException(String.format("Duplicate key %s", u));
+        },
+        LinkedHashMap::new));
     boolean first = true;
     Double prevBinEnd = null;
     for (Double binStart : binEdges.keySet()) {
@@ -138,11 +138,11 @@ public class OverlaySpecification {
   private String recodeNumeric(double varValue) {
     // Binary search?
     return binRanges.stream()
-        .filter(bin -> bin.getLabel().startsWith("[") ? 
-                       bin.getMin() <= varValue && bin.getMax() >= varValue :
-                       bin.getMin() < varValue && bin.getMax() >= varValue)
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("The variable value " + varValue + " is not in any specified bin range."))
-        .getLabel();
+      .filter(bin -> bin.getLabel().startsWith("[") ?
+        bin.getMin() <= varValue && bin.getMax() >= varValue :
+        bin.getMin() < varValue && bin.getMax() >= varValue)
+      .findFirst()
+      .orElseThrow(() -> new IllegalArgumentException("The variable value " + varValue + " is not in any specified bin range."))
+      .getLabel();
   }
 }

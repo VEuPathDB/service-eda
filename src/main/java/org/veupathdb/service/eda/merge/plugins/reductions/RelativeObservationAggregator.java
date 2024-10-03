@@ -35,13 +35,13 @@ public class RelativeObservationAggregator extends Reduction<RelativeObservation
 
   @Override
   protected void acceptConfig(RelativeObservationAggregatorConfig config) throws ValidationException {
-    _varDescription = config.varDescription;
-    _trueValues = config.trueValues;
-    _variable = config.variable;
+    _varDescription = config.varDescription();
+    _trueValues = config.trueValues();
+    _variable = config.variable();
     _variableCol = VariableDef.toDotNotation(_variable);
-    _timestampVariable = config.timestampVariable;
+    _timestampVariable = config.timestampVariable();
     _timestampCol = VariableDef.toDotNotation(_timestampVariable);
-    _filtersOverride = config.filtersOverride;
+    _filtersOverride = config.filtersOverride();
     if (!_variable.getEntityId().equals(_timestampVariable.getEntityId())) {
       throw new ValidationException(_varDescription + " variable must have the same entity as " + _varDescription + " timestamp variable");
     }

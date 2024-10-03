@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
@@ -12,7 +11,6 @@ import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.OverlaySpecification;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -71,8 +69,8 @@ public class FloatingBoxplotPlugin extends AbstractEmptyComputePlugin<FloatingBo
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
       .var("yAxisVariable", pluginSpec.getYAxisVariable())
       .var("overlayVariable", Optional.ofNullable(pluginSpec.getOverlayConfig())
-          .map(OverlayConfig::getOverlayVariable)
-          .orElse(null)));
+        .map(OverlayConfig::getOverlayVariable)
+        .orElse(null)));
     if (pluginSpec.getOverlayConfig() != null) {
       try {
         _overlaySpecification = new OverlaySpecification(pluginSpec.getOverlayConfig(), getUtil()::getVariableType, getUtil()::getVariableDataShape);
@@ -85,12 +83,12 @@ public class FloatingBoxplotPlugin extends AbstractEmptyComputePlugin<FloatingBo
   @Override
   protected List<StreamSpec> getRequestedStreams(FloatingBoxplotSpec pluginSpec) {
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>();
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
     plotVariableSpecs.add(pluginSpec.getYAxisVariable());
     Optional.ofNullable(pluginSpec.getOverlayConfig())
-        .map(OverlayConfig::getOverlayVariable)
-        .ifPresent(plotVariableSpecs::add);
+      .map(OverlayConfig::getOverlayVariable)
+      .ifPresent(plotVariableSpecs::add);
 
     List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
 
@@ -103,7 +101,7 @@ public class FloatingBoxplotPlugin extends AbstractEmptyComputePlugin<FloatingBo
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     FloatingBoxplotSpec spec = getPluginSpec();
     String outputEntityId = spec.getOutputEntityId();
@@ -112,7 +110,7 @@ public class FloatingBoxplotPlugin extends AbstractEmptyComputePlugin<FloatingBo
     varMap.put("xAxis", spec.getXAxisVariable());
     varMap.put("yAxis", spec.getYAxisVariable());
     varMap.put("overlay", overlayVariable);
-    
+
     List<String> nonStrataVarColNames = new ArrayList<>();
     nonStrataVarColNames.add(util.toColNameOrEmpty(spec.getXAxisVariable()));
     nonStrataVarColNames.add(util.toColNameOrEmpty(spec.getYAxisVariable()));
@@ -122,10 +120,10 @@ public class FloatingBoxplotPlugin extends AbstractEmptyComputePlugin<FloatingBo
     dataStreams.putAll(studyVocabs);
 
     RFileSetProcessor filesProcessor = new RFileSetProcessor(dataStreams)
-      .add(DEFAULT_SINGLE_STREAM_NAME, 
-        spec.getMaxAllowedDataPoints(), 
-        "noVariables", 
-        nonStrataVarColNames, 
+      .add(DEFAULT_SINGLE_STREAM_NAME,
+        spec.getMaxAllowedDataPoints(),
+        "noVariables",
+        nonStrataVarColNames,
         (name, conn) ->
         conn.voidEval(name + " <- data.table::fread('" + name + "', na.strings=c(''))")
       );
@@ -135,16 +133,15 @@ public class FloatingBoxplotPlugin extends AbstractEmptyComputePlugin<FloatingBo
       String inputData = getRVariableInputDataWithImputedZeroesAsString(DEFAULT_SINGLE_STREAM_NAME, varMap, outputEntityId, "variables");
       connection.voidEval(getVoidEvalVariableMetadataListWithStudyDependentVocabs(varMap, outputEntityId));
       String cmd =
-          "plot.data::box(data=" + inputData + ", " +
-              "variables=variables, " +
-              "points='outliers', " +
-              "mean=TRUE, " +
-              "computeStats=FALSE, " +
-              "sampleSizes=FALSE, " +
-              "completeCases=FALSE, " +
-              "overlayValues=" + overlayValues + ", " +
-              "evilMode='noVariables')";
-              System.out.println("cmd: " + cmd);
+        "plot.data::box(data=" + inputData + ", " +
+          "variables=variables, " +
+          "points='outliers', " +
+          "mean=TRUE, " +
+          "computeStats=FALSE, " +
+          "sampleSizes=FALSE, " +
+          "completeCases=FALSE, " +
+          "overlayValues=" + overlayValues + ", " +
+          "evilMode='noVariables')";
       streamResult(connection, cmd, out);
     });
   }

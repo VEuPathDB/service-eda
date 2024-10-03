@@ -18,7 +18,7 @@ public interface TabularDataWriter {
     private static final byte[] NEW_LINE_BYTES = System.lineSeparator().getBytes(StandardCharsets.UTF_8);
 
     private boolean firstColumnInRow = true;
-    private OutputStream outputStream;
+    private final OutputStream outputStream;
 
     /**
      * Writes formatted TSV data to an output stream. Note that this takes an output stream instead of a writer for

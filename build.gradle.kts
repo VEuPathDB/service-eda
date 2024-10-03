@@ -1,21 +1,14 @@
-import org.veupathdb.lib.gradle.container.util.Logger.Level
-
 plugins {
   kotlin("jvm") version "2.0.20" // needed for local compute import
   java
-  id("org.veupathdb.lib.gradle.container.container-utils") version "4.8.9"
+  id("org.veupathdb.lib.gradle.container.container-utils") version "5.0.4"
   id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 // configure VEupathDB container plugin
 containerBuild {
-
-  // Change if debugging the build process is necessary.
-  logLevel = Level.Info
-
   // General project level configuration.
   project {
-
     // Project Name
     name = "eda-service"
 
@@ -27,23 +20,11 @@ containerBuild {
 
     // Project Root Package
     projectPackage = "org.veupathdb.service.eda"
-
-    // Main Class Name
-    mainClassName = "Main"
   }
 
   // Docker build configuration.
   docker {
-
-    // Docker build context
-    context = "."
-
-    // Name of the target docker file
-    dockerFile = "Dockerfile"
-
-    // Resulting image tag
     imageName = "eda-service"
-
   }
 }
 
@@ -88,9 +69,8 @@ repositories {
 //
 
 // versions
-val coreLib       = "7.1.5"            // Container core lib version
-val fgputil       = "2.14.2-jakarta"   // FgpUtil version
-val libSubsetting = "4.16.9"           // lib-eda-subsetting version
+val coreLib = "8.0.0"            // Container core lib version
+val fgputil = "2.14.2-jakarta"   // FgpUtil version
 
 // use local EDA compute compiled schema if project exists, else use released version;
 // this mirrors the way we use local EdaCommon code if available
@@ -109,7 +89,7 @@ dependencies {
 
   // VEuPathDB libs, prefer local checkouts if available
   implementation(findProject(":core") ?: "org.veupathdb.lib:jaxrs-container-core:${coreLib}")
-  implementation(findProject(":libEdaSubsetting") ?: "org.veupathdb.eda:lib-eda-subsetting:${libSubsetting}")
+  implementation(findProject(":libEdaSubsetting") ?: "org.veupathdb.lib:eda-subsetting:6.0.0")
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")
@@ -155,11 +135,11 @@ dependencies {
   implementation("org.hsqldb:hsqldb:2.7.1")
 
   // Unit Testing
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-  testImplementation("org.mockito:mockito-core:5.2.0")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.1")
+  testImplementation("org.mockito:mockito-core:5.14.1")
   testImplementation("org.veupathdb.lib.test", "test-utils", "1.1.2")
-  testImplementation("org.awaitility:awaitility:4.2.0")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+  testImplementation("org.awaitility:awaitility:4.2.2")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
 }
 
 val test by tasks.getting(Test::class) {

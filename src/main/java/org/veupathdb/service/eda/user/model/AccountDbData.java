@@ -31,12 +31,12 @@ public class AccountDbData {
     public String getOrganization() { return getSecond(); }
   }
 
-  private static final List<UserPropertyName> USER_PROPERTIES = Arrays.asList(new UserPropertyName[] {
+  private static final List<UserPropertyName> USER_PROPERTIES = Arrays.asList(
     new UserPropertyName("firstName", "first_name", true),
     new UserPropertyName("middleName", "middle_name", false),
     new UserPropertyName("lastName", "last_name", true),
-    new UserPropertyName("organization", "organization", true),
-  });
+    new UserPropertyName("organization", "organization", true)
+  );
 
   private final AccountManager _acctDb = new AccountManager(DbManager.accountDatabase(), "useraccounts.", USER_PROPERTIES);
   private final Map<Long, AccountDataPair> _accountDataCache = new HashMap<>();
@@ -59,10 +59,10 @@ public class AccountDbData {
   public AccountDataPair getUserDataById(long userId) {
     UserProfile profile = _acctDb.getUserProfile(userId);
     return profile == null || profile.isGuest()
-        // use id-derived name for guests and deleted(?) users
-        ? new AccountDataPair(userId)
-        // use values in user's profile
-        : new AccountDataPair(profile.getProperties());
+      // use id-derived name for guests and deleted(?) users
+      ? new AccountDataPair(userId)
+      // use values in user's profile
+      : new AccountDataPair(profile.getProperties());
   }
 
   /**

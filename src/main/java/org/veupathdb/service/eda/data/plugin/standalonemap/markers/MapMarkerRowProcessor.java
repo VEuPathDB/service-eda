@@ -37,8 +37,8 @@ public class MapMarkerRowProcessor<T> {
 
       // entity records counts not impacted by viewport
       if (!(row[geoVarIndex] == null || row[geoVarIndex].isEmpty() ||
-          row[latIndex] == null || row[latIndex].isEmpty() ||
-          row[lonIndex] == null || row[lonIndex].isEmpty())) {
+        row[latIndex] == null || row[latIndex].isEmpty() ||
+        row[lonIndex] == null || row[lonIndex].isEmpty())) {
 
         double latitude = Double.parseDouble(row[latIndex]);
         double longitude = Double.parseDouble(row[lonIndex]);
@@ -53,7 +53,7 @@ public class MapMarkerRowProcessor<T> {
     }
 
     return aggregatedDataByGeoVal.entrySet().stream()
-        .filter(e -> !e.getValue().isEmpty())
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      .filter(e -> !e.getValue().isEmpty())
+      .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 }

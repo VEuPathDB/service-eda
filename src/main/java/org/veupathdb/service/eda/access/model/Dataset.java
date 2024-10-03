@@ -8,13 +8,10 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.functional.Functions;
-import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 
 public class Dataset
 {
-  private static final Logger log = LogProvider.logger(Dataset.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private static final String
@@ -80,41 +77,6 @@ public class Dataset
    * <code>short_attribution VARCHAR2(200)</code>
    */
   private String shortAttribution;
-
-  /*
-   * <code>summary CLOB</code>
-   */
-  // private String summary;
-
-  /*
-   * <code>protocol VARCHAR2(4000)</code>
-   */
-  // private String protocol;
-
-  /*
-   * <code>description CLOB</code>
-   */
-  // private String description;
-
-  /*
-   * <code>usage VARCHAR2(4000)</code>
-   */
-  // private String usage;
-
-  /*
-   * <code>caveat VARCHAR2(4000)</code>
-   */
-  // private String caveat;
-
-  /*
-   * <code>acknowledgement VARCHAR2(4000)</code>
-   */
-  // private String acknowledgement;
-
-  /*
-   * <code>release_policy VARCHAR2(4000)</code>
-   */
-  // private String releasePolicy;
 
   /**
    * <code>display_category VARCHAR2(60)</code>
@@ -313,9 +275,9 @@ public class Dataset
 
   public String getPriorAuth() {
     return Optional.ofNullable(getProperties().get(Property.REQUEST_ACCESS_FIELDS))
-        .map(Functions.fSwallow(OBJECT_MAPPER::readTree))
-        .flatMap(tree -> Optional.ofNullable(tree.get("prior_auth")))
-        .map(JsonNode::asText)
-        .orElse(null);
+      .map(Functions.fSwallow(OBJECT_MAPPER::readTree))
+      .flatMap(tree -> Optional.ofNullable(tree.get("prior_auth")))
+      .map(JsonNode::asText)
+      .orElse(null);
   }
 }

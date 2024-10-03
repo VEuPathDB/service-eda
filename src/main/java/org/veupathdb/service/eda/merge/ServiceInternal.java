@@ -13,10 +13,12 @@ import java.util.Map.Entry;
 import static org.veupathdb.service.eda.merge.ServiceExternal.*;
 
 /**
- * Implementation of endpoints at or below the /merging-internal top-level endpoint.  These endpoints are intended to be
- * accessible only via the internal docker network; therefore although authentication is present, not dataset access
- * restrictions are enforced.  The compute and data service plugins have full access to the datasets so they can
- * process the data down into whatever product they produce.
+ * Implementation of endpoints at or below the /merging-internal top-level
+ * endpoint.  These endpoints are intended to be accessible only via the
+ * internal docker network; therefore although authentication is present, not
+ * dataset access restrictions are enforced.  The compute and data service
+ * plugins have full access to the datasets so they can process the data down
+ * into whatever product they produce.
  */
 @Authenticated(allowGuests = true)
 public class ServiceInternal implements MergingInternal {
@@ -29,7 +31,7 @@ public class ServiceInternal implements MergingInternal {
     Entry<String,String> authHeader = getAuthHeader(_request);
     // no need to check perms; only internal clients can access this endpoint
     return PostMergingInternalDerivedVariablesMetadataVariablesResponse.respond200WithApplicationJson(
-        processDvMetadataRequest(entity, authHeader));
+      processDvMetadataRequest(entity, authHeader));
   }
 
   @DisableJackson
@@ -38,7 +40,6 @@ public class ServiceInternal implements MergingInternal {
     Entry<String,String> authHeader = getAuthHeader(_request);
     // no need to check perms; only internal clients can access this endpoint
     return PostMergingInternalQueryResponse.respond200WithTextTabSeparatedValues(
-        processMergedTabularRequest(requestBody, authHeader));
+      processMergedTabularRequest(requestBody, authHeader));
   }
-
 }

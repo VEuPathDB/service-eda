@@ -3,8 +3,8 @@ package org.veupathdb.service.eda.data.core;
 import org.veupathdb.service.eda.generated.model.DataPluginRequestBase;
 
 /**
- * Simple abstract extension of AbstractPlugin that takes care of the fact that pass app viz plugins
- * don't have a compute.
+ * Simple abstract extension of AbstractPlugin that takes care of the fact that
+ * pass app viz plugins don't have a compute.
  *
  * @param <T> type of request (must extend DataPluginRequestBase)
  * @param <S> plugin's spec class (must be or extend the generated spec class for this plugin)

@@ -43,6 +43,7 @@ public class CollectionDef extends CollectionSpecImpl {
   private final List<String> _memberVariableIds;
 
   @JsonIgnore
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private final Optional<DataRanges> _dataRanges;
 
   @JsonIgnore
@@ -57,24 +58,26 @@ public class CollectionDef extends CollectionSpecImpl {
   @JsonIgnore
   private final String _memberPlural;
 
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public CollectionDef(
-      EntityDef entity,
-      String id,
-      String displayName,
-      APICollectionType dataType,
-      APIVariableDataShape dataShape,
-      boolean isImputeZero,
-      Long distinctValuesCount,
-      List<String> vocabulary,
-      boolean isCompositional,
-      boolean isProportion,
-      String normalizationMethod,
-      List<String> memberVariableIds,
-      Optional<DataRanges> dataRanges,
-      boolean hasStudyDependentVocabulary,
-      VariableSpec variableSpecToImputeZeroesFor,
-      String member,
-      String memberPlural) {
+    EntityDef entity,
+    String id,
+    String displayName,
+    APICollectionType dataType,
+    APIVariableDataShape dataShape,
+    boolean isImputeZero,
+    Long distinctValuesCount,
+    List<String> vocabulary,
+    boolean isCompositional,
+    boolean isProportion,
+    String normalizationMethod,
+    List<String> memberVariableIds,
+    Optional<DataRanges> dataRanges,
+    boolean hasStudyDependentVocabulary,
+    VariableSpec variableSpecToImputeZeroesFor,
+    String member,
+    String memberPlural
+  ) {
     setEntityId(entity.getId());
     setCollectionId(id);
     _entity = entity;
@@ -168,10 +171,10 @@ public class CollectionDef extends CollectionSpecImpl {
   @JsonIgnore
   public List<VariableDef> getMemberVariables() {
     return _memberVariableIds.stream()
-        .map(id -> _entity.getVariable(VariableDef.newVariableSpec(getEntityId(), id))
-            .orElseThrow(() -> new RuntimeException("Collection " + getCollectionId() + " in entity " +
-                _entity.getId() + " has variable " + id + " which does not belong to " + _entity.getId())))
-        .collect(Collectors.toList());
+      .map(id -> _entity.getVariable(VariableDef.newVariableSpec(getEntityId(), id))
+        .orElseThrow(() -> new RuntimeException("Collection " + getCollectionId() + " in entity " +
+          _entity.getId() + " has variable " + id + " which does not belong to " + _entity.getId())))
+      .collect(Collectors.toList());
   }
 
   public static boolean isSameCollection(CollectionSpec c1, CollectionSpec c2) {

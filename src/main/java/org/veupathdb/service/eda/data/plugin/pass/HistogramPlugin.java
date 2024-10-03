@@ -9,7 +9,6 @@ import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -42,7 +41,7 @@ public class HistogramPlugin extends AbstractEmptyComputePlugin<HistogramPostReq
   protected ClassGroup getTypeParameterClasses() {
     return new EmptyComputeClassGroup(HistogramPostRequest.class, HistogramSpec.class);
   }
-  
+
   @Override
   public ConstraintSpec getConstraintSpec() {
     return new ConstraintSpec()
@@ -62,7 +61,7 @@ public class HistogramPlugin extends AbstractEmptyComputePlugin<HistogramPostReq
           .description("Variable(s) must have 10 or fewer unique values and be of the same or a parent entity as the Overlay variable.")
       .done();
   }
-  
+
   @Override
   protected void validateVisualizationSpec(HistogramSpec pluginSpec) throws ValidationException {
     validateInputs(new DataElementSet()
@@ -83,9 +82,9 @@ public class HistogramPlugin extends AbstractEmptyComputePlugin<HistogramPostReq
         .addVar(pluginSpec.getOverlayVariable())
         .addVars(pluginSpec.getFacetVariable()));
   }
-  
+
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     HistogramSpec spec = getPluginSpec();
     Map<String, VariableSpec> varMap = new HashMap<>();
@@ -101,19 +100,19 @@ public class HistogramPlugin extends AbstractEmptyComputePlugin<HistogramPostReq
 
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval(util.getVoidEvalFreadCommand(DEFAULT_SINGLE_STREAM_NAME,
-          spec.getXAxisVariable(),
-          spec.getOverlayVariable(),
-          util.getVariableSpecFromList(spec.getFacetVariable(), 0),
-          util.getVariableSpecFromList(spec.getFacetVariable(), 1)));
+        spec.getXAxisVariable(),
+        spec.getOverlayVariable(),
+        util.getVariableSpecFromList(spec.getFacetVariable(), 0),
+        util.getVariableSpecFromList(spec.getFacetVariable(), 1)));
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
-     
+
       String viewportRString = getViewportAsRString(spec.getViewport(), xVarType);
       connection.voidEval(viewportRString);
-      
+
       BinSpec binSpec = spec.getBinSpec();
       validateBinSpec(binSpec, xVarType);
       String binReportValue = binSpec.getType().getValue() != null ? binSpec.getType().getValue() : "binWidth";
-      
+
       //consider reorganizing conditions, move check for null value up a level ?
       if (binReportValue.equals("numBins")) {
         if (binSpec.getValue() != null) {
@@ -130,21 +129,20 @@ public class HistogramPlugin extends AbstractEmptyComputePlugin<HistogramPostReq
           connection.voidEval("binWidth <- NULL");
         }
       } else {
-        String binWidth =
-            binSpec.getValue() == null
-            ? "NULL"
-            : xVarType.equals("NUMBER") || xVarType.equals("INTEGER")
-                ? "as.numeric('" + binSpec.getValue() + "')"
-                : "'" + binSpec.getValue().toString() + " " + binSpec.getUnits().toString().toLowerCase() + "'";
+        String binWidth = binSpec.getValue() == null
+          ? "NULL"
+          : xVarType.equals("NUMBER") || xVarType.equals("INTEGER")
+            ? "as.numeric('" + binSpec.getValue() + "')"
+            : "'" + binSpec.getValue().toString() + " " + binSpec.getUnits().toString().toLowerCase() + "'";
         connection.voidEval("binWidth <- " + binWidth);
       }
 
       String cmd =
-          "plot.data::histogram(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, binWidth, '" +
-               spec.getValueSpec().getValue() + "', '" +
-               binReportValue + "', '" +
-               barMode + "', viewport, NULL, TRUE, TRUE, '" +
-               deprecatedShowMissingness + "')";
+        "plot.data::histogram(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, binWidth, '" +
+          spec.getValueSpec().getValue() + "', '" +
+          binReportValue + "', '" +
+          barMode + "', viewport, NULL, TRUE, TRUE, '" +
+          deprecatedShowMissingness + "')";
       streamResult(connection, cmd, out);
     });
   }

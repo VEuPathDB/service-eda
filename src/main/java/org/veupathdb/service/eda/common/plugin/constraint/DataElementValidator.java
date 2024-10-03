@@ -3,7 +3,6 @@ package org.veupathdb.service.eda.common.plugin.constraint;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -24,8 +23,7 @@ public class DataElementValidator {
     _constraintSpec = constraintSpec;
   }
 
-  public void validate(DataElementSet values) throws ValidationException {
-
+  public void validate(DataElementSet values) {
     // TODO: don't forget to make sure variables specified are unique e.g. you cannot use the same var for x and y axes
   }
 
@@ -46,7 +44,7 @@ public class DataElementValidator {
                                    EntityDef entity, String variableUse, VariableSpec variable) {
     List<APIVariableType> nonCategoryTypes = Arrays.stream(APIVariableType.values())
         .filter(type -> !type.equals(APIVariableType.CATEGORY))
-        .collect(Collectors.toList());
+        .toList();
     validateVariableNameAndType(validation, entity, variableUse, variable, nonCategoryTypes.toArray(new APIVariableType[0]));
   }
 

@@ -14,35 +14,36 @@ import org.veupathdb.service.eda.access.service.history.model.HistoryResultRow;
  */
 public class SelectUserHistoryRows
 {
-  private static final String SQL = "SELECT\n"
-    + "  end_user_id\n"
-    + ", a.user_id\n"
-    + ", dataset_presenter_id\n"
-    + ", history_action\n"
-    + ", history_timestamp\n"
-    + ", history_cause_user\n"
-    + ", restriction_level_id\n"
-    + ", approval_status_id\n"
-    + ", start_date\n"
-    + ", duration\n"
-    + ", purpose\n"
-    + ", research_question\n"
-    + ", analysis_plan\n"
-    + ", dissemination_plan\n"
-    + ", prior_auth\n"
-    + ", denial_reason\n"
-    + ", date_denied\n"
-    + ", allow_self_edits\n"
-    + "FROM\n"
-    + "  studyaccess.end_user_history a\n"
-    + "  INNER JOIN studyaccess.providers b\n"
-    + "    ON b.dataset_id = a.dataset_presenter_id\n"
-    + "    AND b.user_id = a.history_cause_user\n"
-    + "WHERE\n"
-    + "  b.user_id = ?\n"
-    + "  AND b.is_manager = 1\n"
-    + "OFFSET ? ROWS\n"
-    + "FETCH FIRST ? ROWS ONLY";
+  private static final String SQL = """
+    SELECT
+      end_user_id
+    , a.user_id
+    , dataset_presenter_id
+    , history_action
+    , history_timestamp
+    , history_cause_user
+    , restriction_level_id
+    , approval_status_id
+    , start_date
+    , duration
+    , purpose
+    , research_question
+    , analysis_plan
+    , dissemination_plan
+    , prior_auth
+    , denial_reason
+    , date_denied
+    , allow_self_edits
+    FROM
+      studyaccess.end_user_history a
+      INNER JOIN studyaccess.providers b
+        ON b.dataset_id = a.dataset_presenter_id
+        AND b.user_id = a.history_cause_user
+    WHERE
+      b.user_id = ?
+      AND b.is_manager = 1
+    OFFSET ? ROWS
+    FETCH FIRST ? ROWS ONLY""";
 
   private static final int HardLimit = 1000;
 

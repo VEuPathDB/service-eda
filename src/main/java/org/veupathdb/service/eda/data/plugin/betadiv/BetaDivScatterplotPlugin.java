@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.betadiv;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
@@ -10,7 +9,6 @@ import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -20,7 +18,7 @@ import java.util.Map;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
 
 public class BetaDivScatterplotPlugin extends AbstractPlugin<BetaDivScatterplotPostRequest, BetaDivScatterplotSpec, BetaDivComputeConfig> {
-  
+
   @Override
   public String getDisplayName() {
     return "Dimensional reduction scatter plot";
@@ -53,13 +51,13 @@ public class BetaDivScatterplotPlugin extends AbstractPlugin<BetaDivScatterplotP
       .pattern()
         .element("overlayVariable")
           .required(false)
-          .types(APIVariableType.NUMBER, APIVariableType.INTEGER) 
+          .types(APIVariableType.NUMBER, APIVariableType.INTEGER)
           .description("Variable must be a number, or have 8 or fewer values, and be of the same or a parent entity as the X-axis variable.")
       .done();
   }
 
   @Override
-  protected void validateVisualizationSpec(BetaDivScatterplotSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(BetaDivScatterplotSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("overlayVariable", pluginSpec.getOverlayVariable()));
@@ -75,14 +73,14 @@ public class BetaDivScatterplotPlugin extends AbstractPlugin<BetaDivScatterplotP
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     BetaDivScatterplotSpec spec = getPluginSpec();
     Map<String, VariableSpec> varMap = new HashMap<>();
     varMap.put("overlay", spec.getOverlayVariable());
     String valueSpec = "raw";
     String showMissingness = spec.getShowMissingness() != null ? spec.getShowMissingness().getValue() : "noVariables";
     String deprecatedShowMissingness = showMissingness.equals("FALSE") ? "noVariables" : showMissingness.equals("TRUE") ? "strataVariables" : showMissingness;
-   
+
     ComputedVariableMetadata metadata = getComputedVariableMetadata();
     VariableSpec xComputedVarSpec = metadata.getVariables().stream()
         .filter(var -> var.getPlotReference().getValue().equals("xAxis"))
@@ -101,11 +99,11 @@ public class BetaDivScatterplotPlugin extends AbstractPlugin<BetaDivScatterplotP
       connection.voidEval(getVoidEvalComputedVariableMetadataList(metadata));
       connection.voidEval("variables <- veupathUtils::merge(variables, computedVariables)");
 
-      String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" + 
-        valueSpec + 
-        "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" + 
+      String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
+        valueSpec +
+        "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" +
         deprecatedShowMissingness + "')";
       RServeClient.streamResult(connection, command, out);
-    }); 
+    });
   }
 }

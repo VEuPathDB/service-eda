@@ -91,15 +91,15 @@ public class AdvancedSubset extends Transform<AdvancedSubsetConfig> {
   @Override
   public List<String> getVocabulary() {
     return List.of(
-        SubsetMembership.RETURNED_TRUE_VALUE,
-        SubsetMembership.RETURNED_FALSE_VALUE);
+      SubsetMembership.RETURNED_TRUE_VALUE,
+      SubsetMembership.RETURNED_FALSE_VALUE);
   }
 
   @Override
   public String getValue(Map<String, String> row) {
     return _operationTree.test(row)
-        ? SubsetMembership.RETURNED_TRUE_VALUE
-        : SubsetMembership.RETURNED_FALSE_VALUE;
+      ? SubsetMembership.RETURNED_TRUE_VALUE
+      : SubsetMembership.RETURNED_FALSE_VALUE;
   }
 
   private static class OperationNode implements Predicate<Map<String,String>> {
@@ -114,24 +114,30 @@ public class AdvancedSubset extends Transform<AdvancedSubsetConfig> {
         throw new ValidationException("Step key '" + stepKey + "' does not correspond to any step's key or is referenced more than once.");
       _op = Operation.getByOperationType(step.getOperation());
       _leftChild = createChild(
-          "left",
-          step.getLeftStepKey(),
-          step.getLeftVariable(),
-          step.getLeftVariableTrueValues(),
-          stepMap, requiredVarMap);
+        "left",
+        step.getLeftStepKey(),
+        step.getLeftVariable(),
+        step.getLeftVariableTrueValues(),
+        stepMap, requiredVarMap);
       _rightChild = createChild(
-          "right",
-          step.getRightStepKey(),
-          step.getRightVariable(),
-          step.getRightVariableTrueValues(),
-          stepMap, requiredVarMap);
+        "right",
+        step.getRightStepKey(),
+        step.getRightVariable(),
+        step.getRightVariableTrueValues(),
+        stepMap, requiredVarMap);
     }
 
-    private Predicate<Map<String,String>> createChild(String childSide, String childKey, VariableSpec childVariable,
-        List<String> childTrueValues, Map<String, Step> stepMap, Map<String, VariableSpec> requiredVarMap) throws ValidationException {
+    private Predicate<Map<String,String>> createChild(
+      String childSide,
+      String childKey,
+      VariableSpec childVariable,
+      List<String> childTrueValues,
+      Map<String, Step> stepMap,
+      Map<String, VariableSpec> requiredVarMap
+    ) throws ValidationException {
       // ensure exactly one of [ stepKey, variable ] is populated
       if ((childKey == null && childVariable == null) ||
-          (childKey != null && childVariable != null)) {
+        (childKey != null && childVariable != null)) {
         throw new ValidationException("Each step must contain exactly one of: a " + childSide + " step key or " + childSide + " variable spec.");
       }
       if (childVariable != null) {

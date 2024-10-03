@@ -4,8 +4,8 @@ package org.veupathdb.service.eda.data.plugin.standalonemap.aggregator;
 import java.util.function.Function;
 
 /**
- * Marker aggregator for mean/median and standard deviation. Computes online by keeping track of sum, sum of squares and
- * sample count.
+ * Marker aggregator for mean/median and standard deviation. Computes online by
+ * keeping track of sum, sum of squares and sample count.
  */
 public class MeanWithConfidenceAggregator implements MarkerAggregator<AveragesWithConfidence> {
   private double sum = 0;
@@ -47,10 +47,10 @@ public class MeanWithConfidenceAggregator implements MarkerAggregator<AveragesWi
     final double upperBound = mean + confidence;
     final double lowerBound = mean - confidence;
     return new AveragesWithConfidence(
-        mean,
-        lowerBound,
-        upperBound,
-        n
+      mean,
+      lowerBound,
+      upperBound,
+      n
     );
   }
 

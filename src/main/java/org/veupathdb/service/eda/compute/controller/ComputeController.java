@@ -5,8 +5,6 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.gusdb.fgputil.Tuples;
 import org.jetbrains.annotations.NotNull;
@@ -56,13 +54,11 @@ import java.util.function.Supplier;
  * instance of the target {@link PluginProvider} for their plugin along with the
  * raw request body (entity).
  *
- * @author Elizabeth Paige Harper - https://github.com/foxcapades
+ * @author Elizabeth Paige Harper - <a href="https://github.com/foxcapades">https://github.com/foxcapades</a>
  * @since 1.0.0
  */
 @Authenticated(allowGuests = true)
 public class ComputeController implements Computes {
-
-  private static final Logger LOG = LogManager.getLogger(ComputeController.class);
 
   private static final String TABULAR = "tabular";
   private static final String METADATA = "meta";
@@ -128,13 +124,13 @@ public class ComputeController implements Computes {
   @Override
   public PostComputesDifferentialabundanceStatisticsResponse postComputesDifferentialabundanceStatistics(DifferentialAbundancePluginRequest entity) {
     return PostComputesDifferentialabundanceStatisticsResponse.respond200WithApplicationJson(new DifferentialAbundanceStatsResponseStream(out -> {
-        try {
-          getResultFileStreamer(new DifferentialAbundancePluginProvider(), STATISTICS, entity).write(out);
-        }
-        catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }));
+      try {
+        getResultFileStreamer(new DifferentialAbundancePluginProvider(), STATISTICS, entity).write(out);
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }));
   }
 
   @Override
@@ -145,13 +141,13 @@ public class ComputeController implements Computes {
   @Override
   public PostComputesCorrelationStatisticsResponse postComputesCorrelationStatistics(CorrelationPluginRequest entity) {
     return PostComputesCorrelationStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
-        try {
-          getResultFileStreamer(new CorrelationPluginProvider(), STATISTICS, entity).write(out);
-        }
-        catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }));
+      try {
+        getResultFileStreamer(new CorrelationPluginProvider(), STATISTICS, entity).write(out);
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }));
   }
 
   @Override
@@ -162,13 +158,13 @@ public class ComputeController implements Computes {
   @Override
   public PostComputesSelfcorrelationStatisticsResponse postComputesSelfcorrelationStatistics(SelfCorrelationPluginRequest entity) {
     return PostComputesSelfcorrelationStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
-        try {
-          getResultFileStreamer(new SelfCorrelationPluginProvider(), STATISTICS, entity).write(out);
-        }
-        catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }));
+      try {
+        getResultFileStreamer(new SelfCorrelationPluginProvider(), STATISTICS, entity).write(out);
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }));
   }
 
   // endregion Plugin Endpoints
@@ -219,8 +215,8 @@ public class ComputeController implements Computes {
     Supplier<ReferenceMetadata> referenceMetadata = () -> {
       var studyId = requestObject.getStudyId();
       var meta = new ReferenceMetadata(
-          EDA.getAPIStudyDetail(studyId, auth)
-              .orElseThrow(() -> new BadRequestException("Invalid study ID: " + studyId)));
+        EDA.getAPIStudyDetail(studyId, auth)
+          .orElseThrow(() -> new BadRequestException("Invalid study ID: " + studyId)));
       var derivedVars = Optional.ofNullable(requestObject.getDerivedVariables()).orElse(Collections.emptyList());
       if (!derivedVars.isEmpty()) {
         var mergeClient = new EdaMergingClient(Main.config.getEdaMergeHost(), auth);
@@ -272,9 +268,9 @@ public class ComputeController implements Computes {
    * @param <P> Type of the job configuration request body.
    */
   private <P extends ComputeRequestBase> StreamingOutput getResultFileStreamer(
-      PluginMeta<P> plugin,
-      String file,
-      ComputeRequestBase entity
+    PluginMeta<P> plugin,
+    String file,
+    ComputeRequestBase entity
   ) {
     // If there was no plugin with the given name, throw a 404
     if (plugin == null)

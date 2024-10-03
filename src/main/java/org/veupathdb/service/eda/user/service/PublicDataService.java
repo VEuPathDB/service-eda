@@ -15,6 +15,6 @@ public class PublicDataService implements PublicAnalysesProjectId {
     List<AnalysisSummaryWithUser> publicAnalyses = dataFactory.getPublicAnalyses();
     ProvenancePropsLookup.assignCurrentProvenanceProps(dataFactory, publicAnalyses);
     return GetPublicAnalysesByProjectIdResponse.respond200WithApplicationJson(
-        new AccountDbData().populateOwnerData(publicAnalyses));
+      new AccountDbData().populateOwnerData(publicAnalyses));
   }
 }

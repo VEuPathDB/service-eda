@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.abundance;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
@@ -11,7 +10,6 @@ import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -22,7 +20,7 @@ import java.util.Map;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
 
 public class AbundanceScatterplotPlugin extends AbstractPlugin<AbundanceScatterplotPostRequest, ScatterplotWith1ComputeSpec, RankedAbundanceComputeConfig> {
-  
+
   @Override
   public String getDisplayName() {
     return "Scatter plot";
@@ -58,9 +56,9 @@ public class AbundanceScatterplotPlugin extends AbstractPlugin<AbundanceScatterp
           .description("Variable(s) must have7 or fewer unique values and be of the same or a parent entity as the Overlay variable.")
       .done();
   }
-  
+
   @Override
-  protected void validateVisualizationSpec(ScatterplotWith1ComputeSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(ScatterplotWith1ComputeSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
@@ -78,7 +76,7 @@ public class AbundanceScatterplotPlugin extends AbstractPlugin<AbundanceScatterp
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     ScatterplotWith1ComputeSpec spec = getPluginSpec();
     PluginUtil util = getUtil();
     Map<String, VariableSpec> varMap = new HashMap<>();
@@ -90,7 +88,7 @@ public class AbundanceScatterplotPlugin extends AbstractPlugin<AbundanceScatterp
     String deprecatedShowMissingness = showMissingness.equals("FALSE") ? "noVariables" : showMissingness.equals("TRUE") ? "strataVariables" : showMissingness;
 
     ComputedVariableMetadata metadata = getComputedVariableMetadata();
-    metadata.getVariables().get(0).setPlotReference(PlotReferenceValue.OVERLAY);
+    metadata.getVariables().getFirst().setPlotReference(PlotReferenceValue.OVERLAY);
 
     List<VariableSpec> collectionMembers = new ArrayList<>(
       metadata.getVariables().stream()
@@ -115,9 +113,9 @@ public class AbundanceScatterplotPlugin extends AbstractPlugin<AbundanceScatterp
       connection.voidEval("variables[[overlayVarIndex]] <- overlayVarMetadata");
 
       String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
-          valueSpec + "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" + 
+          valueSpec + "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" +
           deprecatedShowMissingness + "')";
       RServeClient.streamResult(connection, command, out);
-    }); 
+    });
   }
 }

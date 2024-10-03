@@ -51,6 +51,6 @@ object JobIDs {
     })
 
     Log.info("Created job ID '$jobId' from pluginName '$pluginName' and serialized JSON: $orderedString")
-    return jobId;
+    return jobId
   }
 }

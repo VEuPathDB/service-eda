@@ -14,11 +14,6 @@ public class PsBuilder
     values = new ArrayList<>();
   }
 
-  public PsBuilder setByte(final byte value) {
-    values.add(new Value(value, Types.TINYINT));
-    return this;
-  }
-
   public PsBuilder setShort(final short value) {
     values.add(new Value(value, Types.SMALLINT));
     return this;

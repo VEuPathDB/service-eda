@@ -3,9 +3,8 @@ package org.veupathdb.service.eda.data.plugin.pass;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
-import org.gusdb.fgputil.validation.ValidationException;
 import org.json.JSONArray;
-import org.json.JSONObject;
+import org.veupathdb.lib.jackson.Json;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
@@ -36,7 +35,7 @@ public class TablePlugin extends AbstractEmptyComputePlugin<TablePostRequest, Ta
   public String getDescription() {
     return "Visualize a table of requested variables";
   }
-  
+
   @Override
   public List<String> getProjects() {
     return List.of(CLINEPI_PROJECT, MICROBIOME_PROJECT);
@@ -56,7 +55,7 @@ public class TablePlugin extends AbstractEmptyComputePlugin<TablePostRequest, Ta
   }
 
   @Override
-  protected void validateVisualizationSpec(TableSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(TableSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("outputVariableIds", pluginSpec.getOutputVariable()));
@@ -76,7 +75,7 @@ public class TablePlugin extends AbstractEmptyComputePlugin<TablePostRequest, Ta
     TableSpec spec = getPluginSpec();
     Long numRows = spec.getPagingConfig().getNumRows();
     Long offset = spec.getPagingConfig().getOffset();
-    
+
     // create scanner and line parser
     Scanner s = new Scanner(dataStreams.get(DEFAULT_SINGLE_STREAM_NAME)).useDelimiter(NL);
     DelimitedDataParser parser = new DelimitedDataParser(s.nextLine(), TAB, true);
@@ -87,17 +86,17 @@ public class TablePlugin extends AbstractEmptyComputePlugin<TablePostRequest, Ta
     boolean first = true;
     for (String colName : header) {
       if (first) first = false; else bufOut.write(",");
-      LOG.debug("col name: " + colName);
+      LOG.debug("col name: {}", colName);
       String[] varSpec = colName.split("\\.");
       LOG.debug(String.join(",",varSpec));
-      bufOut.write(new JSONObject()
-          .put("entityId", varSpec[0])
-          .put("variableId", varSpec[1])
-          .toString()
-        );
+      bufOut.write(Json.newObject()
+        .put("entityId", varSpec[0])
+        .put("variableId", varSpec[1])
+        .toString()
+      );
     }
     bufOut.write("],\"rows\":[");
-    
+
     //loop through and print data
     first = true;
     int offsetCount = 0;
@@ -125,7 +124,7 @@ public class TablePlugin extends AbstractEmptyComputePlugin<TablePostRequest, Ta
         }
       }
     }
-    
+
     // close array and enclosing object
     bufOut.write("]}");
     bufOut.flush();

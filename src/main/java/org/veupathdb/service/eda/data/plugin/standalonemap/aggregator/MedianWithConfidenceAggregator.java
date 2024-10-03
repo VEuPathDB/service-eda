@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Marker aggregator that keeps track of all values in-memory in order to compute the median and confidence interval.
- *
- * Note that this will be memory inefficient for large datasets. We may want to give an option to approximate
- * median for large datasets to avoid loading too much into memory.
+ * Marker aggregator that keeps track of all values in-memory in order to
+ * compute the median and confidence interval.
+ * <p>
+ * Note that this will be memory inefficient for large datasets. We may want to
+ * give an option to approximate median for large datasets to avoid loading too
+ * much into memory.
  */
 public class MedianWithConfidenceAggregator implements MarkerAggregator<AveragesWithConfidence> {
 

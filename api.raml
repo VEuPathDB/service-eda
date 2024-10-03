@@ -10,6 +10,10 @@ uses:
   error: https://raw.githubusercontent.com/VEuPathDB/docs-api-schema/v2.0.2/libraries/errors.raml
   lib: schema/library.raml
 
+annotationTypes:
+  className:
+    type: string
+
 securitySchemes:
   header-auth:
     description: Authentication based on a WDK auth cookie.
@@ -500,6 +504,44 @@ securitySchemes:
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+/admin:
+  (className): AdminRPC
+  /compute:
+    /list-possible-dead-workspaces:
+      get:
+        description: |-
+          Returns a list of job IDs for compute jobs whose workspaces are in a
+          state where the jobs appear to be running, however no record of them
+          is present in the local postgres database.
+          
+          **NOTE**: A job ID appearing in this list _DOES NOT_ mean that they
+          are actually dead.  Jobs that are actively being run by another campus
+          will also appear in this list.
+          
+          This list may be used as a starting point in the process of locating
+          dead workspaces.
+        responses:
+          200:
+            body:
+              text/plain:
+                type: any
+
+    /workspaces:
+      /{job-id}:
+        uriParameters:
+          job-id:
+            type: string
+            minLength: 32
+            maxLength: 32
+            pattern: '^[\dA-Fa-f]{32}$'
+        delete:
+          description: |-
+            Deletes the contents of a workspace by force.  The target workspace
+            need not be valid for this operation.
+          responses:
+            204:
+
+
 /expire-compute-jobs:
   get:
     description: Expire jobs based on criteria
@@ -544,7 +586,6 @@ securitySchemes:
             application/json:
               type: lib.InternalJob
 
-# NOTE: jobs endpoint is NOT publicly exposed for this service
 /jobs:
   /{job-id}:
     uriParameters:

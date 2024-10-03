@@ -1,11 +1,11 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap.markers;
 
 public class GeolocationViewport {
-  private double xMin;
-  private double xMax;
-  private double yMin;
-  private double yMax;
-  private boolean viewportIncludesIntlDateLine;
+  private final double xMin;
+  private final double xMax;
+  private final double yMin;
+  private final double  yMax;
+  private final boolean viewportIncludesIntlDateLine;
 
   public GeolocationViewport(double xMin, double xMax,
                              double yMin, double yMax) {
@@ -19,10 +19,10 @@ public class GeolocationViewport {
 
   public static GeolocationViewport fromApiViewport(org.veupathdb.service.eda.generated.model.GeolocationViewport viewport) {
     return new GeolocationViewport(
-        Double.parseDouble(viewport.getLatitude().getXMin()),
-        Double.parseDouble(viewport.getLatitude().getXMax()),
-        viewport.getLongitude().getLeft().doubleValue(),
-        viewport.getLongitude().getRight().doubleValue()
+      Double.parseDouble(viewport.getLatitude().getXMin()),
+      Double.parseDouble(viewport.getLatitude().getXMax()),
+      viewport.getLongitude().getLeft().doubleValue(),
+      viewport.getLongitude().getRight().doubleValue()
     );
   }
 
@@ -31,14 +31,9 @@ public class GeolocationViewport {
       return false;
     }
     if (viewportIncludesIntlDateLine) {
-      if (longitude < yMin && longitude > yMax) {
-        return false;
-      }
+      return !(longitude < yMin) || !(longitude > yMax);
     } else {
-      if (longitude < yMin || longitude > yMax) {
-        return false;
-      }
+      return !(longitude < yMin) && !(longitude > yMax);
     }
-    return true;
   }
 }

@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
@@ -12,7 +11,6 @@ import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.utils.ValidationUtils;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -78,10 +76,10 @@ public class CollectionFloatingBoxplotPlugin extends AbstractEmptyComputePlugin<
   @Override
   protected List<StreamSpec> getRequestedStreams(CollectionFloatingBoxplotSpec pluginSpec) {
     List<VariableSpec> collectionMembers = variablesFromCollectionMembers(
-        pluginSpec.getOverlayConfig().getCollection(),
-        pluginSpec.getOverlayConfig().getSelectedMembers());
+      pluginSpec.getOverlayConfig().getCollection(),
+      pluginSpec.getOverlayConfig().getSelectedMembers());
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>();
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
     plotVariableSpecs.addAll(collectionMembers);
 
@@ -96,20 +94,20 @@ public class CollectionFloatingBoxplotPlugin extends AbstractEmptyComputePlugin<
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     CollectionFloatingBoxplotSpec spec = getPluginSpec();
     String outputEntityId = spec.getOutputEntityId();
     List<VariableSpec> inputVarSpecs = variablesFromCollectionMembers(
-        spec.getOverlayConfig().getCollection(),
-        spec.getOverlayConfig().getSelectedMembers());
+      spec.getOverlayConfig().getCollection(),
+      spec.getOverlayConfig().getSelectedMembers());
 
     inputVarSpecs.add(spec.getXAxisVariable());
     CollectionSpec overlayVariable = spec.getOverlayConfig().getCollection();
     Map<String, DynamicDataSpec> varMap = new HashMap<>();
     varMap.put("xAxis", new DynamicDataSpecImpl(spec.getXAxisVariable()));
     varMap.put("overlay", new DynamicDataSpecImpl(overlayVariable));
-    
+
     List<String> nonStrataVarColNames = new ArrayList<>();
     nonStrataVarColNames.add(util.toColNameOrEmpty(spec.getXAxisVariable()));
     // ideally wed find another way to account for the yaxis given its a collection but that seems hard and idk if were even using this feature
@@ -117,10 +115,10 @@ public class CollectionFloatingBoxplotPlugin extends AbstractEmptyComputePlugin<
 
     // TODO we have this and the inpute fxn below. how do they relate?
     RFileSetProcessor filesProcessor = new RFileSetProcessor(dataStreams)
-      .add(DEFAULT_SINGLE_STREAM_NAME, 
-        spec.getMaxAllowedDataPoints(), 
-        "noVariables", 
-        nonStrataVarColNames, 
+      .add(DEFAULT_SINGLE_STREAM_NAME,
+        spec.getMaxAllowedDataPoints(),
+        "noVariables",
+        nonStrataVarColNames,
         (name, conn) ->
         conn.voidEval(name + " <- data.table::fread('" + name + "', na.strings=c(''))")
       );
@@ -133,15 +131,15 @@ public class CollectionFloatingBoxplotPlugin extends AbstractEmptyComputePlugin<
       String inputData = getRInputDataWithImputedZeroesAsString(DEFAULT_SINGLE_STREAM_NAME, varMap, outputEntityId, "variables");
       connection.voidEval(getVoidEvalDynamicDataMetadataListWithStudyDependentVocabs(varMap, outputEntityId));
       String cmd =
-          "plot.data::box(data=" + inputData + ", " +
-              "variables=variables, " +
-              "points='outliers', " +
-              "mean=TRUE, " +
-              "computeStats=FALSE, " +
-              "sampleSizes=FALSE, " +
-              "completeCases=FALSE, " +
-              "overlayValues=NULL, " +
-              "evilMode='noVariables')";
+        "plot.data::box(data=" + inputData + ", " +
+          "variables=variables, " +
+          "points='outliers', " +
+          "mean=TRUE, " +
+          "computeStats=FALSE, " +
+          "sampleSizes=FALSE, " +
+          "completeCases=FALSE, " +
+          "overlayValues=NULL, " +
+          "evilMode='noVariables')";
       streamResult(connection, cmd, out);
     });
   }

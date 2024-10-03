@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.pass;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
@@ -10,7 +9,6 @@ import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -49,26 +47,26 @@ public class BoxplotPlugin extends AbstractEmptyComputePlugin<BoxplotPostRequest
     return new ConstraintSpec()
       .dependencyOrder(List.of("yAxisVariable"), List.of("xAxisVariable", "overlayVariable", "facetVariable"))
       .pattern()
-        .element("yAxisVariable")
-          .types(APIVariableType.NUMBER, APIVariableType.INTEGER)
-          .description("Variable must be a number.")
-        .element("xAxisVariable")
-          .maxValues(10)
-          .description("Variable must have 10 or fewer unique values and be the same or a parent entity of the Y-axis variable.")
-        .element("overlayVariable")
-          .required(false)
-          .maxValues(8)
-          .description("Variable must have 8 or fewer unique values and be the same or a parent entity of the X-axis variable.")
-        .element("facetVariable")
-          .required(false)
-          .maxVars(2)
-          .maxValues(10)
-          .description("Variable(s) must have 10 or fewer unique values and be of the same or a parent entity of the Overlay variable.")
+      .element("yAxisVariable")
+      .types(APIVariableType.NUMBER, APIVariableType.INTEGER)
+      .description("Variable must be a number.")
+      .element("xAxisVariable")
+      .maxValues(10)
+      .description("Variable must have 10 or fewer unique values and be the same or a parent entity of the Y-axis variable.")
+      .element("overlayVariable")
+      .required(false)
+      .maxValues(8)
+      .description("Variable must have 8 or fewer unique values and be the same or a parent entity of the X-axis variable.")
+      .element("facetVariable")
+      .required(false)
+      .maxVars(2)
+      .maxValues(10)
+      .description("Variable(s) must have 10 or fewer unique values and be of the same or a parent entity of the Overlay variable.")
       .done();
   }
-  
+
   @Override
-  protected void validateVisualizationSpec(BoxplotSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(BoxplotSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
@@ -88,7 +86,7 @@ public class BoxplotPlugin extends AbstractEmptyComputePlugin<BoxplotPostRequest
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     BoxplotSpec spec = getPluginSpec();
     Map<String, VariableSpec> varMap = new HashMap<>();
@@ -102,33 +100,33 @@ public class BoxplotPlugin extends AbstractEmptyComputePlugin<BoxplotPostRequest
     String computeStats = spec.getComputeStats() != null ? spec.getComputeStats().getValue() : "FALSE";
     String showMean = spec.getMean() != null ? spec.getMean().getValue() : "FALSE";
     String showPoints = spec.getPoints().getValue();
-    
+
     List<String> nonStrataVarColNames = new ArrayList<>();
     nonStrataVarColNames.add(util.toColNameOrEmpty(spec.getXAxisVariable()));
     nonStrataVarColNames.add(util.toColNameOrEmpty(spec.getYAxisVariable()));
 
     RFileSetProcessor filesProcessor = new RFileSetProcessor(dataStreams)
-      .add(DEFAULT_SINGLE_STREAM_NAME, 
-        spec.getMaxAllowedDataPoints(), 
-        deprecatedShowMissingness, 
-        nonStrataVarColNames, 
+      .add(DEFAULT_SINGLE_STREAM_NAME,
+        spec.getMaxAllowedDataPoints(),
+        deprecatedShowMissingness,
+        nonStrataVarColNames,
         (name, conn) ->
-        conn.voidEval(util.getVoidEvalFreadCommand(name,
-          spec.getXAxisVariable(),
-          spec.getYAxisVariable(),
-          spec.getOverlayVariable(),
-          util.getVariableSpecFromList(spec.getFacetVariable(), 0),
-          util.getVariableSpecFromList(spec.getFacetVariable(), 1)))
+          conn.voidEval(util.getVoidEvalFreadCommand(name,
+            spec.getXAxisVariable(),
+            spec.getYAxisVariable(),
+            spec.getOverlayVariable(),
+            util.getVariableSpecFromList(spec.getFacetVariable(), 0),
+            util.getVariableSpecFromList(spec.getFacetVariable(), 1)))
       );
 
     useRConnectionWithProcessedRemoteFiles(Resources.RSERVE_URL, filesProcessor, connection -> {
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
       String cmd =
-          "plot.data::box(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
-              showPoints + "', " +
-              showMean + ", " +
-              computeStats + ", NULL, TRUE, TRUE, '" +
-              deprecatedShowMissingness + "')";
+        "plot.data::box(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
+          showPoints + "', " +
+          showMean + ", " +
+          computeStats + ", NULL, TRUE, TRUE, '" +
+          deprecatedShowMissingness + "')";
       streamResult(connection, cmd, out);
     });
   }

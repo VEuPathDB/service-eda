@@ -26,6 +26,7 @@ public class UserDatasetIsaStudies {
    *
    * @param userId user ID for which study permissions should be added
    */
+  @SuppressWarnings("resource")
   public static Map<String, DatasetPermissionEntry> getUserDatasetPermissions(long userId) throws Exception {
     return new BasicPreparedReadQuery<>(
         String.format(SQL.Select.UserDatasets.ByUserAccess,
@@ -81,6 +82,7 @@ public class UserDatasetIsaStudies {
     return permEntry;
   }
 
+  @SuppressWarnings("resource")
   public static Optional<StudyPermissionInfo> getUserStudyByDatasetId(String datasetId) throws Exception {
     return new BasicPreparedReadQuery<>(
         SQL.Select.UserDatasets.ByDatasetId,

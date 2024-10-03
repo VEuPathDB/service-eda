@@ -7,8 +7,8 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
-import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
+import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
@@ -29,7 +29,7 @@ import static org.veupathdb.service.eda.access.service.staff.StaffService.userIs
 
 public class ProviderService
 {
-  static ProviderService instance = new ProviderService();
+  static final ProviderService instance = new ProviderService();
 
   ProviderService() {
   }
@@ -234,7 +234,7 @@ public class ProviderService
     // WARNING: This cast mess is due to a bug in the JaxRS generator, the type
     // it actually passes up is not the declared type, but a list of linked hash
     // maps instead.
-    final var item = items.get(0);
+    final var item = items.getFirst();
 
     // only allow replace ops
     if (!"replace".equals(item.getOp()))

@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.data.plugin.standalonemap.aggregator;
 
 import org.veupathdb.service.eda.data.utils.StatUtils;
 
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -23,8 +24,8 @@ public class ProportionWithConfidenceAggregator implements MarkerAggregator<Aver
                                             List<String> numeratorValues,
                                             List<String> denominatorValues,
                                             List<String> overlayVocab) {
-    this.numeratorAlwaysOne = numeratorValues.containsAll(overlayVocab);
-    this.denominatorAlwaysOne = denominatorValues.containsAll(overlayVocab);
+    this.numeratorAlwaysOne = new HashSet<>(numeratorValues).containsAll(overlayVocab);
+    this.denominatorAlwaysOne = new HashSet<>(denominatorValues).containsAll(overlayVocab);
     this.index = index;
     this.numeratorValues = numeratorValues;
     this.denominatorValues = denominatorValues;
@@ -55,10 +56,10 @@ public class ProportionWithConfidenceAggregator implements MarkerAggregator<Aver
     final double upperBound = Math.min(1.0, proportion + confidence);
     final double lowerBound = Math.max(0.0, proportion - confidence);
     return new AveragesWithConfidence(
-        proportion,
-        lowerBound,
-        upperBound,
-        n
+      proportion,
+      lowerBound,
+      upperBound,
+      n
     );
   }
 

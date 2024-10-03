@@ -30,8 +30,8 @@ public class ExampleComputeVizPlugin extends AbstractPlugin<ExampleComputeVizPos
   @Override
   protected List<StreamSpec> getRequestedStreams(ExampleComputeVizSpec pluginSpec) {
     return List.of(new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, getComputeConfig().getInputVariable().getEntityId())
-        .addVar(pluginSpec.getPrefixVar())
-        .setIncludeComputedVars(true));
+      .addVar(pluginSpec.getPrefixVar())
+      .setIncludeComputedVars(true));
   }
 
   @Override
@@ -44,8 +44,8 @@ public class ExampleComputeVizPlugin extends AbstractPlugin<ExampleComputeVizPos
     // get metadata to find computed column
     ComputedVariableMetadata metadata = getComputedVariableMetadata();
     VariableSpec computedVarSpec = metadata.getVariables().stream()
-        .filter(var -> var.getPlotReference() == PlotReferenceValue.XAXIS)
-        .findFirst().orElseThrow().getVariableSpec();
+      .filter(var -> var.getPlotReference() == PlotReferenceValue.XAXIS)
+      .findFirst().orElseThrow().getVariableSpec();
 
     // loop through computed var to find longest and average size of concatenated values
     PluginUtil util = getUtil();

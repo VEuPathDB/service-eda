@@ -16,6 +16,7 @@ import org.veupathdb.service.eda.access.service.QueryUtil;
 import org.veupathdb.service.eda.access.util.PsBuilder;
 import org.veupathdb.service.eda.access.util.SqlUtil;
 
+@SuppressWarnings("resource")
 public class ProviderRepo
 {
   public static class Delete
@@ -99,9 +100,9 @@ public class ProviderRepo
 
     /**
      * Returns a map containing a set of dataset IDs the user is a provider for;
-     * each mapped to a boolean flag indicating whether or not the given user is
-     * marked as a manager for that dataset.
-     *
+     * each mapped to a boolean flag indicating whether the given user is marked
+     * as a manager for that dataset.
+     * <p>
      * If the given user id is not a provider for any datasets, the returned map
      * will be empty.
      *

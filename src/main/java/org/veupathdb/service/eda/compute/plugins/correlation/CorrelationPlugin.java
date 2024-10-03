@@ -19,7 +19,6 @@ import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.InputStream;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +43,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     if (spec1 == null || spec2 == null) {
       return false;
     }
-    
+
     String entity1Id = spec1.getEntityId();
     String entity2Id = spec2.getEntityId();
     String collection1Id = spec1.getCollectionId();
@@ -75,7 +74,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       LOG.info("Received CorrelationInputData for data2 with a data type of 'collection' but no collection specification. This is not allowed.");
       return false;
     }
-    
+
     if (data1Type.equals("metadata") && data2Type.equals("metadata")) {
       LOG.info("Received CorrelationInputData for both data1 and data2 with a data type of 'metadata'. This is not allowed.");
       return false;
@@ -100,40 +99,40 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     List<EntityDef> ancestors = metadata.getAncestors(entity);
 
     List<VariableDef> metadataVariables;
-  
+
     if (ancestors.isEmpty()) {
       LOG.info("No ancestors found, using all variables that are not part of a collection.");
-  
+
       List<VariableDef> variablesInACollection = entity.getCollections().stream()
-          .flatMap(collection -> collection.getMemberVariables().stream())
-          .collect(Collectors.toList());
-  
+        .flatMap(collection -> collection.getMemberVariables().stream())
+        .toList();
+
       metadataVariables = entity.getVariables().stream()
-          .filter(var -> var.getSource() != VariableSource.ID)
-          .filter(var -> !variablesInACollection.contains(var))
-          .collect(Collectors.toList());
+        .filter(var -> var.getSource() != VariableSource.ID)
+        .filter(var -> !variablesInACollection.contains(var))
+        .collect(Collectors.toList());
     } else {
       LOG.info("At least one ancestor found. Looking for variables on entities that are on a one-to-one path with entity: {}", entity.getId());
       metadataVariables = ancestors.stream()
-          .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity))
-          .flatMap(entityDef -> entityDef.getVariables().stream())
-          .filter(var -> var.getSource() != VariableSource.ID)
-          .collect(Collectors.toList());
+        .filter(ancestor -> !getManyToOneWithDescendant(metadata, ancestor, entity))
+        .flatMap(entityDef -> entityDef.getVariables().stream())
+        .filter(var -> var.getSource() != VariableSource.ID)
+        .collect(Collectors.toList());
     }
-  
+
     metadataVariables = metadataVariables.stream()
       .filter(var -> var.getDataShape() == APIVariableDataShape.CONTINUOUS && var.getSource().isResident())
       .collect(Collectors.toList());
-  
+
     return metadataVariables;
   }
 
   private Boolean getManyToOneWithDescendant(ReferenceMetadata metadata, EntityDef ancestor, EntityDef descendantToMatch) {
     return metadata.getChildren(ancestor).stream()
-        .filter(child -> metadata.isEntityAncestorOf(child, descendantToMatch) || descendantToMatch.getId().equals(child.getId())) // Find child on path to descendant to match.
-        .findFirst()
-        .orElseThrow()
-        .isManyToOneWithParent();
+      .filter(child -> metadata.isEntityAncestorOf(child, descendantToMatch) || descendantToMatch.getId().equals(child.getId())) // Find child on path to descendant to match.
+      .findFirst()
+      .orElseThrow()
+      .isManyToOneWithParent();
   }
 
   @NotNull
@@ -146,16 +145,14 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       throw new IllegalArgumentException("Invalid data configuration. Any data type of `collection` must have a collection specification and data 1 and data 2 must not be the same.");
     }
 
-    boolean hasSecondCollection = 
-      computeConfig.getData1().getDataType().getValue().equals("collection") &&
-      computeConfig.getData2().getDataType().getValue().equals("collection") ?
-      true : false;
+    boolean hasSecondCollection = computeConfig.getData1().getDataType().getValue().equals("collection") &&
+      computeConfig.getData2().getDataType().getValue().equals("collection");
 
     // bc of validation we know one or both is collection
     // if both, take the first. otherwise take whichever is collection.
-    CollectionSpec collection = 
-    computeConfig.getData1().getDataType().toString().toLowerCase().equals("collection") ?
-    computeConfig.getData1().getCollectionSpec() : computeConfig.getData2().getCollectionSpec();
+    CollectionSpec collection = computeConfig.getData1().getDataType().toString().equalsIgnoreCase("collection")
+      ? computeConfig.getData1().getCollectionSpec()
+      : computeConfig.getData2().getCollectionSpec();
 
     String entityId = collection.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
@@ -170,10 +167,10 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
 
       // validate the collection variables are on the same entity or both are 1:1 with a shared parent entity
       if (!entityId.equals(entity2Id) &&
-          !(metadata.getAncestors(entity).get(0).getId().equals(metadata.getAncestors(entity2).get(0).getId()) &&
-            !entity.isManyToOneWithParent() && !entity2.isManyToOneWithParent())
+        !(metadata.getAncestors(entity).getFirst().getId().equals(metadata.getAncestors(entity2).getFirst().getId()) &&
+          !entity.isManyToOneWithParent() && !entity2.isManyToOneWithParent())
       ) {
-          throw new IllegalArgumentException("Collection variables must be on the same entity or both be 1:1 with a shared parent entity.");
+        throw new IllegalArgumentException("Collection variables must be on the same entity or both be 1:1 with a shared parent entity.");
       }
 
       return List.of(
@@ -190,9 +187,9 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       List<VariableDef> metadataVariables = filterMetadataVariables(entity, metadata);
 
       return List.of(new StreamSpec(INPUT_DATA, entityId)
-          .addVars(getUtil().getCollectionMembers(collection))
-          .addVars(metadataVariables)
-        );
+        .addVars(getUtil().getCollectionMembers(collection))
+        .addVars(metadataVariables)
+      );
     }
   }
 
@@ -206,35 +203,33 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
 
     String method = computeConfig.getCorrelationMethod().getValue();
     FeaturePrefilterThresholds featureFilterThresholds = computeConfig.getPrefilterThresholds();
-    String proportionNonZeroThresholdRParam = 
+    String proportionNonZeroThresholdRParam =
       featureFilterThresholds != null &&
-      featureFilterThresholds.getProportionNonZero() != null ? 
+        featureFilterThresholds.getProportionNonZero() != null ?
         ",proportionNonZeroThreshold=" + featureFilterThresholds.getProportionNonZero() : "";
-    String varianceThresholdRParam = 
+    String varianceThresholdRParam =
       featureFilterThresholds != null &&
-      featureFilterThresholds.getVariance() != null ? 
+        featureFilterThresholds.getVariance() != null ?
         ",varianceThreshold=" + featureFilterThresholds.getVariance() : "";
     String stdDevThresholdRParam =
       featureFilterThresholds != null &&
-      featureFilterThresholds.getStandardDeviation() != null ? 
+        featureFilterThresholds.getStandardDeviation() != null ?
         ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 
-    boolean hasSecondCollection = 
-      computeConfig.getData1().getDataType().getValue().equals("collection") &&
-      computeConfig.getData2().getDataType().getValue().equals("collection") ?
-      true : false;
+    boolean hasSecondCollection = computeConfig.getData1().getDataType().getValue().equals("collection") &&
+      computeConfig.getData2().getDataType().getValue().equals("collection");
 
     // Wrangle the (first) collection into helpful types
     // bc of validation we know one or both is collection
     // if both, take the first. otherwise take whichever is collection.
-    CollectionSpec collectionSpec = 
-    computeConfig.getData1().getDataType().toString().toLowerCase().equals("collection") ?
-    computeConfig.getData1().getCollectionSpec() : computeConfig.getData2().getCollectionSpec();
+    CollectionSpec collectionSpec =
+      computeConfig.getData1().getDataType().toString().equalsIgnoreCase("collection") ?
+        computeConfig.getData1().getCollectionSpec() : computeConfig.getData2().getCollectionSpec();
     String entityId = collectionSpec.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    CollectionDef collection = metadata.getCollection(collectionSpec).orElseThrow(); 
+    CollectionDef collection = metadata.getCollection(collectionSpec).orElseThrow();
 
     // Get record id columns for the (first) collection
     List<VariableDef> entityIdColumns = new ArrayList<>();
@@ -254,13 +249,15 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       connection.voidEval("print('starting correlation computation')");
 
       // Read in the (first) collection data
-      List<VariableSpec> collectionInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      collectionInputVars.addAll(util.getCollectionMembers(collection));
-      collectionInputVars.addAll(entityIdColumns);
+      List<VariableSpec> collectionInputVars = new ArrayList<>() {{
+        add(computeEntityIdVarSpec);
+        addAll(util.getCollectionMembers(collection));
+        addAll(entityIdColumns);
+      }};
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, collectionInputVars));
 
       List<String> dotNotatedEntityIdColumns = entityIdColumns.stream().map(VariableDef::toDotNotation).toList();
-      String dotNotatedEntityIdColumnsString = util.listToRVector(dotNotatedEntityIdColumns);
+      String dotNotatedEntityIdColumnsString = PluginUtil.listToRVector(dotNotatedEntityIdColumns);
 
       // NOTE: getMember tells us the member type, rather than gives us a literal member
       String collectionType = collection.getMember() == null ? "unknown" : collection.getMember();
@@ -277,10 +274,10 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         CollectionSpec collection2Spec = computeConfig.getData2().getCollectionSpec();
         String entity2Id = collection2Spec.getEntityId();
         boolean isSameEntity = entityId.equals(entity2Id);
-    
+
         // Wrangle into helpful types
         EntityDef entity2 = metadata.getEntity(entity2Id).orElseThrow();
-        EntityDef parentEntity = metadata.getAncestors(entity).get(0);
+        EntityDef parentEntity = metadata.getAncestors(entity).getFirst();
         VariableDef entity2IdVarSpec = util.getEntityIdVarSpec(entity2Id);
         VariableDef parentEntityIdVarSpec = util.getEntityIdVarSpec(parentEntity.getId());
         VariableDef revisedComputeEntityIdVarSpec = isSameEntity ? computeEntityIdVarSpec : parentEntityIdVarSpec;
@@ -306,28 +303,28 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         connection.voidEval("collection2Data <- " + INPUT_2_DATA);
 
         List<String> dotNotatedEntity2IdColumns = entity2IdColumns.stream().map(VariableDef::toDotNotation).toList();
-        String dotNotatedEntity2IdColumnsString = util.listToRVector(dotNotatedEntity2IdColumns);
+        String dotNotatedEntity2IdColumnsString = PluginUtil.listToRVector(dotNotatedEntity2IdColumns);
 
         String collection2MemberType = collection2.getMember() == null ? "unknown" : collection2.getMember();
         String data2ClassRString = collection2MemberType.toLowerCase().contains("eigengene") ? "veupathUtils::CollectionWithMetadata" : "microbiomeComputations::AbundanceData";
 
-        connection.voidEval("data1 <- " + dataClassRString + "(name= " + singleQuote(collectionType) + ",data=collectionData" + 
-                                    ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
-                                    ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
-                                    ", imputeZero=TRUE)");
-      
+        connection.voidEval("data1 <- " + dataClassRString + "(name= " + singleQuote(collectionType) + ",data=collectionData" +
+          ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
+          ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
+          ", imputeZero=TRUE)");
+
         connection.voidEval("data2 <- " + data2ClassRString + "(name= " + singleQuote(collection2MemberType) + ",data = collection2Data" +
-                                    ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
-                                    ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + ")" +
-                                    ", imputeZero=TRUE)");
+          ", recordIdColumn=" + singleQuote(revisedComputeEntityIdColName) +
+          ", ancestorIdColumns=as.character(" + dotNotatedEntity2IdColumnsString + ")" +
+          ", imputeZero=TRUE)");
 
         // Run correlation!
         connection.voidEval("computeResult <- veupathUtils::correlation(data1=data1, data2=data2" +
-                                                              ", method=" + singleQuote(method) +
-                                                              proportionNonZeroThresholdRParam +
-                                                              varianceThresholdRParam +
-                                                              stdDevThresholdRParam +
-                                                              ", verbose=TRUE)");
+          ", method=" + singleQuote(method) +
+          proportionNonZeroThresholdRParam +
+          varianceThresholdRParam +
+          stdDevThresholdRParam +
+          ", verbose=TRUE)");
 
       } else {
         // This is the collection x Metadata case. The second data type is metadata.
@@ -337,7 +334,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
 
         LOG.info("Using the following metadata variables for correlation: {}",
           JsonUtil.serializeObject(metadataVariables));
-      
+
         connection.voidEval("collectionData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
 
         // Read in the sample metadata
@@ -345,28 +342,28 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         metadataInputVars.addAll(metadataVariables);
         metadataInputVars.addAll(entityIdColumns);
         connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, metadataInputVars));
-        connection.voidEval("sampleMetadata <- " + INPUT_DATA); 
+        connection.voidEval("sampleMetadata <- " + INPUT_DATA);
 
         connection.voidEval("sampleMetadata <- veupathUtils::SampleMetadata(data = sampleMetadata" +
-                                    ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                    ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + "))");
+          ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+          ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + "))");
 
-        connection.voidEval("abundanceData <- " + dataClassRString + "(name= " + singleQuote(collectionType) + ",data=collectionData" + 
-                                    ", sampleMetadata=sampleMetadata" +
-                                    ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
-                                    ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
-                                    ", imputeZero=TRUE)");       
-                                  
+        connection.voidEval("abundanceData <- " + dataClassRString + "(name= " + singleQuote(collectionType) + ",data=collectionData" +
+          ", sampleMetadata=sampleMetadata" +
+          ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+          ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
+          ", imputeZero=TRUE)");
+
         // Run correlation!
-        String metadataIsFirst = computeConfig.getData1().getDataType().toString().toLowerCase().equals("metadata") ? "TRUE" : "FALSE";
+        String metadataIsFirst = computeConfig.getData1().getDataType().toString().equalsIgnoreCase("metadata") ? "TRUE" : "FALSE";
         connection.voidEval("computeResult <- veupathUtils::correlation(data1=abundanceData, NULL," +
-                                                              ", method=" + singleQuote(method) +
-                                                              proportionNonZeroThresholdRParam +
-                                                              varianceThresholdRParam +
-                                                              stdDevThresholdRParam +
-                                                              ", metadataIsFirst=" + metadataIsFirst +
-                                                              ", verbose=TRUE)");
-        
+          ", method=" + singleQuote(method) +
+          proportionNonZeroThresholdRParam +
+          varianceThresholdRParam +
+          stdDevThresholdRParam +
+          ", metadataIsFirst=" + metadataIsFirst +
+          ", verbose=TRUE)");
+
       }
 
       // Write results

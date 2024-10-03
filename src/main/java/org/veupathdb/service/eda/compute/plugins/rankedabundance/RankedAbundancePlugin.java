@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.compute.plugins.rankedabundance;
 
-import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.CollectionDef;
@@ -19,7 +18,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginRequest, RankedAbundanceComputeConfig> {
 
@@ -56,30 +54,32 @@ public class RankedAbundancePlugin extends AbstractPlugin<RankedAbundancePluginR
     for (EntityDef ancestor : meta.getAncestors(entity)) {
       idColumns.add(ancestor.getIdColumnDef());
     }
-    
+
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting ranked abundance computation')");
 
-      List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      computeInputVars.addAll(util.getCollectionMembers(computeConfig.getCollectionVariable()));
-      computeInputVars.addAll(idColumns);
+      List<VariableSpec> computeInputVars = new ArrayList<>() {{
+        add(computeEntityIdVarSpec);
+        addAll(util.getCollectionMembers(computeConfig.getCollectionVariable()));
+        addAll(idColumns);
+      }};
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
       // TODO make a helper for this i think
-      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
-      String dotNotatedIdColumnsString = "c(";
+      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
+      StringBuilder dotNotatedIdColumnsString = new StringBuilder("c(");
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
         if (first) {
           first = false;
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + util.singleQuote(idCol);
+          dotNotatedIdColumnsString.append(PluginUtil.singleQuote(idCol));
         } else {
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + util.singleQuote(idCol);
+          dotNotatedIdColumnsString.append(",").append(PluginUtil.singleQuote(idCol));
         }
       }
-      dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
+      dotNotatedIdColumnsString.append(")");
 
-      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(name= " + util.singleQuote(collectionMemberType) + ",data=" + INPUT_DATA +
-                                                                          ",recordIdColumn=" + util.singleQuote(computeEntityIdColName) + 
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(name= " + PluginUtil.singleQuote(collectionMemberType) + ",data=" + INPUT_DATA +
+                                                                          ",recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) +
                                                                           ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ",imputeZero=TRUE)");
       connection.voidEval("abundanceDT <- rankedAbundance(abundDT, " +

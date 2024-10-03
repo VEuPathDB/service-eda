@@ -23,19 +23,18 @@ public class InternalClientsService implements SsInternalStudiesStudyIdEntitiesE
   postSsInternalStudiesEntitiesCountByStudyIdAndEntityId(
       String studyId, String entityId, EntityCountPostRequest entity) {
     return PostSsInternalStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(
-        StudiesService.handleCountRequest(studyId, entityId, entity));
+      StudiesService.handleCountRequest(studyId, entityId, entity));
   }
 
   @Override
   public PostSsInternalStudiesEntitiesTabularByStudyIdAndEntityIdResponse
-  postSsInternalStudiesEntitiesTabularByStudyIdAndEntityId(
-      String studyId, String entityId, EntityTabularPostRequest requestBody) {
+  postSsInternalStudiesEntitiesTabularByStudyIdAndEntityId(String studyId, String entityId, EntityTabularPostRequest requestBody) {
     return StudiesService.handleTabularRequest(_request, studyId, entityId, requestBody, false, (streamer, responseType) ->
       responseType == TabularResponses.Type.JSON
         ? PostSsInternalStudiesEntitiesTabularByStudyIdAndEntityIdResponse
-            .respond200WithApplicationJson(streamer)
+          .respond200WithApplicationJson(streamer)
         : PostSsInternalStudiesEntitiesTabularByStudyIdAndEntityIdResponse
-            .respond200WithTextTabSeparatedValues(streamer)
+          .respond200WithTextTabSeparatedValues(streamer)
     );
   }
 
@@ -44,7 +43,7 @@ public class InternalClientsService implements SsInternalStudiesStudyIdEntitiesE
   postSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest entity) {
     return PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.respond200WithApplicationJson(
-        StudiesService.handleDistributionRequest(studyId, entityId, variableId, entity));
+      StudiesService.handleDistributionRequest(studyId, entityId, variableId, entity));
   }
 
 }

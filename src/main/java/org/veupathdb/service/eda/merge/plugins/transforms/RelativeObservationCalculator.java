@@ -1,7 +1,6 @@
 package org.veupathdb.service.eda.merge.plugins.transforms;
 
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.validation.ValidationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.merge.core.derivedvars.Transform;
@@ -18,23 +17,13 @@ import static org.gusdb.fgputil.FormatUtil.TAB;
 
 public class RelativeObservationCalculator extends Transform<RelatedObservationMinTimeIntervalConfig> {
 
-  public static class RelativeObservationAggregatorConfig {
-
-    public final String varDescription;
-    public final VariableSpec variable;
-    public final VariableSpec timestampVariable;
-    public final List<String> trueValues;
-    public final List<APIFilter> filtersOverride;
-
-    public RelativeObservationAggregatorConfig(String varDescription, VariableSpec variable,
-        VariableSpec timestampVariable, List<String> trueValues, List<APIFilter> filtersOverride) {
-      this.varDescription = varDescription;
-      this.variable = variable;
-      this.timestampVariable = timestampVariable;
-      this.trueValues = trueValues;
-      this.filtersOverride = filtersOverride;
-    }
-  }
+  public record RelativeObservationAggregatorConfig(
+    String varDescription,
+    VariableSpec variable,
+    VariableSpec timestampVariable,
+    List<String> trueValues,
+    List<APIFilter> filtersOverride
+  ) {}
 
   public static final String FUNCTION_NAME = "relativeObservationCalculator";
 
@@ -53,15 +42,15 @@ public class RelativeObservationCalculator extends Transform<RelatedObservationM
   }
 
   @Override
-  protected void acceptConfig(RelatedObservationMinTimeIntervalConfig config) throws ValidationException {
+  protected void acceptConfig(RelatedObservationMinTimeIntervalConfig config) {
     _config = config;
     Integer minTimeIntervalDays = _config.getMinimumTimeIntervalDays();
     _minTimeIntervalDays = minTimeIntervalDays == null || minTimeIntervalDays < 0 ? 0 : minTimeIntervalDays;
     _anchorSpec = createAggregatorSpec("anchor", _config.getAnchorVariable(),
-        _config.getAnchorTimestampVariable(), _config.getAnchorVariableTrueValues());
+      _config.getAnchorTimestampVariable(), _config.getAnchorVariableTrueValues());
     _anchorDataColumn = VariableDef.toDotNotation(_anchorSpec);
     _targetSpec = createAggregatorSpec("target", _config.getTargetVariable(),
-        _config.getTargetTimestampVariable(), _config.getTargetVariableTrueValues());
+      _config.getTargetTimestampVariable(), _config.getTargetVariableTrueValues());
     _targetDataColumn = VariableDef.toDotNotation(_targetSpec);
   }
 
@@ -72,12 +61,12 @@ public class RelativeObservationCalculator extends Transform<RelatedObservationM
     aggregatorSpec.setFunctionName(RelativeObservationAggregator.FUNCTION_NAME);
     aggregatorSpec.setDisplayName(getVariableId() + "_" + varNameSuffix);
     aggregatorSpec.setConfig(new RelativeObservationAggregatorConfig(
-        varNameSuffix, variable, timestampVariable, trueValues, _config.getRelatedObservationsSubset()));
+      varNameSuffix, variable, timestampVariable, trueValues, _config.getRelatedObservationsSubset()));
     return aggregatorSpec;
   }
 
   @Override
-  protected void performSupplementalDependedVariableValidation() throws ValidationException {
+  protected void performSupplementalDependedVariableValidation() {
     // nothing to do here
   }
 

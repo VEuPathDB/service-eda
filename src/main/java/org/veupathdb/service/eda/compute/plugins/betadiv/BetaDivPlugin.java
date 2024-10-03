@@ -34,8 +34,8 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
   @Override
   public List<StreamSpec> getStreamSpecs() {
     return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getCollectionMembers(getConfig().getCollectionVariable())
-      ));
+      .addVars(getUtil().getCollectionMembers(getConfig().getCollectionVariable())
+    ));
   }
 
   @Override
@@ -67,17 +67,17 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
       computeInputVars.clear();
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
-      String dotNotatedIdColumnsString = "c(";
+      StringBuilder dotNotatedIdColumnsString = new StringBuilder("c(");
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
         if (first) {
           first = false;
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + singleQuote(idCol);
+          dotNotatedIdColumnsString.append(singleQuote(idCol));
         } else {
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + singleQuote(idCol);
+          dotNotatedIdColumnsString.append(",").append(singleQuote(idCol));
         }
       }
-      dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
+      dotNotatedIdColumnsString.append(")");
 
       connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(name=" + singleQuote(collectionMemberType) + ",data=" + INPUT_DATA +
                                                                           ",recordIdColumn=" + singleQuote(computeEntityIdColName) +
@@ -85,7 +85,7 @@ public class BetaDivPlugin extends AbstractPlugin<BetaDivPluginRequest, BetaDivC
                                                                           ",imputeZero=TRUE)");
       connection.voidEval("betaDivDT <- betaDiv(abundDT, " +
                                                 singleQuote(dissimilarityMethod) + ")");
-      
+
       String dataCmd = "writeData(betaDivDT, NULL, TRUE)";
       String metaCmd = "writeMeta(betaDivDT, NULL, TRUE)";
 

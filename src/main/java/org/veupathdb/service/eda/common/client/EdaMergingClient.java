@@ -44,18 +44,21 @@ public class EdaMergingClient extends StreamingDataClient {
 
   @Override
   public ResponseFuture getTabularDataStream(
-      ReferenceMetadata metadata,
-      List<APIFilter> subset,
-      StreamSpec spec) throws ProcessingException {
+    ReferenceMetadata metadata,
+    List<APIFilter> subset,
+    StreamSpec spec
+  ) throws ProcessingException {
     return getTabularDataStream(metadata, subset, Collections.emptyList(), Optional.empty(), spec);
   }
 
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public ResponseFuture getTabularDataStream(
-      ReferenceMetadata metadata,
-      List<APIFilter> subset,
-      List<DerivedVariableSpec> derivedVariableSpecs,
-      Optional<Tuples.TwoTuple<String,Object>> computeInfoOpt,
-      StreamSpec spec) throws ProcessingException {
+    ReferenceMetadata metadata,
+    List<APIFilter> subset,
+    List<DerivedVariableSpec> derivedVariableSpecs,
+    Optional<Tuples.TwoTuple<String,Object>> computeInfoOpt,
+    StreamSpec spec
+  ) throws ProcessingException {
 
     // build request object
     MergedEntityTabularPostRequest request = new MergedEntityTabularPostRequestImpl();

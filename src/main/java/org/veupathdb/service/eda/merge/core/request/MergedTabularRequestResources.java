@@ -1,7 +1,6 @@
 package org.veupathdb.service.eda.merge.core.request;
 
 import jakarta.ws.rs.BadRequestException;
-import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.iterator.CloseableIterator;
@@ -9,20 +8,11 @@ import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.EdaComputeClient;
 import org.veupathdb.service.eda.common.client.spec.EdaMergingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
-import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.Resources;
-import org.veupathdb.service.eda.subset.model.Entity;
-import org.veupathdb.service.eda.subset.model.Study;
-import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
-import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,22 +20,22 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
-
-import static org.gusdb.fgputil.FormatUtil.TAB;
 
 /**
- * Subclass of RequestResources which supplements the superclass's resources with target entity, subset filters, and
- * compute information needed for tabular requests.  This includes fetching compute job metadata, computed variable
- * metadata (incorporated into the ReferenceMetadata instance), and a method which provides the actual computed
- * variable tabular stream, all by querying the compute service.
+ * Subclass of RequestResources which supplements the superclass' resources with
+ * target entity, subset filters, and compute information needed for tabular
+ * requests.  This includes fetching compute job metadata, computed variable
+ * metadata (incorporated into the ReferenceMetadata instance), and a method
+ * which provides the actual computed variable tabular stream, all by querying
+ * the compute service.
  */
 public class MergedTabularRequestResources extends RequestResources {
 
   private final EdaComputeClient _computeSvc;
-  private final List<APIFilter> _subsetFilters;
+  private final List<APIFilter>       _subsetFilters;
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private final Optional<ComputeInfo> _computeInfo;
-  private final String _targetEntityId;
+  private final String                _targetEntityId;
   private final List<VariableSpec> _outputVarSpecs;
 
   public MergedTabularRequestResources(MergedEntityTabularPostRequest request, Entry<String, String> authHeader) throws ValidationException {
@@ -55,8 +45,8 @@ public class MergedTabularRequestResources extends RequestResources {
     _computeSvc = new EdaComputeClient(Resources.COMPUTE_SERVICE_URL, authHeader);
     _subsetFilters = Optional.ofNullable(request.getFilters()).orElse(Collections.emptyList());
     _computeInfo = Optional.ofNullable(request.getComputeSpec())
-        .map(spec -> new ComputeInfo(spec.getComputeName(),
-            new EdaComputeClient.ComputeRequestBody(_metadata.getStudyId(), _subsetFilters, _derivedVariableSpecs, spec.getComputeConfig())));
+      .map(spec -> new ComputeInfo(spec.getComputeName(),
+        new EdaComputeClient.ComputeRequestBody(_metadata.getStudyId(), _subsetFilters, _derivedVariableSpecs, spec.getComputeConfig())));
     // incorporate computed metadata (if compute info present)
     incorporateCompute();
 
@@ -84,13 +74,13 @@ public class MergedTabularRequestResources extends RequestResources {
 
   public CloseableIterator<Map<String, String>> getComputeStreamIterator() {
     return _computeInfo.map(computeInfo -> _computeSvc.getJobTabularIteratorOutput(
-            _metadata.getAncestors(_metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow()),
-            computeInfo.getComputeName(),
-            _metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow(),
-            computeInfo.getVariables(),
-            computeInfo.getRequestBody(),
-            _metadata))
-        .orElseThrow(() -> new IllegalStateException("Cannot get compute stream iterator if no compute is specified in request."));
+      _metadata.getAncestors(_metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow()),
+      computeInfo.getComputeName(),
+      _metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow(),
+      computeInfo.getVariables(),
+      computeInfo.getRequestBody(),
+      _metadata))
+    .orElseThrow(() -> new IllegalStateException("Cannot get compute stream iterator if no compute is specified in request."));
   }
 
   private void incorporateCompute() {
@@ -110,17 +100,18 @@ public class MergedTabularRequestResources extends RequestResources {
     StreamSpec requestSpec = new StreamSpec("incoming", _targetEntityId);
     requestSpec.addAll(_outputVarSpecs);
     new EdaMergingSpecValidator()
-        .validateStreamSpecs(ListBuilder.asList(requestSpec), _metadata)
-        .throwIfInvalid();
+      .validateStreamSpecs(ListBuilder.asList(requestSpec), _metadata)
+      .throwIfInvalid();
 
     // if compute was requested, make sure the computed entity is the
     //   same as, or an ancestor of, the target entity of this request
     if (_computeInfo.isPresent()) {
       Predicate<String> isComputeVarEntity = entityId -> entityId.equals(_computeInfo.get().getComputeEntity());
       if (!isComputeVarEntity.test(_targetEntityId) && _metadata
-          .getAncestors(_metadata.getEntity(_targetEntityId).orElseThrow()).stream()
-          .filter(entity -> isComputeVarEntity.test(entity.getId()))
-          .findFirst().isEmpty()) {
+        .getAncestors(_metadata.getEntity(_targetEntityId).orElseThrow()).stream()
+        .filter(entity -> isComputeVarEntity.test(entity.getId()))
+        .findFirst().isEmpty()
+      ) {
         // we don't perform reductions on computed vars so they must be on the target entity or an ancestor
         throw new ValidationException("Entity of computed variable must be the same as, or ancestor of, the target entity");
       }
@@ -135,5 +126,4 @@ public class MergedTabularRequestResources extends RequestResources {
   public Optional<ComputeInfo> getComputeInfo() { return _computeInfo; }
   public String getTargetEntityId() { return _targetEntityId; }
   public List<VariableSpec> getOutputVariableSpecs() { return _outputVarSpecs; }
-
 }

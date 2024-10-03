@@ -2,7 +2,7 @@ package org.veupathdb.service.eda.data.plugin.standalonemap.aggregator;
 
 import java.util.function.Function;
 
-public class MeanAggregator implements MarkerAggregator {
+public class MeanAggregator implements MarkerAggregator<Double> {
 
   private double sum = 0;
   private int n = 0;

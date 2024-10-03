@@ -6,28 +6,23 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.json.JsonUtil;
-import org.json.JSONObject;
 import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
+import org.veupathdb.lib.jackson.Json;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
+import org.veupathdb.service.eda.generated.model.AnalysisSummary;
 import org.veupathdb.service.eda.user.model.AnalysisDetailWithUser;
 import org.veupathdb.service.eda.user.model.UserDataFactory;
 
 public class Utils {
-
-  public static final ObjectMapper JSON = new ObjectMapper();
-
   public static User getActiveUser(ContainerRequest request) {
     return UserProvider.lookupUser(request).orElseThrow(() ->
         // authentication framework should handle cases where no appropriate user header was sent
@@ -60,10 +55,11 @@ public class Utils {
   }
 
   public static void verifyOwnership(UserDataFactory dataFactory, long userId, String... ids) {
-    List<String> usersAnalysisIds = dataFactory.getAnalysisSummaries(userId).stream()
-        .map(sum -> sum.getAnalysisId()).collect(Collectors.toList());
-    List<String> badIds = Arrays.stream(ids)
-        .filter(id -> !usersAnalysisIds.contains(id)).collect(Collectors.toList());
+    List<String> usersAnalysisIds = dataFactory.getAnalysisSummaries(userId)
+      .stream()
+      .map(AnalysisSummary::getAnalysisId)
+      .toList();
+    List<String> badIds = Arrays.stream(ids).filter(id -> !usersAnalysisIds.contains(id)).toList();
     if (!badIds.isEmpty()) {
       throw new NotFoundException("Analysis ID(s) [ " + String.join(", ", badIds) + " ] cannot be found for user " + userId);
     }
@@ -77,7 +73,7 @@ public class Utils {
 
   public static <T> T parseObject(String jsonString, Class<T> clazz) {
     try {
-      return jsonString == null ? null : JsonUtil.Jackson.readValue(jsonString, clazz);
+      return jsonString == null ? null : Json.getMapper().readValue(jsonString, clazz);
     }
     catch (JsonProcessingException e) {
       throw new RuntimeException("Could not map JSON string to a " + clazz.getName() + " object", e);
@@ -90,7 +86,7 @@ public class Utils {
 
   public static String formatObject(Object obj) {
     try {
-      return JsonUtil.Jackson.writeValueAsString(obj);
+      return Json.getMapper().writeValueAsString(obj);
     }
     catch (JsonProcessingException e) {
       throw new RuntimeException("Could not serialize " + obj.getClass().getName(), e);
@@ -128,10 +124,6 @@ public class Utils {
       fn.accept(value);
   }
 
-  public static <T> T orElse(T value, T fallback) {
-    return value == null ? fallback : value;
-  }
-
   public static void requireSubsettingPermission(ContainerRequest request, String datasetID) {
     try {
       var info = new DatasetAccessClient(
@@ -141,7 +133,7 @@ public class Utils {
         .getStudyPermsByDatasetId(datasetID);
 
       if (!info.getStudyAccess().allowSubsetting()) {
-        throw new ForbiddenException(new JSONObject()
+        throw new ForbiddenException(Json.newObject()
           .put("denialReason", "noAccess")
           .put("message", "The requesting user does not have access to this study.")
           .put("datasetId", datasetID)
@@ -151,7 +143,7 @@ public class Utils {
       }
     } catch (NotFoundException e) {
       // per https://github.com/VEuPathDB/EdaUserService/issues/24 if dataset under the study does not exist, throw Forbidden
-      throw new ForbiddenException(new JSONObject()
+      throw new ForbiddenException(Json.newObject()
         .put("denialReason", "missingDataset")
         .put("message", "This analysis cannot be imported because the underlying dataset '" + datasetID + "' no longer exists.")
         .put("datasetId", datasetID)

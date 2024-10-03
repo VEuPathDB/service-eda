@@ -1,5 +1,7 @@
 package org.veupathdb.service.eda.common.client;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,12 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Wrapper around an input stream whose content must be a newline-delimited
- * set of records, including a header row.  This stream will transfer all
- * the passed input stream's data through its read() methods, with one
- * addition: after reading the header row (and optional newline), if no
- * more data is present, a JAX-RS BadRequestException will be thrown,
- * ending processing.
+ * Wrapper around an input stream whose content must be a newline-delimited set
+ * of records, including a header row.  This stream will transfer all the passed
+ * input stream's data through its read() methods, with one addition: after
+ * reading the header row (and optional newline), if no more data is present, a
+ * JAX-RS BadRequestException will be thrown, ending processing.
  */
 public class NonEmptyResultStream extends BufferedInputStream {
 
@@ -48,13 +49,13 @@ public class NonEmptyResultStream extends BufferedInputStream {
   @Override
   public int read() throws IOException {
     if (!firstLine.isEmpty()) {
-      return firstLine.remove(0);
+      return firstLine.removeFirst() & 0xFF;
     }
     return super.read();
   }
 
   @Override
-  public synchronized int read(byte[] b, int off, int len) throws IOException {
+  public synchronized int read(@NotNull byte[] b, int off, int len) throws IOException {
     if (firstLine.isEmpty()) {
       return super.read(b, off, len);
     }
@@ -62,7 +63,7 @@ public class NonEmptyResultStream extends BufferedInputStream {
     if (len > firstLine.size()) {
       int i = off;
       while (!firstLine.isEmpty()) {
-        b[i++] = firstLine.remove(0);
+        b[i++] = firstLine.removeFirst();
       }
       int bytesRead = (i - off);
       return bytesRead + super.read(b, i, len - bytesRead);
@@ -71,7 +72,7 @@ public class NonEmptyResultStream extends BufferedInputStream {
     int i = off;
     int bytesRead = 0;
     while (bytesRead < len) {
-      b[i++] = firstLine.remove(0);
+      b[i++] = firstLine.removeFirst();
       bytesRead++;
     }
     return bytesRead;

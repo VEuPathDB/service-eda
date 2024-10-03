@@ -15,6 +15,7 @@ import org.veupathdb.service.eda.access.service.QueryUtil;
 import org.veupathdb.service.eda.access.util.PsBuilder;
 import org.veupathdb.service.eda.access.util.SqlUtil;
 
+@SuppressWarnings("resource")
 public class StaffRepo
 {
   public interface Delete

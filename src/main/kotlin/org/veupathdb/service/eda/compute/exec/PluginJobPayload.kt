@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.compute.exec
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
-import org.gusdb.fgputil.Tuples.TwoTuple
 import org.veupathdb.service.eda.compute.util.AuthTuple
 
 /**

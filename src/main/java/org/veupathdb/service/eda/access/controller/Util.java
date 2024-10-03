@@ -8,8 +8,7 @@ import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 
 public class Util
 {
-  @SuppressWarnings("FieldMayBeFinal")
-  private static Util instance = new Util();
+  private static final Util instance = new Util();
 
   Util() {}
 

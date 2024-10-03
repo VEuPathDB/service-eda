@@ -3,9 +3,7 @@ package org.veupathdb.service.eda;
 import jakarta.ws.rs.NotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.db.platform.Oracle;
 import org.gusdb.fgputil.runtime.Environment;
 import org.gusdb.fgputil.runtime.ProjectSpecificProperties;
 import org.veupathdb.lib.container.jaxrs.config.Options;
@@ -22,6 +20,7 @@ import org.veupathdb.service.eda.access.repo.RestrictionLevelRepo;
 import org.veupathdb.service.eda.compute.controller.ComputeController;
 import org.veupathdb.service.eda.compute.controller.ExpirationController;
 import org.veupathdb.service.eda.compute.controller.InternalJobsController;
+import org.veupathdb.service.eda.compute.service.AdminController;
 import org.veupathdb.service.eda.compute.service.JobsController;
 import org.veupathdb.service.eda.data.service.AppsService;
 import org.veupathdb.service.eda.data.service.FilterAwareMetadataService;
@@ -31,7 +30,6 @@ import org.veupathdb.service.eda.merge.ServiceInternal;
 import org.veupathdb.service.eda.subset.EnvironmentVars;
 import org.veupathdb.service.eda.subset.model.StudyOverview;
 import org.veupathdb.service.eda.subset.model.db.StudyFactory;
-import org.veupathdb.service.eda.subset.model.db.StudyProvider;
 import org.veupathdb.service.eda.subset.model.db.StudyResolver;
 import org.veupathdb.service.eda.subset.model.db.VariableFactory;
 import org.veupathdb.service.eda.subset.model.reducer.BinaryValuesStreamer;
@@ -107,6 +105,7 @@ public class Resources extends ContainerResources {
 
   public static final String RSERVE_URL = getRequiredVar("RSERVE_URL");
 
+  @SuppressWarnings("resource")
   public Resources(Options opts) {
     super(opts);
 
@@ -147,15 +146,10 @@ public class Resources extends ContainerResources {
       throw new RuntimeException(e);
     }
 
-    // if (SUBSET_ENV.isDevelopmentMode()) {
-    //   enableJerseyTrace();
-    //   ClientUtil.LOG_RESPONSE_HEADERS = true;
-    // }
-
     if (!USE_IN_MEMORY_TEST_DATABASE) {
       DbManager.initApplicationDatabase(opts);
-      LOG.info("Using application DB connection URL: " +
-        DbManager.getInstance().getApplicationDatabase().getConfig().getConnectionUrl());
+      LOG.info("Using application DB connection URL: {}", DbManager.getInstance().getApplicationDatabase().getConfig().getConnectionUrl()
+      );
       APP_DB_INIT_SIGNAL.countDown();
     }
   }
@@ -193,6 +187,7 @@ public class Resources extends ContainerResources {
     return BINARY_FILES_MANAGER;
   }
 
+  @SuppressWarnings("resource")
   public static DataSource getApplicationDataSource() {
     return USE_IN_MEMORY_TEST_DATABASE
       ? StubDb.getDataSource()
@@ -222,10 +217,12 @@ public class Resources extends ContainerResources {
     return SUBSET_ENV.getDatasetAccessServiceUrl();
   }
 
+  @SuppressWarnings("resource")
   public static DataSource getUserDataSource() {
     return DbManager.userDatabase().getDataSource();
   }
 
+  @SuppressWarnings("resource")
   public static DataSource getAccountsDataSource() {return DbManager.accountDatabase().getDataSource();}
 
   public static String getUserDbSchema(String projectId) {
@@ -243,6 +240,7 @@ public class Resources extends ContainerResources {
     return "vdi_control_" + Environment.getRequiredVar("VDI_SCHEMA_SUFFIX");
   }
 
+  @SuppressWarnings("resource")
   public static DBPlatform getUserPlatform() {
     return DbManager.userDatabase().getPlatform();
   }
@@ -277,6 +275,7 @@ public class Resources extends ContainerResources {
   @Override
   protected Object[] resources() {
     return new Object[]{
+      AdminController.class,
       // Subsetting
       StudiesService.class,
       InternalClientsService.class,

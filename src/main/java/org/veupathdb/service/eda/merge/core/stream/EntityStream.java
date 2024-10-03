@@ -2,25 +2,18 @@ package org.veupathdb.service.eda.merge.core.stream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
-import static org.gusdb.fgputil.FormatUtil.TAB;
 
 /**
  * Base class for entity streams; handles reading tabular data into a map for
@@ -28,11 +21,11 @@ import static org.gusdb.fgputil.FormatUtil.TAB;
  * handled by a subclass), and caching the last produced row for inspection before
  * delivery.  This row may be delivered more than once depending on the location of
  * this data stream in the entity tree.
- *
+ * <p>
  * Serves as a base class for stream processor nodes that abstracts away the
  * reading of the tabular data (leaving tree-related and derived variable logic
  * to a subclass).
- *
+ * <p>
  * The lifecycle of this class is:
  * 1. construction
  * 2. assignment of the stream spec (typically by the subclass in its constructor)
@@ -54,7 +47,6 @@ public class EntityStream implements Iterator<Map<String,String>> {
 
   // fields set up by the assignment of the data stream
   // caches the last row read from the scanner (null if no more rows)
-  private BufferedReader _reader;
   private Map<String, String> _lastRowRead;
 
   protected EntityStream(ReferenceMetadata metadata) {
@@ -62,7 +54,7 @@ public class EntityStream implements Iterator<Map<String,String>> {
   }
 
   protected EntityStream setStreamSpec(StreamSpec streamSpec) {
-    LOG.info("Initializing " + getClass().getSimpleName() + " for entity " + streamSpec.getEntityId());
+    LOG.info("Initializing {} for entity {}", getClass().getSimpleName(), streamSpec.getEntityId());
     _streamSpec = streamSpec;
     EntityDef entity = _metadata.getEntity(streamSpec.getEntityId()).orElseThrow();
     // cache the name of the column used to identify records that match the current row
@@ -89,8 +81,9 @@ public class EntityStream implements Iterator<Map<String,String>> {
   }
 
   /**
-   * By default this class does not apply derived or inherited vars.  This way it can still be used stand-alone to
-   * process computed variable tabular data streams, and could be used (but is not) in cases where no derived or
+   * By default, this class does not apply derived or inherited vars.  This way
+   * it can still be used stand-alone to process computed variable tabular data
+   * streams, and could be used (but is not) in cases where no derived or
    * inherited vars exist.
    *
    * @param row row of data read from the tabular data stream
@@ -121,14 +114,14 @@ public class EntityStream implements Iterator<Map<String,String>> {
   }
 
   /**
-   * If the stored row matches the predicate, then returns it but does not iterate (iteration must be
-   * handled independently by extra calls to <code>next()</code>).  If no more rows or if stored row
-   * does not match the predicate, returns an empty optional (and still does not iterate).
-   *
-   * This is used for inheriting parent vars across multiple children of that parent (i.e. whose IDs
-   * match the parent's ID).  The parent row is retained until a child comes along that does not
-   * match it.
-   *
+   * If the stored row matches the predicate, then returns it but does not
+   * iterate (iteration must be handled independently by extra calls to
+   * <code>next()</code>).  If no more rows or if stored row does not match the
+   * predicate, returns an empty optional (and still does not iterate).
+   * <p>
+   * This is used for inheriting parent vars across multiple children of that
+   * parent (i.e. whose IDs match the parent's ID).  The parent row is retained
+   * until a child comes along that does not match it.
    */
   public Optional<Map<String, String>> getPreviousRowIf(Predicate<Map<String, String>> condition) {
     return hasNext() && condition.test(_lastRowRead)
@@ -137,11 +130,13 @@ public class EntityStream implements Iterator<Map<String,String>> {
   }
 
   /**
-   * If the stored row matches the predicate, then returns it and reads the next row, storing it.  If no
-   * more rows or if stored row does not match the predicate, returns an empty optional and does not iterate.
-   *
-   * This is used for reductions to efficiently continue reading child rows that match a parent ID until a
-   * child row is found that does not match the parent ID.
+   * If the stored row matches the predicate, then returns it and reads the next
+   * row, storing it.  If no more rows or if stored row does not match the
+   * predicate, returns an empty optional and does not iterate.
+   * <p>
+   * This is used for reductions to efficiently continue reading child rows that
+   * match a parent ID until a child row is found that does not match the parent
+   * ID.
    */
   public Optional<Map<String, String>> getNextRowIf(Predicate<Map<String, String>> condition) {
     return hasNext() && condition.test(_lastRowRead)

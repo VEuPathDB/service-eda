@@ -26,7 +26,7 @@ public class RequestBundle {
 
     Entity entity = study.getEntity(entityId).orElseThrow(() -> new NotFoundException("In " + study.getStudyId() + " Entity ID not found: " + entityId));
 
-    List<VariableWithValues> variables = getEntityVariables(entity, variableIds);
+    List<VariableWithValues<?>> variables = getEntityVariables(entity, variableIds);
 
     List<Filter> filters = ApiConversionUtil.toInternalFilters(study, apiFilters, dataSchema);
 
@@ -35,6 +35,7 @@ public class RequestBundle {
     return new RequestBundle(study, entity, variables, filters, reportConfig);
   }
 
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private static TabularReportConfig getTabularReportConfig(Entity entity, Optional<APITabularReportConfig> configOpt) {
     TabularReportConfig config = new TabularReportConfig();
 
@@ -87,7 +88,7 @@ public class RequestBundle {
     return config;
   }
 
-  private static List<VariableWithValues> getEntityVariables(Entity entity, List<String> variableIds) {
+  private static List<VariableWithValues<?>> getEntityVariables(Entity entity, List<String> variableIds) {
 
     List<Variable> variables = new ArrayList<>();
 
@@ -103,17 +104,17 @@ public class RequestBundle {
     }
 
     return variables.stream()
-        .map(var -> (VariableWithValues) var)
+        .map(var -> (VariableWithValues<?>) var)
         .collect(Collectors.toList());
   }
 
   private final Study _study;
   private final List<Filter> _filters;
   private final Entity _targetEntity;
-  private final List<VariableWithValues> _requestedVariables;
+  private final List<VariableWithValues<?>> _requestedVariables;
   private final TabularReportConfig _reportConfig;
 
-  RequestBundle(Study study, Entity targetEntity, List<VariableWithValues> requestedVariables, List<Filter> filters, TabularReportConfig reportConfig) {
+  RequestBundle(Study study, Entity targetEntity, List<VariableWithValues<?>> requestedVariables, List<Filter> filters, TabularReportConfig reportConfig) {
     _study = study;
     _targetEntity = targetEntity;
     _filters = filters;
@@ -133,7 +134,7 @@ public class RequestBundle {
     return _targetEntity;
   }
 
-  public List<VariableWithValues> getRequestedVariables() {
+  public List<VariableWithValues<?>> getRequestedVariables() {
     return _requestedVariables;
   }
 

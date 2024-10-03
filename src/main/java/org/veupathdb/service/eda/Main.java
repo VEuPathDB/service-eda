@@ -26,8 +26,6 @@ public class Main extends Server {
 
   @Override
   protected ContainerResources newResourceConfig(Options options) {
-    //    out.property("jersey.config.server.tracing.type", "ALL")
-//       .property("jersey.config.server.tracing.threshold", "VERBOSE");
     return new Resources(config);
   }
 
@@ -66,6 +64,8 @@ public class Main extends Server {
     }
   }
 
+  public static final String S3_ROOT_PATH = "/";
+
   private void initAsyncPlatform() {
     AsyncDBConfig dbConfig = new AsyncDBConfig(
       config.getQueueDBName(),
@@ -82,7 +82,7 @@ public class Main extends Server {
       config.getS3Bucket(),
       config.getS3AccessToken(),
       config.getS3SecretKey(),
-      "/"
+      S3_ROOT_PATH
     );
     AsyncJobConfig jobConfig = new AsyncJobConfig(
       (ctx) -> new PluginExecutor(),

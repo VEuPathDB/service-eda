@@ -9,6 +9,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.gusdb.fgputil.Wrapper;
+import org.jetbrains.annotations.NotNull;
 import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.service.eda.access.controller.Util;
 import org.veupathdb.service.eda.generated.model.*;
@@ -37,23 +38,23 @@ public class PermissionService
 
       // find the one for this study if it exists
       Optional<StudyPermissionInfo> studyPermission = knownDatasets.entrySet().stream()
-          .filter(entry -> entry.getKey().equals(datasetId))
-          .findAny()
-          // if found, convert for return
-          .map(entry -> {
-            StudyPermissionInfo info = new StudyPermissionInfoImpl();
-            info.setDatasetId(entry.getKey());
-            info.setStudyId(entry.getValue().getStudyId());
-            info.setIsUserStudy(entry.getValue().getIsUserStudy());
-            info.setActionAuthorization(entry.getValue().getActionAuthorization());
-            return info;
-          });
+        .filter(entry -> entry.getKey().equals(datasetId))
+        .findAny()
+        // if found, convert for return
+        .map(entry -> {
+          StudyPermissionInfo info = new StudyPermissionInfoImpl();
+          info.setDatasetId(entry.getKey());
+          info.setStudyId(entry.getValue().getStudyId());
+          info.setIsUserStudy(entry.getValue().getIsUserStudy());
+          info.setActionAuthorization(entry.getValue().getActionAuthorization());
+          return info;
+        });
 
       if (studyPermission.isPresent()) return studyPermission.get();
 
       // otherwise, user does not have study visibility but want to see if it's a user study
       return UserDatasetIsaStudies.getUserStudyByDatasetId(datasetId).orElseThrow(
-          () -> new NotFoundException("No study exists with dataset ID: " + datasetId)
+        () -> new NotFoundException("No study exists with dataset ID: " + datasetId)
       );
     }
     catch (WebApplicationException e) {
@@ -112,9 +113,9 @@ public class PermissionService
   }
 
   private static PermissionMap getPermissionMap(boolean grantToAllDatasets,
-      List<DatasetProps> datasetProps,
-      Map<String, Boolean> providerInfoMap,
-      Map<String, ApprovalStatus> approvalStatusMap) {
+                                                List<DatasetProps> datasetProps,
+                                                Map<String, Boolean> providerInfoMap,
+                                                Map<String, ApprovalStatus> approvalStatusMap) {
     var permissionMap = new PermissionMap();
     for (DatasetProps dataset : datasetProps) {
 
@@ -131,8 +132,8 @@ public class PermissionService
 
       // set permission type for this dataset
       permEntry.setType(isProvider ?
-          DatasetPermissionLevel.PROVIDER :
-          DatasetPermissionLevel.ENDUSER);
+        DatasetPermissionLevel.PROVIDER :
+        DatasetPermissionLevel.ENDUSER);
 
       // is manager if isProvider and provider info map has value true
       permEntry.setIsManager(isProvider && providerInfoMap.get(dataset.datasetId));
@@ -143,27 +144,14 @@ public class PermissionService
       boolean accessGranted = requestStatus == ApprovalStatus.APPROVED;
       boolean grantAllPermsForThisDataset = grantToAllDatasets || isProvider || accessGranted;
 
-      ActionList actions = new ActionListImpl();
-
-      // all users have access to the study page of all studies
-      actions.setStudyMetadata(true);
-
-      // controls search, visualizations, small results
-      boolean allowBasicAccess = grantAllPermsForThisDataset || dataset.accessLevel.allowsBasicAccess();
-      actions.setSubsetting(allowBasicAccess);
-      actions.setVisualizations(allowBasicAccess);
-      actions.setResultsFirstPage(allowBasicAccess);
-
-      // controls access to full dataset, downloads
-      boolean allowFullAccess = grantAllPermsForThisDataset || dataset.accessLevel.allowsFullAccess();
-      actions.setResultsAll(allowFullAccess);
+      ActionList actions = getActionList(dataset, grantAllPermsForThisDataset);
 
       permEntry.setActionAuthorization(actions);
 
       // add to map
       if (permissionMap.containsKey(dataset.datasetId)) {
         throw new IllegalStateException("Database (datasetpresenter table or studyiddatasetid table) " +
-            "contains more than one row for dataset ID " + dataset.datasetId);
+          "contains more than one row for dataset ID " + dataset.datasetId);
       }
       permissionMap.put(dataset.datasetId, permEntry);
     }
@@ -176,5 +164,24 @@ public class PermissionService
       instance = new PermissionService();
 
     return instance;
+  }
+
+  @NotNull
+  private static ActionList getActionList(DatasetProps dataset, boolean grantAllPermsForThisDataset) {
+    ActionList actions = new ActionListImpl();
+
+    // all users have access to the study page of all studies
+    actions.setStudyMetadata(true);
+
+    // controls search, visualizations, small results
+    boolean allowBasicAccess = grantAllPermsForThisDataset || dataset.accessLevel.allowsBasicAccess();
+    actions.setSubsetting(allowBasicAccess);
+    actions.setVisualizations(allowBasicAccess);
+    actions.setResultsFirstPage(allowBasicAccess);
+
+    // controls access to full dataset, downloads
+    boolean allowFullAccess = grantAllPermsForThisDataset || dataset.accessLevel.allowsFullAccess();
+    actions.setResultsAll(allowFullAccess);
+    return actions;
   }
 }

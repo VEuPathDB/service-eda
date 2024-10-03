@@ -6,16 +6,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.lib.test.MockUtil;
 import org.veupathdb.lib.test.RandUtil;
 import org.veupathdb.service.eda.generated.model.ApprovalStatus;
-import org.veupathdb.service.eda.generated.model.EndUser;
 import org.veupathdb.service.eda.generated.model.EndUserCreateRequest;
 import org.veupathdb.service.eda.generated.model.EndUserCreateResponse;
 import org.veupathdb.service.eda.generated.model.EndUserList;
 import org.veupathdb.service.eda.access.service.user.EndUserCreationService;
-import org.veupathdb.service.eda.access.service.user.EndUserLookupService;
 import org.veupathdb.service.eda.access.service.user.EndUserSearchService;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -97,42 +94,6 @@ class EndUserControllerTest
       assertSame(out, target.postDatasetEndUsers(in).getEntity());
 
       verify(mock).handleUserCreation(in, mockRequest);
-    }
-  }
-
-  @Nested
-  @DisplayName("#getDatasetEndUsersByEndUserId(String)")
-  class GetDatasetEndUsersByEndUserId
-  {
-    private Util                 mockUtil;
-    private User                 mockUser;
-    private EndUserLookupService mockLookup;
-    private EndUser              mockReqUser;
-
-    @BeforeEach
-    void setUp() throws Exception {
-      mockUtil    = MockUtil.mockSingleton(Util.class);
-      mockLookup  = MockUtil.mockSingleton(EndUserLookupService.class);
-      mockReqUser = mock(EndUser.class);
-      mockUser    = mock(User.class);
-
-      doReturn(mockUser).when(mockUtil).mustGetUser(mockRequest);
-    }
-
-    @AfterEach
-    void tearDown() throws Exception {
-      MockUtil.resetSingleton(Util.class);
-    }
-
-    @Nested
-    @DisplayName("throws a forbidden exception")
-    class e403
-    {
-      @Test
-      @DisplayName("when the requesting user is not a manager, provider")
-      void test1() {
-
-      }
     }
   }
 }

@@ -1,8 +1,6 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap.aggregator;
 
 import com.google.common.collect.Sets;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.veupathdb.service.eda.generated.model.CategoricalAggregationConfig;
 
 import java.util.HashSet;
@@ -12,12 +10,11 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * Map marker aggregator taking categorical variable and providing a ratio of number of elements with values in a
- * set of numerator values over number of elements with values in a set of denominator values.
+ * Map marker aggregator taking categorical variable and providing a ratio of
+ * number of elements with values in a set of numerator values over number of
+ * elements with values in a set of denominator values.
  */
 public class CategoricalProportionAggregator implements MarkerAggregator<Double> {
-  private static final Logger LOG = LogManager.getLogger(CategoricalProportionAggregator.class);
-
   private final boolean negationMode;
   private final int index;
   private final Set<String> numeratorMatchSet;
@@ -92,7 +89,7 @@ public class CategoricalProportionAggregator implements MarkerAggregator<Double>
      */
     public CategoricalProportionAggregatorFactory(CategoricalAggregationConfig categoricalConfig,
                                                   Supplier<List<String>> vocabSupplier) {
-      if (!categoricalConfig.getDenominatorValues().containsAll(categoricalConfig.getNumeratorValues())) {
+      if (!new HashSet<>(categoricalConfig.getDenominatorValues()).containsAll(categoricalConfig.getNumeratorValues())) {
         throw new IllegalArgumentException("Numerator values match set must be a subset of denominator values match set.");
       }
 

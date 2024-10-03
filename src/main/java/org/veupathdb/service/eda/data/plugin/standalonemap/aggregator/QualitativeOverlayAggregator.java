@@ -44,21 +44,5 @@ public class QualitativeOverlayAggregator implements MarkerAggregator<Map<String
         .collect(Collectors.toMap(Map.Entry::getKey, e -> new CategoricalOverlayData(e.getValue(), (double) e.getValue() / n)));
   }
 
-  public static class CategoricalOverlayData {
-    private final int count;
-    private final double proportion;
-
-    public CategoricalOverlayData(int count, double proportion) {
-      this.count = count;
-      this.proportion = proportion;
-    }
-
-    public int getCount() {
-      return count;
-    }
-
-    public double getProportion() {
-      return proportion;
-    }
-  }
+  public record CategoricalOverlayData(int count, double proportion) {}
 }

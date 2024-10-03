@@ -13,7 +13,6 @@ import org.veupathdb.service.eda.generated.model.JobStatus;
 import org.veupathdb.service.eda.generated.resources.InternalJobs;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,8 +24,8 @@ public class InternalJobsController implements InternalJobs {
   public GetInternalJobsResponse getInternalJobs() {
     // Expose internal jobs from async platform.
     final List<InternalJob> outputEntity = AsyncPlatform.listJobsInternal().stream()
-        .map(this::toApiJob)
-        .collect(Collectors.toList());
+      .map(this::toApiJob)
+      .collect(Collectors.toList());
     return GetInternalJobsResponse.respond200WithApplicationJson(outputEntity);
   }
 
@@ -48,12 +47,12 @@ public class InternalJobsController implements InternalJobs {
   private InternalJob toApiJob(InternalJobRecord jobRecord) {
     InternalJob internalJob = new InternalJobImpl();
     internalJob.setJobId(jobRecord.getJobID().getString());
-    internalJob.setCreated(Date.from(jobRecord.getCreated().toInstant()));
+    internalJob.setCreated(jobRecord.getCreated());
     if (jobRecord.getFinished() != null) {
-      internalJob.setFinished(Date.from(jobRecord.getFinished().toInstant()));
+      internalJob.setFinished(jobRecord.getFinished());
     }
     if (jobRecord.getGrabbed() != null) {
-      internalJob.setGrabbed(Date.from(jobRecord.getGrabbed().toInstant()));
+      internalJob.setGrabbed(jobRecord.getGrabbed());
     }
     internalJob.setStatus(toApiJobStatus(jobRecord.getStatus()));
     return internalJob;
@@ -61,9 +60,9 @@ public class InternalJobsController implements InternalJobs {
 
   private JobStatus toApiJobStatus(org.veupathdb.lib.compute.platform.job.JobStatus jobStatus) {
     return Arrays.stream(JobStatus.values())
-        .filter(status -> status != JobStatus.NOSUCHJOB) // This status is not stored in DB.
-        .filter(status -> org.veupathdb.lib.compute.platform.job.JobStatus.fromString(status.value) == jobStatus)
-        .findFirst()
-        .orElseThrow();
+      .filter(status -> status != JobStatus.NOSUCHJOB) // This status is not stored in DB.
+      .filter(status -> org.veupathdb.lib.compute.platform.job.JobStatus.fromString(status.value) == jobStatus)
+      .findFirst()
+      .orElseThrow();
   }
 }

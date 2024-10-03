@@ -85,7 +85,7 @@ public class AnalysisDetailWithUser extends AnalysisDetailImpl {
     setNumFilters(descriptor.getSubset().getDescriptor().size());
     setNumComputations(descriptor.getComputations().size());
     setNumVisualizations(Functions.reduce(descriptor.getComputations(),
-        (count, next) -> count + next.getVisualizations().size(), 0));
+      (count, next) -> count + next.getVisualizations().size(), 0));
   }
 
   @JsonIgnore

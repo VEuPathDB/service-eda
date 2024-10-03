@@ -20,7 +20,6 @@ import org.veupathdb.service.eda.access.service.user.EndUserSearchService;
 
 import static org.veupathdb.service.eda.access.service.provider.ProviderService.userIsManager;
 import static org.veupathdb.service.eda.access.service.staff.StaffService.userIsOwner;
-import static org.veupathdb.service.eda.access.service.staff.StaffService.userIsStaff;
 
 @Authenticated
 public class EndUserController implements DatasetEndUsers

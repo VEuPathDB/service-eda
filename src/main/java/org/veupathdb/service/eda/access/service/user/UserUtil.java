@@ -7,7 +7,7 @@ import org.veupathdb.service.eda.access.repo.DB;
 
 public class UserUtil
 {
-  private static UserUtil instance = new UserUtil();
+  private static final UserUtil instance = new UserUtil();
 
   public void fillUserRow(final ResultSet rs, final UserRow row) throws Exception {
     row.setUserId(rs.getLong(DB.Column.EndUser.UserId));

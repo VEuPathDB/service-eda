@@ -5,7 +5,6 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.geo.GeographyUtil.GeographicPoint;
 import org.gusdb.fgputil.geo.LatLonAverager;
-import org.gusdb.fgputil.validation.ValidationException;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
@@ -60,7 +59,7 @@ public class MapPlugin extends AbstractEmptyComputePlugin<MapPostRequest, MapSpe
   }
 
   @Override
-  protected void validateVisualizationSpec(MapSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(MapSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("geoAggregateVariable", pluginSpec.getGeoAggregateVariable())
@@ -80,7 +79,7 @@ public class MapPlugin extends AbstractEmptyComputePlugin<MapPostRequest, MapSpe
   private static class GeoVarData {
 
     long count = 0;
-    LatLonAverager latLonAvg = new LatLonAverager();
+    final LatLonAverager latLonAvg = new LatLonAverager();
     double minLat = 90;
     double maxLat = -90;
     double minLon = 180;
@@ -98,7 +97,7 @@ public class MapPlugin extends AbstractEmptyComputePlugin<MapPostRequest, MapSpe
 
   @Override
   protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
-    LOG.debug("Beginning writeResults for map plugin with output id: " + _pluginSpec.getOutputEntityId());
+    LOG.debug("Beginning writeResults for map plugin with output id: {}", _pluginSpec.getOutputEntityId());
     // create scanner and line parser
     InputStreamReader isReader = new InputStreamReader(new BufferedInputStream(dataStreams.get(DEFAULT_SINGLE_STREAM_NAME)));
     BufferedReader reader = new BufferedReader(isReader);
@@ -120,7 +119,7 @@ public class MapPlugin extends AbstractEmptyComputePlugin<MapPostRequest, MapSpe
 
     while (nextLine != null) {
       String[] row = parser.parseLineToArray(nextLine);
-      
+
       // entity records counts not impacted by viewport
       if (!(row[geoVarIndex] == null ||
             row[geoVarIndex].isEmpty() ||
@@ -129,7 +128,7 @@ public class MapPlugin extends AbstractEmptyComputePlugin<MapPostRequest, MapSpe
             row[lonIndex] == null ||
             row[lonIndex].isEmpty())) {
         entityRecordsWithGeoVar++;
-      
+
         double latitude = Double.parseDouble(row[latIndex]);
         double longitude = Double.parseDouble(row[lonIndex]);
         if (viewport.containsCoordinates(latitude, longitude)) {
@@ -140,7 +139,7 @@ public class MapPlugin extends AbstractEmptyComputePlugin<MapPostRequest, MapSpe
       nextLine = reader.readLine();
     }
 
-    LOG.debug("Writing aggregated results for " + entityRecordsWithGeoVar + " records");
+    LOG.debug("Writing aggregated results for {} records", entityRecordsWithGeoVar);
     // begin output object and single property containing array of map elements
     out.write("{\"mapElements\":[".getBytes(StandardCharsets.UTF_8));
     boolean first = true;
@@ -167,6 +166,7 @@ public class MapPlugin extends AbstractEmptyComputePlugin<MapPostRequest, MapSpe
     out.write(config.getBytes());
     out.flush();
   }
+
   private static class ParsedGeolocationViewport {
     private final double xMin;
     private final double xMax;
@@ -196,11 +196,10 @@ public class MapPlugin extends AbstractEmptyComputePlugin<MapPostRequest, MapSpe
     public Boolean containsCoordinates(double latitude, double longitude) {
       if (latitude < xMin || latitude > xMax) { return false; }
       if (viewportIncludesIntlDateLine) {
-        if (longitude < yMin && longitude > yMax) { return false; }
+        return !(longitude < yMin) || !(longitude > yMax);
       } else {
-        if (longitude < yMin || longitude > yMax) { return false; }
+        return !(longitude < yMin) && !(longitude > yMax);
       }
-      return true;
     }
   }
 }

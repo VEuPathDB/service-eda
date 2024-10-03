@@ -13,6 +13,7 @@ import org.veupathdb.service.eda.generated.model.QuantitativeAggregationConfig;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -22,8 +23,8 @@ import static org.veupathdb.service.eda.generated.model.OverlayType.CATEGORICAL;
 public class QuantitativeAggregateConfiguration {
   private final ContinuousAggregators.ContinuousAggregatorFactory aggregatorSupplier;
 
-  private Function<String, Double> variableValueQuantifier;
-  private String variableType;
+  private final Function<String, Double> variableValueQuantifier;
+  private final String variableType;
 
   /**
    * Constructs a map bubble specification from the raw input. Note that this will throw an IllegalArgumentException
@@ -39,7 +40,7 @@ public class QuantitativeAggregateConfiguration {
         throw new IllegalArgumentException("Incorrect overlay configuration type for categorical var: " + varShape);
       }
       CategoricalAggregationConfig categoricalConfig = (CategoricalAggregationConfig) overlayConfig;
-      if (!categoricalConfig.getDenominatorValues().containsAll(categoricalConfig.getNumeratorValues())) {
+      if (!new HashSet<>(categoricalConfig.getDenominatorValues()).containsAll(categoricalConfig.getNumeratorValues())) {
         throw new IllegalArgumentException("CategoricalQuantitativeOverlay numerator values must be a subset of denominator values.");
       }
       variableValueQuantifier = Double::valueOf;

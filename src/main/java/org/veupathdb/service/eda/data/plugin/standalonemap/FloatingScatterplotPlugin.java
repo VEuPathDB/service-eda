@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.data.plugin.standalonemap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
@@ -14,7 +13,6 @@ import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.OverlaySpecification;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
   private OverlaySpecification _overlaySpecification = null;
 
   private static final Logger LOG = LogManager.getLogger(FloatingScatterplotPlugin.class);
-  
+
   @Override
   public String getDisplayName() {
     return "Scatter plot";
@@ -53,7 +51,7 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
       .dependencyOrder(List.of("yAxisVariable"), List.of("xAxisVariable", "overlayVariable"))
       .pattern()
         .element("yAxisVariable")
-          .types(APIVariableType.NUMBER, APIVariableType.DATE, APIVariableType.INTEGER) 
+          .types(APIVariableType.NUMBER, APIVariableType.DATE, APIVariableType.INTEGER)
           .description("Variable must be a number or date and be of the same or a child entity as the X-axis variable.")
         .element("xAxisVariable")
           .types(APIVariableType.NUMBER, APIVariableType.DATE, APIVariableType.INTEGER)
@@ -75,8 +73,8 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
       .var("yAxisVariable", pluginSpec.getYAxisVariable())
       .var("overlayVariable", Optional.ofNullable(pluginSpec.getOverlayConfig())
-          .map(OverlayConfig::getOverlayVariable)
-          .orElse(null)));
+        .map(OverlayConfig::getOverlayVariable)
+        .orElse(null)));
     if (pluginSpec.getOverlayConfig() != null) {
       try {
         _overlaySpecification = new OverlaySpecification(pluginSpec.getOverlayConfig(), getUtil()::getVariableType, getUtil()::getVariableDataShape);
@@ -92,12 +90,12 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
   @Override
   protected List<StreamSpec> getRequestedStreams(FloatingScatterplotSpec pluginSpec) {
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>();
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
     plotVariableSpecs.add(pluginSpec.getYAxisVariable());
     Optional.ofNullable(pluginSpec.getOverlayConfig())
-        .map(OverlayConfig::getOverlayVariable)
-        .ifPresent(plotVariableSpecs::add);
+      .map(OverlayConfig::getOverlayVariable)
+      .ifPresent(plotVariableSpecs::add);
 
     List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
 
@@ -110,7 +108,7 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     FloatingScatterplotSpec spec = getPluginSpec();
     String outputEntityId = spec.getOutputEntityId();
@@ -122,11 +120,11 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
     String valueSpec = spec.getValueSpec().getValue();
     String yVarType = util.getVariableType(spec.getYAxisVariable());
     String overlayValues = _overlaySpecification == null ? "NULL" : _overlaySpecification.getRBinListAsString();
-    
+
     if (yVarType.equals("DATE") && !valueSpec.equals("raw")) {
       LOG.error("Cannot calculate trend lines for y-axis date variables. The `valueSpec` property must be set to `raw`.");
     }
-    
+
     List<String> nonStrataVarColNames = new ArrayList<>();
     nonStrataVarColNames.add(util.toColNameOrEmpty(spec.getXAxisVariable()));
     nonStrataVarColNames.add(util.toColNameOrEmpty(spec.getYAxisVariable()));
@@ -136,10 +134,10 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
     dataStreams.putAll(studyVocabs);
 
     RFileSetProcessor filesProcessor = new RFileSetProcessor(dataStreams)
-      .add(DEFAULT_SINGLE_STREAM_NAME, 
-        spec.getMaxAllowedDataPoints(), 
-        "noVariables", 
-        nonStrataVarColNames, 
+      .add(DEFAULT_SINGLE_STREAM_NAME,
+        spec.getMaxAllowedDataPoints(),
+        "noVariables",
+        nonStrataVarColNames,
         (name, conn) ->
         conn.voidEval(name + " <- data.table::fread('" + name + "', na.strings=c(''))")
       );
@@ -147,17 +145,17 @@ public class FloatingScatterplotPlugin extends AbstractEmptyComputePlugin<Floati
     useRConnectionWithProcessedRemoteFiles(Resources.RSERVE_URL, filesProcessor, connection -> {
       String inputData = getRVariableInputDataWithImputedZeroesAsString(DEFAULT_SINGLE_STREAM_NAME, varMap, outputEntityId, "variables");
       connection.voidEval(getVoidEvalVariableMetadataListWithStudyDependentVocabs(varMap, outputEntityId));
-      
-      String cmd = 
-          "plot.data::scattergl(data=" + inputData + ", " + 
-                                  "variables=variables, " + 
-                                  "value='" + valueSpec + "', " +
-                                  "correlationMethod = 'none', " +
-                                  "sampleSizes=FALSE, " +
-                                  "completeCases=FALSE, " + 
-                                  "overlayValues=" + overlayValues + ", " + 
-                                  "evilMode='noVariables')";
+
+      String cmd =
+        "plot.data::scattergl(data=" + inputData + ", " +
+          "variables=variables, " +
+          "value='" + valueSpec + "', " +
+          "correlationMethod = 'none', " +
+          "sampleSizes=FALSE, " +
+          "completeCases=FALSE, " +
+          "overlayValues=" + overlayValues + ", " +
+          "evilMode='noVariables')";
       streamResult(connection, cmd, out);
-    }); 
+    });
   }
 }

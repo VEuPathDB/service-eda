@@ -1,7 +1,6 @@
 package org.veupathdb.service.eda.access.service.user;
 
 import java.time.OffsetDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -11,7 +10,7 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.WebApplicationException;
 
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.Main;
 import org.veupathdb.service.eda.generated.model.EndUserPatch;
@@ -107,7 +106,7 @@ public class EndUserPatchService
 
       if (userEmail.isPresent()) {
         EmailService.getInstance()
-            .sendEndUserUpdateNotificationEmail(new String[]{ userEmail.get() }, ds, row, ds.getRequestEmailBodyRequester());
+          .sendEndUserUpdateNotificationEmail(new String[]{ userEmail.get() }, ds, row, ds.getRequestEmailBodyRequester());
       }
 
     } catch (WebApplicationException e) {
@@ -162,10 +161,10 @@ public class EndUserPatchService
         case Keys.Json.KEY_DISSEMINATION_PLAN -> pVal.strVal(patch, row::setDisseminationPlan);
         case Keys.Json.KEY_PRIOR_AUTH -> pVal.strVal(patch, row::setPriorAuth);
         case Keys.Json.KEY_RESTRICTION_LEVEL -> pVal.enumVal(
-              patch,
-              RestrictionLevel::valueOf,
-              row::setRestrictionLevel
-          );
+          patch,
+          RestrictionLevel::valueOf,
+          row::setRestrictionLevel
+        );
         case Keys.Json.KEY_APPROVAL_STATUS -> {
           approved = ApprovalStatus.valueOf(patch.getValue().toString().toUpperCase()) == ApprovalStatus.APPROVED;
           denied = ApprovalStatus.valueOf(patch.getValue().toString().toUpperCase()) == ApprovalStatus.DENIED;
@@ -175,9 +174,9 @@ public class EndUserPatchService
             row.setAllowSelfEdits(true);
           }
           pVal.enumVal(
-              patch,
-              ApprovalStatus::valueOf,
-              row::setApprovalStatus
+            patch,
+            ApprovalStatus::valueOf,
+            row::setApprovalStatus
           );
         }
         case Keys.Json.KEY_DENIAL_REASON -> pVal.strVal(patch, row::setDenialReason);
@@ -194,20 +193,20 @@ public class EndUserPatchService
     // Send an e-mail to the end-user whose request was approved or denied.
     try {
       final var ds = DatasetRepo.Select.getInstance()
-          .selectDataset(row.getDatasetId())
-          .orElseThrow();
+        .selectDataset(row.getDatasetId())
+        .orElseThrow();
       Optional<String> userEmail = AccountRepo.Select.getInstance().selectEmailByUserId(row.getUserId());
 
       final var managerEmails = ProviderRepo.Select.byDataset(row.getDatasetId(), 100L, 0L).stream()
-          .filter(ProviderRow::isManager)
-          .map(UserRow::getEmail)
-          .toArray(String[]::new);
+        .filter(ProviderRow::isManager)
+        .map(UserRow::getEmail)
+        .toArray(String[]::new);
 
       // Send to the approved/denied user in the e-mail notification as well as managers and support.
       String[] ccs = Stream.concat(userEmail.stream(),
           //Stream.concat(userEmail.stream(), Arrays.stream(managerEmails)),   // will add managers in cc field
-              Stream.of(Main.config.getSupportEmail()))
-          .toArray(String[]::new);
+          Stream.of(Main.config.getSupportEmail()))
+        .toArray(String[]::new);
       if (approved) {
         EmailService.getInstance().sendDatasetApprovedNotificationEmail(ccs, ds, row, managerEmails);
       } else if (denied) {

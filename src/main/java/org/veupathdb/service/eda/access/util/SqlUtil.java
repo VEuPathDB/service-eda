@@ -63,10 +63,6 @@ public class SqlUtil
     }
   }
 
-  public static StatementPreparer prepareSingleInt(final int value) {
-    return ps -> ps.setInt(1, value);
-  }
-
   public static StatementPreparer prepareSingleLong(final long value) {
     return ps -> ps.setLong(1, value);
   }

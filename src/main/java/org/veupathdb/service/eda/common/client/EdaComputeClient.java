@@ -3,23 +3,16 @@ package org.veupathdb.service.eda.common.client;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.ws.rs.core.MediaType;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
-import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
-import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
-import org.veupathdb.service.eda.subset.model.Entity;
-import org.veupathdb.service.eda.subset.model.Study;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,15 +23,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.gusdb.fgputil.FormatUtil.TAB;
 
 public class EdaComputeClient {
-  private static final Logger LOG = LogManager.getLogger(EdaComputeClient.class);
-
   public static class ComputeRequestBody extends ComputeRequestBaseImpl {
 
     @JsonIgnore
@@ -125,9 +113,9 @@ public class EdaComputeClient {
    *  org.veupathdb.service.eda.compute.controller.ComputeController#resultFile(
    *  org.veupathdb.service.eda.compute.plugins.PluginMeta, java.lang.String,
    *  org.veupathdb.service.eda.generated.model.ComputeRequestBase, java.util.function.Function)
-   *
-   *  This isn't expected to provide a particularly noticable performance improvement, but it will avoid overhead
-   *  of HTTP.
+   * <p>
+   *  This isn't expected to provide a particularly noticeable performance
+   *  improvement, but it will avoid overhead of HTTP.
    */
   public CloseableIterator<Map<String, String>> getJobTabularIteratorOutput(List<EntityDef> ancestors,
                                                                             String computeName,

@@ -1,10 +1,10 @@
 package org.veupathdb.service.eda.user.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.veupathdb.lib.jackson.Json;
 import org.veupathdb.service.eda.generated.model.DerivedVariableGetResponse;
 import org.veupathdb.service.eda.generated.model.DerivedVariableGetResponseImpl;
 import org.veupathdb.service.eda.generated.model.DerivedVariablePostRequest;
-import org.veupathdb.service.eda.user.Utils;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
@@ -62,7 +62,7 @@ public class DerivedVariableRow {
       request.getDescription(),
       null,
       request.getFunctionName(),
-      Utils.JSON.convertValue(Objects.requireNonNull(request.getConfig()), JsonNode.class)
+      Json.convert(Objects.requireNonNull(request.getConfig()))
     );
   }
 

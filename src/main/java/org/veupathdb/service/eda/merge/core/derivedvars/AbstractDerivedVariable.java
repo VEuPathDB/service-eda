@@ -1,14 +1,11 @@
 package org.veupathdb.service.eda.merge.core.derivedvars;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.ws.rs.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.veupathdb.lib.jackson.Json;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -63,11 +60,11 @@ public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implem
     VariableDef var = _metadata.getVariable(varSpec).orElseThrow();
     if (allowedTypesOrNull != null && !allowedTypesOrNull.contains(var.getType())) {
       throw new ValidationException(inputName + " variable must be of type: [" + allowedTypesOrNull.stream()
-          .map(APIVariableType::getValue).collect(Collectors.joining(", ")) + "]");
+        .map(APIVariableType::getValue).collect(Collectors.joining(", ")) + "]");
     }
     if (allowedShapesOrNull != null && !allowedShapesOrNull.contains(var.getDataShape())) {
       throw new ValidationException(inputName + " variable must be of shape: [" + allowedShapesOrNull.stream()
-          .map(APIVariableDataShape::getValue).collect(Collectors.joining(", ")) + "]");
+        .map(APIVariableDataShape::getValue).collect(Collectors.joining(", ")) + "]");
     }
   }
 
@@ -83,24 +80,23 @@ public abstract class AbstractDerivedVariable<T> extends VariableSpecImpl implem
   private T convertConfig(Object configObject) {
     if (configObject instanceof Map) {
       try {
-        Map<?,?> map = (Map<?,?>)configObject;
-        JSONObject jsonObj = new JSONObject(map);
-        LOG.info("Received the following config, to be converted to " + getConfigClass().getName() + ":" + FormatUtil.NL + jsonObj.toString(2));
-        return JsonUtil.Jackson.readValue(jsonObj.toString(), getConfigClass());
+        var jsonObj = Json.convert(configObject);
+        LOG.info("Received the following config, to be converted to {}:{}{}", getConfigClass().getName(), FormatUtil.NL, jsonObj.toPrettyString());
+        return Json.parse(jsonObj, getConfigClass());
       }
-      catch (JSONException | JsonProcessingException e) {
+      catch (Exception e) {
         throw new BadRequestException("Could not coerce config object for spec " +
-            "of derived variable " + getFunctionName() + " to type " + getConfigClass().getName());
+          "of derived variable " + getFunctionName() + " to type " + getConfigClass().getName());
       }
     }
     throw new BadRequestException("config property for spec of derived variable " +
-        getFunctionName() + " must be an object");
+      getFunctionName() + " must be an object");
   }
 
   @Override
   public EntityDef getEntity() {
     return _metadata.getEntity(getEntityId()).orElseThrow(
-        () -> new BadRequestException("Could not find derived variable entity: " + getEntityId()));
+      () -> new BadRequestException("Could not find derived variable entity: " + getEntityId()));
   }
 
   @Override

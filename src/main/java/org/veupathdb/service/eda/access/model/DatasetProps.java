@@ -19,15 +19,16 @@ public class DatasetProps {
   public final String customApprovalEmailBody;
 
   public DatasetProps(
-      final String datasetId,
-      final String studyId,
-      final String sha1hash,
-      final DatasetAccessLevel accessLevel,
-      final String displayName,
-      final String shortDisplayName,
-      final String description,
-      final String customApprovalEmailBody,
-      final Long daysForApproval) {
+    final String datasetId,
+    final String studyId,
+    final String sha1hash,
+    final DatasetAccessLevel accessLevel,
+    final String displayName,
+    final String shortDisplayName,
+    final String description,
+    final String customApprovalEmailBody,
+    final Long daysForApproval
+  ) {
     this.datasetId = datasetId;
     this.studyId = studyId;
     this.sha1hash = sha1hash;
@@ -37,8 +38,8 @@ public class DatasetProps {
     this.description = description;
     this.customApprovalEmailBody = customApprovalEmailBody;
     this.durationForApproval = Optional.ofNullable(daysForApproval)
-        .map(Duration::ofDays)
-        .orElse(null);
+      .map(Duration::ofDays)
+      .orElse(null);
   }
 
 }

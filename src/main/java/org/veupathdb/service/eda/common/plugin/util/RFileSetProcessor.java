@@ -6,14 +6,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BiConsumerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
+import org.jetbrains.annotations.NotNull;
 import org.rosuda.REngine.Rserve.RConnection;
 
 public class RFileSetProcessor implements Iterable<RFileSetProcessor.RFileProcessingSpec> {
 
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public static class RFileProcessingSpec {
 
     public final String name;
@@ -26,10 +27,10 @@ public class RFileSetProcessor implements Iterable<RFileSetProcessor.RFileProces
     public RFileProcessingSpec(String name, InputStream stream, String showMissingness, List<String> nonStrataColNames, Optional<TwoTuple<Optional<Long>,BiConsumerWithException<String, RConnection>>> processingInfo) {
       this.name = name;
       this.stream = stream;
-      this.maxAllowedRows = processingInfo.map(i -> i.getFirst()).orElse(Optional.empty());
+      this.maxAllowedRows = processingInfo.flatMap(TwoTuple::getFirst);
       this.showMissingness = showMissingness;
       this.nonStrataColNames = nonStrataColNames;
-      this.fileReader = conn -> processingInfo.map(i -> i.getSecond()).orElse((a,b) -> {}).accept(name, conn);
+      this.fileReader = conn -> processingInfo.map(TwoTuple::getSecond).orElse((a, b) -> {}).accept(name, conn);
     }
   }
 
@@ -47,7 +48,7 @@ public class RFileSetProcessor implements Iterable<RFileSetProcessor.RFileProces
   }
 
   public RFileSetProcessor add(String name, Long maxAllowedRows, String showMissingness, List<String> nonStrataColNames, BiConsumerWithException<String, RConnection> fileReader) {
-    
+
     if (!_dataStreams.containsKey(name)) {
       throw new IllegalArgumentException("name parameter value '" + name + "' must be contained in dataStreams map passed to constructor");
     }
@@ -58,18 +59,19 @@ public class RFileSetProcessor implements Iterable<RFileSetProcessor.RFileProces
   }
 
   public RFileSetProcessor add(String name, Long maxAllowedRows, BiConsumerWithException<String, RConnection> fileReader) {
-     return add(name, maxAllowedRows, "noVariables", null, fileReader);
-   }
+    return add(name, maxAllowedRows, "noVariables", null, fileReader);
+  }
 
+  @NotNull
   @Override
   public Iterator<RFileProcessingSpec> iterator() {
     return _dataStreams.entrySet().stream()
       .map(entry ->
         new RFileProcessingSpec(entry.getKey(), entry.getValue(),
-            _showMissingnessMap.get(entry.getKey()),
-            _nonStrataColNamesMap.get(entry.getKey()),
-            Optional.ofNullable(_processingInfoMap.get(entry.getKey()))))
-      .collect(Collectors.toList())
+          _showMissingnessMap.get(entry.getKey()),
+          _nonStrataColNamesMap.get(entry.getKey()),
+          Optional.ofNullable(_processingInfoMap.get(entry.getKey()))))
+      .toList()
       .iterator();
   }
 }

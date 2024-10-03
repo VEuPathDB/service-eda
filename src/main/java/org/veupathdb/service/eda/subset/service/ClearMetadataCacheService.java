@@ -17,5 +17,4 @@ public class ClearMetadataCacheService implements ClearMetadataCache {
     LOG.info(message);
     return GetClearMetadataCacheResponse.respond200WithTextPlain(message);
   }
-
 }

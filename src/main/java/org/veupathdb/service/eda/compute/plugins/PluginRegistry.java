@@ -28,7 +28,7 @@ import java.util.Map;
  * Provides methods for looking up plugins by url segment and getting an
  * overview of the registered plugins.
  *
- * @author Elizabeth Paige Harper - https://github.com/foxcapades
+ * @author Elizabeth Paige Harper - <a href="https://github.com/foxcapades">https://github.com/foxcapades</a>
  * @since 1.0.0
  */
 public final class PluginRegistry {

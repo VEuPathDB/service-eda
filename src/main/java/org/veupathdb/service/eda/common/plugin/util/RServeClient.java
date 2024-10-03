@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.URL;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -30,8 +31,8 @@ public class RServeClient {
     boolean connectionEstablished = false;
     try {
       channel = SocketChannel.open();
-      URL rServeUrl = new URL(rServeUrlStr);
-      LOG.info("Connecting to RServe at " + rServeUrlStr);
+      URL rServeUrl = new URI(rServeUrlStr).toURL();
+      LOG.info("Connecting to RServe at {}", rServeUrlStr);
       channel.connect(new InetSocketAddress(rServeUrl.getHost(), rServeUrl.getPort()));
       c = new RConnection(channel.socket());
       LOG.info("Connection established");
@@ -50,7 +51,7 @@ public class RServeClient {
       }
       // otherwise throw 500 with generic message
       throw e instanceof RuntimeException ? (RuntimeException)e :
-          new RuntimeException("Unable to complete processing", e);
+        new RuntimeException("Unable to complete processing", e);
     }
     finally {
       if (c != null) {
@@ -70,7 +71,7 @@ public class RServeClient {
       List<String> filesTooBig = new ArrayList<>();
       try {
         for (RFileSetProcessor.RFileProcessingSpec spec : filesProcessor) {
-          LOG.info("Transferring data stream '" + spec.name + "' to RServe");
+          LOG.info("Transferring data stream '{}' to RServe", spec.name);
           RFileOutputStream dataset = connection.createFile(spec.name);
           IoUtil.transferStream(dataset, spec.stream);
           dataset.close();
@@ -84,7 +85,7 @@ public class RServeClient {
 
         // if any files too big, throw
         if (!filesTooBig.isEmpty()) {
-          LOG.info("Found the following results too large to process: " + String.join(", ", filesTooBig));
+          LOG.info("Found the following results too large to process: {}", String.join(", ", filesTooBig));
           throw new BadRequestException("Result is too large for this visualization to display.");
         }
         // all files written and (possibly) validated; consumer may now use them in its RServe call
@@ -118,7 +119,7 @@ public class RServeClient {
       } else {
         numPlottableRows = connection.eval("sum(complete.cases("+ name + "))").asInteger();
       }
-        LOG.info("R found " + numPlottableRows + " plottable rows in file " + name);
+      LOG.info("R found {} plottable rows in file {}", numPlottableRows, name);
       if (numPlottableRows > maxRows) {
         filesTooBig.add(name);
       }
@@ -129,7 +130,7 @@ public class RServeClient {
   }
 
   public static void streamResult(RConnection connection, String cmd, OutputStream out)
-      throws RserveException, REXPMismatchException, IOException {
+  throws RserveException, REXPMismatchException, IOException {
     String outFile = connection.eval(cmd).asString();
     try (RFileInputStream response = connection.openFile(outFile)) {
       IoUtil.transferStream(out, response);

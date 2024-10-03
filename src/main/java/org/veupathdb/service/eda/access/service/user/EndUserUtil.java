@@ -4,14 +4,10 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import io.vulpine.lib.query.util.basic.BasicPreparedVoidQuery;
-import org.apache.logging.log4j.Logger;
-import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.access.model.ApprovalStatus;
 import org.veupathdb.service.eda.access.model.RestrictionLevel;
@@ -22,8 +18,6 @@ import org.veupathdb.service.eda.access.util.PsBuilder;
 
 public class EndUserUtil
 {
-  private static final Logger log = LogProvider.logger(EndUserUtil.class);
-
   /**
    * Parses a single {@link ResultSet} row into an instance of
    * {@link EndUserRow}.
@@ -36,8 +30,6 @@ public class EndUserUtil
    * @return New {@code EndUserRow} parsed from the given result set.
    */
   static EndUserRow parseEndUserRow(final ResultSet rs) throws Exception {
-    log.trace("EndUserRepo$Select#parseEndUserRow(ResultSet)");
-
     return (EndUserRow) new EndUserRow()
       .setEndUserID(rs.getLong(DB.Column.EndUser.EndUserID))
       .setAnalysisPlan(rs.getString(DB.Column.EndUser.AnalysisPlan))
@@ -74,8 +66,6 @@ public class EndUserUtil
   static ApprovalStatus convertApproval(
     final org.veupathdb.service.eda.generated.model.ApprovalStatus status
   ) {
-    log.trace("EndUserService#convertApproval(ApprovalStatus)");
-
     return status == null
       ? null
       : switch (status) {
@@ -96,7 +86,6 @@ public class EndUserUtil
   public static org.veupathdb.service.eda.generated.model.ApprovalStatus convertApproval(
     final ApprovalStatus status
   ) {
-    log.trace("EndUserService#convertApproval(ApprovalStatus)");
     return status == null
       ? org.veupathdb.service.eda.generated.model.ApprovalStatus.UNREQUESTED
       : switch (status) {
@@ -116,7 +105,6 @@ public class EndUserUtil
   static RestrictionLevel convertRestriction(
     final org.veupathdb.service.eda.generated.model.RestrictionLevel level
   ) {
-    log.trace("EndUserService#convertRestriction(RestrictionLevel)");
     return level == null
       ? null
       : switch (level) {
@@ -138,7 +126,6 @@ public class EndUserUtil
   static org.veupathdb.service.eda.generated.model.RestrictionLevel convertRestriction(
     final RestrictionLevel level
   ) {
-    log.trace("EndUserService#convertRestriction(RestrictionLevel)");
     return level == null
       ? null
       : switch (level) {
@@ -150,25 +137,12 @@ public class EndUserUtil
       };
   }
 
-  @SuppressWarnings("deprecation")
   static EndUserRow createRequest2EndUserRow(
     final EndUserCreateRequest req
   ) {
-    log.trace("EndUserService#createRequest2EndUserRow(EndUserCreateRequest)");
-
-    OffsetDateTime start = null;
-
-    if (req.getStartDate() != null)
-      start = req.getStartDate()
-        .toInstant()
-        .atOffset(ZoneOffset.ofHoursMinutes(
-          req.getStartDate().getTimezoneOffset() / 60,
-          req.getStartDate().getTimezoneOffset() % 60
-        ));
-
     return (EndUserRow) new EndUserRow()
       .setDatasetId(req.getDatasetId())
-      .setStartDate(start)
+      .setStartDate(req.getStartDate())
       .setDuration(req.getDuration())
       .setPurpose(req.getPurpose())
       .setResearchQuestion(req.getResearchQuestion())
@@ -196,7 +170,6 @@ public class EndUserUtil
     final long offset,
     final long total
   ) {
-    log.trace("EndUserService#rows2EndUserList(List, int, int)");
     final var out = new EndUserListImpl();
 
     out.setOffset(offset);
@@ -218,8 +191,6 @@ public class EndUserUtil
    * @return converted end user data
    */
   static EndUser row2EndUser(final EndUserRow row) {
-    log.trace("EndUserService#row2EndUser(EndUserRow)");
-
     final var user = new UserDetailsImpl();
     user.setUserId(row.getUserId());
     user.setLastName(row.getLastName());
@@ -238,7 +209,7 @@ public class EndUserUtil
     out.setPurpose(row.getPurpose());
     out.setResearchQuestion(row.getResearchQuestion());
     out.setRestrictionLevel(convertRestriction(row.getRestrictionLevel()));
-    out.setStartDate(Date.from(row.getStartDate().toInstant()));
+    out.setStartDate(row.getStartDate());
     out.setPriorAuth(row.getPriorAuth());
     out.setAllowEdit(row.isAllowSelfEdits());
 
@@ -246,8 +217,6 @@ public class EndUserUtil
   }
 
   static String formatEndUserId(final long userId, final String datasetId) {
-    log.trace("EndUserService#formatEndUserId(long, String)");
-
     return userId + "-" + datasetId;
   }
 

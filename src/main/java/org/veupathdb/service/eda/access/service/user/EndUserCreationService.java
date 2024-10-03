@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import jakarta.ws.rs.*;
 
-import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
+import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.errors.UnprocessableEntityException;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
@@ -77,7 +77,7 @@ public class EndUserCreationService
 
         // User email was unrecognized.  Send an email and end here.
         if (optId.isEmpty()) {
-          log.info("Will send email to " + body.getEmail() + " telling user to register");
+          log.info("Will send email to {} telling user to register", body.getEmail());
           EmailService.getInstance().sendEndUserRegistrationEmail(body.getEmail(), optDs.get());
 
           final var out = new EndUserCreateResponseImpl();

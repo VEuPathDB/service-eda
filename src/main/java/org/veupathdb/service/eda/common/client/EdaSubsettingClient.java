@@ -18,7 +18,6 @@ import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.*;
-import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
 import org.veupathdb.service.eda.subset.model.Study;
 import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
 import org.veupathdb.service.eda.subset.model.filter.Filter;
@@ -26,7 +25,6 @@ import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,7 +38,6 @@ public class EdaSubsettingClient extends StreamingDataClient {
 
   // request-scope cache for subsetting service metadata responses
   private List<String> _validStudyNameCache;
-  private final Map<String, APIStudyDetail> _studyDetailCache = new HashMap<>();
 
   public EdaSubsettingClient(String serviceBaseUrl, Entry<String, String> authHeader) {
     super(serviceBaseUrl, authHeader);
@@ -49,7 +46,7 @@ public class EdaSubsettingClient extends StreamingDataClient {
   public List<String> getStudies() {
     return _validStudyNameCache != null ? _validStudyNameCache :
       (_validStudyNameCache = swallowAndGet(() -> ClientUtil
-          .getResponseObject(getUrl("/studies"), StudiesGetResponse.class, getAuthHeaderMap()))
+        .getResponseObject(getUrl("/studies"), StudiesGetResponse.class, getAuthHeaderMap()))
         .getStudies().stream().map(APIStudyOverview::getId).collect(Collectors.toList()));
   }
 
@@ -76,10 +73,10 @@ public class EdaSubsettingClient extends StreamingDataClient {
 
   @Override
   public ResponseFuture getTabularDataStream(
-      ReferenceMetadata metadata,
-      List<APIFilter> defaultSubset,
-      StreamSpec spec) throws ProcessingException {
-
+    ReferenceMetadata metadata,
+    List<APIFilter> defaultSubset,
+    StreamSpec spec
+  ) throws ProcessingException {
     // build request object
     EntityTabularPostRequest request = new EntityTabularPostRequestImpl();
     request.setFilters(spec.getFiltersOverride().orElse(defaultSubset));
@@ -98,10 +95,6 @@ public class EdaSubsettingClient extends StreamingDataClient {
   /**
    * Make a subsetting request without a network hop. This directly uses subsetting's FilteredResultFactory to
    * produce a stream of records that can be used by internal clients (i.e. the merging component).
-   * @param studyId
-   * @param streamSpec
-   * @param variableFilters
-   * @return
    */
   public CloseableIterator<Map<String, String>> getTabularDataIterator(String studyId,
                                                                        List<APIFilter> variableFilters,
@@ -117,14 +110,16 @@ public class EdaSubsettingClient extends StreamingDataClient {
     LOG.debug("Resolved schema name: {} from study: {} with study source type: {}", schemaName, studyId, study.getStudySourceType());
     final List<Filter> internalFilters = ApiConversionUtil.toInternalFilters(study, variableFilters, schemaName);
 
-    return FilteredResultFactory.tabularSubsetIterator(study,
-        study.getEntity(streamSpec.getEntityId()).orElseThrow(),
-        getVariablesFromStreamSpec(streamSpec, study),
-        internalFilters,
-        Resources.getBinaryValuesStreamer(),
-        fileBasedSubsetting,
-        Resources.getApplicationDataSource(),
-        schemaName);
+    return FilteredResultFactory.tabularSubsetIterator(
+      study,
+      study.getEntity(streamSpec.getEntityId()).orElseThrow(),
+      getVariablesFromStreamSpec(streamSpec, study),
+      internalFilters,
+      Resources.getBinaryValuesStreamer(),
+      fileBasedSubsetting,
+      Resources.getApplicationDataSource(),
+      schemaName
+    );
   }
 
   private static String resolveSchema(Study study) {
@@ -134,17 +129,17 @@ public class EdaSubsettingClient extends StreamingDataClient {
     };
   }
 
-  private static List<VariableWithValues> getVariablesFromStreamSpec(StreamSpec spec, Study study) {
+  private static List<VariableWithValues<?>> getVariablesFromStreamSpec(StreamSpec spec, Study study) {
     return spec.stream()
-        .map(varSpec -> study.getEntity(spec.getEntityId()).orElseThrow().getVariableOrThrow(varSpec.getVariableId()))
-        .map(var -> (VariableWithValues) var)
-        .collect(Collectors.toList());
+      .map(varSpec -> study.getEntity(spec.getEntityId()).orElseThrow().getVariableOrThrow(varSpec.getVariableId()))
+      .map(var -> (VariableWithValues<?>) var)
+      .collect(Collectors.toList());
   }
 
   public long getSubsetCount(
-      ReferenceMetadata metadata,
-      String entityId,
-      List<APIFilter> subsetFilters
+    ReferenceMetadata metadata,
+    String entityId,
+    List<APIFilter> subsetFilters
   ) {
     // validate entity ID against this study
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
@@ -170,10 +165,10 @@ public class EdaSubsettingClient extends StreamingDataClient {
   }
 
   public VariableDistributionPostResponse getCategoricalDistribution(
-      ReferenceMetadata metadata,
-      VariableSpec varSpec,
-      List<APIFilter> subsetFilters,
-      ValueSpec valueSpec
+    ReferenceMetadata metadata,
+    VariableSpec varSpec,
+    List<APIFilter> subsetFilters,
+    ValueSpec valueSpec
   ) {
     // check variable compatibility with this functionality
     VariableDef var = metadata.getVariable(varSpec).orElseThrow();

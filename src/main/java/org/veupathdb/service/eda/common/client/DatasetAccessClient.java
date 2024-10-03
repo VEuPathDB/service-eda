@@ -4,8 +4,6 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.RequestFailure;
 import org.gusdb.fgputil.functional.Either;
@@ -20,8 +18,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 public class DatasetAccessClient extends ServiceClient {
-  private static final Logger LOG = LogManager.getLogger(DatasetAccessClient.class);
-
   private static final String ENABLE_DATASET_ACCESS_RESTRICTIONS = "ENABLE_DATASET_ACCESS_RESTRICTIONS";
 
   public static class BasicStudyDatasetInfo {
@@ -147,7 +143,7 @@ public class DatasetAccessClient extends ServiceClient {
         if (fail.getStatusType().getStatusCode() == Response.Status.NOT_FOUND.getStatusCode()) {
           throw new NotFoundException("Dataset Access: no study found with dataset ID " + datasetId);
         }
-        throw new RuntimeException("Failed to request permissions from dataset access: " + fail.toString());
+        throw new RuntimeException("Failed to request permissions from dataset access: " + fail);
       });
       try (InputStream responseBody = response.getLeft()) {
         JSONObject json = new JSONObject(ClientUtil.readSmallResponseBody(responseBody));
@@ -167,7 +163,7 @@ public class DatasetAccessClient extends ServiceClient {
    * returns only the StudyAccess portion of the dataset found.  This calls getStudyDatasetInfoMapForUser()
    * so will return an empty optional unless the study is a curated study or the user has access via
    * shared user dataset (even if the study exists as a user study this user does not have permissions on).
-   *
+   * <p>
    * Note this method (but not others) respects the ENABLE_DATASET_ACCESS_RESTRICTIONS environment variable;
    * if set to false, the dataset access service is NOT queried, and a StudyAccess object is returned
    * granting universal access to the study.  This was a hack added during development to support DBs not

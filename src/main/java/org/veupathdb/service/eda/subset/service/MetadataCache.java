@@ -99,10 +99,11 @@ public class MetadataCache implements StudyProvider {
   }
 
   private void synchronizeCacheState() {
+    LOG.info("Synchronizing cache state");
     // Wait until main thread signals that the application database is ready. If we try to access it before, it will
     // not throw an exception, but it will use the internal stub DB implementation which will result in missing studies.
     if (_appDbReadySignal.isPresent()) {
-      LOG.info("Awaiting application database to be ready.");
+      LOG.debug("awaiting application database to be ready");
       try {
         _appDbReadySignal.get().await();
       } catch (InterruptedException e) {
@@ -112,15 +113,15 @@ public class MetadataCache implements StudyProvider {
       }
     }
 
-    LOG.info("Checking which studies are out of date in cache.");
+    LOG.debug("checking which studies are out of date in cache.");
     List<StudyOverview> dbStudies = _sourceStudyProvider.get().getStudyOverviews();
     List<Study> studiesToRemove = _studies.values().stream()
       .filter(study -> isOutOfDate(study, dbStudies))
       .toList();
 
     synchronized (this) {
-      LOG.info("Removing the following out of date or missing studies from cache: {}",
-        studiesToRemove.stream().map(StudyOverview::getStudyId).collect(Collectors.joining(",")));
+      LOG.debug("Removing the following out of date or missing studies from cache: {}",
+        () -> studiesToRemove.stream().map(StudyOverview::getStudyId).collect(Collectors.joining(",")));
 
       dbStudies.forEach(study -> {
         boolean studyHasFiles = _binaryFilesManager.studyHasFiles(study.getStudyId());

@@ -1,7 +1,10 @@
 package org.veupathdb.service.eda.compute.service
 
 import jakarta.ws.rs.core.StreamingOutput
+import org.slf4j.LoggerFactory
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider
+import org.veupathdb.lib.container.jaxrs.server.annotations.AdminRequired
+import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated
 import org.veupathdb.lib.s3.s34k.S3Api
 import org.veupathdb.lib.s3.s34k.S3Config
 import org.veupathdb.lib.s3.s34k.fields.BucketName
@@ -18,7 +21,11 @@ private const val FlagComplete = ".complete"
 private const val FlagFailed = ".failed"
 private const val FlagExpired = ".expired"
 
+@Authenticated(adminOverride = Authenticated.AdminOverrideOption.ALLOW_ALWAYS)
+@AdminRequired
 class AdminController : AdminRPC {
+  private val log = LoggerFactory.getLogger(javaClass)
+
   private val s3 = S3Api.newClient(S3Config(
     Main.config.s3Host,
     Main.config.s3Port.toUShort(),
@@ -30,6 +37,8 @@ class AdminController : AdminRPC {
     .objects
 
   override fun getAdminComputeListPossibleDeadWorkspaces(): AdminRPC.GetAdminComputeListPossibleDeadWorkspacesResponse {
+    log.info("listing dead workspaces") // FIXME: remove this debug log line
+
     val workspaces = s3
       .listAll()
       .stream()

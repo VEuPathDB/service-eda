@@ -53,6 +53,7 @@ class AdminController : AdminRPC {
         out.write(it)
         out.newLine()
       }
+      out.flush()
     })
   }
 

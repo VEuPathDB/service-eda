@@ -42,7 +42,7 @@ public class Main extends Server {
   }
 
   @Override
-  protected void postCliParse(Options opts) {
+  protected void postStartup() {
     initAsyncPlatform();
   }
 

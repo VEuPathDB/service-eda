@@ -91,6 +91,8 @@ class AdminController : AdminRPC {
         }
       }
 
+      log.debug("s3 file: {}", it.baseName)
+
       when (it.baseName) {
         FlagInProgress -> state = state or RunningFlag
         FlagComplete   -> state = state or CompletionFlag

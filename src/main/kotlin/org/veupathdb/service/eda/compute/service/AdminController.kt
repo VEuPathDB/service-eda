@@ -44,7 +44,6 @@ class AdminController : AdminRPC {
       .stream()
       .iterator()
       .asWorkspaces()
-      .onEach { log.debug("workspace: {}", it.jobID) }
       .filter { it.hasRunningFlag && !(it.hasCompletionFlag || it.hasExpiredFlag) }
       .map { it.jobID }
 
@@ -88,16 +87,20 @@ class AdminController : AdminRPC {
           jobID = id
         } else {
           yield(Workspace(id, state))
-        }
-      } else {
-        when (it.baseName) {
-          FlagInProgress -> state = state or RunningFlag
-          FlagComplete   -> state = state or CompletionFlag
-          FlagFailed     -> state = state or CompletionFlag
-          FlagExpired    -> state = state or ExpiredFlag
+          state = 0u
         }
       }
+
+      when (it.baseName) {
+        FlagInProgress -> state = state or RunningFlag
+        FlagComplete   -> state = state or CompletionFlag
+        FlagFailed     -> state = state or CompletionFlag
+        FlagExpired    -> state = state or ExpiredFlag
+      }
     }
+
+    if (jobID != null)
+      yield(Workspace(jobID, state))
   }
 
   private fun S3Object.dirName() = dirName.substringAfterLast('/')

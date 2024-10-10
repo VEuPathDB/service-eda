@@ -44,6 +44,7 @@ class AdminController : AdminRPC {
       .stream()
       .iterator()
       .asWorkspaces()
+      .onEach { log.debug("workspace: {}", it.jobID) }
       .filter { it.hasRunningFlag && !(it.hasCompletionFlag || it.hasExpiredFlag) }
       .map { it.jobID }
 

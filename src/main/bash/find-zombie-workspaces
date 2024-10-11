@@ -135,7 +135,7 @@ function main() {
         logMid -n $'\u2713'
       else
         logEnd ''
-        log "Unexpected response from server: $status"
+        logErr "Unexpected response from server: $status"
         exit 1
       fi
     done

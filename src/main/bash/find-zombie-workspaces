@@ -21,9 +21,9 @@ function printUsage() {
   echo "  find-zombie-workspaces -e qa -p plasmodb"
   echo ""
   echo "Options:"
-  echo "  -e <qa|prod>     - Target environment."
-  echo "  -p <PROJECT>     - Target project name (e.g. plasmodb)."
-  echo "  -f               - Execute deletes instead of printing zombie workspaces."
+  echo "  -e <qa|prod> - Target environment."
+  echo "  -p <PROJECT> - Target project name (e.g. plasmodb)."
+  echo "  -f           - Execute deletes instead of printing zombie workspaces."
 }
 
 function resolveURL() {

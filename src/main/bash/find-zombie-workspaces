@@ -91,7 +91,7 @@ function main() {
       local -ra subdomains=('w1' 'w2')
       ;;
     *)
-      log "Invalid target environment, must be one of 'qa' or 'prod'"
+      logErr "Invalid target environment, must be one of 'qa' or 'prod'"
       exit 1
       ;;
   esac

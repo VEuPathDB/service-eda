@@ -59,23 +59,23 @@ function logErr() {
 }
 
 function log() {
-  echo -e "\033[90m[$(dur)]\033[0m" $@ >&2
+  echo -e "\033[90m[$(dur)]\033[0m" "$@" >&2
 }
 
 function logStart() {
-  echo -en "\033[90m[$(dur)]\033[0m" $@ >&2
+  echo -en "\033[90m[$(dur)]\033[0m" "$@" >&2
 }
 
 function logMid() {
-  echo -en $@ >&2
+  echo -en "$@" >&2
 }
 
 function logEnd() {
-  echo -e $@ >&2
+  echo -e "$@" >&2
 }
 
 function request() {
-  curl --fail -s $@ || (logErr "request failed: curl -s $@" && exit 1)
+  curl --fail -s "$@" || (logErr "request failed: curl -s $@" && exit 1)
 }
 
 function getHttpStatus() {
@@ -105,6 +105,7 @@ function main() {
   done
 
   log "Fetching possible dead job workspace listing."
+  touch "${ZOMBIE_LIST_FILE_NAME}"
   request -H"Admin-Token: ${adminToken}" -o"${ZOMBIE_LIST_FILE_NAME}" "${urls[0]}/admin/compute/list-possible-dead-workspaces"
 
   entryCount=$(cat ${ZOMBIE_LIST_FILE_NAME} | wc -l)

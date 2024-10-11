@@ -87,13 +87,11 @@ class AdminController : AdminRPC {
         if (jobID == null) {
           jobID = id
         } else {
+          yield(Workspace(jobID, state))
           jobID = id
-          yield(Workspace(id, state))
           state = 0u
         }
       }
-
-      log.debug("s3 file: {}/{}", jobID, it.baseName)
 
       when (it.baseName) {
         FlagInProgress -> state = state or RunningFlag

@@ -3,11 +3,7 @@ package org.veupathdb.service.eda.subset.service;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -46,6 +42,8 @@ import org.veupathdb.service.eda.subset.model.varcollection.IntegerVarCollection
 import org.veupathdb.service.eda.subset.model.varcollection.StringVarCollection;
 import org.veupathdb.service.eda.subset.model.varcollection.VarCollection;
 import org.veupathdb.service.eda.subset.model.variable.*;
+
+import javax.annotation.Nullable;
 
 public class ApiConversionUtil {
   private static final Logger LOG = LogManager.getLogger(ApiConversionUtil.class);
@@ -346,7 +344,7 @@ public class ApiConversionUtil {
         study.setDisplayName(dataset.getDisplayName());
         study.setShortDisplayName(dataset.getShortDisplayName());
         study.setDescription(dataset.getDescription());
-        study.setLastModified(overview.getLastModified().toInstant().atOffset(DEFAULT_ZONE_OFFSET));
+        study.setLastModified(dateToOffsetDate(overview.getLastModified()));
         return study;
       }).toList();
   }
@@ -486,5 +484,10 @@ public class ApiConversionUtil {
     }
 
     return new MultiFilter(appDbSchema, entity, subFilters, MultiFilter.MultiFilterOperation.fromString(f.getOperation().getValue()));
+  }
+
+  @Nullable
+  private static OffsetDateTime dateToOffsetDate(@Nullable Date date) {
+    return date == null ? null : date.toInstant().atOffset(DEFAULT_ZONE_OFFSET);
   }
 }

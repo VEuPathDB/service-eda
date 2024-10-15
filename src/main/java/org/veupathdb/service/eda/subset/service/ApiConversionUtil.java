@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.subset.service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -488,6 +489,6 @@ public class ApiConversionUtil {
 
   @Nullable
   private static OffsetDateTime dateToOffsetDate(@Nullable Date date) {
-    return date == null ? null : date.toInstant().atOffset(DEFAULT_ZONE_OFFSET);
+    return date == null ? null : Instant.ofEpochMilli(date.getTime()).atOffset(DEFAULT_ZONE_OFFSET);
   }
 }

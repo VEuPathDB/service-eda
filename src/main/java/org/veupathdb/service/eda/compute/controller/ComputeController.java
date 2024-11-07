@@ -22,6 +22,7 @@ import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.correlation.CorrelationPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
+import org.veupathdb.service.eda.compute.plugins.differentialexpression.DifferentialExpressionPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.selfcorrelation.SelfCorrelationPluginProvider;
@@ -126,6 +127,23 @@ public class ComputeController implements Computes {
     return PostComputesDifferentialabundanceStatisticsResponse.respond200WithApplicationJson(new DifferentialAbundanceStatsResponseStream(out -> {
       try {
         getResultFileStreamer(new DifferentialAbundancePluginProvider(), STATISTICS, entity).write(out);
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }));
+  }
+
+  @Override
+  public PostComputesDifferentialexpressionResponse postComputesDifferentialexpression(Boolean autostart, DifferentialExpressionPluginRequest entity) {
+    return PostComputesDifferentialexpressionResponse.respond200WithApplicationJson(submitJob(new DifferentialExpressionPluginProvider(), entity, autostart));
+  }
+
+  @Override
+  public PostComputesDifferentialexpressionStatisticsResponse postComputesDifferentialexpressionStatistics(DifferentialExpressionPluginRequest entity) {
+    return PostComputesDifferentialexpressionStatisticsResponse.respond200WithApplicationJson(new DifferentialExpressionStatsResponseStream(out -> {
+      try {
+        getResultFileStreamer(new DifferentialExpressionPluginProvider(), STATISTICS, entity).write(out);
       }
       catch (IOException e) {
         throw new RuntimeException(e);

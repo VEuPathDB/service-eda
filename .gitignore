@@ -4,6 +4,7 @@
 /vendor/
 /.tools/
 .vscode/
+.kotlin/
 
 /tmp/
 generated/

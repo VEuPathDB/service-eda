@@ -13,7 +13,7 @@ import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.service.eda.common.client.EdaMergingClient;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
-import org.veupathdb.service.eda.compute.EDA;
+import org.veupathdb.service.eda.compute.EDACompute;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
 import org.veupathdb.service.eda.compute.plugins.PluginMeta;
 import org.veupathdb.service.eda.compute.plugins.PluginProvider;
@@ -215,7 +215,7 @@ public class ComputeController implements Computes {
     Supplier<ReferenceMetadata> referenceMetadata = () -> {
       var studyId = requestObject.getStudyId();
       var meta = new ReferenceMetadata(
-        EDA.getAPIStudyDetail(studyId, auth)
+        EDACompute.getAPIStudyDetail(studyId, auth)
           .orElseThrow(() -> new BadRequestException("Invalid study ID: " + studyId)));
       var derivedVars = Optional.ofNullable(requestObject.getDerivedVariables()).orElse(Collections.emptyList());
       if (!derivedVars.isEmpty()) {
@@ -240,7 +240,7 @@ public class ComputeController implements Computes {
     plugin.getValidator()
       .validate(requestObject, referenceMetadata);
 
-    return EDA.getOrSubmitComputeJob(plugin, requestObject, auth, autostart);
+    return EDACompute.getOrSubmitComputeJob(plugin, requestObject, auth, autostart);
   }
 
   // generic wrapper around the streaming output producer below
@@ -278,7 +278,7 @@ public class ComputeController implements Computes {
 
     requirePermissions(entity, null);
 
-    var jobFiles = EDA.getComputeJobFiles(plugin, entity);
+    var jobFiles = EDACompute.getComputeJobFiles(plugin, entity);
 
     var fileName = switch(file) {
       case METADATA   -> ReservedFiles.OutputMeta;
@@ -323,7 +323,7 @@ public class ComputeController implements Computes {
       auth = UserProvider.getSubmittedAuth(request).orElseThrow();
 
     // Check that the user has permission to run compute jobs.
-    if (!EDA.getStudyPerms(entity.getStudyId(), auth).allowVisualizations())
+    if (!EDACompute.getStudyPerms(entity.getStudyId(), auth).allowVisualizations())
       throw new ForbiddenException();
   }
 }

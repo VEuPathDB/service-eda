@@ -7,6 +7,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.ws.rs.ProcessingException;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.FunctionalInterfaces;
@@ -20,6 +22,7 @@ import org.veupathdb.service.eda.generated.model.VariableSpec;
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
 public abstract class StreamingDataClient extends ServiceClient {
+  private static final Logger LOG = LogManager.getLogger(StreamingDataClient.class);
 
   public abstract StreamSpecValidator getStreamSpecValidator();
 
@@ -45,12 +48,33 @@ public abstract class StreamingDataClient extends ServiceClient {
   }
 
   public static AutoCloseableList<CloseableIterator<Map<String, String>>> buildIteratorStreams(
-    List<StreamSpec> requiredStreams,
+    Collection<StreamSpec> requiredStreams,
     Function<StreamSpec, CloseableIterator<Map<String, String>>> streamGenerator
   ) {
     return new AutoCloseableList<>(requiredStreams.stream()
       .map(streamGenerator)
       .collect(Collectors.toList()));
+  }
+
+  public static void buildAndProcessIteratorStreams(
+    Collection<StreamSpec> requiredStreams,
+    Function<StreamSpec, CloseableIterator<Map<String, String>>> streamGenerator,
+    FunctionalInterfaces.ConsumerWithException<Map<String, CloseableIterator<Map<String, String>>>> streamProcessor
+  ) {
+    var streams = new LinkedHashMap<String, CloseableIterator<Map<String, String>>>(requiredStreams.size());
+
+    try {
+      requiredStreams.forEach(it -> streams.put(it.getStreamName(), streamGenerator.apply(it)));
+      cSwallow(streamProcessor).accept(streams);
+    } finally {
+      for (var it : streams.entrySet()) {
+        try {
+          it.getValue().close();
+        } catch (Exception e) {
+          LOG.error("failed to close StreamSpec iterator {}", it.getKey(), e);
+        }
+      }
+    }
   }
 
   public static void processIteratorStreams(

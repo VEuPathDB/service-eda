@@ -32,7 +32,7 @@ import org.veupathdb.lib.compute.platform.job.JobStatus as JS
  *
  *
  */
-object EDA {
+object EDACompute {
 
   private val Log = LogManager.getLogger(javaClass)
 

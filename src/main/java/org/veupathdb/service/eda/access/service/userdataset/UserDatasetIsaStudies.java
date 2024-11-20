@@ -85,7 +85,7 @@ public class UserDatasetIsaStudies {
   @SuppressWarnings("resource")
   public static Optional<StudyPermissionInfo> getUserStudyByDatasetId(String datasetId) throws Exception {
     return new BasicPreparedReadQuery<>(
-        SQL.Select.UserDatasets.ByDatasetId,
+        SQL.Select.UserDatasets.ByDatasetId.formatted(Resources.getVdiDatasetsSchema()),
         QueryUtil.getInstance()::getAppDbConnection,
         SqlUtil.optParser(rs -> {
           ActionList nullActions = new ActionListImpl();

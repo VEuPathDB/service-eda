@@ -55,8 +55,8 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    // if we ever introduce ANCOM-BC or something else we'll need to change this
-    String method = computeConfig.getDifferentialExpressionMethod().getValue().equals("Maaslin") ? "Maaslin2" : "DESeq2";
+    // if we ever introduce limma we can go back to this
+    String method = computeConfig.getDifferentialExpressionMethod().getValue().equals("DESeq") ? "DESeq" : "unknown";
     VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
     String comparisonVariableDataShape = util.getVariableDataShape(comparisonVariableSpec);
     List<LabeledRange> groupA = computeConfig.getComparator().getGroupA();
@@ -121,6 +121,13 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
                                 "groupA=" + rGroupA + "," +
                                 "groupB=" + rGroupB +
                               ")");
+
+      // TEMPORARY HACK FOR TESTING
+      // We dont have rnaseq data loaded yet (to my knowledge) so we are going to use mbio data and
+      // just convert it to counts. This is a hack and should be removed when we have real data
+      connection.voidEval("taxaColNames <- names(countData[, -c('" + computeEntityIdColName + "', as.character(" + dotNotatedIdColumnsString + "))])");
+      connection.voidEval("countData[, (taxaColNames) := lapply(.SD,function(x) {round(x*1000)}), .SDcols=taxaColNames]");
+      // END OF TEMP FOR TESTING
 
       connection.voidEval("countDataCollection <- veupathUtils::CountDataCollection(name=" + singleQuote(collectionMemberType) +
                                                                           ", data=countData" +

@@ -10,7 +10,7 @@ types:
   DifferentialAbundanceComputeConfig:
     properties:
       collectionVariable: CollectionSpec
-      comparator: ComparatorSpec
+      comparator: DifferentialAbundanceComparatorSpec
       differentialAbundanceMethod: DifferentialAbundanceMethod
       pValueFloor:
         type: string
@@ -20,7 +20,7 @@ types:
     type: string
     enum: ['DESeq','ANCOMBC','Maaslin']
 
-  ComparatorSpec:
+  DifferentialAbundanceComparatorSpec:
     type: object
     properties:
       variable: VariableSpec

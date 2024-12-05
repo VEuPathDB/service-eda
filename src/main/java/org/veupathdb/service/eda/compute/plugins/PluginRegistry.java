@@ -11,6 +11,7 @@ import org.veupathdb.service.eda.compute.plugins.selfcorrelation.SelfCorrelation
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
+import org.veupathdb.service.eda.compute.plugins.differentialexpression.DifferentialExpressionPluginProvider;
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase;
 import org.veupathdb.service.eda.generated.model.PluginOverview;
 import org.veupathdb.service.eda.generated.model.PluginOverviewImpl;
@@ -50,6 +51,7 @@ public final class PluginRegistry {
       new BetaDivPluginProvider(),
       new RankedAbundancePluginProvider(),
       new DifferentialAbundancePluginProvider(),
+      new DifferentialExpressionPluginProvider(),
       new CorrelationPluginProvider(),
       new SelfCorrelationPluginProvider()
     );

@@ -21,6 +21,7 @@ import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayAssayBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayMetadataBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
+import org.veupathdb.service.eda.data.plugin.differentialexpression.DifferentialExpressionVolcanoplotPlugin;
 import org.veupathdb.service.eda.data.plugin.betadiv.BetaDivScatterplotPlugin;
 import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.selfcorrelation.SelfCorrelationUnipartitenetworkPlugin;
@@ -350,6 +351,13 @@ public class AppsService implements Apps {
   public PostAppsDifferentialabundanceVisualizationsVolcanoplotResponse postAppsDifferentialabundanceVisualizationsVolcanoplot(DifferentialAbundanceVolcanoplotPostRequest entity) {
     return wrapPlugin(() -> PostAppsDifferentialabundanceVisualizationsVolcanoplotResponse.respond200WithApplicationJson(
       new DifferentialAbundanceStatsResponseStream(processRequest(new DifferentialAbundanceVolcanoplotPlugin(), entity))));
+  }
+
+  @DisableJackson
+  @Override
+  public PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse postAppsDifferentialexpressionVisualizationsVolcanoplot(DifferentialExpressionVolcanoplotPostRequest entity) {
+    return wrapPlugin(() -> PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse.respond200WithApplicationJson(
+      new DifferentialExpressionStatsResponseStream(processRequest(new DifferentialExpressionVolcanoplotPlugin(), entity))));
   }
 
   @DisableJackson

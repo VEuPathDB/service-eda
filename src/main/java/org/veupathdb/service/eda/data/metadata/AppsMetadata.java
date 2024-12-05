@@ -130,7 +130,7 @@ public class AppsMetadata {
       viz("volcanoplot", new DifferentialAbundanceVolcanoplotPlugin())),
     app("differentialexpression", "Differential Expression", "differentialexpression",
       "Find genes that are differentially expressed between two groups.",
-      NON_VB_GENOMICS_PROJECTS,
+      MBIO_PLUS_GENOMICS_PROJECTS,
       viz("volcanoplot", new DifferentialAbundanceVolcanoplotPlugin())),
     app("correlationassaymetadata", "Correlation (Taxa, Functional Data v. Metadata)", "correlation",
       "Discover relationships between metadata variables and taxonomic abundance.",

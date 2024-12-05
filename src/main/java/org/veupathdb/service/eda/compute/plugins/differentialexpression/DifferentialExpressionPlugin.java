@@ -55,7 +55,6 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    // if we ever introduce limma we can go back to this
     String method = computeConfig.getDifferentialExpressionMethod().getValue().equals("DESeq") ? "DESeq" : "unknown";
     VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
     String comparisonVariableDataShape = util.getVariableDataShape(comparisonVariableSpec);

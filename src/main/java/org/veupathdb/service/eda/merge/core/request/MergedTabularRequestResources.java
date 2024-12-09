@@ -13,12 +13,8 @@ import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.Resources;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -46,7 +42,7 @@ public class MergedTabularRequestResources extends RequestResources {
     _subsetFilters = Optional.ofNullable(request.getFilters()).orElse(Collections.emptyList());
     _computeInfo = Optional.ofNullable(request.getComputeSpec())
       .map(spec -> new ComputeInfo(spec.getComputeName(),
-        new EdaComputeClient.ComputeRequestBody(_metadata.getStudyId(), _subsetFilters, _derivedVariableSpecs, spec.getComputeConfig())));
+        new EdaComputeClient.ComputeRequestBody(getMetadata().getStudyId(), _subsetFilters, getDerivedVariableSpecs(), spec.getComputeConfig())));
     // incorporate computed metadata (if compute info present)
     incorporateCompute();
 
@@ -69,17 +65,17 @@ public class MergedTabularRequestResources extends RequestResources {
       spec = modifiedSpec;
     }
 
-    return _subsetSvc.getTabularDataIterator(_metadata.getStudyId(), _subsetFilters, spec);
+    return _subsetSvc.getTabularDataIterator(getMetadata().getStudyId(), _subsetFilters, spec);
   }
 
   public CloseableIterator<Map<String, String>> getComputeStreamIterator() {
     return _computeInfo.map(computeInfo -> _computeSvc.getJobTabularIteratorOutput(
-      _metadata.getAncestors(_metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow()),
+      getMetadata().getAncestors(getMetadata().getEntity(computeInfo.getComputeEntity()).orElseThrow()),
       computeInfo.getComputeName(),
-      _metadata.getEntity(computeInfo.getComputeEntity()).orElseThrow(),
+      getMetadata().getEntity(computeInfo.getComputeEntity()).orElseThrow(),
       computeInfo.getVariables(),
       computeInfo.getRequestBody(),
-      _metadata))
+      getMetadata()))
     .orElseThrow(() -> new IllegalStateException("Cannot get compute stream iterator if no compute is specified in request."));
   }
 
@@ -91,7 +87,7 @@ public class MergedTabularRequestResources extends RequestResources {
       else
         info.setMetadata(_computeSvc.getJobVariableMetadata(info.getComputeName(), info.getRequestBody()));
     });
-    _computeInfo.ifPresent(computeInfo -> _metadata.incorporateComputedVariables(computeInfo.getVariables()));
+    _computeInfo.ifPresent(computeInfo -> getMetadata().incorporateComputedVariables(computeInfo.getVariables()));
   }
 
   private void validateIncomingRequest() throws ValidationException {
@@ -100,15 +96,15 @@ public class MergedTabularRequestResources extends RequestResources {
     StreamSpec requestSpec = new StreamSpec("incoming", _targetEntityId);
     requestSpec.addAll(_outputVarSpecs);
     new EdaMergingSpecValidator()
-      .validateStreamSpecs(ListBuilder.asList(requestSpec), _metadata)
+      .validateStreamSpecs(ListBuilder.asList(requestSpec), getMetadata())
       .throwIfInvalid();
 
     // if compute was requested, make sure the computed entity is the
     //   same as, or an ancestor of, the target entity of this request
     if (_computeInfo.isPresent()) {
       Predicate<String> isComputeVarEntity = entityId -> entityId.equals(_computeInfo.get().getComputeEntity());
-      if (!isComputeVarEntity.test(_targetEntityId) && _metadata
-        .getAncestors(_metadata.getEntity(_targetEntityId).orElseThrow()).stream()
+      if (!isComputeVarEntity.test(_targetEntityId) && getMetadata()
+        .getAncestors(getMetadata().getEntity(_targetEntityId).orElseThrow()).stream()
         .filter(entity -> isComputeVarEntity.test(entity.getId()))
         .findFirst().isEmpty()
       ) {

@@ -18,6 +18,7 @@ import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.merge.ServiceExternal;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -104,7 +105,8 @@ public class EdaMergingClient extends StreamingDataClient {
 
     // submit the request
     String url = "/merging-internal/derived-variables/metadata/variables";
-    ResponseFuture responseFuture = ClientUtil.makeAsyncPostRequest(getUrl(url), request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
+
+    var response = ServiceExternal.processDvMetadataRequest(request)
 
     // read and parse response
     try {

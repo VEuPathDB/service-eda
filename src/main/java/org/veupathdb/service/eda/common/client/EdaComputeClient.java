@@ -117,12 +117,14 @@ public class EdaComputeClient {
    *  This isn't expected to provide a particularly noticeable performance
    *  improvement, but it will avoid overhead of HTTP.
    */
-  public CloseableIterator<Map<String, String>> getJobTabularIteratorOutput(List<EntityDef> ancestors,
-                                                                            String computeName,
-                                                                            EntityDef computeEntity,
-                                                                            List<VariableMapping> variables,
-                                                                            ComputeRequestBody requestBody,
-                                                                            ReferenceMetadata referenceMetadata) {
+  public CloseableIterator<Map<String, String>> getJobTabularIteratorOutput(
+    List<EntityDef> ancestors,
+    String computeName,
+    EntityDef computeEntity,
+    List<VariableMapping> variables,
+    ComputeRequestBody requestBody,
+    ReferenceMetadata referenceMetadata
+  ) {
     List<String> headers = VariableDef.toDotNotation(getComputeVars(computeEntity, variables, referenceMetadata));
 
     try {

@@ -232,9 +232,7 @@ public class ComputeController implements Computes {
     // Validate the request body
     Supplier<ReferenceMetadata> referenceMetadata = () -> {
       var studyId = requestObject.getStudyId();
-      var meta = new ReferenceMetadata(
-        EDACompute.getAPIStudyDetail(studyId, auth)
-          .orElseThrow(() -> new BadRequestException("Invalid study ID: " + studyId)));
+      var meta = new ReferenceMetadata(EDACompute.getAPIStudyDetail(studyId));
       var derivedVars = Optional.ofNullable(requestObject.getDerivedVariables()).orElse(Collections.emptyList());
       if (!derivedVars.isEmpty()) {
         var mergeClient = new EdaMergingClient(Main.config.getEdaMergeHost(), auth);

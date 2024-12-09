@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
@@ -51,14 +50,13 @@ public class EdaSubsettingClient extends StreamingDataClient {
   }
 
   /**
-   * Returns the study detail for the study with the passed ID, or an empty optional
-   * if no study exists for the passed ID.
+   * Returns the study detail for the study with the passed ID.
    *
    * @param studyId id of a study
-   * @return optional study detail for the found study
+   * @return study detail for the found study
    */
-  public Optional<APIStudyDetail> getStudy(String studyId) {
-    return Optional.of(ApiConversionUtil.getApiStudyDetail(Resources.getStudyResolver().getStudyById(studyId)));
+  public static APIStudyDetail getStudy(String studyId) {
+    return ApiConversionUtil.getApiStudyDetail(Resources.getStudyResolver().getStudyById(studyId));
   }
 
   @Override

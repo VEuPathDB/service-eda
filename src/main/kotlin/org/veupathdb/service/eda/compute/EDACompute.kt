@@ -60,15 +60,11 @@ object EDACompute {
    *
    * @param studyID ID of the study whose metadata should be retrieved.
    *
-   * @param auth Auth header sent in with the job HTTP request.
-   *
-   * @return An [Optional] that will wrap the `APIStudyDetail` returned from the
-   * EDA Subsetting Service, if such a study exists.  If the target study was
-   * not found, the returned `Optional` will be empty.
+   * @return An `APIStudyDetail` representing the target study.
    */
   @JvmStatic
-  fun getAPIStudyDetail(studyID: String, auth: TwoTuple<String, String>): Optional<APIStudyDetail> =
-    EdaSubsettingClient(Main.config.edaSubsettingHost, auth).getStudy(studyID)
+  fun getAPIStudyDetail(studyID: String): APIStudyDetail =
+    EdaSubsettingClient.getStudy(studyID)
 
   /**
    * Fetches the [APIStudyDetail] information from the EDA Subsetting Service
@@ -76,24 +72,11 @@ object EDACompute {
    *
    * @param studyID ID of the study whose metadata should be retrieved.
    *
-   * @param auth Auth header sent in with the job HTTP request.
-   *
-   * @param err Optional exception provider that will be used to get the
-   * exception that will be thrown if the target study does not exist.
-   *
    * @return The `APIStudyDetail` information returned from the EDA Subsetting
    * Service.
-   *
-   * @throws Exception Throws the exception returned by the given exception
-   * provider ([err]).
    */
   @JvmStatic
-  @JvmOverloads
-  fun requireAPIStudyDetail(
-    studyID: String,
-    auth: TwoTuple<String, String>,
-    err: (studyID: String) -> Exception = this::noStudyDetail
-  ): APIStudyDetail = getAPIStudyDetail(studyID, auth).orElseThrow { err(studyID) }
+  fun requireAPIStudyDetail(studyID: String): APIStudyDetail = getAPIStudyDetail(studyID)
 
   /**
    * Fetches tabular study data from the EDA Merge Service for the given params.

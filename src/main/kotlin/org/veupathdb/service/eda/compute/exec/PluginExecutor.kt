@@ -122,7 +122,7 @@ class PluginExecutor : JobExecutor {
     // Fetch the study metadata and write it out to the local workspace
     val studyDetail = try {
       Log.debug("retrieving api study details")
-      EDACompute.requireAPIStudyDetail(request.studyId, authHeader)
+      EDACompute.requireAPIStudyDetail(request.studyId)
         .also { ctx.workspace.write(ReservedFiles.InputMeta, Json.convert(it)) }
     } catch (e: Throwable) {
       Log.error("Failed to fetch APIStudyDetail.", e)

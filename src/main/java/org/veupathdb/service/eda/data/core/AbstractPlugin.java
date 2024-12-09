@@ -141,8 +141,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     _computeClient = new EdaComputeClient(Resources.COMPUTE_SERVICE_URL, authHeader);
 
     // get study
-    APIStudyDetail study = _subsettingClient.getStudy(request.getStudyId())
-      .orElseThrow(() -> new ValidationException("Study '" + request.getStudyId() + "' does not exist."));
+    APIStudyDetail study = EdaSubsettingClient.getStudy(request.getStudyId());
     _studyId = study.getId();
 
     // if plugin requires a compute, check if compute results are available

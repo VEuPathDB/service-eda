@@ -3,16 +3,11 @@ package org.veupathdb.service.eda.merge.core.request;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.validation.ValidationException;
-import org.veupathdb.service.eda.common.client.EdaSubsettingClient;
-import org.veupathdb.service.eda.common.model.ReferenceMetadata;
-import org.veupathdb.service.eda.generated.model.APIStudyDetail;
-import org.veupathdb.service.eda.generated.model.DerivedVariableBulkMetadataRequest;
-import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
 import org.veupathdb.service.eda.Resources;
-import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariable;
-import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.common.client.EdaSubsettingClient;
+import org.veupathdb.service.eda.generated.model.DerivedVariableBulkMetadataRequest;
+import org.veupathdb.service.eda.merge.core.RequestResourcesBase;
 
-import java.util.List;
 import java.util.Map.Entry;
 
 /**
@@ -26,38 +21,16 @@ import java.util.Map.Entry;
  * class with target entity, subset filters, and compute information needed for
  * tabular requests.
  */
-public class RequestResources {
+public class RequestResources extends RequestResourcesBase {
 
   private static final Logger LOG = LogManager.getLogger(RequestResources.class);
 
   protected final EdaSubsettingClient _subsetSvc;
-  protected final ReferenceMetadata _metadata;
-  protected final List<DerivedVariableSpec> _derivedVariableSpecs;
-  protected final DerivedVariableFactory _derivedVariableFactory;
 
   public RequestResources(DerivedVariableBulkMetadataRequest request, Entry<String, String> authHeader) throws ValidationException {
+    super(request);
+
     // create subsetting service client
     _subsetSvc = new EdaSubsettingClient(Resources.SUBSETTING_SERVICE_URL, authHeader);
-
-    // get raw metadata for requested study
-    APIStudyDetail studyDetail = _subsetSvc.getStudy(request.getStudyId())
-      .orElseThrow(() -> new ValidationException("No study found with ID " + request.getStudyId()));
-
-    // create reference metadata using collected information
-    _metadata = new ReferenceMetadata(studyDetail);
-    _derivedVariableSpecs = request.getDerivedVariables();
-    _derivedVariableFactory = new DerivedVariableFactory(_metadata, _derivedVariableSpecs);
-    List<DerivedVariable> orderedDerivedVars = _derivedVariableFactory.getAllDerivedVars();
-    for (DerivedVariable derivedVar : orderedDerivedVars) {
-      LOG.debug("Validating depended vars of {} of type {}", derivedVar.getColumnName(), derivedVar.getFunctionName());
-      // this call lets the plugins do additional setup where they can assume depended var metadata is incorporated
-      derivedVar.validateDependedVariables();
-      // incorporate this derived variable
-      _metadata.incorporateDerivedVariable(derivedVar);
-    }
   }
-
-  public ReferenceMetadata getMetadata() { return _metadata; }
-  public List<DerivedVariableSpec> getDerivedVariableSpecs() { return _derivedVariableSpecs; }
-  public DerivedVariableFactory getDerivedVariableFactory() { return _derivedVariableFactory; }
 }

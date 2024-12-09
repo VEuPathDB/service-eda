@@ -7,7 +7,6 @@
 .kotlin/
 
 /tmp/
-generated/
 
 *.tmp
 *.bak

@@ -61,8 +61,8 @@ public class HistoryRowImpl implements HistoryRow {
   @JsonProperty("denialReason")
   private String denialReason;
 
-
   @JsonProperty("dateDenied")
+
   private OffsetDateTime dateDenied;
 
   @JsonProperty("allowSelfEdits")

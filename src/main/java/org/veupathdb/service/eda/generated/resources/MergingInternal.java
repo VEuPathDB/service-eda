@@ -1,15 +1,11 @@
 package org.veupathdb.service.eda.generated.resources;
 
-import java.util.List;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.BadRequestError;
-import org.veupathdb.service.eda.generated.model.DerivedVariableBulkMetadataRequest;
-import org.veupathdb.service.eda.generated.model.DerivedVariableMetadata;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostResponse;
 import org.veupathdb.service.eda.generated.model.MergedEntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.ServerError;
@@ -19,13 +15,6 @@ import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 @Path("/merging-internal")
 public interface MergingInternal {
   @POST
-  @Path("/derived-variables/metadata/variables")
-  @Produces("application/json")
-  @Consumes("application/json")
-  PostMergingInternalDerivedVariablesMetadataVariablesResponse postMergingInternalDerivedVariablesMetadataVariables(
-      DerivedVariableBulkMetadataRequest entity);
-
-  @POST
   @Path("/query")
   @Produces({
       "text/tab-separated-values",
@@ -33,25 +22,6 @@ public interface MergingInternal {
   })
   @Consumes("application/json")
   PostMergingInternalQueryResponse postMergingInternalQuery(MergedEntityTabularPostRequest entity);
-
-  class PostMergingInternalDerivedVariablesMetadataVariablesResponse extends ResponseDelegate {
-    private PostMergingInternalDerivedVariablesMetadataVariablesResponse(Response response,
-        Object entity) {
-      super(response, entity);
-    }
-
-    private PostMergingInternalDerivedVariablesMetadataVariablesResponse(Response response) {
-      super(response);
-    }
-
-    public static PostMergingInternalDerivedVariablesMetadataVariablesResponse respond200WithApplicationJson(
-        List<DerivedVariableMetadata> entity) {
-      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
-      GenericEntity<List<DerivedVariableMetadata>> wrappedEntity = new GenericEntity<List<DerivedVariableMetadata>>(entity){};
-      responseBuilder.entity(wrappedEntity);
-      return new PostMergingInternalDerivedVariablesMetadataVariablesResponse(responseBuilder.build(), wrappedEntity);
-    }
-  }
 
   class PostMergingInternalQueryResponse extends ResponseDelegate {
     private PostMergingInternalQueryResponse(Response response, Object entity) {

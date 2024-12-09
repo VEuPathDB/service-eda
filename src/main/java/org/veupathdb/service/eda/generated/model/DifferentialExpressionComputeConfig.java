@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.Map;
 
 @JsonDeserialize(
-    as = DifferentialAbundanceComputeConfigImpl.class
+    as = DifferentialExpressionComputeConfigImpl.class
 )
-public interface DifferentialAbundanceComputeConfig {
+public interface DifferentialExpressionComputeConfig {
   @JsonProperty("collectionVariable")
   CollectionSpec getCollectionVariable();
 
@@ -17,16 +17,16 @@ public interface DifferentialAbundanceComputeConfig {
   void setCollectionVariable(CollectionSpec collectionVariable);
 
   @JsonProperty("comparator")
-  DifferentialAbundanceComparatorSpec getComparator();
+  ComparatorSpec getComparator();
 
   @JsonProperty("comparator")
-  void setComparator(DifferentialAbundanceComparatorSpec comparator);
+  void setComparator(ComparatorSpec comparator);
 
-  @JsonProperty("differentialAbundanceMethod")
-  DifferentialAbundanceMethod getDifferentialAbundanceMethod();
+  @JsonProperty("differentialExpressionMethod")
+  DifferentialExpressionMethod getDifferentialExpressionMethod();
 
-  @JsonProperty("differentialAbundanceMethod")
-  void setDifferentialAbundanceMethod(DifferentialAbundanceMethod differentialAbundanceMethod);
+  @JsonProperty("differentialExpressionMethod")
+  void setDifferentialExpressionMethod(DifferentialExpressionMethod differentialExpressionMethod);
 
   @JsonProperty("pValueFloor")
   String getPValueFloor();

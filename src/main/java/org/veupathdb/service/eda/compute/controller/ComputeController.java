@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
-import org.veupathdb.service.eda.common.client.EdaMergingClient;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.compute.EDACompute;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
@@ -26,10 +25,10 @@ import org.veupathdb.service.eda.compute.plugins.differentialexpression.Differen
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.selfcorrelation.SelfCorrelationPluginProvider;
-import org.veupathdb.service.eda.Main;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
+import org.veupathdb.service.eda.merge.ServiceExternal;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -234,11 +233,8 @@ public class ComputeController implements Computes {
       var studyId = requestObject.getStudyId();
       var meta = new ReferenceMetadata(EDACompute.getAPIStudyDetail(studyId));
       var derivedVars = Optional.ofNullable(requestObject.getDerivedVariables()).orElse(Collections.emptyList());
-      if (!derivedVars.isEmpty()) {
-        var mergeClient = new EdaMergingClient(Main.config.getEdaMergeHost(), auth);
-        for (var derivedVar : mergeClient.getDerivedVariableMetadata(studyId, derivedVars)) {
-          meta.incorporateDerivedVariable(derivedVar);
-        }
+      for (var derivedVar : ServiceExternal.processDvMetadataRequest(studyId, derivedVars)) {
+        meta.incorporateDerivedVariable(derivedVar);
       }
       return meta;
     };
@@ -256,7 +252,7 @@ public class ComputeController implements Computes {
     plugin.getValidator()
       .validate(requestObject, referenceMetadata);
 
-    return EDACompute.getOrSubmitComputeJob(plugin, requestObject, auth, autostart);
+    return EDACompute.getOrSubmitComputeJob(plugin, requestObject, autostart);
   }
 
   // generic wrapper around the streaming output producer below

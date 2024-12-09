@@ -17,7 +17,6 @@ import org.veupathdb.service.eda.compute.exec.PluginJobPayload
 import org.veupathdb.service.eda.compute.plugins.PluginMeta
 import org.veupathdb.service.eda.Main
 import org.veupathdb.service.eda.compute.util.JobIDs
-import org.veupathdb.service.eda.compute.util.toAuthTuple
 import org.veupathdb.service.eda.compute.util.toJobResponse
 import org.veupathdb.service.eda.generated.model.*
 import java.io.InputStream
@@ -87,8 +86,6 @@ object EDACompute {
    *
    * @param spec specification of tabular data stream needed from subsetting service (entity + vars)
    *
-   * @param auth Auth header sent in with the job HTTP request.
-   *
    * @return An [InputStream] over the tabular data returned from the EDA Merge
    * Service.
    */
@@ -97,11 +94,9 @@ object EDACompute {
     refMeta: ReferenceMetadata,
     filters: List<APIFilter>,
     derivedVars: List<DerivedVariableSpec>,
-    spec: StreamSpec,
-    auth: TwoTuple<String, String>
+    spec: StreamSpec
   ): InputStream =
-    EdaMergingClient(Main.config.edaMergeHost, auth)
-      .getTabularDataStream(refMeta, filters, derivedVars, Optional.empty(), spec).inputStream
+    EdaMergingClient.getTabularDataStream(refMeta, filters, derivedVars, Optional.empty(), spec).inputStream
 
   /**
    * Submits a new compute job to the queue.
@@ -109,8 +104,6 @@ object EDACompute {
    * @param plugin Plugin details.
    *
    * @param payload HTTP request containing the compute config.
-   *
-   * @param auth: Auth header sent in with the job HTTP request.
    *
    * @param autostart: Whether to start a job that does not yet exist.
    *
@@ -120,7 +113,6 @@ object EDACompute {
   fun <R : ComputeRequestBase> getOrSubmitComputeJob(
     plugin: PluginMeta<R>,
     payload: R,
-    auth: TwoTuple<String, String>,
     autostart: Boolean,
   ): JobResponse {
 
@@ -145,7 +137,7 @@ object EDACompute {
       Log.info("Submitting job {} to the queue", jobID)
 
       // Build the rabbitmq message payload
-      val jobPay = PluginJobPayload(plugin.urlSegment, Json.convert(payload), auth.toAuthTuple())
+      val jobPay = PluginJobPayload(plugin.urlSegment, Json.convert(payload))
 
       // Submit the job
       AsyncPlatform.submitJob(plugin.targetQueue.queueName) {

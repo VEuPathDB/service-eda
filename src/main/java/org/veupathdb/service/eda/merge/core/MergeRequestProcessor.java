@@ -91,7 +91,7 @@ public class MergeRequestProcessor {
     String targetEntityId = _resources.getTargetEntityId();
     List<VariableSpec> outputVarSpecs = _resources.getOutputVariableSpecs();
     ReferenceMetadata metadata = _resources.getMetadata();
-    Optional<ComputeInfo> computeInfo = _resources.getComputeInfo();
+    Optional<ComputeInfo> computeInfo = Optional.ofNullable(_resources.getComputeInfo());
 
     // request validated; convert requested entity and vars to defs
     EntityDef targetEntity = metadata.getEntity(targetEntityId).orElseThrow();

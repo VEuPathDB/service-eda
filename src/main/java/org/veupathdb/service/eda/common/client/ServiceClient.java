@@ -22,5 +22,4 @@ public abstract class ServiceClient {
   protected Map<String, String> getAuthHeaderMap() {
     return Map.ofEntries(_authHeader);
   }
-
 }

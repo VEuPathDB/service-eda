@@ -12,18 +12,18 @@ import java.util.Map;
 @JsonPropertyOrder({
     "collectionVariable",
     "comparator",
-    "differentialAbundanceMethod",
+    "differentialExpressionMethod",
     "pValueFloor"
 })
-public class DifferentialAbundanceComputeConfigImpl implements DifferentialAbundanceComputeConfig {
+public class DifferentialExpressionComputeConfigImpl implements DifferentialExpressionComputeConfig {
   @JsonProperty("collectionVariable")
   private CollectionSpec collectionVariable;
 
   @JsonProperty("comparator")
-  private DifferentialAbundanceComparatorSpec comparator;
+  private ComparatorSpec comparator;
 
-  @JsonProperty("differentialAbundanceMethod")
-  private DifferentialAbundanceMethod differentialAbundanceMethod;
+  @JsonProperty("differentialExpressionMethod")
+  private DifferentialExpressionMethod differentialExpressionMethod;
 
   @JsonProperty("pValueFloor")
   private String pValueFloor;
@@ -42,24 +42,24 @@ public class DifferentialAbundanceComputeConfigImpl implements DifferentialAbund
   }
 
   @JsonProperty("comparator")
-  public DifferentialAbundanceComparatorSpec getComparator() {
+  public ComparatorSpec getComparator() {
     return this.comparator;
   }
 
   @JsonProperty("comparator")
-  public void setComparator(DifferentialAbundanceComparatorSpec comparator) {
+  public void setComparator(ComparatorSpec comparator) {
     this.comparator = comparator;
   }
 
-  @JsonProperty("differentialAbundanceMethod")
-  public DifferentialAbundanceMethod getDifferentialAbundanceMethod() {
-    return this.differentialAbundanceMethod;
+  @JsonProperty("differentialExpressionMethod")
+  public DifferentialExpressionMethod getDifferentialExpressionMethod() {
+    return this.differentialExpressionMethod;
   }
 
-  @JsonProperty("differentialAbundanceMethod")
-  public void setDifferentialAbundanceMethod(
-      DifferentialAbundanceMethod differentialAbundanceMethod) {
-    this.differentialAbundanceMethod = differentialAbundanceMethod;
+  @JsonProperty("differentialExpressionMethod")
+  public void setDifferentialExpressionMethod(
+      DifferentialExpressionMethod differentialExpressionMethod) {
+    this.differentialExpressionMethod = differentialExpressionMethod;
   }
 
   @JsonProperty("pValueFloor")

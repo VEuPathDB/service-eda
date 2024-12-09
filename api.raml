@@ -262,20 +262,6 @@ securitySchemes:
 
 /merging-internal:
 
-  /derived-variables:
-    /metadata:
-      /variables:
-        displayName: Return metadata about a small collection of derived variables
-        post:
-          body:
-            application/json:
-              type: lib.DerivedVariableBulkMetadataRequest
-          responses:
-            200:
-              body:
-                application/json:
-                  type: lib.DerivedVariableMetadata[]
-
   /query:
     displayName: Merged Tabular Data Query
     post:
@@ -582,32 +568,6 @@ securitySchemes:
         body:
           application/json:
             type: lib.ExpiredJobsResponse
-
-/internal-jobs:
-  get:
-    responses:
-      200:
-        body:
-          application/json:
-            type: lib.InternalJob[]
-
-  /{job-id}:
-    uriParameters:
-      job-id:
-        type: string
-        minLength: 32
-        maxLength: 32
-        pattern: '^[\dA-Fa-f]{32}$'
-    get:
-      responses:
-        200:
-          description: |
-            Success
-            
-            The target job exists and its status returned.
-          body:
-            application/json:
-              type: lib.InternalJob
 
 /jobs:
   /{job-id}:

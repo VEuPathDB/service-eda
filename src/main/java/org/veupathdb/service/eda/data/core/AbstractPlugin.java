@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.data.core;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import jakarta.ws.rs.BadRequestException;
+import kotlin.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
@@ -29,6 +30,7 @@ import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.model.BinSpec.RangeType;
+import org.veupathdb.service.eda.merge.ServiceExternal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -90,7 +92,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   protected ReferenceMetadata _referenceMetadata;
   // stored compute name and typed value of the passed compute config object (if plugin requires compute)
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  protected Optional<TwoTuple<String,R>> _computeInfo;
+  protected Optional<TwoTuple<String, R>> _computeInfo;
 
   protected S _pluginSpec;
   protected List<StreamSpec> _requiredStreams;
@@ -102,7 +104,6 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   private List<DerivedVariableSpec> _derivedVariableSpecs;
   private Entry<String,String> _authHeader;
   private EdaSubsettingClient _subsettingClient;
-  private EdaMergingClient _mergingClient;
   private EdaComputeClient _computeClient;
 
   /**
@@ -127,8 +128,12 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
 
     // find compute name if required by this viz plugin; if present, then look up compute config
     //   and create an optional tuple of name+config (empty optional if viz does not require compute)
-    _computeInfo = appName == null ? Optional.empty() : findComputeName(appName).map(name -> new TwoTuple<>(name,
-      getSpecObject(request, "getComputeConfig", getTypeParameterClasses().getComputeConfigClass())));
+    _computeInfo = appName == null
+      ? Optional.empty()
+      : findComputeName(appName).map(name -> new TwoTuple<>(
+        name,
+        getSpecObject(request, "getComputeConfig", getTypeParameterClasses().getComputeConfigClass())
+      ));
 
     // check for subset and derived entity properties of request
     _subsetFilters = Optional.ofNullable(request.getFilters()).orElse(Collections.emptyList());
@@ -137,7 +142,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     // build clients for required services
     _authHeader = authHeader;
     _subsettingClient = new EdaSubsettingClient(Resources.SUBSETTING_SERVICE_URL, authHeader);
-    _mergingClient = new EdaMergingClient(Resources.MERGING_SERVICE_URL, authHeader);
+    EdaMergingClient _mergingClient = new EdaMergingClient(Resources.MERGING_SERVICE_URL, authHeader);
     _computeClient = new EdaComputeClient(Resources.COMPUTE_SERVICE_URL, authHeader);
 
     // get study
@@ -153,7 +158,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     _referenceMetadata = new ReferenceMetadata(study);
 
     // if derived vars present, get derived var metadata and incorporate
-    _mergingClient.getDerivedVariableMetadata(_studyId, _derivedVariableSpecs)
+    ServiceExternal.processDvMetadataRequest(_studyId, _derivedVariableSpecs)
       .forEach(_referenceMetadata::incorporateDerivedVariable);
 
     // if plugin requires a compute, get computed var metadata and incorporate
@@ -174,9 +179,9 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     logRequestTime("Initial request processing complete");
 
     // create stream generator
-    Optional<TwoTuple<String, Object>> typedTuple = _computeInfo.map(info -> new TwoTuple<>(info.getFirst(), info.getSecond()));
-    Function<StreamSpec, ResponseFuture> streamGenerator = spec -> _mergingClient
-      .getTabularDataStream(_referenceMetadata, _subsetFilters, _derivedVariableSpecs, typedTuple, spec);
+    var typedTuple = _computeInfo.map(info -> new Pair<String, Object>(info.getFirst(), info.getSecond()));
+    Function<StreamSpec, ResponseFuture> streamGenerator = spec ->
+      EdaMergingClient.getTabularDataStream(_referenceMetadata, _subsetFilters, _derivedVariableSpecs, typedTuple, spec);
 
     @SuppressWarnings("resource") // closed by StreamingDataClient.processDataStreams
     final AutoCloseableList<InputStream> dataStreams = StreamingDataClient.buildDataStreams(_requiredStreams, streamGenerator);
@@ -224,7 +229,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected PluginUtil getUtil() {
-    return new PluginUtil(getReferenceMetadata(), _mergingClient);
+    return new PluginUtil(getReferenceMetadata(), EdaMergingClient::columnHeaderFor);
   }
 
   protected void validateInputs(DataElementSet values) {

@@ -69,31 +69,6 @@ public class ResponseDelegate extends Response {
     return this.entity;}
 
   @Override
-  public Link getLink(String p0) {
-    return this.delegate.getLink(p0);
-  }
-
-  @Override
-  public Link.Builder getLinkBuilder(String p0) {
-    return this.delegate.getLinkBuilder(p0);
-  }
-
-  @Override
-  public MultivaluedMap<String, Object> getMetadata() {
-    return this.delegate.getMetadata();
-  }
-
-  @Override
-  public MultivaluedMap<String, String> getStringHeaders() {
-    return this.delegate.getStringHeaders();
-  }
-
-  @Override
-  public String getHeaderString(String p0) {
-    return this.delegate.getHeaderString(p0);
-  }
-
-  @Override
   public int getStatus() {
     return this.delegate.getStatus();
   }
@@ -161,6 +136,31 @@ public class ResponseDelegate extends Response {
   @Override
   public boolean hasLink(String p0) {
     return this.delegate.hasLink(p0);
+  }
+
+  @Override
+  public Link getLink(String p0) {
+    return this.delegate.getLink(p0);
+  }
+
+  @Override
+  public Link.Builder getLinkBuilder(String p0) {
+    return this.delegate.getLinkBuilder(p0);
+  }
+
+  @Override
+  public MultivaluedMap<String, Object> getMetadata() {
+    return this.delegate.getMetadata();
+  }
+
+  @Override
+  public MultivaluedMap<String, String> getStringHeaders() {
+    return this.delegate.getStringHeaders();
+  }
+
+  @Override
+  public String getHeaderString(String p0) {
+    return this.delegate.getHeaderString(p0);
   }
 
   public static class HeaderBuilderBase {

@@ -33,6 +33,8 @@ import org.veupathdb.service.eda.generated.model.DensityplotPostRequest;
 import org.veupathdb.service.eda.generated.model.DensityplotPostResponse;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceStatsResponse;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceVolcanoplotPostRequest;
+import org.veupathdb.service.eda.generated.model.DifferentialExpressionStatsResponse;
+import org.veupathdb.service.eda.generated.model.DifferentialExpressionVolcanoplotPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostResponse;
 import org.veupathdb.service.eda.generated.model.ExampleComputeVizPostRequest;
 import org.veupathdb.service.eda.generated.model.ExampleComputeVizPostResponse;
@@ -350,6 +352,13 @@ public interface Apps {
   @Consumes("application/json")
   PostAppsDifferentialabundanceVisualizationsVolcanoplotResponse postAppsDifferentialabundanceVisualizationsVolcanoplot(
       DifferentialAbundanceVolcanoplotPostRequest entity);
+
+  @POST
+  @Path("/differentialexpression/visualizations/volcanoplot")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse postAppsDifferentialexpressionVisualizationsVolcanoplot(
+      DifferentialExpressionVolcanoplotPostRequest entity);
 
   @POST
   @Path("/correlation/visualizations/bipartitenetwork")
@@ -1153,6 +1162,24 @@ public interface Apps {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
       return new PostAppsDifferentialabundanceVisualizationsVolcanoplotResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse extends ResponseDelegate {
+    private PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse(Response response,
+        Object entity) {
+      super(response, entity);
+    }
+
+    private PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse(Response response) {
+      super(response);
+    }
+
+    public static PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse respond200WithApplicationJson(
+        DifferentialExpressionStatsResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse(responseBuilder.build(), entity);
     }
   }
 

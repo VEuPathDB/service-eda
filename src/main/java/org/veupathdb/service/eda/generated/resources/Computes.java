@@ -17,6 +17,8 @@ import org.veupathdb.service.eda.generated.model.CorrelationPluginRequest;
 import org.veupathdb.service.eda.generated.model.CorrelationStatsResponse;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
 import org.veupathdb.service.eda.generated.model.DifferentialAbundanceStatsResponse;
+import org.veupathdb.service.eda.generated.model.DifferentialExpressionPluginRequest;
+import org.veupathdb.service.eda.generated.model.DifferentialExpressionStatsResponse;
 import org.veupathdb.service.eda.generated.model.ExamplePluginRequest;
 import org.veupathdb.service.eda.generated.model.JobResponse;
 import org.veupathdb.service.eda.generated.model.PluginOverview;
@@ -104,6 +106,21 @@ public interface Computes {
   @Consumes("application/json")
   PostComputesDifferentialabundanceStatisticsResponse postComputesDifferentialabundanceStatistics(
       DifferentialAbundancePluginRequest entity);
+
+  @POST
+  @Path("/differentialexpression")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesDifferentialexpressionResponse postComputesDifferentialexpression(
+      @QueryParam("autostart") @DefaultValue("true") Boolean autostart,
+      DifferentialExpressionPluginRequest entity);
+
+  @POST
+  @Path("/differentialexpression/statistics")
+  @Produces("application/json")
+  @Consumes("application/json")
+  PostComputesDifferentialexpressionStatisticsResponse postComputesDifferentialexpressionStatistics(
+      DifferentialExpressionPluginRequest entity);
 
   @POST
   @Path("/correlation")
@@ -312,6 +329,40 @@ public interface Computes {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
       return new PostComputesDifferentialabundanceStatisticsResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesDifferentialexpressionResponse extends ResponseDelegate {
+    private PostComputesDifferentialexpressionResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesDifferentialexpressionResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesDifferentialexpressionResponse respond200WithApplicationJson(
+        JobResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostComputesDifferentialexpressionResponse(responseBuilder.build(), entity);
+    }
+  }
+
+  class PostComputesDifferentialexpressionStatisticsResponse extends ResponseDelegate {
+    private PostComputesDifferentialexpressionStatisticsResponse(Response response, Object entity) {
+      super(response, entity);
+    }
+
+    private PostComputesDifferentialexpressionStatisticsResponse(Response response) {
+      super(response);
+    }
+
+    public static PostComputesDifferentialexpressionStatisticsResponse respond200WithApplicationJson(
+        DifferentialExpressionStatsResponse entity) {
+      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
+      responseBuilder.entity(entity);
+      return new PostComputesDifferentialexpressionStatisticsResponse(responseBuilder.build(), entity);
     }
   }
 

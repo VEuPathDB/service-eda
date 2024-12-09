@@ -91,12 +91,17 @@ public class EdaSubsettingClient extends StreamingDataClient {
   }
 
   /**
-   * Make a subsetting request without a network hop. This directly uses subsetting's FilteredResultFactory to
-   * produce a stream of records that can be used by internal clients (i.e. the merging component).
+   * Make a subsetting request without a network hop.
+   * <p>
+   * This directly uses subsetting's FilteredResultFactory to produce a stream
+   * of records that can be used by internal clients (i.e. the merging
+   * component).
    */
-  public CloseableIterator<Map<String, String>> getTabularDataIterator(String studyId,
-                                                                       List<APIFilter> variableFilters,
-                                                                       StreamSpec streamSpec) {
+  public static CloseableIterator<Map<String, String>> getTabularDataIterator(
+    String studyId,
+    List<APIFilter> variableFilters,
+    StreamSpec streamSpec
+  ) {
     // Convert everything to internal subsetting classes to bridge the gap from merging/data services.
     final Study study = Resources.getStudyResolver().getStudyById(studyId);
 

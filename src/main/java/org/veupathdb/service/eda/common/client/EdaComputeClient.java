@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.common.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.vulpine.lib.jcfi.CheckedSupplier;
 import jakarta.ws.rs.core.MediaType;
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.IoUtil;
@@ -79,7 +80,7 @@ public class EdaComputeClient {
   }
 
 
-  private List<VariableSpec> getComputeVars(EntityDef targetEntity, List<VariableMapping> varMappings, ReferenceMetadata metadata) {
+  private static List<VariableSpec> getComputeVars(EntityDef targetEntity, List<VariableMapping> varMappings, ReferenceMetadata metadata) {
 
     // if no computed vars present, nothing to do
     if (varMappings.isEmpty()) return Collections.emptyList();
@@ -108,27 +109,19 @@ public class EdaComputeClient {
 
     return computedVars;
   }
+
   /**
-   * TODO migrate this to directly use compute functionality:
-   *  org.veupathdb.service.eda.compute.controller.ComputeController#resultFile(
-   *  org.veupathdb.service.eda.compute.plugins.PluginMeta, java.lang.String,
-   *  org.veupathdb.service.eda.generated.model.ComputeRequestBase, java.util.function.Function)
-   * <p>
-   *  This isn't expected to provide a particularly noticeable performance
-   *  improvement, but it will avoid overhead of HTTP.
+   * @deprecated TODO: move me to a more sensible location.
    */
-  public CloseableIterator<Map<String, String>> getJobTabularIteratorOutput(
-    List<EntityDef> ancestors,
-    String computeName,
+  public static CloseableIterator<Map<String, String>> getJobTabularIteratorOutput(
     EntityDef computeEntity,
     List<VariableMapping> variables,
-    ComputeRequestBody requestBody,
-    ReferenceMetadata referenceMetadata
+    ReferenceMetadata referenceMetadata,
+    CheckedSupplier<InputStream> tabularDataSupplier
   ) {
     List<String> headers = VariableDef.toDotNotation(getComputeVars(computeEntity, variables, referenceMetadata));
 
-    try {
-      InputStream is = getJobTabularOutput(computeName, requestBody).getInputStream();
+    try(var is = tabularDataSupplier.get()) {
       InputStreamReader isReader = new InputStreamReader(is);
       BufferedReader bufferedReader = new BufferedReader(isReader);
       String headerLine = bufferedReader.readLine();

@@ -6,14 +6,12 @@ import org.veupathdb.lib.compute.platform.job.JobContext
 import org.veupathdb.lib.compute.platform.job.JobExecutor
 import org.veupathdb.lib.compute.platform.job.JobResult
 import org.veupathdb.lib.jackson.Json
-import org.veupathdb.service.eda.common.client.EdaMergingClient
 import org.veupathdb.service.eda.compute.EDACompute
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles
 import org.veupathdb.service.eda.compute.plugins.Plugin
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin
 import org.veupathdb.service.eda.compute.plugins.PluginRegistry
 import org.veupathdb.service.eda.compute.plugins.PluginWorkspace
-import org.veupathdb.service.eda.Main
 
 /**
  * Standard set of files we will attempt to persist to S3 on "successful" job
@@ -116,9 +114,6 @@ class PluginExecutor : JobExecutor {
     // Deserialize the initial HTTP request config
     val request = Json.parse(jobPayload.request, provider.requestClass)
 
-    // Convert the auth header to a Map.Entry for use with eda-common code.
-    val authHeader = jobPayload.authHeader.toFgpTuple()
-
     // Fetch the study metadata and write it out to the local workspace
     val studyDetail = try {
       Log.debug("retrieving api study details")
@@ -137,7 +132,6 @@ class PluginExecutor : JobExecutor {
       it.workspace = PluginWorkspace(ctx.workspace)
       it.jobContext = ComputeJobContext(ctx.jobID)
       it.pluginMeta = provider
-      it.mergingClient = EdaMergingClient(Main.config.edaMergeHost, authHeader)
     }.build()
 
     // Create the plugin.
@@ -158,8 +152,7 @@ class PluginExecutor : JobExecutor {
             context.referenceMetadata,
             request.filters,
             request.derivedVariables,
-            spec,
-            authHeader
+            spec
           )
         )
       }

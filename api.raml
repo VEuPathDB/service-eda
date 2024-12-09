@@ -454,6 +454,29 @@ securitySchemes:
             body:
               application/json: lib.DifferentialAbundanceStatsResponse
 
+  /differentialexpression:
+    post:
+      queryParameters:
+        autostart:
+          type: boolean
+          required: false
+          default: true
+      body:
+        application/json: lib.DifferentialExpressionPluginRequest
+      responses:
+        200:
+          body:
+            application/json: lib.JobResponse
+    /statistics:
+      post:
+        body:
+          application/json: lib.DifferentialExpressionPluginRequest
+        responses:
+          200:
+            body:
+              application/json: lib.DifferentialExpressionStatsResponse
+
+
   /correlation:
     post:
       queryParameters:
@@ -1275,6 +1298,21 @@ securitySchemes:
             body:
               application/json:
                 type: lib.DifferentialAbundanceStatsResponse
+
+  /differentialexpression/visualizations:
+    displayName: Visualizations for interrogating differentially expressed genes
+
+    /volcanoplot:
+      post:
+        description: Returns data required to create a volcanoplot from a differential expression analysis.
+        body:
+          application/json:
+            type: lib.DifferentialExpressionVolcanoplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.DifferentialExpressionStatsResponse
 
   /correlation/visualizations:
     displayName: Visualizations for discovering correlations between various assay data

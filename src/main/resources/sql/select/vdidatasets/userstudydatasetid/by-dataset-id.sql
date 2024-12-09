@@ -1,6 +1,6 @@
 SELECT
   study_stable_id
 FROM
-  ?.userstudydatasetid
+  %s.userstudydatasetid
 WHERE
   dataset_stable_id = ?

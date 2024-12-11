@@ -21,6 +21,7 @@ import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
 import org.veupathdb.service.eda.access.service.staff.StaffRepo;
 import org.veupathdb.service.eda.access.service.user.EndUserRepo;
 import org.veupathdb.service.eda.access.service.user.EndUserUtil;
+import org.veupathdb.service.eda.util.Exceptions;
 
 public class PermissionService
 {
@@ -65,6 +66,24 @@ public class PermissionService
     }
   }
 
+  public PermissionMap getPermissionMap(long userId, boolean grantAll) throws Exception {
+      // assign specific permissions on each dataset for this user
+      var datasetPerms = getPermissionMap(
+        grantAll,
+        // level of access assigned to each dataset
+        DatasetRepo.Select.getDatasetProps(),
+        // if datasetId is present, then user is provider; boolean indicates isManager
+        ProviderRepo.Select.datasets(userId),
+        // list of datasetIds user has approved access for
+        EndUserRepo.Select.datasets(userId)
+      );
+
+      // supplement official studies with studies from user datasets
+      datasetPerms.putAll(UserDatasetIsaStudies.getUserDatasetPermissions(userId));
+
+      return datasetPerms;
+  }
+
   public PermissionsGetResponse getUserPermissions(User user) {
     var out = new PermissionsGetResponseImpl();
 
@@ -84,23 +103,8 @@ public class PermissionService
           }
         });
 
-      // level of access assigned to each dataset
-      var datasetProps = DatasetRepo.Select.getDatasetProps();
-
-      // if datasetId is present, then user is provider; boolean indicates isManager
-      Map<String,Boolean> providerInfoMap = ProviderRepo.Select.datasets(user.getUserId());
-
-      // list of datasetIds user has approved access for
-      Map<String, ApprovalStatus> approvalStatusMap = EndUserRepo.Select.datasets(user.getUserId());
-
-      // assign specific permissions on each dataset for this user
-      PermissionMap datasetPerms = getPermissionMap(grantAll.get(), datasetProps, providerInfoMap, approvalStatusMap);
-
-      // supplement official studies with studies from user datasets
-      datasetPerms.putAll(UserDatasetIsaStudies.getUserDatasetPermissions(user.getUserId()));
-
       // set permission map on permissions object
-      out.setPerDataset(datasetPerms);
+      out.setPerDataset(getPermissionMap(user.getUserId(), grantAll.get()));
 
       return out;
     }

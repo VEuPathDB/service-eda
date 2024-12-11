@@ -92,21 +92,12 @@ public class ServiceExternal implements Merging {
   @DisableJackson
   @Override
   public PostMergingQueryResponse postMergingQuery(MergedEntityTabularPostRequest requestBody) {
+    var user = UserProvider.lookupUser(_request).orElseThrow();
+
     // check access to full tabular results since this endpoint is intended to be exposed through traefik
-    Entry<String,String> authHeader = checkPermissions(getAuthHeader(_request), requestBody.getStudyId());
-    // TODO Remove auth header once compute interface is intra-process (not over http).
+    StudyAccess.confirmPermission(user.getUserId(), requestBody.getStudyId(), StudyAccess::allowResultsAll);
+
     return PostMergingQueryResponse.respond200WithTextTabSeparatedValues(processMergedTabularRequest(requestBody));
-  }
-
-
-  static Entry<String, String> getAuthHeader(ContainerRequest request) {
-    return UserProvider.getSubmittedAuth(request)
-      .orElseThrow(() -> new BadRequestException(MISSING_AUTH_MSG));
-  }
-
-  private static Entry<String,String> checkPermissions(Entry<String,String> authHeader, String studyId) {
-    StudyAccess.confirmPermission(authHeader, Resources.DATASET_ACCESS_SERVICE_URL, studyId, StudyAccess::allowResultsAll);
-    return authHeader;
   }
 
   @NotNull

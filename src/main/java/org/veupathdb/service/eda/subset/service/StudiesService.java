@@ -83,22 +83,22 @@ public class StudiesService implements Studies {
 
   @Override
   public GetStudiesResponse getStudies() {
+    var user = UserProvider.lookupUser(_request).orElseThrow();
+
     // get IDs of studies visible to this user
-    Map<String, StudyDatasetInfo> visibleStudyMap = new DatasetAccessClient(
-        Resources.getDatasetAccessServiceUrl(),
-        UserProvider.getSubmittedAuth(_request).orElseThrow()
-    ).getStudyDatasetInfoMapForUser();
-    Set<String> visibleStudyIds = visibleStudyMap.keySet();
+    var visibleStudyMap = DatasetAccessClient.getStudyDatasetInfoMapForUser(user.getUserId());
 
     // filter overviews by visible studies
-    Map<String, StudyOverview> visibleOverviewMap = Resources.getStudyResolver()
-        .getStudyOverviews().stream()
-        .filter(overview -> visibleStudyIds.contains(overview.getStudyId()))
-        .collect(Collectors.toMap(StudyOverview::getStudyId, Function.identity()));
+    var visibleOverviewMap = Resources.getStudyResolver()
+      .getStudyOverviews()
+      .stream()
+      .filter(overview -> visibleStudyMap.containsKey(overview.getStudyId()))
+      .collect(Collectors.toMap(StudyOverview::getStudyId, Function.identity()));
 
     // convert to API objects and return
     StudiesGetResponse out = new StudiesGetResponseImpl();
     out.setStudies(ApiConversionUtil.toApiStudyOverviews(visibleStudyMap, visibleOverviewMap));
+
     return GetStudiesResponse.respond200WithApplicationJson(out);
   }
 
@@ -406,8 +406,8 @@ public class StudiesService implements Studies {
   }
 
   private static void checkPerms(ContainerRequest request, String studyId, Predicate<StudyAccess> accessPredicate) {
-    Entry<String, String> authHeader = UserProvider.getSubmittedAuth(request).orElseThrow();
-    StudyAccess.confirmPermission(authHeader, Resources.getDatasetAccessServiceUrl(), studyId, accessPredicate);
+    var user = UserProvider.lookupUser(request).orElseThrow();
+    StudyAccess.confirmPermission(user.getUserId(), studyId, accessPredicate);
   }
 
   private static String resolveSchema(Study study) {

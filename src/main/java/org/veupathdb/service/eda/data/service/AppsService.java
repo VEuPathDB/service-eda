@@ -191,10 +191,9 @@ public class AppsService implements Apps {
   }
 
   static <T extends DataPluginRequestBase> Consumer<OutputStream> processRequest(AbstractPlugin<T,?,?> plugin, T entity, String appName, ContainerRequest request) throws ValidationException {
-    Entry<String,String> authHeader = UserProvider.getSubmittedAuth(request).orElseThrow();
-    StudyAccess.confirmPermission(authHeader, Resources.DATASET_ACCESS_SERVICE_URL,
-      entity.getStudyId(), StudyAccess::allowVisualizations);
-    return plugin.processRequest(appName, entity, authHeader);
+    var user = UserProvider.lookupUser(request).orElseThrow();
+    StudyAccess.confirmPermission(user.getUserId(), entity.getStudyId(), StudyAccess::allowVisualizations);
+    return plugin.processRequest(appName, entity, UserProvider.getSubmittedAuth(request).orElseThrow());
   }
 
   private <T extends DataPluginRequestBase> Consumer<OutputStream> processRequest(AbstractPlugin<T,?,?> plugin, T entity) throws ValidationException {

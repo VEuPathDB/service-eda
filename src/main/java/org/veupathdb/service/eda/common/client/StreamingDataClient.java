@@ -15,8 +15,6 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
-import org.veupathdb.service.eda.common.model.ReferenceMetadata;
-import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
@@ -27,12 +25,6 @@ public abstract class StreamingDataClient extends ServiceClient {
   public abstract StreamSpecValidator getStreamSpecValidator();
 
   public abstract String varToColumnHeader(VariableSpec var);
-
-  public abstract ResponseFuture getTabularDataStream(
-    ReferenceMetadata metadata,
-    List<APIFilter> subset,
-    StreamSpec spec
-  ) throws ProcessingException;
 
   protected StreamingDataClient(String serviceBaseUrl, Entry<String, String> authHeader) {
     super(serviceBaseUrl, authHeader);

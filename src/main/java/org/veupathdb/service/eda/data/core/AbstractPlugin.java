@@ -15,6 +15,7 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
+import org.jetbrains.annotations.Nullable;
 import org.veupathdb.service.eda.common.client.*;
 import org.veupathdb.service.eda.common.client.EdaComputeClient.ComputeRequestBody;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -31,6 +32,7 @@ import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.model.BinSpec.RangeType;
 import org.veupathdb.service.eda.merge.ServiceExternal;
+import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -203,6 +205,11 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
       StreamingDataClient.processDataStreams(_requiredStreams, dataStreams, streamProcessor);
       logRequestTime("Data streams processed; response written; request complete");
     };
+  }
+
+  @Nullable
+  protected ComputeInfo makeComputeInfo() {
+    return null;
   }
 
   /**

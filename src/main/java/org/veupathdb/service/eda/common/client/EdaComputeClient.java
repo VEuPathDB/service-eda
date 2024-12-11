@@ -62,7 +62,7 @@ public class EdaComputeClient {
     _authHeader = Map.of(authHeader.getKey(), authHeader.getValue());
   }
 
-  public boolean isJobResultsAvailable(String computeName, ComputeRequestBody requestBody) {
+  public boolean isJobResultsAvailable(String computeName, ComputeRequestBase requestBody) {
     JobResponse response = readJsonResponse(getResponseFuture(computeName, STATUS_SEGMENT, requestBody), JobResponse.class);
     return response.getStatus().equals(JobStatus.COMPLETE);
   }
@@ -174,7 +174,7 @@ public class EdaComputeClient {
     return getResponseFuture(computeName, TABULAR_FILE_SEGMENT, requestBody);
   }
 
-  private ResponseFuture getResponseFuture(String computeName, String fileSegment, ComputeRequestBody requestBody) {
+  private ResponseFuture getResponseFuture(String computeName, String fileSegment, ComputeRequestBase requestBody) {
     return ClientUtil.makeAsyncPostRequest(
         // note: need to use wildcard here since compute service serves all result files out at the same endpoint
         _baseComputesUrl + computeName + fileSegment, requestBody, MediaType.MEDIA_TYPE_WILDCARD, _authHeader);

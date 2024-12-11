@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.common.client;
 
 import jakarta.ws.rs.ProcessingException;
 import kotlin.Pair;
-import org.gusdb.fgputil.Tuples;
 import org.gusdb.fgputil.client.ClientUtil;
 import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.web.MimeTypes;
@@ -37,15 +36,6 @@ public class EdaMergingClient extends StreamingDataClient {
 
   public static String columnHeaderFor(VariableSpec var) {
     return VariableDef.toDotNotation(var);
-  }
-
-  @Override
-  public ResponseFuture getTabularDataStream(
-    ReferenceMetadata metadata,
-    List<APIFilter> subset,
-    StreamSpec spec
-  ) throws ProcessingException {
-    return getTabularDataStream(metadata, subset, Collections.emptyList(), Optional.empty(), spec);
   }
 
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")

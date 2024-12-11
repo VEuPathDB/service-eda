@@ -95,16 +95,18 @@ public class Service implements Download {
 
   private StudyDatasetInfo checkPermsAndFetchDatasetInfo(String studyId, Function<StudyAccess, Boolean> accessGranter) {
     try {
-      Entry<String, String> authHeader = UserProvider.getSubmittedAuth(_request).orElseThrow();
-      Map<String, StudyDatasetInfo> studyMap =
-        new DatasetAccessClient(Resources.DATASET_ACCESS_SERVICE_URL, authHeader).getStudyDatasetInfoMapForUser();
-      StudyDatasetInfo study = studyMap.get(studyId);
+      var user  = UserProvider.lookupUser(_request).orElseThrow();
+      var study = DatasetAccessClient.getStudyDatasetInfoMapForUser(user.getUserId())
+        .get(studyId);
+
       if (study == null) {
         throw new NotFoundException("Study '" + studyId + "' cannot be found [dataset access service].");
       }
+
       if (!accessGranter.apply(study.getStudyAccess())) {
         throw new ForbiddenException("Permission Denied");
       }
+
       return study;
     } catch (Exception e) {
       LOG.error("Unable to check study permissions and convert studyId to dataset hash", e);

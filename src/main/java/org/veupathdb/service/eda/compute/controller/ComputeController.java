@@ -11,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
+import org.veupathdb.service.eda.common.client.DatasetAccessClient;
+import org.veupathdb.service.eda.common.client.EdaSubsettingClient;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.compute.EDACompute;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
@@ -225,13 +227,14 @@ public class ComputeController implements Computes {
    */
   private <R extends ComputeRequestBase, C> JobResponse submitJob(PluginProvider<R, C> plugin, R requestObject, boolean autostart) {
     var auth = UserProvider.getSubmittedAuth(request).orElseThrow();
+    var user = UserProvider.lookupUser(request).orElseThrow();
 
-    requirePermissions(requestObject, auth);
+    requirePermissions(requestObject, user.getUserId());
 
     // Validate the request body
     Supplier<ReferenceMetadata> referenceMetadata = () -> {
       var studyId = requestObject.getStudyId();
-      var meta = new ReferenceMetadata(EDACompute.getAPIStudyDetail(studyId));
+      var meta = new ReferenceMetadata(EdaSubsettingClient.getStudy(studyId));
       var derivedVars = Optional.ofNullable(requestObject.getDerivedVariables()).orElse(Collections.emptyList());
       for (var derivedVar : ServiceExternal.processDvMetadataRequest(studyId, derivedVars)) {
         meta.incorporateDerivedVariable(derivedVar);
@@ -288,7 +291,7 @@ public class ComputeController implements Computes {
     if (plugin == null)
       throw new NotFoundException();
 
-    requirePermissions(entity, null);
+    requirePermissions(entity, UserProvider.lookupUser(request).orElseThrow().getUserId());
 
     var jobFiles = EDACompute.getComputeJobFiles(plugin, entity);
 
@@ -324,18 +327,13 @@ public class ComputeController implements Computes {
    * @param entity Raw request body containing the ID of the study the user must
    * have permissions on.
    *
-   * @param auth The auth header to use in validation, or {@code null} for the
-   * auth header from the {@link #request} context to be used.
+   * @param userId ID of the user whose permissions should be tested.
    *
    * @throws ForbiddenException If the requester does not have the required
    * permission(s) on the target study.
    */
-  private void requirePermissions(@NotNull ComputeRequestBase entity, @Nullable Tuples.TwoTuple<String, String> auth) {
-    if (auth == null)
-      auth = UserProvider.getSubmittedAuth(request).orElseThrow();
-
-    // Check that the user has permission to run compute jobs.
-    if (!EDACompute.getStudyPerms(entity.getStudyId(), auth).allowVisualizations())
-      throw new ForbiddenException();
+  private void requirePermissions(@NotNull ComputeRequestBase entity, long userId) {
+    DatasetAccessClient.getStudyAccessByStudyId(entity.getStudyId(), userId)
+      .orElseThrow(ForbiddenException::new);
   }
 }

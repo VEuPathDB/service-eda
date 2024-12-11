@@ -82,7 +82,7 @@ constructor(
 
     val file = EDACompute.getComputeJobFiles(
       PluginRegistry.get(computeInfo.computeName) as PluginMeta<out ComputeRequestBase>,
-      computeInfo.requestBody
+      computeInfo.requestBody,
     ).first { it.name == ReservedFiles.OutputTabular }
 
     return EdaComputeClient.getJobTabularIteratorOutput(

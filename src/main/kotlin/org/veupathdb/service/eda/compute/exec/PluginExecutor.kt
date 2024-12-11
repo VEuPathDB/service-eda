@@ -6,6 +6,7 @@ import org.veupathdb.lib.compute.platform.job.JobContext
 import org.veupathdb.lib.compute.platform.job.JobExecutor
 import org.veupathdb.lib.compute.platform.job.JobResult
 import org.veupathdb.lib.jackson.Json
+import org.veupathdb.service.eda.common.client.EdaSubsettingClient
 import org.veupathdb.service.eda.compute.EDACompute
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles
 import org.veupathdb.service.eda.compute.plugins.Plugin
@@ -117,7 +118,7 @@ class PluginExecutor : JobExecutor {
     // Fetch the study metadata and write it out to the local workspace
     val studyDetail = try {
       Log.debug("retrieving api study details")
-      EDACompute.requireAPIStudyDetail(request.studyId)
+      EdaSubsettingClient.getStudy(request.studyId)
         .also { ctx.workspace.write(ReservedFiles.InputMeta, Json.convert(it)) }
     } catch (e: Throwable) {
       Log.error("Failed to fetch APIStudyDetail.", e)

@@ -36,48 +36,6 @@ object EDACompute {
   private val Log = LogManager.getLogger(javaClass)
 
   /**
-   * Returns the [StudyAccess] permissions object for the target [studyID] and
-   * user described by the given [auth] header.
-   *
-   * @param studyID ID of the study for which the target user's permissions
-   * should be fetched.
-   *
-   * @param auth Auth header sent in with the HTTP request describing the user
-   * whose permissions should be fetched.
-   *
-   * @return `StudyAccess` permissions object describing the permissions the
-   * target user has for the target study.
-   */
-  @JvmStatic
-  fun getStudyPerms(studyID: String, auth: TwoTuple<String, String>): StudyAccess =
-    DatasetAccessClient(Main.config.datasetAccessHost, auth).getStudyAccessByStudyId(studyID)
-      .orElseThrow { ForbiddenException() }
-
-  /**
-   * Fetches the [APIStudyDetail] information from the EDA Subsetting Service
-   * for the given [studyID] if such a study exists.
-   *
-   * @param studyID ID of the study whose metadata should be retrieved.
-   *
-   * @return An `APIStudyDetail` representing the target study.
-   */
-  @JvmStatic
-  fun getAPIStudyDetail(studyID: String): APIStudyDetail =
-    EdaSubsettingClient.getStudy(studyID)
-
-  /**
-   * Fetches the [APIStudyDetail] information from the EDA Subsetting Service
-   * for the given [studyID], throwing an exception if no such study exists.
-   *
-   * @param studyID ID of the study whose metadata should be retrieved.
-   *
-   * @return The `APIStudyDetail` information returned from the EDA Subsetting
-   * Service.
-   */
-  @JvmStatic
-  fun requireAPIStudyDetail(studyID: String): APIStudyDetail = getAPIStudyDetail(studyID)
-
-  /**
    * Fetches tabular study data from the EDA Merge Service for the given params.
    *
    * @param refMeta reference metadata about the EDA study whose data is being computed

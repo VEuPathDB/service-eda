@@ -9,7 +9,12 @@ import org.gusdb.fgputil.client.RequestFailure;
 import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.runtime.Environment;
 import org.json.JSONObject;
+import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
+import org.veupathdb.service.eda.access.service.permissions.PermissionMap;
+import org.veupathdb.service.eda.access.service.permissions.PermissionService;
+import org.veupathdb.service.eda.access.service.staff.StaffRepo;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
+import org.veupathdb.service.eda.generated.model.DatasetPermissionEntry;
 
 import java.io.InputStream;
 import java.util.HashMap;
@@ -45,6 +50,22 @@ public class DatasetAccessClient extends ServiceClient {
       );
     }
 
+    public BasicStudyDatasetInfo(String datasetId, DatasetPermissionEntry permissions) {
+      _datasetId = datasetId;
+      _studyId = permissions.getStudyId();
+      _isUserStudy = permissions.getIsUserStudy();
+
+      var auth = permissions.getActionAuthorization();
+
+      _studyAccess = new StudyAccess(
+        auth.getStudyMetadata(),
+        auth.getSubsetting(),
+        auth.getVisualizations(),
+        auth.getResultsFirstPage(),
+        auth.getResultsAll()
+      );
+    }
+
     public String getStudyId() { return _studyId; }
     public String getDatasetId() { return _datasetId; }
     public boolean isUserStudy() { return _isUserStudy; }
@@ -77,6 +98,15 @@ public class DatasetAccessClient extends ServiceClient {
       _displayName = json.getString("displayName");
       _shortDisplayName = json.optString("shortDisplayName", _displayName);
       _description = json.optString("description", null);
+    }
+
+    public StudyDatasetInfo(String datasetId, DatasetPermissionEntry permissions) {
+      super(datasetId, permissions);
+
+      _sha1Hash = permissions.getSha1Hash();
+      _displayName = permissions.getDisplayName();
+      _shortDisplayName = permissions.getShortDisplayName();
+      _description = permissions.getDescription();
     }
 
     public String getSha1Hash() { return _sha1Hash; }
@@ -118,6 +148,24 @@ public class DatasetAccessClient extends ServiceClient {
       return infoMap;
     }
     catch (Exception e) {
+      throw new RuntimeException("Unable to read permissions response", e);
+    }
+  }
+
+  public static Map<String, StudyDatasetInfo> getStudyDatasetInfoMapForUser(long userId) {
+    try {
+      var grantAll   = StaffRepo.Select.byUserId(userId).isPresent();
+      var datasetMap = PermissionService.getInstance().getPermissionMap(userId, grantAll);
+      var infoMap    = new HashMap<String, StudyDatasetInfo>(datasetMap.size());
+
+      for (String datasetId : datasetMap.keySet()) {
+        StudyDatasetInfo datasetInfo = new StudyDatasetInfo(datasetId, datasetMap.get(datasetId));
+        // reorganizing here; response JSON is keyed by dataset ID, but resulting map is keyed by study ID
+        infoMap.put(datasetInfo.getStudyId(), datasetInfo);
+      }
+
+      return infoMap;
+    } catch (Exception e) {
       throw new RuntimeException("Unable to read permissions response", e);
     }
   }
@@ -184,6 +232,22 @@ public class DatasetAccessClient extends ServiceClient {
         .findAny()
         // fish out the perms
         .map(BasicStudyDatasetInfo::getStudyAccess);
+  }
+
+  public static Optional<StudyAccess> getStudyAccessByStudyId(String studyId, long userId) {
+    if (!Boolean.parseBoolean(Environment.getOptionalVar(ENABLE_DATASET_ACCESS_RESTRICTIONS, Boolean.TRUE.toString()))) {
+      return Optional.of(new StudyAccess(true, true, true, true, true));
+    }
+    // get the perms for this user of known studies
+    return getStudyDatasetInfoMapForUser(userId)
+      .values()
+      .stream()
+      // filter to find this study
+      .filter(info -> info.getStudyId().equals(studyId))
+      // convert to optional
+      .findAny()
+      // fish out the perms
+      .map(BasicStudyDatasetInfo::getStudyAccess);
   }
 
 }

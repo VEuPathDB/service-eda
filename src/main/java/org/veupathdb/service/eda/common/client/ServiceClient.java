@@ -16,7 +16,7 @@ public abstract class ServiceClient {
   }
 
   protected String getUrl(String urlPath) {
-    return _serviceBaseUrl + (urlPath.startsWith("/") ? urlPath : urlPath.substring(1));
+    return _serviceBaseUrl + (urlPath.startsWith("/") ? urlPath : "/" + urlPath);
   }
 
   protected Map<String, String> getAuthHeaderMap() {

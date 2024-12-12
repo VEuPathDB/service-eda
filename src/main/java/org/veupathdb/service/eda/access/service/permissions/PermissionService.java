@@ -22,6 +22,8 @@ import org.veupathdb.service.eda.access.service.staff.StaffRepo;
 import org.veupathdb.service.eda.access.service.user.EndUserRepo;
 import org.veupathdb.service.eda.access.service.user.EndUserUtil;
 
+import static org.veupathdb.service.eda.util.Exceptions.errToRuntime;
+
 public class PermissionService
 {
   private static PermissionService instance;
@@ -30,27 +32,24 @@ public class PermissionService
     return getUserPermissions(Util.requireUser(request));
   }
 
-  public StudyPermissionInfo getUserPermissions(ContainerRequest request, String datasetId) {
+  public static StudyPermissionInfo getUserPermissions(ContainerRequest request, String datasetId) {
     try {
       User user = Util.requireUser(request);
-      // get map of all datasets this user knows about (clunky but gets the job done)
-      PermissionMap knownDatasets = (PermissionMap)getUserPermissions(user).getPerDataset();
 
       // find the one for this study if it exists
-      Optional<StudyPermissionInfo> studyPermission = knownDatasets.entrySet().stream()
-        .filter(entry -> entry.getKey().equals(datasetId))
-        .findAny()
+      var studyPermission = Optional.ofNullable(getUserPermissions(user.getUserId(), datasetId))
         // if found, convert for return
         .map(entry -> {
           StudyPermissionInfo info = new StudyPermissionInfoImpl();
-          info.setDatasetId(entry.getKey());
-          info.setStudyId(entry.getValue().getStudyId());
-          info.setIsUserStudy(entry.getValue().getIsUserStudy());
-          info.setActionAuthorization(entry.getValue().getActionAuthorization());
+          info.setDatasetId(datasetId);
+          info.setStudyId(entry.getStudyId());
+          info.setIsUserStudy(entry.getIsUserStudy());
+          info.setActionAuthorization(entry.getActionAuthorization());
           return info;
         });
 
-      if (studyPermission.isPresent()) return studyPermission.get();
+      if (studyPermission.isPresent())
+        return studyPermission.get();
 
       // otherwise, user does not have study visibility but want to see if it's a user study
       return UserDatasetIsaStudies.getUserStudyByDatasetId(datasetId).orElseThrow(
@@ -65,7 +64,7 @@ public class PermissionService
     }
   }
 
-  public PermissionMap getPermissionMap(long userId, boolean grantAll) throws Exception {
+  public static PermissionMap getPermissionMap(long userId, boolean grantAll) throws Exception {
       // assign specific permissions on each dataset for this user
       var datasetPerms = getPermissionMap(
         grantAll,
@@ -81,6 +80,44 @@ public class PermissionService
       datasetPerms.putAll(UserDatasetIsaStudies.getUserDatasetPermissions(userId));
 
       return datasetPerms;
+  }
+
+  public static DatasetPermissionEntry getUserPermissions(long userId, String datasetId) {
+    return errToRuntime(() -> getUserPermissions(userId)).get(datasetId);
+  }
+
+  public static PermissionMap getUserPermissions(long userId) throws Exception {
+    return getPermissionMap(userId, StaffRepo.Select.byUserId(userId).isPresent());
+  }
+
+  public static PermissionsGetResponse getUserPermissionsResponse(long userId) {
+    var out = new PermissionsGetResponseImpl();
+
+    try {
+      Wrapper<Boolean> grantAll = new Wrapper<>(false);
+
+      // check if current user is staff and set outgoing perms accordingly
+      StaffRepo.Select.byUserId(userId)
+        .ifPresent(s -> {
+          // all staff get access to all studies
+          grantAll.set(true);
+          // assign staff role
+          out.setIsStaff(true);
+          if (s.isOwner()) {
+            // staff/owner is essentially a superuser
+            out.setIsOwner(true);
+          }
+        });
+
+      // set permission map on permissions object
+      out.setPerDataset(getPermissionMap(userId, grantAll.get()));
+
+      return out;
+    } catch (WebApplicationException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new InternalServerErrorException(e);
+    }
   }
 
   public PermissionsGetResponse getUserPermissions(User user) {
@@ -115,10 +152,12 @@ public class PermissionService
     }
   }
 
-  private static PermissionMap getPermissionMap(boolean grantToAllDatasets,
-                                                List<DatasetProps> datasetProps,
-                                                Map<String, Boolean> providerInfoMap,
-                                                Map<String, ApprovalStatus> approvalStatusMap) {
+  private static PermissionMap getPermissionMap(
+    boolean grantToAllDatasets,
+    List<DatasetProps> datasetProps,
+    Map<String, Boolean> providerInfoMap,
+    Map<String, ApprovalStatus> approvalStatusMap
+  ) {
     var permissionMap = new PermissionMap();
     for (DatasetProps dataset : datasetProps) {
 

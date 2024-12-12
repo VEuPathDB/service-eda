@@ -20,3 +20,11 @@ fun <R> errToBadRequest(fn: CheckedSupplier<R>): R {
     throw BadRequestException(e)
   }
 }
+
+fun <R> errToRuntime(fn: CheckedSupplier<R>): R {
+  try {
+    return fn.get()
+  } catch (e: Throwable) {
+    throw RuntimeException(e)
+  }
+}

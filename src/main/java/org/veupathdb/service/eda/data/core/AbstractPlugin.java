@@ -106,7 +106,6 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   private List<DerivedVariableSpec> _derivedVariableSpecs;
   private Entry<String,String> _authHeader;
   private EdaSubsettingClient _subsettingClient;
-  private EdaComputeClient _computeClient;
 
   /**
    * Processes the plugin request and prepares this plugin to receive an OutputStream via the
@@ -144,8 +143,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     // build clients for required services
     _authHeader = authHeader;
     _subsettingClient = new EdaSubsettingClient(Resources.SUBSETTING_SERVICE_URL, authHeader);
-    EdaMergingClient _mergingClient = new EdaMergingClient(Resources.MERGING_SERVICE_URL, authHeader);
-    _computeClient = new EdaComputeClient(Resources.COMPUTE_SERVICE_URL, authHeader);
+    EdaMergingClient _mergingClient = new EdaMergingClient();
 
     // get study
     APIStudyDetail study = EdaSubsettingClient.getStudy(request.getStudyId());
@@ -451,15 +449,15 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected boolean isComputeResultsAvailable() {
-    return _computeClient.isJobResultsAvailable(getComputeName(), createComputeRequestBody());
+    return EdaComputeClient.isJobResultsAvailable(getComputeName(), createComputeRequestBody());
   }
 
   protected <Q> Q getComputeResultStats(Class<Q> expectedStatsClass) {
-    return _computeClient.getJobStatistics(getComputeName(), createComputeRequestBody(), expectedStatsClass);
+    return EdaComputeClient.getJobStatistics(getComputeName(), createComputeRequestBody(), expectedStatsClass);
   }
 
   protected void writeComputeStatsResponseToOutput(OutputStream out) {
-    try (InputStream statsStream = _computeClient.getJobStatistics(getComputeName(), createComputeRequestBody()).getInputStream()) {
+    try (InputStream statsStream = EdaComputeClient.getJobStatistics(getComputeName(), createComputeRequestBody())) {
       statsStream.transferTo(out);
     }
     catch (Exception e) {
@@ -468,7 +466,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected ComputedVariableMetadata getComputedVariableMetadata() {
-    return _computeClient.getJobVariableMetadata(getComputeName(), createComputeRequestBody());
+    return EdaComputeClient.getJobVariableMetadata(getComputeName(), createComputeRequestBody());
   }
 
   private ComputeRequestBody createComputeRequestBody() {

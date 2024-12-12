@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class EdaSubsettingClient extends StreamingDataClient {
+public class EdaSubsettingClient extends ServiceClient implements StreamingDataClient {
   private static final Logger LOG = LogManager.getLogger(EdaSubsettingClient.class);
 
   // request-scope cache for subsetting service metadata responses

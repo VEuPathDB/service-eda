@@ -17,14 +17,8 @@ import org.veupathdb.service.eda.xgenerated.model.xComputeRequestBase;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map.Entry;
 
-public class EdaMergingClient extends StreamingDataClient {
-
-  public EdaMergingClient(String serviceBaseUrl, Entry<String, String> authHeader) {
-    super(serviceBaseUrl, authHeader);
-  }
-
+public class EdaMergingClient implements StreamingDataClient {
   @Override
   public StreamSpecValidator getStreamSpecValidator() {
     return new EdaMergingSpecValidator();

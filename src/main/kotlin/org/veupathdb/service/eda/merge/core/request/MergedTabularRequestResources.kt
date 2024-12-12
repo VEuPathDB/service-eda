@@ -32,9 +32,6 @@ constructor(
   val targetEntityId: String,
   val outputVariableSpecs: List<VariableSpec>,
 ) : RequestResources(studyId, variableSpecs) {
-  @Deprecated("for removal")
-  lateinit var computeSvc: EdaComputeClient
-
   constructor(request: MergedEntityTabularPostRequest) : this(
     request.studyId,
     request.derivedVariables ?: emptyList(),
@@ -97,10 +94,10 @@ constructor(
     // if compute specified, check if compute results are available; throw if
     // not, get computed metadata if so
     computeInfo?.also {
-      if (!computeSvc.isJobResultsAvailable(it.computeName, it.requestBody))
+      if (!EdaComputeClient.isJobResultsAvailable(it.computeName, it.requestBody))
         throw BadRequestException("Compute results are not available for the requested job.")
       else
-        it.setMetadata(computeSvc.getJobVariableMetadata(it.computeName, it.requestBody))
+        it.setMetadata(EdaComputeClient.getJobVariableMetadata(it.computeName, it.requestBody))
 
       metadata.incorporateComputedVariables(it.variables)
     }

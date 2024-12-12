@@ -6,9 +6,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
 import org.glassfish.jersey.server.ContainerRequest;
-import org.gusdb.fgputil.Tuples;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
@@ -38,6 +36,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static org.veupathdb.service.eda.util.Exceptions.errToBadRequest;
 
 
 /**
@@ -236,7 +236,7 @@ public class ComputeController implements Computes {
       var studyId = requestObject.getStudyId();
       var meta = new ReferenceMetadata(EdaSubsettingClient.getStudy(studyId));
       var derivedVars = Optional.ofNullable(requestObject.getDerivedVariables()).orElse(Collections.emptyList());
-      for (var derivedVar : ServiceExternal.processDvMetadataRequest(studyId, derivedVars)) {
+      for (var derivedVar : errToBadRequest(() -> ServiceExternal.processDvMetadataRequest(studyId, derivedVars))) {
         meta.incorporateDerivedVariable(derivedVar);
       }
       return meta;

@@ -21,7 +21,6 @@ import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
 import org.veupathdb.service.eda.access.service.staff.StaffRepo;
 import org.veupathdb.service.eda.access.service.user.EndUserRepo;
 import org.veupathdb.service.eda.access.service.user.EndUserUtil;
-import org.veupathdb.service.eda.util.Exceptions;
 
 public class PermissionService
 {

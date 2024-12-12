@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.ws.rs.ProcessingException;
+import io.vulpine.lib.jcfi.CheckedFunction;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.gusdb.fgputil.AutoCloseableList;
@@ -23,8 +23,6 @@ public abstract class StreamingDataClient extends ServiceClient {
   private static final Logger LOG = LogManager.getLogger(StreamingDataClient.class);
 
   public abstract StreamSpecValidator getStreamSpecValidator();
-
-  public abstract String varToColumnHeader(VariableSpec var);
 
   protected StreamingDataClient(String serviceBaseUrl, Entry<String, String> authHeader) {
     super(serviceBaseUrl, authHeader);
@@ -69,19 +67,27 @@ public abstract class StreamingDataClient extends ServiceClient {
     }
   }
 
+  // convert auto-closeable list into a named stream map for processing
+  public static Map<String, CloseableIterator<Map<String, String>>> iteratorStreamsToMap(
+    List<StreamSpec> requiredStreams,
+    AutoCloseableList<CloseableIterator<Map<String, String>>> streams
+  ) {
+    var streamMap = new LinkedHashMap<String, CloseableIterator<Map<String, String>>>();
+
+    for (int i = 0; i < streams.size(); i++) {
+      streamMap.put(requiredStreams.get(i).getStreamName(), streams.get(i));
+    }
+
+    return streamMap;
+  }
+
   public static void processIteratorStreams(
     List<StreamSpec> requiredStreams,
     AutoCloseableList<CloseableIterator<Map<String, String>>> streams,
     FunctionalInterfaces.ConsumerWithException<Map<String, CloseableIterator<Map<String, String>>>> streamProcessor
   ) {
     try (streams) {
-      // convert auto-closeable list into a named stream map for processing
-      Map<String, CloseableIterator<Map<String, String>>> streamMap = new LinkedHashMap<>();
-
-      for (int i = 0; i < streams.size(); i++) {
-        streamMap.put(requiredStreams.get(i).getStreamName(), streams.get(i));
-      }
-      cSwallow(streamProcessor).accept(streamMap);
+      cSwallow(streamProcessor).accept(iteratorStreamsToMap(requiredStreams, streams));
     }
   }
 
@@ -139,6 +145,30 @@ public abstract class StreamingDataClient extends ServiceClient {
     }
     catch (Exception e) {
       cleanDataStreams(responses, dataStreams);
+      // throw as a runtime exception
+      throw new RuntimeException("Unable to fetch all required data", e);
+    }
+  }
+
+  public static AutoCloseableList<InputStream> buildDataStreams(
+    List<StreamSpec> requiredStreams,
+    CheckedFunction<StreamSpec, InputStream> streamGenerator
+  ) {
+    try {
+      var dataStreams = new AutoCloseableList<InputStream>();
+      dataStreams.ensureCapacity(requiredStreams.size());
+
+      // parallelize the calls
+      for (StreamSpec spec : requiredStreams) {
+        dataStreams.add(new NonEmptyResultStream(spec.getStreamName(), streamGenerator.apply(spec)));
+      }
+
+      return dataStreams;
+    // Explicitly catch EmptyResult so that it can be re-thrown and caught
+    // downstream without being wrapped in generic catch.
+    } catch (NonEmptyResultStream.EmptyResultException e) {
+      throw e;
+    } catch (Exception e) {
       // throw as a runtime exception
       throw new RuntimeException("Unable to fetch all required data", e);
     }

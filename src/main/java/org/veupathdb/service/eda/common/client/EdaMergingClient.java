@@ -1,22 +1,23 @@
 package org.veupathdb.service.eda.common.client;
 
-import jakarta.ws.rs.ProcessingException;
 import kotlin.Pair;
-import org.gusdb.fgputil.client.ClientUtil;
-import org.gusdb.fgputil.client.ResponseFuture;
-import org.gusdb.fgputil.web.MimeTypes;
+import org.gusdb.fgputil.validation.ValidationException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.veupathdb.service.eda.common.client.spec.EdaMergingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
-import org.veupathdb.service.eda.merge.ServiceExternal;
+import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
+import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
+import org.veupathdb.service.eda.merge.core.request.MergedTabularRequestResources;
+import org.veupathdb.service.eda.xgenerated.model.xComputeRequestBase;
 
-import java.util.Collections;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Optional;
 
 public class EdaMergingClient extends StreamingDataClient {
 
@@ -29,60 +30,47 @@ public class EdaMergingClient extends StreamingDataClient {
     return new EdaMergingSpecValidator();
   }
 
-  @Override
-  public String varToColumnHeader(VariableSpec var) {
-    return columnHeaderFor(var);
-  }
-
-  public static String columnHeaderFor(VariableSpec var) {
+  @NotNull
+  public static String columnHeaderFor(@NotNull VariableSpec var) {
     return VariableDef.toDotNotation(var);
   }
 
-  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  public static ResponseFuture getTabularDataStream(
-    ReferenceMetadata metadata,
-    List<APIFilter> subset,
-    List<DerivedVariableSpec> derivedVariableSpecs,
-    Optional<Pair<String, Object>> computeInfoOpt,
-    StreamSpec spec
-  ) throws ProcessingException {
-
-    // build request object
-    MergedEntityTabularPostRequest request = new MergedEntityTabularPostRequestImpl();
-    request.setStudyId(metadata.getStudyId());
-    request.setFilters(spec.getFiltersOverride().orElse(subset));
-    request.setEntityId(spec.getEntityId());
-    request.setDerivedVariables(derivedVariableSpecs);
-    request.setOutputVariables(spec);
+  @NotNull
+  public static InputStream getTabularDataStream(
+    @NotNull ReferenceMetadata metadata,
+    @NotNull List<APIFilter> subset,
+    @NotNull List<DerivedVariableSpec> derivedVariableSpecs,
+    @Nullable Pair<String, Object> computeInfoOpt,
+    @NotNull StreamSpec spec
+  ) throws ValidationException {
+    ComputeInfo computeInfo = null;
 
     // if asked to include computed vars, do some validation before trying
     if (spec.isIncludeComputedVars()) {
-      // a compute name and config must be provided
-      var computeInfo = computeInfoOpt.orElseThrow(() ->
-        new RuntimeException("Computed vars requested but no compute associated with this visualization"));
 
-      var computeSpec = new ComputeSpecForMergingImpl();
-      computeSpec.setComputeName(computeInfo.getFirst());
-      computeSpec.setComputeConfig(computeInfo.getSecond());
-      request.setComputeSpec(computeSpec);
+      // a compute name and config must be provided
+      if (computeInfoOpt == null)
+        throw new RuntimeException("Computed vars requested but no compute associated with this visualization");
+
+      var config = (ComputeRequestBase) computeInfoOpt.getSecond();
+      computeInfo = new ComputeInfo(
+        computeInfoOpt.getFirst(),
+        new EdaComputeClient.ComputeRequestBody(
+          config.getStudyId(),
+          config.getFilters(),
+          config.getDerivedVariables(),
+          xComputeRequestBase.getConfig(config)
+        )
+      );
     }
 
-    // make request
-    return ClientUtil.makeAsyncPostRequest(getUrl("/merging-internal/query"), request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
+    return new MergeRequestProcessor(new MergedTabularRequestResources(
+      metadata.getStudyId(),
+      derivedVariableSpecs,
+      spec.getFiltersOverride().orElse(subset),
+      computeInfo,
+      spec.getEntityId(),
+      spec
+    )).createMergeDataStream();
   }
-
-  @Deprecated
-  public List<DerivedVariableMetadata> getDerivedVariableMetadata(String studyId, List<DerivedVariableSpec> derivedVariableSpecs) {
-    // return empty if given empty
-    if (derivedVariableSpecs.isEmpty())
-      return Collections.emptyList();
-
-    // create the request
-    DerivedVariableBulkMetadataRequest request = new DerivedVariableBulkMetadataRequestImpl();
-    request.setStudyId(studyId);
-    request.setDerivedVariables(derivedVariableSpecs);
-
-    return ServiceExternal.processDvMetadataRequest(studyId, derivedVariableSpecs);
-  }
-
 }

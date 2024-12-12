@@ -2,11 +2,11 @@ package org.veupathdb.service.eda.data.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import io.vulpine.lib.jcfi.CheckedFunction;
 import jakarta.ws.rs.BadRequestException;
 import kotlin.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -33,6 +33,7 @@ import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.model.BinSpec.RangeType;
 import org.veupathdb.service.eda.merge.ServiceExternal;
 import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
+import org.veupathdb.service.eda.util.Exceptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,7 +44,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -160,8 +160,10 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     _referenceMetadata = new ReferenceMetadata(study);
 
     // if derived vars present, get derived var metadata and incorporate
-    ServiceExternal.processDvMetadataRequest(_studyId, _derivedVariableSpecs)
-      .forEach(_referenceMetadata::incorporateDerivedVariable);
+    Exceptions.errToBadRequest(() -> {
+      ServiceExternal.processDvMetadataRequest(_studyId, _derivedVariableSpecs)
+        .forEach(_referenceMetadata::incorporateDerivedVariable);
+    });
 
     // if plugin requires a compute, get computed var metadata and incorporate
     if (_computeInfo.isPresent() && computeGeneratesVars())
@@ -181,12 +183,13 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     logRequestTime("Initial request processing complete");
 
     // create stream generator
-    var typedTuple = _computeInfo.map(info -> new Pair<String, Object>(info.getFirst(), info.getSecond()));
-    Function<StreamSpec, ResponseFuture> streamGenerator = spec ->
+    var typedTuple = _computeInfo.map(info -> new Pair<String, Object>(info.getFirst(), info.getSecond()))
+      .orElse(null);
+    CheckedFunction<StreamSpec, InputStream> streamGenerator = spec ->
       EdaMergingClient.getTabularDataStream(_referenceMetadata, _subsetFilters, _derivedVariableSpecs, typedTuple, spec);
 
     @SuppressWarnings("resource") // closed by StreamingDataClient.processDataStreams
-    final AutoCloseableList<InputStream> dataStreams = StreamingDataClient.buildDataStreams(_requiredStreams, streamGenerator);
+    final var dataStreams = StreamingDataClient.buildDataStreams(_requiredStreams, streamGenerator);
 
     return out -> {
       if (!_requestProcessed) {

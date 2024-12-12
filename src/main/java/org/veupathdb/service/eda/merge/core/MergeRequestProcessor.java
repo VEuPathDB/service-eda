@@ -1,5 +1,6 @@
 package org.veupathdb.service.eda.merge.core;
 
+import kotlin.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;
@@ -55,7 +56,7 @@ public class MergeRequestProcessor {
     _resources = resources;
   }
 
-  public Consumer<OutputStream> createMergedResponseSupplier() throws ValidationException {
+  private StreamBundle prepareStreams() throws ValidationException {
     // gather request resources
     RootStreamingEntityNode targetStream = getRootStreamingEntityNode();
 
@@ -75,15 +76,39 @@ public class MergeRequestProcessor {
     @SuppressWarnings("resource") // closed by StreamingDataClient.processIteratorStreams
     AutoCloseableList<CloseableIterator<Map<String, String>>> closeableDataStreams = StreamingDataClient.buildIteratorStreams(requiredStreamSpecs, streamGenerator);
 
-    return out -> {
+    return new StreamBundle(targetStream, requiredStreamSpecs, closeableDataStreams);
+  }
 
+  /**
+   * Creates a JaxRS compatible output stream wrapper that writes the merged
+   * data as a response.
+   */
+  public Consumer<OutputStream> createMergedResponseSupplier() throws ValidationException {
+    var bundle = prepareStreams();
+
+    return out -> {
       // create stream processor
       ConsumerWithException<Map<String, CloseableIterator<Map<String, String>>>> streamProcessor =
-        dataStreams -> writeMergedStream(targetStream, dataStreams, out);
+        dataStreams -> writeMergedStream(bundle.targetStream, dataStreams, out);
 
       // build and process streams
-      StreamingDataClient.processIteratorStreams(requiredStreamSpecs, closeableDataStreams, streamProcessor);
+      StreamingDataClient.processIteratorStreams(bundle.requiredStreamSpecs, bundle.closeableDataStreams, streamProcessor);
     };
+  }
+
+  /**
+   * Creates an InputStream over the merged data.
+   */
+  public InputStream createMergeDataStream() throws ValidationException {
+    var bundle = prepareStreams();
+
+    return new MergeDataInputStream(
+      bundle.targetStream,
+      StreamingDataClient.iteratorStreamsToMap(
+        bundle.requiredStreamSpecs,
+        bundle.closeableDataStreams
+      )
+    );
   }
 
   @NotNull
@@ -136,4 +161,10 @@ public class MergeRequestProcessor {
       throw new RuntimeException("Unable to write output stream", e);
     }
   }
+
+  private record StreamBundle(
+    RootStreamingEntityNode targetStream,
+    List<StreamSpec> requiredStreamSpecs,
+    AutoCloseableList<CloseableIterator<Map<String, String>>> closeableDataStreams
+  ) {}
 }

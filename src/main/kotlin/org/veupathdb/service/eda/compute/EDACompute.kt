@@ -3,24 +3,14 @@ package org.veupathdb.service.eda.compute
 import jakarta.ws.rs.ForbiddenException
 import jakarta.ws.rs.NotFoundException
 import org.apache.logging.log4j.LogManager
-import org.gusdb.fgputil.Tuples.TwoTuple
 import org.veupathdb.lib.compute.platform.AsyncPlatform
 import org.veupathdb.lib.compute.platform.job.JobFileReference
 import org.veupathdb.lib.jackson.Json
-import org.veupathdb.service.eda.common.auth.StudyAccess
-import org.veupathdb.service.eda.common.client.DatasetAccessClient
-import org.veupathdb.service.eda.common.client.EdaMergingClient
-import org.veupathdb.service.eda.common.client.EdaSubsettingClient
-import org.veupathdb.service.eda.common.client.spec.StreamSpec
-import org.veupathdb.service.eda.common.model.ReferenceMetadata
 import org.veupathdb.service.eda.compute.exec.PluginJobPayload
 import org.veupathdb.service.eda.compute.plugins.PluginMeta
-import org.veupathdb.service.eda.Main
 import org.veupathdb.service.eda.compute.util.JobIDs
 import org.veupathdb.service.eda.compute.util.toJobResponse
 import org.veupathdb.service.eda.generated.model.*
-import java.io.InputStream
-import java.util.*
 import org.veupathdb.lib.compute.platform.job.JobStatus as JS
 
 /**
@@ -34,27 +24,6 @@ import org.veupathdb.lib.compute.platform.job.JobStatus as JS
 object EDACompute {
 
   private val Log = LogManager.getLogger(javaClass)
-
-  /**
-   * Fetches tabular study data from the EDA Merge Service for the given params.
-   *
-   * @param refMeta reference metadata about the EDA study whose data is being computed
-   *
-   * @param filters set of filters to determine the current subset
-   *
-   * @param spec specification of tabular data stream needed from subsetting service (entity + vars)
-   *
-   * @return An [InputStream] over the tabular data returned from the EDA Merge
-   * Service.
-   */
-  @JvmStatic
-  fun getMergeData(
-    refMeta: ReferenceMetadata,
-    filters: List<APIFilter>,
-    derivedVars: List<DerivedVariableSpec>,
-    spec: StreamSpec
-  ): InputStream =
-    EdaMergingClient.getTabularDataStream(refMeta, filters, derivedVars, Optional.empty(), spec).inputStream
 
   /**
    * Submits a new compute job to the queue.

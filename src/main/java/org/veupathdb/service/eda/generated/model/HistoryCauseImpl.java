@@ -19,8 +19,8 @@ public class HistoryCauseImpl implements HistoryCause {
   @JsonProperty("action")
   private HistoryCause.ActionType action;
 
-
   @JsonProperty("timestamp")
+
   private OffsetDateTime timestamp;
 
   @JsonProperty("user")

@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.common.client;
 
-import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.core.MediaType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,8 +29,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import static org.gusdb.fgputil.functional.Functions.swallowAndGet;
-
 public class EdaSubsettingClient extends StreamingDataClient {
   private static final Logger LOG = LogManager.getLogger(EdaSubsettingClient.class);
 
@@ -40,13 +37,6 @@ public class EdaSubsettingClient extends StreamingDataClient {
 
   public EdaSubsettingClient(String serviceBaseUrl, Entry<String, String> authHeader) {
     super(serviceBaseUrl, authHeader);
-  }
-
-  public List<String> getStudies() {
-    return _validStudyNameCache != null ? _validStudyNameCache :
-      (_validStudyNameCache = swallowAndGet(() -> ClientUtil
-        .getResponseObject(getUrl("/studies"), StudiesGetResponse.class, getAuthHeaderMap()))
-        .getStudies().stream().map(APIStudyOverview::getId).collect(Collectors.toList()));
   }
 
   /**
@@ -62,32 +52,6 @@ public class EdaSubsettingClient extends StreamingDataClient {
   @Override
   public StreamSpecValidator getStreamSpecValidator() {
     return new EdaSubsettingSpecValidator();
-  }
-
-  @Override
-  public String varToColumnHeader(VariableSpec var) {
-    return var.getVariableId();
-  }
-
-  @Override
-  public ResponseFuture getTabularDataStream(
-    ReferenceMetadata metadata,
-    List<APIFilter> defaultSubset,
-    StreamSpec spec
-  ) throws ProcessingException {
-    // build request object
-    EntityTabularPostRequest request = new EntityTabularPostRequestImpl();
-    request.setFilters(spec.getFiltersOverride().orElse(defaultSubset));
-    request.setOutputVariableIds(spec.stream()
-      // subsetting service only takes var IDs (must match entity requested, but should already be validated)
-      .map(VariableSpec::getVariableId)
-      .collect(Collectors.toList()));
-
-    // build request url using internal endpoint (does not check user permissions via data access service)
-    String url = getUrl("/ss-internal/studies/" + metadata.getStudyId() + "/entities/" + spec.getEntityId() + "/tabular");
-
-    // make request
-    return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
   }
 
   /**
@@ -207,13 +171,6 @@ public class EdaSubsettingClient extends StreamingDataClient {
     VariableSpec varSpec,
     List<APIFilter> subsetFilters
   ) {
-    // check for annotations or throw
-    // VariableDef var = metadata.getVariable(varSpec).orElseThrow();
-    // if (!var.getHasStudyDependentVocabulary()) {
-    //   throw new IllegalArgumentException("Cannot call subsetting vocabulary by root entity endpoint with a variable that does not have a study dependent vocabulary: " + var);
-    // }
-    // TODO should i check other things?
-
     // build request obj
     VocabByRootEntityPostRequest request = new VocabByRootEntityPostRequestImpl();
     request.setFilters(subsetFilters);

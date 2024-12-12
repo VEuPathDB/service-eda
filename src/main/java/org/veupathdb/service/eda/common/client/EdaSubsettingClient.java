@@ -22,6 +22,7 @@ import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
 import org.veupathdb.service.eda.subset.model.filter.Filter;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
+import org.veupathdb.service.eda.subset.service.StudiesService;
 
 import java.io.InputStream;
 import java.util.List;
@@ -103,32 +104,8 @@ public class EdaSubsettingClient extends ServiceClient implements StreamingDataC
       .collect(Collectors.toList());
   }
 
-  public long getSubsetCount(
-    ReferenceMetadata metadata,
-    String entityId,
-    List<APIFilter> subsetFilters
-  ) {
-    // validate entity ID against this study
-    EntityDef entity = metadata.getEntity(entityId).orElseThrow();
-
-    // build request object
-    EntityCountPostRequest request = new EntityCountPostRequestImpl();
-    request.setFilters(subsetFilters);
-
-    // build request url using internal endpoint (does not check user permissions via data access service)
-    String url = getUrl("/ss-internal/studies/" + metadata.getStudyId() + "/entities/" + entity.getId() + "/count");
-
-    // make request
-    ResponseFuture response = ClientUtil.makeAsyncPostRequest(url, request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
-
-    // parse output and return
-    try (InputStream responseBody = response.getInputStream()) {
-      EntityCountPostResponse responseObj = JsonUtil.Jackson.readValue(responseBody, EntityCountPostResponse.class);
-      return responseObj.getCount();
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Unable to complete subset count request.", e);
-    }
+  public static long getSubsetCount(ReferenceMetadata metadata, String entityId, List<APIFilter> subsetFilters) {
+    return StudiesService.handleCountRequest(metadata.getStudyId(), entityId, subsetFilters).getCount();
   }
 
   public VariableDistributionPostResponse getCategoricalDistribution(

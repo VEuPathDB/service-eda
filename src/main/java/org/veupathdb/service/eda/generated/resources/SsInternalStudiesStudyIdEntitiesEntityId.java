@@ -6,8 +6,6 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
-import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
-import org.veupathdb.service.eda.generated.model.EntityCountPostResponse;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostResponse;
 import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
@@ -16,14 +14,6 @@ import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
 @Path("/ss-internal/studies/{study-id}/entities/{entity-id}")
 public interface SsInternalStudiesStudyIdEntitiesEntityId {
-  @POST
-  @Path("/count")
-  @Produces("application/json")
-  @Consumes("application/json")
-  PostSsInternalStudiesEntitiesCountByStudyIdAndEntityIdResponse postSsInternalStudiesEntitiesCountByStudyIdAndEntityId(
-      @PathParam("study-id") String studyId, @PathParam("entity-id") String entityId,
-      EntityCountPostRequest entity);
-
   @POST
   @Path("/tabular")
   @Produces({
@@ -42,24 +32,6 @@ public interface SsInternalStudiesStudyIdEntitiesEntityId {
   PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse postSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
       @PathParam("study-id") String studyId, @PathParam("entity-id") String entityId,
       @PathParam("variable-id") String variableId, VariableDistributionPostRequest entity);
-
-  class PostSsInternalStudiesEntitiesCountByStudyIdAndEntityIdResponse extends ResponseDelegate {
-    private PostSsInternalStudiesEntitiesCountByStudyIdAndEntityIdResponse(Response response,
-        Object entity) {
-      super(response, entity);
-    }
-
-    private PostSsInternalStudiesEntitiesCountByStudyIdAndEntityIdResponse(Response response) {
-      super(response);
-    }
-
-    public static PostSsInternalStudiesEntitiesCountByStudyIdAndEntityIdResponse respond200WithApplicationJson(
-        EntityCountPostResponse entity) {
-      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
-      responseBuilder.entity(entity);
-      return new PostSsInternalStudiesEntitiesCountByStudyIdAndEntityIdResponse(responseBuilder.build(), entity);
-    }
-  }
 
   class PostSsInternalStudiesEntitiesTabularByStudyIdAndEntityIdResponse extends ResponseDelegate {
     private PostSsInternalStudiesEntitiesTabularByStudyIdAndEntityIdResponse(Response response,

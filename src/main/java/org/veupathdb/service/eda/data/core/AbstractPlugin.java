@@ -362,7 +362,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected long getSubsetCount(String entityId, List<APIFilter> subsetFilters) {
-    return _subsettingClient.getSubsetCount(_referenceMetadata, entityId, subsetFilters);
+    return EdaSubsettingClient.getSubsetCount(_referenceMetadata, entityId, subsetFilters);
   }
 
   protected Map<String, Long> getCategoricalCountDistribution(VariableSpec varSpec) {

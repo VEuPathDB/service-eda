@@ -145,20 +145,6 @@ securitySchemes:
 
 /ss-internal/studies/{study-id}/entities/{entity-id}:
 
-  /count:
-    post:
-      securedBy: header-auth
-      description: |
-        Return a count of entities in this subset.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
-      body:
-        application/json:
-          type: lib.EntityCountPostRequest
-      responses:
-        200:
-          body:
-            application/json:
-              type: lib.EntityCountPostResponse
-
   /tabular:
     post:
       securedBy: header-auth

@@ -20,11 +20,11 @@ public class UserAnalysisMetricsResponseImpl implements UserAnalysisMetricsRespo
   )
   private OffsetDateTime startDate;
 
-  @JsonProperty("endDate")
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
       pattern = "yyyy-MM-dd"
   )
+  @JsonProperty("endDate")
   private OffsetDateTime endDate;
 
   @JsonProperty("createdOrModifiedCounts")

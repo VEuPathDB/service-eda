@@ -33,25 +33,8 @@ import org.veupathdb.lib.container.jaxrs.server.middleware.CustomResponseHeaders
 import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient.StudyDatasetInfo;
-import org.veupathdb.service.eda.generated.model.APIEntity;
-import org.veupathdb.service.eda.generated.model.APIStudyDetail;
-import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
-import org.veupathdb.service.eda.generated.model.EntityCountPostResponse;
-import org.veupathdb.service.eda.generated.model.EntityCountPostResponseImpl;
-import org.veupathdb.service.eda.generated.model.EntityIdGetResponse;
-import org.veupathdb.service.eda.generated.model.EntityIdGetResponseImpl;
-import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
-import org.veupathdb.service.eda.generated.model.EntityTabularPostResponseStream;
-import org.veupathdb.service.eda.generated.model.StudiesGetResponse;
-import org.veupathdb.service.eda.generated.model.StudiesGetResponseImpl;
-import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
-import org.veupathdb.service.eda.generated.model.StudyIdGetResponseImpl;
-import org.veupathdb.service.eda.generated.model.ValueSpec;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponse;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponseImpl;
-import org.veupathdb.service.eda.generated.model.VocabByRootEntityPostRequest;
-import org.veupathdb.service.eda.generated.model.VocabByRootEntityPostResponseStream;
+import org.veupathdb.service.eda.common.model.EntityDef;
+import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Studies;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.subset.model.Entity;
@@ -404,6 +387,38 @@ public class StudiesService implements Studies {
 
     return response;
   }
+
+  public static EntityCountPostResponse handleCountRequest(String studyId, String entityId, List<APIFilter> filters) {
+    Study study = Resources.getStudyResolver().getStudyById(studyId);
+    String dataSchema = resolveSchema(study);
+
+    // unpack data from API input to model objects
+    RequestBundle request = RequestBundle.unpack(dataSchema, study, entityId, filters, Collections.emptyList(), null);
+
+    TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(
+      request.getStudy().getEntityTree(), request.getFilters(), request.getTargetEntity());
+
+    final BinaryFilesManager binaryFilesManager = new BinaryFilesManager(
+      new SimpleStudyFinder(Resources.getBinaryFilesDirectory().toString()));
+
+    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager,
+      Resources.getFileChannelThreadPool(), Resources.getDeserializerThreadPool());
+
+    EntityCountPostResponse response = new EntityCountPostResponseImpl();
+    if (shouldRunFileBasedSubsetting(request, binaryFilesManager)) {
+      long count = FilteredResultFactory.getEntityCount(prunedEntityTree, request.getTargetEntity(), request.getFilters(),
+        binaryValuesStreamer, study);
+      response.setCount(count);
+    }
+    else {
+      long count = FilteredResultFactory.getEntityCount(
+        Resources.getApplicationDataSource(), dataSchema, prunedEntityTree, request.getTargetEntity(), request.getFilters());
+      response.setCount(count);
+    }
+
+    return response;
+  }
+
 
   private static void checkPerms(ContainerRequest request, String studyId, Predicate<StudyAccess> accessPredicate) {
     var user = UserProvider.lookupUser(request).orElseThrow();

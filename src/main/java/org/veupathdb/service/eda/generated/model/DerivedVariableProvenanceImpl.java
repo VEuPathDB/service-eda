@@ -12,8 +12,8 @@ import java.time.OffsetDateTime;
     "copiedFrom"
 })
 public class DerivedVariableProvenanceImpl implements DerivedVariableProvenance {
-  @JsonProperty("copyDate")
 
+  @JsonProperty("copyDate")
   private OffsetDateTime copyDate;
 
   @JsonProperty("copiedFrom")

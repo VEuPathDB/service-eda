@@ -10,8 +10,8 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableMapping;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 
 import java.util.*;
 

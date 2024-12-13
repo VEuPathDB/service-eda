@@ -1,14 +1,14 @@
 package org.veupathdb.service.eda.access.service.user;
 
-import java.util.Collection;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
-
 import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.generated.model.EndUserPatch;
+
+import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 class PatchUtil
 {

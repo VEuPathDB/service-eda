@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.merge.core;
 
-import kotlin.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.AutoCloseableList;

@@ -1,13 +1,6 @@
 package org.veupathdb.service.eda.access.service.email;
 
 
-import java.util.Arrays;
-import java.util.Properties;
-import java.util.stream.Stream;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.MimeMessage;
-
 import org.gusdb.fgputil.FormatUtil;
 import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
@@ -17,6 +10,13 @@ import org.veupathdb.service.eda.access.model.Email;
 import org.veupathdb.service.eda.access.model.EndUserRow;
 import org.veupathdb.service.eda.access.model.MessageTemplate;
 import org.veupathdb.service.eda.access.util.Format;
+
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.MimeMessage;
+import java.util.Arrays;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 public class EmailService
 {

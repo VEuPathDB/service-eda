@@ -1,7 +1,7 @@
 package org.veupathdb.service.eda.merge.plugins.reductions;
 
-import org.veupathdb.service.eda.merge.core.derivedvars.Reduction;
 import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.merge.core.derivedvars.Reduction;
 
 import java.util.List;
 import java.util.Map;

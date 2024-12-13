@@ -4,12 +4,12 @@ import io.vulpine.lib.jcfi.CheckedBiFunction;
 import io.vulpine.lib.jcfi.CheckedConsumer;
 import io.vulpine.lib.jcfi.CheckedFunction;
 import io.vulpine.lib.jcfi.CheckedSupplier;
+import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-
-import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 
 public class QueryUtil
 {

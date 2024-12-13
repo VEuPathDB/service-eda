@@ -1,19 +1,11 @@
 package org.veupathdb.service.eda.access.service.user;
 
-import java.time.OffsetDateTime;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import jakarta.ws.rs.*;
-
 import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.errors.UnprocessableEntityException;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
-import org.veupathdb.service.eda.generated.model.EndUserCreateRequest;
-import org.veupathdb.service.eda.generated.model.EndUserCreateResponse;
-import org.veupathdb.service.eda.generated.model.EndUserCreateResponseImpl;
 import org.veupathdb.service.eda.access.model.ApprovalStatus;
 import org.veupathdb.service.eda.access.model.EndUserRow;
 import org.veupathdb.service.eda.access.model.RestrictionLevel;
@@ -22,6 +14,14 @@ import org.veupathdb.service.eda.access.service.dataset.DatasetRepo;
 import org.veupathdb.service.eda.access.service.email.EmailService;
 import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
 import org.veupathdb.service.eda.access.service.staff.StaffService;
+import org.veupathdb.service.eda.generated.model.EndUserCreateRequest;
+import org.veupathdb.service.eda.generated.model.EndUserCreateResponse;
+import org.veupathdb.service.eda.generated.model.EndUserCreateResponseImpl;
+
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 
 import static org.veupathdb.service.eda.access.util.Keys.Json.*;
 

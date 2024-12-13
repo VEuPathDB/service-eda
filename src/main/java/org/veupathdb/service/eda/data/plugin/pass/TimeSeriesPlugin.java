@@ -1,8 +1,9 @@
 package org.veupathdb.service.eda.data.plugin.pass;
 
-import java.util.List;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
+
+import java.util.List;
 
 import static org.veupathdb.service.eda.data.metadata.AppsMetadata.CLINEPI_PROJECT;
 
@@ -22,7 +23,7 @@ public class TimeSeriesPlugin extends LineplotPlugin {
   public List<String> getProjects() {
     return List.of(CLINEPI_PROJECT);
   }
-  
+
   @Override
   public ConstraintSpec getConstraintSpec() {
     return new ConstraintSpec()

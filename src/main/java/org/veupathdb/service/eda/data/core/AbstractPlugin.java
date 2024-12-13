@@ -1,7 +1,6 @@
 package org.veupathdb.service.eda.data.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import io.vulpine.lib.jcfi.CheckedFunction;
 import jakarta.ws.rs.BadRequestException;
 import kotlin.Pair;
@@ -10,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
@@ -27,7 +25,6 @@ import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementValidator;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
-import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.model.BinSpec.RangeType;
@@ -104,8 +101,6 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   private String _studyId;
   private List<APIFilter> _subsetFilters;
   private List<DerivedVariableSpec> _derivedVariableSpecs;
-  private Entry<String,String> _authHeader;
-  private EdaSubsettingClient _subsettingClient;
 
   /**
    * Processes the plugin request and prepares this plugin to receive an OutputStream via the
@@ -114,11 +109,10 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
    *
    * @param appName app name this plugin belongs to; can be null if no compute is expected/allowed
    * @param request incoming plugin request object
-   * @param authHeader authentication header observed on request
    * @return a consumer for an output stream that will write the response
    * @throws ValidationException if request validation fails
    */
-  public final Consumer<OutputStream> processRequest(String appName, T request, Entry<String,String> authHeader) throws ValidationException {
+  public final Consumer<OutputStream> processRequest(String appName, T request) throws ValidationException {
 
     // start request timer (used to profile request performance dynamics)
     _timer = new Timer();
@@ -139,11 +133,6 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     // check for subset and derived entity properties of request
     _subsetFilters = Optional.ofNullable(request.getFilters()).orElse(Collections.emptyList());
     _derivedVariableSpecs = Optional.ofNullable(request.getDerivedVariables()).orElse(Collections.emptyList());
-
-    // build clients for required services
-    _authHeader = authHeader;
-    _subsettingClient = new EdaSubsettingClient(Resources.SUBSETTING_SERVICE_URL, authHeader);
-    EdaMergingClient _mergingClient = new EdaMergingClient();
 
     // get study
     APIStudyDetail study = EdaSubsettingClient.getStudy(request.getStudyId());
@@ -174,7 +163,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     _requiredStreams = getRequestedStreams(_pluginSpec);
 
     // validate stream specs provided by the subclass
-    _mergingClient.getStreamSpecValidator()
+    new EdaMergingClient().getStreamSpecValidator()
       .validateStreamSpecs(_requiredStreams, _referenceMetadata).throwIfInvalid();
 
     _requestProcessed = true;
@@ -336,7 +325,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
         plugin.getTypeParameterClasses().getVisualizationSpecClass()).invoke(request, visualizationConfig);
       ByteArrayOutputStream result = new ByteArrayOutputStream();
       // passing null as appName because it is only used to look up the compute; since this is an EmptyComputePlugin, we know there is no compute
-      plugin.processRequest(null, request, _authHeader).accept(result);
+      plugin.processRequest(null, request).accept(result);
       // need to use the implementation class (not the interface) so Jackson can instantiate it
       String expectedResponseTypeName = expectedResponseType.getName();
       if (!expectedResponseTypeName.endsWith("Impl")) expectedResponseTypeName += "Impl";
@@ -370,7 +359,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected Map<String, Long> getCategoricalCountDistribution(VariableSpec varSpec, List<APIFilter> subsetFilters) {
-    VariableDistributionPostResponse response = _subsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.COUNT);
+    VariableDistributionPostResponse response = EdaSubsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.COUNT);
     return response.getHistogram().stream().collect(Collectors.toMap(HistogramBin::getBinLabel, bin -> Long.valueOf(bin.getValue().toString())));
   }
 
@@ -379,41 +368,28 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected Map<String, Double> getCategoricalProportionDistribution(VariableSpec varSpec, List<APIFilter> subsetFilters) {
-    VariableDistributionPostResponse response = _subsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.PROPORTION);
+    VariableDistributionPostResponse response = EdaSubsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.PROPORTION);
     return response.getHistogram().stream().collect(Collectors.toMap(HistogramBin::getBinLabel, bin -> Double.valueOf(bin.getValue().toString())));
   }
 
   protected Map<String, InputStream> getVocabByRootEntity(DynamicDataSpec dataSpec, List<APIFilter> subsetFilters) {
-    PluginUtil util = getUtil();
-    ResponseFuture response = _subsettingClient.getVocabByRootEntity(_referenceMetadata, dataSpec, subsetFilters);
-
-    Map<String, InputStream> vocab = new HashMap<>();
-    try {
-      InputStream vocabStream = response.getInputStream();
-      vocab.put(util.toColNameOrEmpty(dataSpec), vocabStream);
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Unable to stream study specific vocabulary response.", e);
-    }
-
-    return vocab;
+    return new HashMap<>(1) {{ put(
+      getUtil().toColNameOrEmpty(dataSpec),
+      EdaSubsettingClient.getVocabByRootEntity(_referenceMetadata, dataSpec, subsetFilters)
+    ); }};
   }
 
   protected Map<String, InputStream> getVocabByRootEntity(DynamicDataSpec dataSpec) {
     return getVocabByRootEntity(dataSpec, _subsetFilters);
   }
 
-  protected Map<String, InputStream> getVocabByRootEntity(List<DynamicDataSpec> dataSpecs, List<APIFilter> subsetFilters) {
+  protected Map<String, InputStream> getVocabByRootEntity(List<DynamicDataSpec> dataSpecs) {
     return dataSpecs.parallelStream()
       .map(this::getVocabByRootEntity)
       .map(Map::entrySet)
       .map(Collection::iterator)
       .map(Iterator::next)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-  }
-
-  protected Map<String, InputStream> getVocabByRootEntity(List<DynamicDataSpec> dataSpecs) {
-    return getVocabByRootEntity(dataSpecs, _subsetFilters);
   }
 
   /*****************************************************************

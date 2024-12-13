@@ -1,13 +1,5 @@
 package org.veupathdb.service.eda.subset.service;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
 import org.apache.logging.log4j.LogManager;
@@ -24,27 +16,21 @@ import org.veupathdb.service.eda.subset.model.Study;
 import org.veupathdb.service.eda.subset.model.StudyOverview;
 import org.veupathdb.service.eda.subset.model.distribution.BinSpecWithRange;
 import org.veupathdb.service.eda.subset.model.distribution.BinUnits;
-import org.veupathdb.service.eda.subset.model.distribution.DateDistributionConfig;
-import org.veupathdb.service.eda.subset.model.distribution.NumberDistributionConfig;
 import org.veupathdb.service.eda.subset.model.distribution.ValueSpec;
-import org.veupathdb.service.eda.subset.model.filter.DateRangeFilter;
-import org.veupathdb.service.eda.subset.model.filter.DateSetFilter;
-import org.veupathdb.service.eda.subset.model.filter.Filter;
-import org.veupathdb.service.eda.subset.model.filter.LongitudeRangeFilter;
-import org.veupathdb.service.eda.subset.model.filter.MultiFilter;
-import org.veupathdb.service.eda.subset.model.filter.MultiFilterSubFilter;
-import org.veupathdb.service.eda.subset.model.filter.NumberRangeFilter;
-import org.veupathdb.service.eda.subset.model.filter.NumberSetFilter;
-import org.veupathdb.service.eda.subset.model.filter.StringSetFilter;
+import org.veupathdb.service.eda.subset.model.distribution.*;
+import org.veupathdb.service.eda.subset.model.filter.*;
 import org.veupathdb.service.eda.subset.model.tabular.TabularHeaderFormat;
-import org.veupathdb.service.eda.subset.model.varcollection.DateVarCollection;
-import org.veupathdb.service.eda.subset.model.varcollection.FloatingPointVarCollection;
-import org.veupathdb.service.eda.subset.model.varcollection.IntegerVarCollection;
-import org.veupathdb.service.eda.subset.model.varcollection.StringVarCollection;
-import org.veupathdb.service.eda.subset.model.varcollection.VarCollection;
+import org.veupathdb.service.eda.subset.model.varcollection.*;
 import org.veupathdb.service.eda.subset.model.variable.*;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class ApiConversionUtil {
   private static final Logger LOG = LogManager.getLogger(ApiConversionUtil.class);

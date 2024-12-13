@@ -1,8 +1,8 @@
 package org.veupathdb.service.eda.access.repo;
 
-import java.sql.ResultSet;
-
 import org.veupathdb.service.eda.access.model.UserRow;
+
+import java.sql.ResultSet;
 
 abstract class UserQuery
 {

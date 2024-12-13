@@ -15,28 +15,26 @@ import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.container.jaxrs.server.annotations.DisableJackson;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.NonEmptyResultStream.EmptyResultException;
-import org.veupathdb.service.eda.Resources;
-import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayAssayBipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayMetadataBipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
-import org.veupathdb.service.eda.data.plugin.differentialexpression.DifferentialExpressionVolcanoplotPlugin;
-import org.veupathdb.service.eda.data.plugin.betadiv.BetaDivScatterplotPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.selfcorrelation.SelfCorrelationUnipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivBoxplotPlugin;
-import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivScatterplotPlugin;
+import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.plugin.abundance.AbundanceBoxplotPlugin;
 import org.veupathdb.service.eda.data.plugin.abundance.AbundanceScatterplotPlugin;
+import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivBoxplotPlugin;
+import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivScatterplotPlugin;
+import org.veupathdb.service.eda.data.plugin.betadiv.BetaDivScatterplotPlugin;
+import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayAssayBipartitenetworkPlugin;
+import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayMetadataBipartitenetworkPlugin;
+import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
+import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
+import org.veupathdb.service.eda.data.plugin.differentialexpression.DifferentialExpressionVolcanoplotPlugin;
 import org.veupathdb.service.eda.data.plugin.pass.*;
 import org.veupathdb.service.eda.data.plugin.sample.*;
+import org.veupathdb.service.eda.data.plugin.selfcorrelation.SelfCorrelationUnipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.*;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Apps;
 
 import java.io.OutputStream;
-import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 @Authenticated(allowGuests = true)
@@ -193,7 +191,7 @@ public class AppsService implements Apps {
   static <T extends DataPluginRequestBase> Consumer<OutputStream> processRequest(AbstractPlugin<T,?,?> plugin, T entity, String appName, ContainerRequest request) throws ValidationException {
     var user = UserProvider.lookupUser(request).orElseThrow();
     StudyAccess.confirmPermission(user.getUserId(), entity.getStudyId(), StudyAccess::allowVisualizations);
-    return plugin.processRequest(appName, entity, UserProvider.getSubmittedAuth(request).orElseThrow());
+    return plugin.processRequest(appName, entity);
   }
 
   private <T extends DataPluginRequestBase> Consumer<OutputStream> processRequest(AbstractPlugin<T,?,?> plugin, T entity) throws ValidationException {

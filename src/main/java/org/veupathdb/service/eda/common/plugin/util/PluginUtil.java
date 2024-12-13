@@ -5,11 +5,7 @@ import org.veupathdb.service.eda.common.model.CollectionDef;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.CollectionSpec;
-import org.veupathdb.service.eda.generated.model.DynamicDataSpec;
-import org.veupathdb.service.eda.generated.model.LabeledRange;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
+import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;

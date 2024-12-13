@@ -11,11 +11,7 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
-import org.veupathdb.service.eda.generated.model.LabeledRange;
-import org.veupathdb.service.eda.generated.model.DifferentialAbundanceComputeConfig;
-import org.veupathdb.service.eda.generated.model.DifferentialAbundancePluginRequest;
-import org.veupathdb.service.eda.generated.model.CollectionSpec;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.InputStream;
 import java.util.ArrayList;

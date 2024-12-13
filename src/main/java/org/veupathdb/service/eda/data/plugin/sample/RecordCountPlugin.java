@@ -12,7 +12,10 @@ import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
-import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.generated.model.RecordCountPostRequest;
+import org.veupathdb.service.eda.generated.model.RecordCountPostResponse;
+import org.veupathdb.service.eda.generated.model.RecordCountPostResponseImpl;
+import org.veupathdb.service.eda.generated.model.RecordCountSpec;
 
 import java.io.IOException;
 import java.io.InputStream;

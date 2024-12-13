@@ -7,7 +7,6 @@ import org.veupathdb.service.eda.generated.model.DerivedVariableSpec
 import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariable
 import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory
 import org.veupathdb.service.eda.util.logger
-import kotlin.jvm.Throws
 
 /**
  * Processes and validates incoming request data for tabular and derived

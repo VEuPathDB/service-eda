@@ -4,7 +4,6 @@ import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
 import org.veupathdb.service.eda.generated.resources.SsInternalStudiesStudyIdEntitiesEntityId;
 import org.veupathdb.service.eda.subset.model.tabular.TabularResponses;
 

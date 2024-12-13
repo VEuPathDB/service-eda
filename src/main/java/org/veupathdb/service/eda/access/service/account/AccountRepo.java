@@ -1,11 +1,11 @@
 package org.veupathdb.service.eda.access.service.account;
 
-import java.util.Optional;
-
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
 import org.veupathdb.service.eda.access.repo.SQL;
 import org.veupathdb.service.eda.access.service.QueryUtil;
 import org.veupathdb.service.eda.access.util.SqlUtil;
+
+import java.util.Optional;
 
 public final class AccountRepo
 {

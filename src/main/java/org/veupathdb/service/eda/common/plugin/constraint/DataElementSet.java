@@ -1,9 +1,10 @@
 package org.veupathdb.service.eda.common.plugin.constraint;
 
+import org.veupathdb.service.eda.generated.model.VariableSpec;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 public class DataElementSet extends HashMap<String, List<VariableSpec>> {
 

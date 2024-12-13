@@ -1,13 +1,9 @@
 package org.veupathdb.service.eda.common.client;
 
-import jakarta.ws.rs.core.MediaType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.client.ClientUtil;
-import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.iterator.CloseableIterator;
-import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.web.MimeTypes;
+import org.jetbrains.annotations.Nullable;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -107,7 +103,7 @@ public class EdaSubsettingClient extends ServiceClient implements StreamingDataC
     return StudiesService.handleCountRequest(metadata.getStudyId(), entityId, subsetFilters).getCount();
   }
 
-  public VariableDistributionPostResponse getCategoricalDistribution(
+  public static VariableDistributionPostResponse getCategoricalDistribution(
     ReferenceMetadata metadata,
     VariableSpec varSpec,
     List<APIFilter> subsetFilters,
@@ -135,23 +131,28 @@ public class EdaSubsettingClient extends ServiceClient implements StreamingDataC
     );
   }
 
-  public ResponseFuture getVocabByRootEntity(
+  public static InputStream getVocabByRootEntity(
     ReferenceMetadata metadata,
     VariableSpec varSpec,
     List<APIFilter> subsetFilters
   ) {
-    // build request obj
-    VocabByRootEntityPostRequest request = new VocabByRootEntityPostRequestImpl();
-    request.setFilters(subsetFilters);
+    var study = Resources.getStudyResolver().getStudyById(metadata.getStudyId());
+    var schema = switch(study.getStudySourceType()) {
+      case USER_SUBMITTED -> Resources.getVdiDatasetsSchema() + ".";
+      case CURATED -> Resources.getAppDbSchema();
+    };
 
-    // build request url
-    String url = getUrl("/studies/" + metadata.getStudyId() + "/entities/" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId() + "/root-vocab");
-
-    // make request
-    return ClientUtil.makeAsyncPostRequest(url, request, MimeTypes.TEXT_TABULAR, getAuthHeaderMap());
+    return StudiesService.getVocabByRootEntity(
+      study,
+      schema,
+      varSpec.getEntityId(),
+      varSpec.getVariableId(),
+      ApiConversionUtil.toInternalFilters(study, subsetFilters, schema)
+    );
   }
 
-  public ResponseFuture getVocabByRootEntity(
+  @Nullable
+  public static InputStream getVocabByRootEntity(
     ReferenceMetadata metadata,
     DynamicDataSpec dataSpec,
     List<APIFilter> subsetFilters
@@ -165,5 +166,4 @@ public class EdaSubsettingClient extends ServiceClient implements StreamingDataC
       return null;
     }
   }
-
 }

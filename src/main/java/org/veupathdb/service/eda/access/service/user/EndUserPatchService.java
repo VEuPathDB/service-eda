@@ -1,30 +1,25 @@
 package org.veupathdb.service.eda.access.service.user;
 
-import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.WebApplicationException;
-
 import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.Main;
-import org.veupathdb.service.eda.generated.model.EndUserPatch;
-import org.veupathdb.service.eda.generated.model.EndUserPatch.OpType;
-import org.veupathdb.service.eda.access.model.ApprovalStatus;
-import org.veupathdb.service.eda.access.model.EndUserRow;
-import org.veupathdb.service.eda.access.model.ProviderRow;
-import org.veupathdb.service.eda.access.model.RestrictionLevel;
-import org.veupathdb.service.eda.access.model.UserRow;
+import org.veupathdb.service.eda.access.model.*;
 import org.veupathdb.service.eda.access.service.account.AccountRepo;
 import org.veupathdb.service.eda.access.service.dataset.DatasetRepo;
 import org.veupathdb.service.eda.access.service.email.EmailService;
 import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
 import org.veupathdb.service.eda.access.util.Keys;
+import org.veupathdb.service.eda.generated.model.EndUserPatch;
+import org.veupathdb.service.eda.generated.model.EndUserPatch.OpType;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class EndUserPatchService
 {

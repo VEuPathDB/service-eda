@@ -1,12 +1,12 @@
 package org.veupathdb.service.eda.access.util;
 
+import io.vulpine.lib.query.util.RowParser;
+import io.vulpine.lib.query.util.StatementPreparer;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Optional;
-
-import io.vulpine.lib.query.util.RowParser;
-import io.vulpine.lib.query.util.StatementPreparer;
 
 public class SqlUtil
 {

@@ -1,11 +1,11 @@
 package org.veupathdb.service.eda.access.service.dataset;
 
-import java.sql.ResultSet;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.veupathdb.service.eda.access.model.Dataset;
 import org.veupathdb.service.eda.access.repo.DB.Column;
 import org.veupathdb.service.eda.access.util.Format;
+
+import java.sql.ResultSet;
 
 public class DatasetUtil
 {

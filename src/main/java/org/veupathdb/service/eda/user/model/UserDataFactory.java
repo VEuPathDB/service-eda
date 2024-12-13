@@ -11,8 +11,8 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.json.JSONObject;
 import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.lib.jackson.Json;
-import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.user.Utils;
 
 import java.io.IOException;

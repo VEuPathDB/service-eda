@@ -1,12 +1,5 @@
 package org.veupathdb.service.eda.download;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.Function;
-
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
@@ -25,6 +18,11 @@ import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient.StudyDatasetInfo;
 import org.veupathdb.service.eda.generated.model.FileContentResponseStream;
 import org.veupathdb.service.eda.generated.resources.Download;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.function.Function;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 

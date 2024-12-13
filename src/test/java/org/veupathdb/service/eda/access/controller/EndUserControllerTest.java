@@ -1,24 +1,18 @@
 package org.veupathdb.service.eda.access.controller;
 
 import org.glassfish.jersey.server.ContainerRequest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.veupathdb.lib.test.MockUtil;
 import org.veupathdb.lib.test.RandUtil;
+import org.veupathdb.service.eda.access.service.user.EndUserCreationService;
+import org.veupathdb.service.eda.access.service.user.EndUserSearchService;
 import org.veupathdb.service.eda.generated.model.ApprovalStatus;
 import org.veupathdb.service.eda.generated.model.EndUserCreateRequest;
 import org.veupathdb.service.eda.generated.model.EndUserCreateResponse;
 import org.veupathdb.service.eda.generated.model.EndUserList;
-import org.veupathdb.service.eda.access.service.user.EndUserCreationService;
-import org.veupathdb.service.eda.access.service.user.EndUserSearchService;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 @DisplayName("EndUserController")
 class EndUserControllerTest

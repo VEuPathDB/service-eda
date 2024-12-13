@@ -1,11 +1,5 @@
 package org.veupathdb.service.eda.access.service.user;
 
-import java.sql.Connection;
-import java.sql.Types;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import io.vulpine.lib.query.util.basic.*;
 import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
@@ -15,6 +9,12 @@ import org.veupathdb.service.eda.access.repo.SQL;
 import org.veupathdb.service.eda.access.service.QueryUtil;
 import org.veupathdb.service.eda.access.util.PsBuilder;
 import org.veupathdb.service.eda.access.util.SqlUtil;
+
+import java.sql.Connection;
+import java.sql.Types;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class EndUserRepo
 {

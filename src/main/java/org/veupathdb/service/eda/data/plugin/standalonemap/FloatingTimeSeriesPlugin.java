@@ -1,7 +1,8 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import java.util.List;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
+
+import java.util.List;
 
 public class FloatingTimeSeriesPlugin extends FloatingLineplotPlugin {
 

@@ -1,9 +1,5 @@
 package org.veupathdb.service.eda.access.service.provider;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import io.vulpine.lib.query.util.basic.BasicPreparedListReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedMapReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
@@ -15,6 +11,10 @@ import org.veupathdb.service.eda.access.repo.SQL;
 import org.veupathdb.service.eda.access.service.QueryUtil;
 import org.veupathdb.service.eda.access.util.PsBuilder;
 import org.veupathdb.service.eda.access.util.SqlUtil;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @SuppressWarnings("resource")
 public class ProviderRepo

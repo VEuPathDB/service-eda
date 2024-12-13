@@ -1,16 +1,16 @@
 package org.veupathdb.service.eda.access.controller;
 
-import java.util.List;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Context;
-
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
+import org.veupathdb.service.eda.access.service.provider.ProviderService;
 import org.veupathdb.service.eda.generated.model.DatasetProviderCreateRequest;
 import org.veupathdb.service.eda.generated.model.DatasetProviderPatch;
 import org.veupathdb.service.eda.generated.resources.DatasetProviders;
-import org.veupathdb.service.eda.access.service.provider.ProviderService;
+
+import java.util.List;
 
 import static org.veupathdb.service.eda.access.service.provider.ProviderService.*;
 import static org.veupathdb.service.eda.access.service.staff.StaffService.userIsOwner;

@@ -1,14 +1,14 @@
 package org.veupathdb.service.eda.access.service.history.queries;
 
-import java.sql.Connection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import io.vulpine.lib.query.util.basic.BasicStatementMapReadQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.service.eda.access.service.history.model.HistoryUserRow;
+
+import java.sql.Connection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class SelectHistoryUsers
 {

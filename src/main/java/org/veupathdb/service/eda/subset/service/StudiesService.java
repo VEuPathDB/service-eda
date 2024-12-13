@@ -1,17 +1,6 @@
 package org.veupathdb.service.eda.subset.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import jakarta.validation.ValidationException;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
@@ -30,27 +19,40 @@ import org.gusdb.oauth2.client.veupathdb.User;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.container.jaxrs.server.middleware.CustomResponseHeadersFilter;
+import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
-import org.veupathdb.service.eda.common.client.DatasetAccessClient.StudyDatasetInfo;
-import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Studies;
-import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.subset.model.Entity;
 import org.veupathdb.service.eda.subset.model.Study;
 import org.veupathdb.service.eda.subset.model.StudyOverview;
-import org.veupathdb.service.eda.subset.model.db.*;
+import org.veupathdb.service.eda.subset.model.db.ExtendedRootVocabHandler;
+import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
+import org.veupathdb.service.eda.subset.model.db.RootVocabHandler;
 import org.veupathdb.service.eda.subset.model.distribution.DistributionFactory;
+import org.veupathdb.service.eda.subset.model.filter.Filter;
 import org.veupathdb.service.eda.subset.model.reducer.BinaryValuesStreamer;
 import org.veupathdb.service.eda.subset.model.tabular.DataSourceType;
 import org.veupathdb.service.eda.subset.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.subset.model.tabular.TabularResponses;
-import org.veupathdb.service.eda.subset.model.variable.Variable;
 import org.veupathdb.service.eda.subset.model.variable.VariableType;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.subset.model.variable.binary.SimpleStudyFinder;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.veupathdb.service.eda.subset.service.ApiConversionUtil.*;
 
@@ -197,37 +199,26 @@ public class StudiesService implements Studies {
   @Override
   public PostStudiesEntitiesVariablesRootVocabByStudyIdAndEntityIdAndVariableIdResponse postStudiesEntitiesVariablesRootVocabByStudyIdAndEntityIdAndVariableId(String studyId, String entityId, String variableId, VocabByRootEntityPostRequest body) {
     checkPerms(_request, studyId, StudyAccess::allowSubsetting);
-    Study study = Resources.getStudyResolver().getStudyById(studyId);
-    String dataSchema = resolveSchema(study);
 
-    // Validate entity/variable ID existence
-    Variable var = study.getEntity(entityId)
-      .orElseThrow(() -> new ValidationException(String.format("Entity %s not found in study %s.", entityId, studyId)))
-      .getVariable(variableId)
-      .orElseThrow(() -> new ValidationException(String.format("Variable ID %s not found on entity %s in study %s.", variableId, entityId, studyId)));
-
-    // Trivially, only works on variables with values
-    if (!(var instanceof VariableWithValues<?> variableWithValues)) {
-      throw new ValidationException("Unable to retrieve vocabulary for a variable without values.");
-    }
-
-    if (variableWithValues.getType() != VariableType.STRING || variableWithValues.getVocabulary() == null) {
-      throw new ValidationException("Specified variable must be a string with a vocabulary.");
-    }
+    var study = Resources.getStudyResolver().getStudyById(studyId);
+    var dataSchema = resolveSchema(study);
+    var variable = getVariableForRootVocab(study, entityId, variableId);
 
     VocabByRootEntityPostResponseStream streamer = new VocabByRootEntityPostResponseStream(outputStream -> {
-      final OutputStreamWriter writer = new OutputStreamWriter(outputStream);
-      final BufferedWriter bufferedWriter = new BufferedWriter(writer);
-      TabularResponses.ResultConsumer resultConsumer = TabularResponses.Type.TABULAR.getFormatter().getFormatter(bufferedWriter);
+      var bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
+      var resultConsumer = TabularResponses.Type.TABULAR.getFormatter().getFormatter(bufferedWriter);
 
       // TODO: probably want a singleton RootVocabHandler with caching implemented.
-      final RootVocabHandler vocabHandler = new RootVocabHandler();
-      vocabHandler.queryStudyVocab(dataSchema,
+      var vocabHandler = new RootVocabHandler();
+
+      vocabHandler.queryStudyVocab(
+        dataSchema,
         Resources.getApplicationDataSource(),
         study.getEntityTree().getContents(),
-        variableWithValues,
+        variable,
         resultConsumer,
-        toInternalFilters(study, body.getFilters(), dataSchema));
+        toInternalFilters(study, body.getFilters(), dataSchema)
+      );
 
       try {
         bufferedWriter.flush();
@@ -237,6 +228,41 @@ public class StudiesService implements Studies {
     });
 
     return PostStudiesEntitiesVariablesRootVocabByStudyIdAndEntityIdAndVariableIdResponse.respond200WithTextTabSeparatedValues(streamer);
+  }
+
+  private static VariableWithValues<?> getVariableForRootVocab(Study study, String entityId, String variableId) {
+    var variable = study.getEntity(entityId)
+      .orElseThrow(() -> new ValidationException(String.format("Entity %s not found in study %s.", entityId, study.getStudyId())))
+      .getVariable(variableId)
+      .orElseThrow(() -> new ValidationException(String.format("Variable ID %s not found on entity %s in study %s.", variableId, entityId, study.getStudyId())));
+
+    // Trivially, only works on variables with values
+    if (!(variable instanceof VariableWithValues<?> variableWithValues)) {
+      throw new ValidationException("Unable to retrieve vocabulary for a variable without values.");
+    }
+
+    if (variableWithValues.getType() != VariableType.STRING || variableWithValues.getVocabulary() == null) {
+      throw new ValidationException("Specified variable must be a string with a vocabulary.");
+    }
+
+    return variableWithValues;
+  }
+
+  // TODO: relocate me!
+  public static InputStream getVocabByRootEntity(
+    Study study,
+    String dataSchema,
+    String entityId,
+    String variableId,
+    List<Filter> filters
+  ) {
+    return ExtendedRootVocabHandler.queryStudyVocab(
+      dataSchema,
+      Resources.getAccountsDataSource(),
+      study.getEntityTree().getContents(),
+      getVariableForRootVocab(study, entityId, variableId),
+      filters
+    );
   }
 
   public static <T> T handleTabularRequest(

@@ -1,9 +1,5 @@
 package org.veupathdb.service.eda.access.service.permissions;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
@@ -12,15 +8,19 @@ import org.gusdb.fgputil.Wrapper;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.service.eda.access.controller.Util;
-import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.access.model.ApprovalStatus;
 import org.veupathdb.service.eda.access.model.DatasetProps;
-import org.veupathdb.service.eda.access.service.userdataset.UserDatasetIsaStudies;
 import org.veupathdb.service.eda.access.service.dataset.DatasetRepo;
 import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
 import org.veupathdb.service.eda.access.service.staff.StaffRepo;
 import org.veupathdb.service.eda.access.service.user.EndUserRepo;
 import org.veupathdb.service.eda.access.service.user.EndUserUtil;
+import org.veupathdb.service.eda.access.service.userdataset.UserDatasetIsaStudies;
+import org.veupathdb.service.eda.generated.model.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.veupathdb.service.eda.util.Exceptions.errToRuntime;
 

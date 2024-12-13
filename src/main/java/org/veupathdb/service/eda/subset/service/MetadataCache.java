@@ -12,11 +12,7 @@ import org.veupathdb.service.eda.subset.model.reducer.MetadataFileBinaryProvider
 import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

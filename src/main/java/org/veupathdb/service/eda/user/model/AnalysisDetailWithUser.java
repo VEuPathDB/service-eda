@@ -1,21 +1,13 @@
 package org.veupathdb.service.eda.user.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import org.gusdb.fgputil.functional.Functions;
-import org.veupathdb.service.eda.generated.model.AnalysisBase;
-import org.veupathdb.service.eda.generated.model.AnalysisDescriptor;
-import org.veupathdb.service.eda.generated.model.AnalysisDetailImpl;
-import org.veupathdb.service.eda.generated.model.AnalysisListPostRequest;
-import org.veupathdb.service.eda.generated.model.AnalysisListPostResponse;
-import org.veupathdb.service.eda.generated.model.AnalysisListPostResponseImpl;
-import org.veupathdb.service.eda.generated.model.AnalysisProvenance;
-import org.veupathdb.service.eda.generated.model.AnalysisProvenanceImpl;
-import org.veupathdb.service.eda.generated.model.OnImportProvenanceProps;
-import org.veupathdb.service.eda.generated.model.OnImportProvenancePropsImpl;
+import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.user.Utils;
 import org.veupathdb.service.eda.user.model.AccountDbData.AccountDataPair;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import static org.veupathdb.service.eda.user.Utils.checkMaxSize;
 import static org.veupathdb.service.eda.user.Utils.checkNonEmpty;

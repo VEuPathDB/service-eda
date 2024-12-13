@@ -1,47 +1,23 @@
 package org.veupathdb.service.eda.data.metadata;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.gusdb.fgputil.ListBuilder;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
-import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
-import org.veupathdb.service.eda.data.plugin.differentialexpression.DifferentialExpressionVolcanoplotPlugin;
-import org.veupathdb.service.eda.data.plugin.betadiv.BetaDivScatterplotPlugin;
-import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivBoxplotPlugin;
-import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivScatterplotPlugin;
 import org.veupathdb.service.eda.data.plugin.abundance.AbundanceBoxplotPlugin;
 import org.veupathdb.service.eda.data.plugin.abundance.AbundanceScatterplotPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.BarplotPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.BoxplotPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.ContTablePlugin;
-import org.veupathdb.service.eda.data.plugin.pass.DensityplotPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.HeatmapPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.HistogramPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.LineplotPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.MapPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.MapMarkersOverlayPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.ScatterplotPlugin;
-import org.veupathdb.service.eda.data.plugin.pass.TwoByTwoPlugin;
-import org.veupathdb.service.eda.data.plugin.selfcorrelation.SelfCorrelationUnipartitenetworkPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.BubbleMapMarkersLegendPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.BubbleMapMarkersPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.CollectionFloatingBarplotPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.CollectionFloatingContTablePlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.CollectionFloatingHistogramPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.CollectionFloatingLineplotPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingBarplotPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingBoxplotPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingContTablePlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingHistogramPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingDateHistogramPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingLineplotPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.FloatingTimeSeriesPlugin;
-import org.veupathdb.service.eda.data.plugin.standalonemap.StandaloneMapMarkersPlugin;
+import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivBoxplotPlugin;
+import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivScatterplotPlugin;
+import org.veupathdb.service.eda.data.plugin.betadiv.BetaDivScatterplotPlugin;
+import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
+import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
+import org.veupathdb.service.eda.data.plugin.pass.*;
 import org.veupathdb.service.eda.data.plugin.sample.*;
+import org.veupathdb.service.eda.data.plugin.selfcorrelation.SelfCorrelationUnipartitenetworkPlugin;
+import org.veupathdb.service.eda.data.plugin.standalonemap.*;
 import org.veupathdb.service.eda.generated.model.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class AppsMetadata {
 

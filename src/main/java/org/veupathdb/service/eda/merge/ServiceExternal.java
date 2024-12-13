@@ -18,8 +18,8 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Merging;
 import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
-import org.veupathdb.service.eda.merge.core.request.RequestResources;
 import org.veupathdb.service.eda.merge.core.request.MergedTabularRequestResources;
+import org.veupathdb.service.eda.merge.core.request.RequestResources;
 
 import java.util.Arrays;
 import java.util.List;

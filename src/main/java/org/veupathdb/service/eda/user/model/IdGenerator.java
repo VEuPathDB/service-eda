@@ -1,7 +1,8 @@
 package org.veupathdb.service.eda.user.model;
 
-import java.util.Random;
 import jakarta.ws.rs.NotFoundException;
+
+import java.util.Random;
 
 public class IdGenerator {
 

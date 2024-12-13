@@ -1,10 +1,5 @@
 package org.veupathdb.service.eda.common.client;
 
-import java.io.InputStream;
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import io.vulpine.lib.jcfi.CheckedFunction;
 import org.apache.logging.log4j.LogManager;
 import org.gusdb.fgputil.AutoCloseableList;
@@ -12,6 +7,14 @@ import org.gusdb.fgputil.functional.FunctionalInterfaces;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
+
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 

@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode
  * @author Elizabeth Paige Harper - https://github.com/foxcapades
  * @since 1.0.0
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonIgnoreProperties("authHeader")
 internal data class PluginJobPayload(
   /**
    * Name of the plugin that this job should be executed by.

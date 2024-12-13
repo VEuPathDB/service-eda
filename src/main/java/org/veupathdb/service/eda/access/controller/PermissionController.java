@@ -1,10 +1,11 @@
 package org.veupathdb.service.eda.access.controller;
 
 import jakarta.ws.rs.core.Context;
+
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
-import org.veupathdb.service.eda.access.service.permissions.PermissionService;
 import org.veupathdb.service.eda.generated.resources.Permissions;
+import org.veupathdb.service.eda.access.service.permissions.PermissionService;
 
 @Authenticated(allowGuests = true)
 public class PermissionController implements Permissions

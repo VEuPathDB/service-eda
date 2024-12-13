@@ -1,13 +1,11 @@
 package org.veupathdb.service.eda.access.service.email;
 
-import org.slf4j.Logger;
-import org.stringtemplate.v4.ST;
-import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
-import org.veupathdb.service.eda.Main;
-import org.veupathdb.service.eda.access.model.Dataset;
-import org.veupathdb.service.eda.access.model.Email;
-import org.veupathdb.service.eda.access.model.EndUserRow;
-
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.util.Date;
 import javax.activation.DataHandler;
 import javax.mail.Address;
 import javax.mail.Message;
@@ -16,12 +14,14 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URI;
-import java.util.Date;
+
+import org.slf4j.Logger;
+import org.stringtemplate.v4.ST;
+import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
+import org.veupathdb.service.eda.Main;
+import org.veupathdb.service.eda.access.model.Dataset;
+import org.veupathdb.service.eda.access.model.Email;
+import org.veupathdb.service.eda.access.model.EndUserRow;
 
 public class EmailUtil
 {

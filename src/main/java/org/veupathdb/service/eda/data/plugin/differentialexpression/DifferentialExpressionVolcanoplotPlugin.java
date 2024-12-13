@@ -1,8 +1,8 @@
 package org.veupathdb.service.eda.data.plugin.differentialexpression;
 
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
-import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.data.metadata.AppsMetadata;
+import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.generated.model.DifferentialExpressionComputeConfig;
 import org.veupathdb.service.eda.generated.model.DifferentialExpressionVolcanoplotPostRequest;
 import org.veupathdb.service.eda.generated.model.EmptyDataPluginSpec;

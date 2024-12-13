@@ -2,11 +2,11 @@ package org.veupathdb.service.eda.data.plugin.pass;
 
 import org.gusdb.fgputil.validation.ValidationException;
 import org.json.JSONObject;
-import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
+import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.BarplotPostRequest;
 import org.veupathdb.service.eda.generated.model.BarplotSpec;
@@ -92,7 +92,7 @@ public class BarplotPlugin extends AbstractEmptyComputePlugin<BarplotPostRequest
   protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
     BarplotSpec spec = getPluginSpec();
     PluginUtil util = getUtil();
-
+    
     boolean simpleBar = true;
     // TODO consider adding facets to simpleBar ?
     if (spec.getFacetVariable() != null
@@ -100,13 +100,13 @@ public class BarplotPlugin extends AbstractEmptyComputePlugin<BarplotPostRequest
          || dataStreams.size() != 1) {
       simpleBar = false;
     }
-
+    
     //until i figure out the sort issue
     simpleBar = false;
     if (simpleBar) {
       int rowCount = 0;
       Scanner s = new Scanner(dataStreams.get(DEFAULT_SINGLE_STREAM_NAME)).useDelimiter("\n");
-
+      
       Integer groupVarIndex = null;
       int xVarIndex = 0;
       String xVar = util.toColNameOrEmpty(getReferenceMetadata()
@@ -132,7 +132,7 @@ public class BarplotPlugin extends AbstractEmptyComputePlugin<BarplotPostRequest
         currentGroup = row[groupVarIndex];
       }
       rowCount = 1;
-
+  
       while(s.hasNextLine()) {
         row = s.nextLine().split("\t");
         String xCategory = row[xVarIndex];
@@ -155,7 +155,7 @@ public class BarplotPlugin extends AbstractEmptyComputePlugin<BarplotPostRequest
           if (currentGroup != null) {
             barRow.put("group", currentGroup);
           }
-          barRow.put("label", currentXCategory);
+          barRow.put("label", currentXCategory); 
           barRow.put("value", rowCount);
           out.write(barRow.toString().getBytes());
           currentGroup = group;
@@ -163,7 +163,7 @@ public class BarplotPlugin extends AbstractEmptyComputePlugin<BarplotPostRequest
           rowCount = 1;
         }
       }
-
+      
       s.close();
       out.flush();
     }
@@ -177,7 +177,7 @@ public class BarplotPlugin extends AbstractEmptyComputePlugin<BarplotPostRequest
       varMap.put("overlay", spec.getOverlayVariable());
       varMap.put("facet1", util.getVariableSpecFromList(spec.getFacetVariable(), 0));
       varMap.put("facet2", util.getVariableSpecFromList(spec.getFacetVariable(), 1));
-
+      
       useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
         connection.voidEval(util.getVoidEvalFreadCommand(DEFAULT_SINGLE_STREAM_NAME,
             spec.getXAxisVariable(),

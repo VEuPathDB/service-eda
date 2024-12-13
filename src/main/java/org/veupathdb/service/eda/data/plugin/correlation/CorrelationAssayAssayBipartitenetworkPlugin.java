@@ -1,11 +1,9 @@
 package org.veupathdb.service.eda.data.plugin.correlation;
 
-import org.veupathdb.service.eda.data.metadata.AppsMetadata;
-import org.veupathdb.service.eda.generated.model.CorrelationAssayAssayBipartitenetworkPostRequest;
-import org.veupathdb.service.eda.generated.model.CorrelationAssayAssayConfig;
-import org.veupathdb.service.eda.generated.model.CorrelationNetworkSpec;
-
 import java.util.List;
+
+import org.veupathdb.service.eda.data.metadata.AppsMetadata;
+import org.veupathdb.service.eda.generated.model.*;
 
 public class CorrelationAssayAssayBipartitenetworkPlugin extends AbstractCorrelationBipartiteNetwork<CorrelationAssayAssayBipartitenetworkPostRequest, CorrelationAssayAssayConfig> {
 

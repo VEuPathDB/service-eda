@@ -1,9 +1,9 @@
 package org.veupathdb.service.eda.access.repo;
 
+import java.util.function.Supplier;
+
 import io.vulpine.lib.sql.load.SqlLoader;
 import org.veupathdb.service.eda.access.repo.DB.Table;
-
-import java.util.function.Supplier;
 
 public interface SQL
 {

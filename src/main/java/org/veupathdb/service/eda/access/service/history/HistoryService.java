@@ -1,21 +1,22 @@
 package org.veupathdb.service.eda.access.service.history;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import jakarta.ws.rs.InternalServerErrorException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
+import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.access.service.history.model.HistoryResultRow;
 import org.veupathdb.service.eda.access.service.history.model.HistoryUserRow;
 import org.veupathdb.service.eda.access.service.history.queries.SelectHistoryRows;
 import org.veupathdb.service.eda.access.service.history.queries.SelectHistoryUsers;
 import org.veupathdb.service.eda.access.service.history.queries.SelectUserHistoryRows;
 import org.veupathdb.service.eda.access.service.staff.StaffService;
-import org.veupathdb.service.eda.generated.model.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class HistoryService
 {

@@ -1,16 +1,5 @@
 package org.veupathdb.service.eda.common.plugin.util;
 
-import jakarta.ws.rs.BadRequestException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.IoUtil;
-import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.Rserve.RConnection;
-import org.rosuda.REngine.Rserve.RFileInputStream;
-import org.rosuda.REngine.Rserve.RFileOutputStream;
-import org.rosuda.REngine.Rserve.RserveException;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,6 +10,16 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import jakarta.ws.rs.BadRequestException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
+import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
+import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.Rserve.RConnection;
+import org.rosuda.REngine.Rserve.RFileInputStream;
+import org.rosuda.REngine.Rserve.RFileOutputStream;
+import org.rosuda.REngine.Rserve.RserveException;
 
 public class RServeClient {
 

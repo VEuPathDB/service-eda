@@ -1,21 +1,29 @@
 package org.veupathdb.service.eda.access.service.provider;
 
-import jakarta.ws.rs.*;
+import java.util.List;
+import java.util.stream.Collectors;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.InternalServerErrorException;
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.WebApplicationException;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
+import org.veupathdb.service.eda.generated.model.DatasetProviderCreateRequest;
+import org.veupathdb.service.eda.generated.model.DatasetProviderCreateResponse;
+import org.veupathdb.service.eda.generated.model.DatasetProviderCreateResponseImpl;
+import org.veupathdb.service.eda.generated.model.DatasetProviderList;
+import org.veupathdb.service.eda.generated.model.DatasetProviderListImpl;
+import org.veupathdb.service.eda.generated.model.DatasetProviderPatch;
 import org.veupathdb.service.eda.access.model.PartialProviderRow;
 import org.veupathdb.service.eda.access.model.ProviderRow;
 import org.veupathdb.service.eda.access.service.dataset.DatasetRepo;
 import org.veupathdb.service.eda.access.service.email.EmailService;
 import org.veupathdb.service.eda.access.service.staff.StaffService;
 import org.veupathdb.service.eda.access.util.Keys;
-import org.veupathdb.service.eda.generated.model.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.veupathdb.service.eda.access.service.staff.StaffService.userIsOwner;
 

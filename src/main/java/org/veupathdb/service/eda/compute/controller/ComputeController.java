@@ -226,7 +226,6 @@ public class ComputeController implements Computes {
    * the target plugin accepts.
    */
   private <R extends ComputeRequestBase, C> JobResponse submitJob(PluginProvider<R, C> plugin, R requestObject, boolean autostart) {
-    var auth = UserProvider.getSubmittedAuth(request).orElseThrow();
     var user = UserProvider.lookupUser(request).orElseThrow();
 
     requirePermissions(requestObject, user.getUserId());

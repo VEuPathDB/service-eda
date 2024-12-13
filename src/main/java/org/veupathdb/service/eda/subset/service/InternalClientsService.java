@@ -28,13 +28,4 @@ public class InternalClientsService implements SsInternalStudiesStudyIdEntitiesE
           .respond200WithTextTabSeparatedValues(streamer)
     );
   }
-
-  @Override
-  public PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse
-  postSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
-      String studyId, String entityId, String variableId, VariableDistributionPostRequest entity) {
-    return PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.respond200WithApplicationJson(
-      StudiesService.handleDistributionRequest(studyId, entityId, variableId, entity));
-  }
-
 }

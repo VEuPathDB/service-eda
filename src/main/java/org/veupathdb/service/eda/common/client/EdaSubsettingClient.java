@@ -12,7 +12,6 @@ import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
-import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
@@ -128,19 +127,12 @@ public class EdaSubsettingClient extends ServiceClient implements StreamingDataC
     request.setFilters(subsetFilters);
     request.setValueSpec(valueSpec);
 
-    // build request url using internal endpoint (does not check user permissions via data access service)
-    String url = getUrl("/ss-internal/studies/" + metadata.getStudyId() + "/entities/" + varSpec.getEntityId() + "/variables/" + varSpec.getVariableId() + "/distribution");
-
-    // make request
-    ResponseFuture response = ClientUtil.makeAsyncPostRequest(url, request, MediaType.APPLICATION_JSON, getAuthHeaderMap());
-
-    // parse output and return
-    try (InputStream responseBody = response.getInputStream()) {
-      return JsonUtil.Jackson.readValue(responseBody, VariableDistributionPostResponse.class);
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Unable to complete subset distribution request.", e);
-    }
+    return StudiesService.handleDistributionRequest(
+      metadata.getStudyId(),
+      varSpec.getEntityId(),
+      varSpec.getVariableId(),
+      request
+    );
   }
 
   public ResponseFuture getVocabByRootEntity(
@@ -161,20 +153,12 @@ public class EdaSubsettingClient extends ServiceClient implements StreamingDataC
 
   public ResponseFuture getVocabByRootEntity(
     ReferenceMetadata metadata,
-    CollectionSpec collectionSpec,
-    List<APIFilter> subsetFilters
-  ) {
-    // TODO
-    return null;
-  }
-
-  public ResponseFuture getVocabByRootEntity(
-    ReferenceMetadata metadata,
     DynamicDataSpec dataSpec,
     List<APIFilter> subsetFilters
   ) {
     if (dataSpec.isCollectionSpec()) {
-      return getVocabByRootEntity(metadata, dataSpec.getCollectionSpec(), subsetFilters);
+      // TODO
+      return null;
     } else if (dataSpec.isVariableSpec()) {
       return getVocabByRootEntity(metadata, dataSpec.getVariableSpec(), subsetFilters);
     } else {

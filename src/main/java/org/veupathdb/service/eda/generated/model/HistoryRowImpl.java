@@ -39,8 +39,8 @@ public class HistoryRowImpl implements HistoryRow {
   @JsonProperty("approvalStatus")
   private HistoryRow.ApprovalStatusType approvalStatus;
 
-  @JsonProperty("startDate")
 
+  @JsonProperty("startDate")
   private OffsetDateTime startDate;
 
   @JsonProperty("duration")
@@ -61,8 +61,8 @@ public class HistoryRowImpl implements HistoryRow {
   @JsonProperty("denialReason")
   private String denialReason;
 
-  @JsonProperty("dateDenied")
 
+  @JsonProperty("dateDenied")
   private OffsetDateTime dateDenied;
 
   @JsonProperty("allowSelfEdits")

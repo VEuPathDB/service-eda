@@ -8,8 +8,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Response;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
 import org.veupathdb.service.eda.generated.model.EntityTabularPostResponse;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponse;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
 
 @Path("/ss-internal/studies/{study-id}/entities/{entity-id}")
@@ -24,14 +22,6 @@ public interface SsInternalStudiesStudyIdEntitiesEntityId {
   PostSsInternalStudiesEntitiesTabularByStudyIdAndEntityIdResponse postSsInternalStudiesEntitiesTabularByStudyIdAndEntityId(
       @PathParam("study-id") String studyId, @PathParam("entity-id") String entityId,
       EntityTabularPostRequest entity);
-
-  @POST
-  @Path("/variables/{variable-id}/distribution")
-  @Produces("application/json")
-  @Consumes("application/json")
-  PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse postSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
-      @PathParam("study-id") String studyId, @PathParam("entity-id") String entityId,
-      @PathParam("variable-id") String variableId, VariableDistributionPostRequest entity);
 
   class PostSsInternalStudiesEntitiesTabularByStudyIdAndEntityIdResponse extends ResponseDelegate {
     private PostSsInternalStudiesEntitiesTabularByStudyIdAndEntityIdResponse(Response response,
@@ -55,25 +45,6 @@ public interface SsInternalStudiesStudyIdEntitiesEntityId {
       Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
       responseBuilder.entity(entity);
       return new PostSsInternalStudiesEntitiesTabularByStudyIdAndEntityIdResponse(responseBuilder.build(), entity);
-    }
-  }
-
-  class PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse extends ResponseDelegate {
-    private PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse(
-        Response response, Object entity) {
-      super(response, entity);
-    }
-
-    private PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse(
-        Response response) {
-      super(response);
-    }
-
-    public static PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse respond200WithApplicationJson(
-        VariableDistributionPostResponse entity) {
-      Response.ResponseBuilder responseBuilder = Response.status(200).header("Content-Type", "application/json");
-      responseBuilder.entity(entity);
-      return new PostSsInternalStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse(responseBuilder.build(), entity);
     }
   }
 }

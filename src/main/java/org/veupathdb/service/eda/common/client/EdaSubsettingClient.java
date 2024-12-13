@@ -22,18 +22,10 @@ import org.veupathdb.service.eda.subset.service.StudiesService;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-public class EdaSubsettingClient extends ServiceClient implements StreamingDataClient {
+public class EdaSubsettingClient implements StreamingDataClient {
   private static final Logger LOG = LogManager.getLogger(EdaSubsettingClient.class);
-
-  // request-scope cache for subsetting service metadata responses
-  private List<String> _validStudyNameCache;
-
-  public EdaSubsettingClient(String serviceBaseUrl, Entry<String, String> authHeader) {
-    super(serviceBaseUrl, authHeader);
-  }
 
   /**
    * Returns the study detail for the study with the passed ID.

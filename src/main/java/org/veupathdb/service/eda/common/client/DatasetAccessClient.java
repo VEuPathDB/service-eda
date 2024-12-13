@@ -140,5 +140,4 @@ public class DatasetAccessClient {
       // fish out the perms
       .map(BasicStudyDatasetInfo::getStudyAccess);
   }
-
 }

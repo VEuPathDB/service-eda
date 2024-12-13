@@ -1,13 +1,16 @@
 package org.veupathdb.service.eda.common.plugin.util;
 
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.BiConsumerWithException;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.jetbrains.annotations.NotNull;
 import org.rosuda.REngine.Rserve.RConnection;
-
-import java.io.InputStream;
-import java.util.*;
 
 public class RFileSetProcessor implements Iterable<RFileSetProcessor.RFileProcessingSpec> {
 

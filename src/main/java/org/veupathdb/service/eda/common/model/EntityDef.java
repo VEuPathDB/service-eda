@@ -1,15 +1,24 @@
 package org.veupathdb.service.eda.common.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import jakarta.ws.rs.BadRequestException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.json.JSONObject;
-import org.veupathdb.service.eda.generated.model.*;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
+import org.veupathdb.service.eda.generated.model.APIVariableType;
+import org.veupathdb.service.eda.generated.model.CollectionSpec;
+import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
 /**
  * Encapsulates entity information and holds VariableDefs representing variables of all data types, computed vars, and

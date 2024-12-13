@@ -1,10 +1,10 @@
 package org.veupathdb.service.eda.common.plugin.constraint;
 
-import org.veupathdb.service.eda.generated.model.DataElementConstraintPattern;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.veupathdb.service.eda.generated.model.DataElementConstraintPattern;
 
 /**
  * interface PatternSet {

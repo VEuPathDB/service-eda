@@ -5,6 +5,7 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
 
 public class EdaSubsettingSpecValidator extends StreamSpecValidator {
+
   @Override
   protected void enforceServiceSpecificRequirements(StreamSpec streamSpec, VariableDef variableDef, ValidationBundleBuilder validation) {
     if (!variableDef.getSource().equals(VariableSource.NATIVE)) {

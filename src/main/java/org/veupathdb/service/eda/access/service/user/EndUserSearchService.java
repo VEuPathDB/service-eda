@@ -4,16 +4,17 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.WebApplicationException;
+
 import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
+import org.veupathdb.service.eda.generated.model.ApprovalStatus;
+import org.veupathdb.service.eda.generated.model.EndUserList;
 import org.veupathdb.service.eda.access.model.SearchQuery;
 import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
 import org.veupathdb.service.eda.access.service.staff.StaffRepo;
 import org.veupathdb.service.eda.access.service.staff.StaffService;
-import org.veupathdb.service.eda.generated.model.ApprovalStatus;
-import org.veupathdb.service.eda.generated.model.EndUserList;
 
 public class EndUserSearchService
 {

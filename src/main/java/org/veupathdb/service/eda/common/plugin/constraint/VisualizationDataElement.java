@@ -1,10 +1,10 @@
 package org.veupathdb.service.eda.common.plugin.constraint;
 
+import java.util.Arrays;
+
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.DataElementConstraintImpl;
-
-import java.util.Arrays;
 
 public class VisualizationDataElement extends DataElementConstraintImpl {
 
@@ -73,7 +73,7 @@ public class VisualizationDataElement extends DataElementConstraintImpl {
     setMaxNumVars(maxNumVars);
     return this;
   }
-
+  
   public VisualizationDataElement minValues(int minNumValues) {
     setMinNumValues(minNumValues);
     return this;

@@ -1,6 +1,7 @@
 package org.veupathdb.service.eda.access.service.user;
 
 import jakarta.ws.rs.InternalServerErrorException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.veupathdb.service.eda.access.model.EndUserRow;

@@ -1,20 +1,20 @@
 package org.veupathdb.service.eda.access.service.user;
 
-import io.vulpine.lib.query.util.basic.BasicPreparedVoidQuery;
-import org.veupathdb.service.eda.access.model.ApprovalStatus;
-import org.veupathdb.service.eda.access.model.RestrictionLevel;
-import org.veupathdb.service.eda.access.model.*;
-import org.veupathdb.service.eda.access.repo.DB;
-import org.veupathdb.service.eda.access.repo.SQL;
-import org.veupathdb.service.eda.access.util.PsBuilder;
-import org.veupathdb.service.eda.generated.model.*;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import io.vulpine.lib.query.util.basic.BasicPreparedVoidQuery;
+import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.access.model.ApprovalStatus;
+import org.veupathdb.service.eda.access.model.RestrictionLevel;
+import org.veupathdb.service.eda.access.model.*;
+import org.veupathdb.service.eda.access.repo.DB;
+import org.veupathdb.service.eda.access.repo.SQL;
+import org.veupathdb.service.eda.access.util.PsBuilder;
 
 public class EndUserUtil
 {

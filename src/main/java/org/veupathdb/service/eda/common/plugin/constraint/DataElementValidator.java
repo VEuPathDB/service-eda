@@ -1,5 +1,8 @@
 package org.veupathdb.service.eda.common.plugin.constraint;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import org.gusdb.fgputil.FormatUtil;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -9,10 +12,6 @@ import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 
 public class DataElementValidator {
 

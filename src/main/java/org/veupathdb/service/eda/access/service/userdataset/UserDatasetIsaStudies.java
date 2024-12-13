@@ -2,11 +2,11 @@ package org.veupathdb.service.eda.access.service.userdataset;
 
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
 import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.access.repo.DB;
 import org.veupathdb.service.eda.access.repo.SQL;
 import org.veupathdb.service.eda.access.service.QueryUtil;
 import org.veupathdb.service.eda.access.util.SqlUtil;
-import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.HashMap;
 import java.util.Map;

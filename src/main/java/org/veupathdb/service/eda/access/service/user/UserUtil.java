@@ -1,9 +1,9 @@
 package org.veupathdb.service.eda.access.service.user;
 
+import java.sql.ResultSet;
+
 import org.veupathdb.service.eda.access.model.UserRow;
 import org.veupathdb.service.eda.access.repo.DB;
-
-import java.sql.ResultSet;
 
 public class UserUtil
 {

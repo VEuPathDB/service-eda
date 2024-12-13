@@ -3,10 +3,12 @@ package org.veupathdb.service.eda.common;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.junit.jupiter.api.Test;
+import org.veupathdb.service.eda.common.model.DataRanges;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
+import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
 import java.util.List;

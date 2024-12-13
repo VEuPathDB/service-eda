@@ -2,9 +2,9 @@ package org.veupathdb.service.eda.compute
 
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException
 import org.rosuda.REngine.Rserve.RConnection
-import org.veupathdb.service.eda.Main
 import org.veupathdb.service.eda.common.plugin.util.RFileSetProcessor
 import org.veupathdb.service.eda.common.plugin.util.RServeClient
+import org.veupathdb.service.eda.Main
 import java.io.InputStream
 import java.io.OutputStream
 

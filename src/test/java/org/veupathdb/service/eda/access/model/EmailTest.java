@@ -3,9 +3,12 @@ package org.veupathdb.service.eda.access.model;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.lib.test.RandUtil;
+import org.veupathdb.service.eda.access.service.email.EmailUtil;
 
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayName("Email")
 class EmailTest

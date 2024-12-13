@@ -1,8 +1,8 @@
 package org.veupathdb.service.eda.user.service;
 
-import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotFoundException;
+import java.util.*;
+
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.gusdb.fgputil.StringUtil;
@@ -13,8 +13,6 @@ import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.UsersUserId;
 import org.veupathdb.service.eda.user.Utils;
 import org.veupathdb.service.eda.user.model.*;
-
-import java.util.*;
 
 import static org.gusdb.fgputil.functional.Functions.also;
 import static org.veupathdb.service.eda.user.Utils.*;

@@ -6,7 +6,7 @@ import org.json.JSONObject
 import org.veupathdb.lib.hash_id.HashID
 import org.veupathdb.lib.jackson.Json
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase
-import java.util.Collections
+import java.util.*
 
 object JobIDs {
 

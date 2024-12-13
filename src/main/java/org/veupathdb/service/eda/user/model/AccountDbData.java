@@ -1,14 +1,17 @@
 package org.veupathdb.service.eda.user.model;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.accountdb.AccountManager;
 import org.gusdb.fgputil.accountdb.UserProfile;
 import org.gusdb.fgputil.accountdb.UserPropertyName;
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 import org.veupathdb.service.eda.generated.model.AnalysisSummaryWithUser;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class AccountDbData {
 

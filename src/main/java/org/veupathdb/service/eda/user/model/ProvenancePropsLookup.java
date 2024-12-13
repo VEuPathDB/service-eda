@@ -1,14 +1,13 @@
 package org.veupathdb.service.eda.user.model;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import jakarta.ws.rs.NotFoundException;
 import org.veupathdb.service.eda.generated.model.AnalysisProvenance;
 import org.veupathdb.service.eda.generated.model.AnalysisSummary;
 import org.veupathdb.service.eda.generated.model.CurrentProvenanceProps;
 import org.veupathdb.service.eda.generated.model.CurrentProvenancePropsImpl;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ProvenancePropsLookup {
 

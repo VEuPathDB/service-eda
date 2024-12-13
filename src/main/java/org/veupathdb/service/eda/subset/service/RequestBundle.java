@@ -1,5 +1,10 @@
 package org.veupathdb.service.eda.subset.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import org.apache.logging.log4j.LogManager;
@@ -9,15 +14,9 @@ import org.veupathdb.service.eda.generated.model.APITabularReportConfig;
 import org.veupathdb.service.eda.generated.model.SortSpecEntry;
 import org.veupathdb.service.eda.subset.model.Entity;
 import org.veupathdb.service.eda.subset.model.Study;
-import org.veupathdb.service.eda.subset.model.filter.Filter;
 import org.veupathdb.service.eda.subset.model.tabular.TabularReportConfig;
-import org.veupathdb.service.eda.subset.model.variable.Variable;
-import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import org.veupathdb.service.eda.subset.model.variable.*;
+import org.veupathdb.service.eda.subset.model.filter.Filter;
 
 public class RequestBundle {
 

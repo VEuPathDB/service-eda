@@ -1,6 +1,11 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap.markers;
 
-import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
+import org.veupathdb.service.eda.generated.model.APIVariableType;
+import org.veupathdb.service.eda.generated.model.CategoricalOverlayConfig;
+import org.veupathdb.service.eda.generated.model.ContinousOverlayConfig;
+import org.veupathdb.service.eda.generated.model.OverlayConfig;
+import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

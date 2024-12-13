@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
-import org.veupathdb.service.eda.generated.model.DerivedVariableMetadata;
-import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.List;
 

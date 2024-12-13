@@ -4,7 +4,11 @@ import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.AveragesWi
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.CategoricalProportionAggregator;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.ContinuousAggregators;
 import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggregator;
-import org.veupathdb.service.eda.generated.model.*;
+import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
+import org.veupathdb.service.eda.generated.model.APIVariableType;
+import org.veupathdb.service.eda.generated.model.CategoricalAggregationConfig;
+import org.veupathdb.service.eda.generated.model.ContinuousAggregationConfig;
+import org.veupathdb.service.eda.generated.model.QuantitativeAggregationConfig;
 
 import java.time.Instant;
 import java.time.LocalDateTime;

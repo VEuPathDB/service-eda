@@ -8,10 +8,7 @@ import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.DerivationType;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Parent class providing logic and interface common to all Reduction derived

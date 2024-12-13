@@ -1,12 +1,9 @@
 package org.veupathdb.service.eda.merge.plugins.reductions;
 
 import org.gusdb.fgputil.validation.ValidationException;
-import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
-import org.veupathdb.service.eda.generated.model.APIVariableType;
-import org.veupathdb.service.eda.generated.model.SingleNumericVarReductionConfig;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.merge.core.derivedvars.Reduction;
+import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.List;
 import java.util.Map;

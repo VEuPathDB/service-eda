@@ -1,9 +1,9 @@
 package org.veupathdb.service.eda.merge.plugins.transforms;
 
 import org.gusdb.fgputil.validation.ValidationException;
+import org.veupathdb.service.eda.merge.core.derivedvars.Transform;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
-import org.veupathdb.service.eda.merge.core.derivedvars.Transform;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,6 @@ import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.gusdb.fgputil.workflow.DependencyElement;
 import org.gusdb.fgputil.workflow.DependencyResolver;
-import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -114,15 +113,13 @@ public class DerivedVariableFactory {
   }
 
   /**
-   * Returns the complete list of derived variable instances (both from incoming
-   * specs and possibly sub-vars declared by the derived variable plugins
-   * themselves.  This list will be in dependency order; i.e. only later derived
-   * vars will depend on earlier derived vars.  In addition, circular
-   * dependencies have already been checked for, and names will be pre-validated
-   * for uniqueness among derived variables.  Name duplication with existing
-   * vars in reference metadata will be flagged when inserted there.
+   * Returns the complete list of derived variable instances (both from incoming specs and
+   * possibly sub-vars declared by the derived variable plugins themselves.  This list will
+   * be in dependency order; i.e. only later derived vars will depend on earlier derived
+   * vars.  In addition, circular dependencies have already been checked for, and names
+   * will be pre-validated for uniqueness among derived variables.  Name duplication with
+   * existing vars in reference metadata will be flagged when inserted there.
    */
-  @NotNull
   public List<DerivedVariable> getAllDerivedVars() {
     return _allDerivedVariablesOrdered;
   }
@@ -176,7 +173,6 @@ public class DerivedVariableFactory {
     }
   }
 
-  @NotNull
   private List<DerivedVariable> orderInstancesAndCheckCircularDependencies(List<DerivedVariable> unorderedInstanceList) {
 
     // create map of nodes

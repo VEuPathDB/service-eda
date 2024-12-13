@@ -1,7 +1,7 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
-import org.veupathdb.service.eda.generated.model.APIVariableType;
+import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.List;
 

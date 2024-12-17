@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.common.client;
 
-import kotlin.Pair;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -10,13 +9,11 @@ import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
-import org.veupathdb.service.eda.generated.model.ComputeRequestBase;
 import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 import org.veupathdb.service.eda.merge.core.MergeRequestProcessor;
 import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 import org.veupathdb.service.eda.merge.core.request.MergedTabularRequestResources;
-import org.veupathdb.service.eda.xgenerated.model.xComputeRequestBase;
 
 import java.io.InputStream;
 import java.util.List;
@@ -37,29 +34,12 @@ public class EdaMergingClient implements StreamingDataClient {
     @NotNull ReferenceMetadata metadata,
     @NotNull List<APIFilter> subset,
     @NotNull List<DerivedVariableSpec> derivedVariableSpecs,
-    @Nullable Pair<String, Object> computeInfoOpt,
+    @Nullable ComputeInfo computeInfo,
     @NotNull StreamSpec spec
   ) throws ValidationException {
-    ComputeInfo computeInfo = null;
-
     // if asked to include computed vars, do some validation before trying
-    if (spec.isIncludeComputedVars()) {
-
-      // a compute name and config must be provided
-      if (computeInfoOpt == null)
-        throw new RuntimeException("Computed vars requested but no compute associated with this visualization");
-
-      var config = (ComputeRequestBase) computeInfoOpt.getSecond();
-      computeInfo = new ComputeInfo(
-        computeInfoOpt.getFirst(),
-        new EdaComputeClient.ComputeRequestBody(
-          config.getStudyId(),
-          config.getFilters(),
-          config.getDerivedVariables(),
-          xComputeRequestBase.getConfig(config)
-        )
-      );
-    }
+    if (spec.isIncludeComputedVars() && computeInfo == null)
+      throw new RuntimeException("Computed vars requested but no compute associated with this visualization");
 
     return new MergeRequestProcessor(new MergedTabularRequestResources(
       metadata.getStudyId(),

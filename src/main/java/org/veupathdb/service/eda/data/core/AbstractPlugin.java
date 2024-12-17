@@ -172,8 +172,21 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     // create stream generator
     var typedTuple = _computeInfo.map(info -> new Pair<String, Object>(info.getFirst(), info.getSecond()))
       .orElse(null);
-    CheckedFunction<StreamSpec, InputStream> streamGenerator = spec ->
-      EdaMergingClient.getTabularDataStream(_referenceMetadata, _subsetFilters, _derivedVariableSpecs, typedTuple, spec);
+    CheckedFunction<StreamSpec, InputStream> streamGenerator = spec -> EdaMergingClient.getTabularDataStream(
+      _referenceMetadata,
+      _subsetFilters,
+      _derivedVariableSpecs,
+      _computeInfo.map(info -> new ComputeInfo(
+        info.getFirst(),
+        new EdaComputeClient.ComputeRequestBody(
+          request.getStudyId(),
+          request.getFilters(),
+          request.getDerivedVariables(),
+          info.getSecond()
+        )
+      )).orElse(null),
+      spec
+    );
 
     @SuppressWarnings("resource") // closed by StreamingDataClient.processDataStreams
     final var dataStreams = StreamingDataClient.buildDataStreams(_requiredStreams, streamGenerator);

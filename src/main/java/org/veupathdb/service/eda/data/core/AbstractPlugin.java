@@ -1,19 +1,19 @@
 package org.veupathdb.service.eda.data.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
+import io.vulpine.lib.jcfi.CheckedFunction;
 import jakarta.ws.rs.BadRequestException;
+import kotlin.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.AutoCloseableList;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.Tuples.TwoTuple;
-import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.ConsumerWithException;
 import org.gusdb.fgputil.functional.Functions;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
+import org.jetbrains.annotations.Nullable;
 import org.veupathdb.service.eda.common.client.*;
 import org.veupathdb.service.eda.common.client.EdaComputeClient.ComputeRequestBody;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -25,10 +25,12 @@ import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementValidator;
 import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
-import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.model.BinSpec.RangeType;
+import org.veupathdb.service.eda.merge.ServiceExternal;
+import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
+import org.veupathdb.service.eda.util.Exceptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,7 +41,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -90,7 +91,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   protected ReferenceMetadata _referenceMetadata;
   // stored compute name and typed value of the passed compute config object (if plugin requires compute)
   @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-  protected Optional<TwoTuple<String,R>> _computeInfo;
+  protected Optional<TwoTuple<String, R>> _computeInfo;
 
   protected S _pluginSpec;
   protected List<StreamSpec> _requiredStreams;
@@ -100,10 +101,6 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   private String _studyId;
   private List<APIFilter> _subsetFilters;
   private List<DerivedVariableSpec> _derivedVariableSpecs;
-  private Entry<String,String> _authHeader;
-  private EdaSubsettingClient _subsettingClient;
-  private EdaMergingClient _mergingClient;
-  private EdaComputeClient _computeClient;
 
   /**
    * Processes the plugin request and prepares this plugin to receive an OutputStream via the
@@ -112,11 +109,10 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
    *
    * @param appName app name this plugin belongs to; can be null if no compute is expected/allowed
    * @param request incoming plugin request object
-   * @param authHeader authentication header observed on request
    * @return a consumer for an output stream that will write the response
    * @throws ValidationException if request validation fails
    */
-  public final Consumer<OutputStream> processRequest(String appName, T request, Entry<String,String> authHeader) throws ValidationException {
+  public final Consumer<OutputStream> processRequest(String appName, T request) throws ValidationException {
 
     // start request timer (used to profile request performance dynamics)
     _timer = new Timer();
@@ -127,22 +123,19 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
 
     // find compute name if required by this viz plugin; if present, then look up compute config
     //   and create an optional tuple of name+config (empty optional if viz does not require compute)
-    _computeInfo = appName == null ? Optional.empty() : findComputeName(appName).map(name -> new TwoTuple<>(name,
-      getSpecObject(request, "getComputeConfig", getTypeParameterClasses().getComputeConfigClass())));
+    _computeInfo = appName == null
+      ? Optional.empty()
+      : findComputeName(appName).map(name -> new TwoTuple<>(
+        name,
+        getSpecObject(request, "getComputeConfig", getTypeParameterClasses().getComputeConfigClass())
+      ));
 
     // check for subset and derived entity properties of request
     _subsetFilters = Optional.ofNullable(request.getFilters()).orElse(Collections.emptyList());
     _derivedVariableSpecs = Optional.ofNullable(request.getDerivedVariables()).orElse(Collections.emptyList());
 
-    // build clients for required services
-    _authHeader = authHeader;
-    _subsettingClient = new EdaSubsettingClient(Resources.SUBSETTING_SERVICE_URL, authHeader);
-    _mergingClient = new EdaMergingClient(Resources.MERGING_SERVICE_URL, authHeader);
-    _computeClient = new EdaComputeClient(Resources.COMPUTE_SERVICE_URL, authHeader);
-
     // get study
-    APIStudyDetail study = _subsettingClient.getStudy(request.getStudyId())
-      .orElseThrow(() -> new ValidationException("Study '" + request.getStudyId() + "' does not exist."));
+    APIStudyDetail study = EdaSubsettingClient.getStudy(request.getStudyId());
     _studyId = study.getId();
 
     // if plugin requires a compute, check if compute results are available
@@ -154,8 +147,10 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     _referenceMetadata = new ReferenceMetadata(study);
 
     // if derived vars present, get derived var metadata and incorporate
-    _mergingClient.getDerivedVariableMetadata(_studyId, _derivedVariableSpecs)
-      .forEach(_referenceMetadata::incorporateDerivedVariable);
+    Exceptions.errToBadRequest(() -> {
+      ServiceExternal.processDvMetadataRequest(_studyId, _derivedVariableSpecs)
+        .forEach(_referenceMetadata::incorporateDerivedVariable);
+    });
 
     // if plugin requires a compute, get computed var metadata and incorporate
     if (_computeInfo.isPresent() && computeGeneratesVars())
@@ -168,19 +163,20 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     _requiredStreams = getRequestedStreams(_pluginSpec);
 
     // validate stream specs provided by the subclass
-    _mergingClient.getStreamSpecValidator()
+    new EdaMergingClient().getStreamSpecValidator()
       .validateStreamSpecs(_requiredStreams, _referenceMetadata).throwIfInvalid();
 
     _requestProcessed = true;
     logRequestTime("Initial request processing complete");
 
     // create stream generator
-    Optional<TwoTuple<String, Object>> typedTuple = _computeInfo.map(info -> new TwoTuple<>(info.getFirst(), info.getSecond()));
-    Function<StreamSpec, ResponseFuture> streamGenerator = spec -> _mergingClient
-      .getTabularDataStream(_referenceMetadata, _subsetFilters, _derivedVariableSpecs, typedTuple, spec);
+    var typedTuple = _computeInfo.map(info -> new Pair<String, Object>(info.getFirst(), info.getSecond()))
+      .orElse(null);
+    CheckedFunction<StreamSpec, InputStream> streamGenerator = spec ->
+      EdaMergingClient.getTabularDataStream(_referenceMetadata, _subsetFilters, _derivedVariableSpecs, typedTuple, spec);
 
     @SuppressWarnings("resource") // closed by StreamingDataClient.processDataStreams
-    final AutoCloseableList<InputStream> dataStreams = StreamingDataClient.buildDataStreams(_requiredStreams, streamGenerator);
+    final var dataStreams = StreamingDataClient.buildDataStreams(_requiredStreams, streamGenerator);
 
     return out -> {
       if (!_requestProcessed) {
@@ -199,6 +195,11 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
       StreamingDataClient.processDataStreams(_requiredStreams, dataStreams, streamProcessor);
       logRequestTime("Data streams processed; response written; request complete");
     };
+  }
+
+  @Nullable
+  protected ComputeInfo makeComputeInfo() {
+    return null;
   }
 
   /**
@@ -225,7 +226,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected PluginUtil getUtil() {
-    return new PluginUtil(getReferenceMetadata(), _mergingClient);
+    return new PluginUtil(getReferenceMetadata(), EdaMergingClient::columnHeaderFor);
   }
 
   protected void validateInputs(DataElementSet values) {
@@ -324,7 +325,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
         plugin.getTypeParameterClasses().getVisualizationSpecClass()).invoke(request, visualizationConfig);
       ByteArrayOutputStream result = new ByteArrayOutputStream();
       // passing null as appName because it is only used to look up the compute; since this is an EmptyComputePlugin, we know there is no compute
-      plugin.processRequest(null, request, _authHeader).accept(result);
+      plugin.processRequest(null, request).accept(result);
       // need to use the implementation class (not the interface) so Jackson can instantiate it
       String expectedResponseTypeName = expectedResponseType.getName();
       if (!expectedResponseTypeName.endsWith("Impl")) expectedResponseTypeName += "Impl";
@@ -350,7 +351,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected long getSubsetCount(String entityId, List<APIFilter> subsetFilters) {
-    return _subsettingClient.getSubsetCount(_referenceMetadata, entityId, subsetFilters);
+    return EdaSubsettingClient.getSubsetCount(_referenceMetadata, entityId, subsetFilters);
   }
 
   protected Map<String, Long> getCategoricalCountDistribution(VariableSpec varSpec) {
@@ -358,7 +359,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected Map<String, Long> getCategoricalCountDistribution(VariableSpec varSpec, List<APIFilter> subsetFilters) {
-    VariableDistributionPostResponse response = _subsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.COUNT);
+    VariableDistributionPostResponse response = EdaSubsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.COUNT);
     return response.getHistogram().stream().collect(Collectors.toMap(HistogramBin::getBinLabel, bin -> Long.valueOf(bin.getValue().toString())));
   }
 
@@ -367,41 +368,28 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected Map<String, Double> getCategoricalProportionDistribution(VariableSpec varSpec, List<APIFilter> subsetFilters) {
-    VariableDistributionPostResponse response = _subsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.PROPORTION);
+    VariableDistributionPostResponse response = EdaSubsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.PROPORTION);
     return response.getHistogram().stream().collect(Collectors.toMap(HistogramBin::getBinLabel, bin -> Double.valueOf(bin.getValue().toString())));
   }
 
   protected Map<String, InputStream> getVocabByRootEntity(DynamicDataSpec dataSpec, List<APIFilter> subsetFilters) {
-    PluginUtil util = getUtil();
-    ResponseFuture response = _subsettingClient.getVocabByRootEntity(_referenceMetadata, dataSpec, subsetFilters);
-
-    Map<String, InputStream> vocab = new HashMap<>();
-    try {
-      InputStream vocabStream = response.getInputStream();
-      vocab.put(util.toColNameOrEmpty(dataSpec), vocabStream);
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Unable to stream study specific vocabulary response.", e);
-    }
-
-    return vocab;
+    return new HashMap<>(1) {{ put(
+      getUtil().toColNameOrEmpty(dataSpec),
+      EdaSubsettingClient.getVocabByRootEntity(_referenceMetadata, dataSpec, subsetFilters)
+    ); }};
   }
 
   protected Map<String, InputStream> getVocabByRootEntity(DynamicDataSpec dataSpec) {
     return getVocabByRootEntity(dataSpec, _subsetFilters);
   }
 
-  protected Map<String, InputStream> getVocabByRootEntity(List<DynamicDataSpec> dataSpecs, List<APIFilter> subsetFilters) {
+  protected Map<String, InputStream> getVocabByRootEntity(List<DynamicDataSpec> dataSpecs) {
     return dataSpecs.parallelStream()
       .map(this::getVocabByRootEntity)
       .map(Map::entrySet)
       .map(Collection::iterator)
       .map(Iterator::next)
       .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-  }
-
-  protected Map<String, InputStream> getVocabByRootEntity(List<DynamicDataSpec> dataSpecs) {
-    return getVocabByRootEntity(dataSpecs, _subsetFilters);
   }
 
   /*****************************************************************
@@ -437,15 +425,15 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected boolean isComputeResultsAvailable() {
-    return _computeClient.isJobResultsAvailable(getComputeName(), createComputeRequestBody());
+    return EdaComputeClient.isJobResultsAvailable(getComputeName(), createComputeRequestBody());
   }
 
   protected <Q> Q getComputeResultStats(Class<Q> expectedStatsClass) {
-    return _computeClient.getJobStatistics(getComputeName(), createComputeRequestBody(), expectedStatsClass);
+    return EdaComputeClient.getJobStatistics(getComputeName(), createComputeRequestBody(), expectedStatsClass);
   }
 
   protected void writeComputeStatsResponseToOutput(OutputStream out) {
-    try (InputStream statsStream = _computeClient.getJobStatistics(getComputeName(), createComputeRequestBody()).getInputStream()) {
+    try (InputStream statsStream = EdaComputeClient.getJobStatistics(getComputeName(), createComputeRequestBody())) {
       statsStream.transferTo(out);
     }
     catch (Exception e) {
@@ -454,7 +442,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected ComputedVariableMetadata getComputedVariableMetadata() {
-    return _computeClient.getJobVariableMetadata(getComputeName(), createComputeRequestBody());
+    return EdaComputeClient.getJobVariableMetadata(getComputeName(), createComputeRequestBody());
   }
 
   private ComputeRequestBody createComputeRequestBody() {

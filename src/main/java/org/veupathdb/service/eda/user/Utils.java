@@ -1,12 +1,6 @@
 package org.veupathdb.service.eda.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.sql.Timestamp;
-import java.text.ParseException;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
@@ -16,11 +10,16 @@ import org.gusdb.fgputil.FormatUtil;
 import org.veupathdb.lib.container.jaxrs.model.User;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.jackson.Json;
-import org.veupathdb.service.eda.Resources;
-import org.veupathdb.service.eda.common.client.DatasetAccessClient;
+import org.veupathdb.service.eda.access.service.permissions.PermissionService;
 import org.veupathdb.service.eda.generated.model.AnalysisSummary;
 import org.veupathdb.service.eda.user.model.AnalysisDetailWithUser;
 import org.veupathdb.service.eda.user.model.UserDataFactory;
+
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Utils {
   public static User getActiveUser(ContainerRequest request) {
@@ -126,18 +125,15 @@ public class Utils {
 
   public static void requireSubsettingPermission(ContainerRequest request, String datasetID) {
     try {
-      var info = new DatasetAccessClient(
-        Resources.DATASET_ACCESS_SERVICE_URL,
-        UserProvider.getSubmittedAuth(request).orElseThrow()
-      )
-        .getStudyPermsByDatasetId(datasetID);
+      var user = UserProvider.lookupUser(request).orElseThrow();
+      var info = PermissionService.getUserPermissions(user.getUserId(), datasetID);
 
-      if (!info.getStudyAccess().allowSubsetting()) {
+      if (!info.getActionAuthorization().getSubsetting()) {
         throw new ForbiddenException(Json.newObject()
           .put("denialReason", "noAccess")
           .put("message", "The requesting user does not have access to this study.")
           .put("datasetId", datasetID)
-          .put("isUserDataset", info.isUserStudy())
+          .put("isUserDataset", info.getIsUserStudy())
           .toString()
         );
       }

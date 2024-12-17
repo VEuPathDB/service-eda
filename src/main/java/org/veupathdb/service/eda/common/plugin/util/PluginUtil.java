@@ -1,16 +1,11 @@
 package org.veupathdb.service.eda.common.plugin.util;
 
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.common.client.EdaMergingClient;
 import org.veupathdb.service.eda.common.model.CollectionDef;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.CollectionSpec;
-import org.veupathdb.service.eda.generated.model.DynamicDataSpec;
-import org.veupathdb.service.eda.generated.model.LabeledRange;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
+import org.veupathdb.service.eda.generated.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,11 +19,11 @@ import java.util.stream.Collectors;
 public class PluginUtil {
 
   private final ReferenceMetadata _metadata;
-  private final EdaMergingClient _mergingClient;
+  private final Function<VariableSpec, String> _varToColumnHeader;
 
-  public PluginUtil(ReferenceMetadata metadata, EdaMergingClient mergingClient) {
+  public PluginUtil(ReferenceMetadata metadata, Function<VariableSpec, String> varToColumnHeader) {
     _metadata = metadata;
-    _mergingClient = mergingClient;
+    _varToColumnHeader = varToColumnHeader;
   }
 
   /*****************************************************************
@@ -168,7 +163,7 @@ public class PluginUtil {
    ****************************************************************/
 
   public String toColNameOrEmpty(VariableSpec var) {
-    return var == null ? "" : _mergingClient.varToColumnHeader(var);
+    return var == null ? "" : _varToColumnHeader.apply(var);
   }
 
   public String toColNameOrEmpty(DynamicDataSpec data) {

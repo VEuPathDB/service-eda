@@ -10,8 +10,8 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableMapping;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 
 import java.util.*;
 
@@ -39,7 +39,7 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
   // per merge request)
   public static final String COMPUTED_VAR_STREAM_NAME = "__COMPUTED_VAR_STREAM__";
 
-  private final String[] _outputVars;
+  private final List<String> _outputVars;
   private final InitialSizeStringMap.Builder _outputRowBuilder;
 
   private final Optional<EntityStream> _computeStreamProcessor;
@@ -66,10 +66,10 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
     computeStreamSpec.ifPresent(fullOutputVarDefs::addAll);
 
     _outputVars = getOrderedOutputColumns(fullOutputVarDefs);
-    _outputRowBuilder = new InitialSizeStringMap.Builder(_outputVars);
+    _outputRowBuilder = new InitialSizeStringMap.Builder(_outputVars.toArray(String[]::new));
   }
 
-  private String[] getOrderedOutputColumns(List<VariableSpec> fullOutputVarDefs) throws ValidationException {
+  private List<String> getOrderedOutputColumns(List<VariableSpec> fullOutputVarDefs) throws ValidationException {
     List<String> outputCols = VariableDef.toDotNotation(fullOutputVarDefs);
     Set<String> distinctnessCheck = new HashSet<>();
     for (String outputCol : outputCols) {
@@ -78,7 +78,7 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
       }
       distinctnessCheck.add(outputCol);
     }
-    return outputCols.toArray(new String[0]);
+    return outputCols;
   }
 
   private static Optional<StreamSpec> getComputeStreamSpec(List<VariableMapping> varMappings) {
@@ -134,7 +134,7 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
 
     // return only requested vars and in the correct order
     final InitialSizeStringMap outputRow = _outputRowBuilder.build();
-    final String[] outputVals = new String[_outputVars.length];
+    final String[] outputVals = new String[_outputVars.size()];
     int i = 0;
     for (String col : _outputVars) {
       outputVals[i++] = row.get(col);
@@ -177,7 +177,7 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
       "}" + NL;
   }
 
-  public String[] getOrderedOutputVars() {
+  public List<String> getOrderedOutputVars() {
     return _outputVars;
   }
 }

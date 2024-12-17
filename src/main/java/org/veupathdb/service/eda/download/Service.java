@@ -1,12 +1,5 @@
 package org.veupathdb.service.eda.download;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.Function;
-
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
@@ -25,6 +18,11 @@ import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient.StudyDatasetInfo;
 import org.veupathdb.service.eda.generated.model.FileContentResponseStream;
 import org.veupathdb.service.eda.generated.resources.Download;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.function.Function;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
@@ -95,16 +93,18 @@ public class Service implements Download {
 
   private StudyDatasetInfo checkPermsAndFetchDatasetInfo(String studyId, Function<StudyAccess, Boolean> accessGranter) {
     try {
-      Entry<String, String> authHeader = UserProvider.getSubmittedAuth(_request).orElseThrow();
-      Map<String, StudyDatasetInfo> studyMap =
-        new DatasetAccessClient(Resources.DATASET_ACCESS_SERVICE_URL, authHeader).getStudyDatasetInfoMapForUser();
-      StudyDatasetInfo study = studyMap.get(studyId);
+      var user  = UserProvider.lookupUser(_request).orElseThrow();
+      var study = DatasetAccessClient.getStudyDatasetInfoMapForUser(user.getUserId())
+        .get(studyId);
+
       if (study == null) {
         throw new NotFoundException("Study '" + studyId + "' cannot be found [dataset access service].");
       }
+
       if (!accessGranter.apply(study.getStudyAccess())) {
         throw new ForbiddenException("Permission Denied");
       }
+
       return study;
     } catch (Exception e) {
       LOG.error("Unable to check study permissions and convert studyId to dataset hash", e);

@@ -1,23 +1,16 @@
 package org.veupathdb.service.eda.common.client;
 
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import org.gusdb.fgputil.client.ClientUtil;
-import org.gusdb.fgputil.client.RequestFailure;
-import org.gusdb.fgputil.functional.Either;
 import org.gusdb.fgputil.runtime.Environment;
 import org.json.JSONObject;
+import org.veupathdb.service.eda.access.service.permissions.PermissionService;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
+import org.veupathdb.service.eda.generated.model.DatasetPermissionEntry;
 
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 
-public class DatasetAccessClient extends ServiceClient {
+public class DatasetAccessClient {
   private static final String ENABLE_DATASET_ACCESS_RESTRICTIONS = "ENABLE_DATASET_ACCESS_RESTRICTIONS";
 
   public static class BasicStudyDatasetInfo {
@@ -27,21 +20,19 @@ public class DatasetAccessClient extends ServiceClient {
     private final boolean _isUserStudy;
     private final StudyAccess _studyAccess;
 
-    public BasicStudyDatasetInfo(JSONObject json) {
-      this(json.getString("datasetId"), json);
-    }
-
-    public BasicStudyDatasetInfo(String datasetId, JSONObject json) {
+    public BasicStudyDatasetInfo(String datasetId, DatasetPermissionEntry permissions) {
       _datasetId = datasetId;
-      _studyId = json.getString("studyId");
-      _isUserStudy = json.getBoolean("isUserStudy");
-      JSONObject studyPerms = json.getJSONObject("actionAuthorization");
+      _studyId = permissions.getStudyId();
+      _isUserStudy = permissions.getIsUserStudy();
+
+      var auth = permissions.getActionAuthorization();
+
       _studyAccess = new StudyAccess(
-          studyPerms.getBoolean("studyMetadata"),
-          studyPerms.getBoolean("subsetting"),
-          studyPerms.getBoolean("visualizations"),
-          studyPerms.getBoolean("resultsFirstPage"),
-          studyPerms.getBoolean("resultsAll")
+        auth.getStudyMetadata(),
+        auth.getSubsetting(),
+        auth.getVisualizations(),
+        auth.getResultsFirstPage(),
+        auth.getResultsAll()
       );
     }
 
@@ -71,12 +62,13 @@ public class DatasetAccessClient extends ServiceClient {
     private final String _shortDisplayName;
     private final String _description;
 
-    public StudyDatasetInfo(String datasetId, JSONObject json) {
-      super(datasetId, json);
-      _sha1Hash = json.optString("sha1Hash", "");
-      _displayName = json.getString("displayName");
-      _shortDisplayName = json.optString("shortDisplayName", _displayName);
-      _description = json.optString("description", null);
+    public StudyDatasetInfo(String datasetId, DatasetPermissionEntry permissions) {
+      super(datasetId, permissions);
+
+      _sha1Hash = permissions.getSha1Hash();
+      _displayName = permissions.getDisplayName();
+      _shortDisplayName = permissions.getShortDisplayName();
+      _description = permissions.getDescription();
     }
 
     public String getSha1Hash() { return _sha1Hash; }
@@ -93,97 +85,59 @@ public class DatasetAccessClient extends ServiceClient {
     }
   }
 
-  public DatasetAccessClient(String baseUrl, Entry<String,String> authHeader) {
-    super(baseUrl, authHeader);
-  }
-
   /**
    * Builds a map from study ID to study info, including permissions for each curated
    * study, plus user studies this user has access to.  Requires a request to the dataset access service.
    *
    * @return study map with study IDs as keys
    */
-  public Map<String, StudyDatasetInfo> getStudyDatasetInfoMapForUser() {
-    try (InputStream response = ClientUtil.makeAsyncGetRequest(getUrl("/permissions"),
-        MediaType.APPLICATION_JSON, getAuthHeaderMap()).getInputStream()) {
-      String permissionsJson = ClientUtil.readSmallResponseBody(response);
-      JSONObject datasetMap = new JSONObject(permissionsJson).getJSONObject("perDataset");
-      Map<String, StudyDatasetInfo> infoMap = new HashMap<>();
-      for (String datasetId : datasetMap.keySet()) {
-        JSONObject datasetInfoJson = datasetMap.getJSONObject(datasetId);
-        StudyDatasetInfo datasetInfo = new StudyDatasetInfo(datasetId, datasetInfoJson);
-        // reorganizing here; response JSON is keyed by dataset ID, but resulting map is keyed by study ID
-        infoMap.put(datasetInfo.getStudyId(), datasetInfo);
-      }
-      return infoMap;
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Unable to read permissions response", e);
-    }
-  }
-
-  /**
-   * Looks up permissions for a user on a particular dataset; however, unlike
-   * <code>getStudyDatasetInfoMapForUser()</code>, this method will look up user
-   * studies the user does NOT have permissions on, and still return information
-   * about the study (with false for all perms).  A passed datasetId string that
-   * does not exist (curated or user study, regardless of this user's perms)
-   * will result in a NotFoundException.
-   *
-   * @param datasetId dataset ID for study to look up
-   * @return dataset access service metadata about this study
-   */
-  public BasicStudyDatasetInfo getStudyPermsByDatasetId(String datasetId) {
+  public static Map<String, StudyDatasetInfo> getStudyDatasetInfoMapForUser(long userId) {
     try {
-      Either<InputStream, RequestFailure> response = ClientUtil
-          .makeAsyncGetRequest(getUrl("/permissions/" + datasetId),
-              MediaType.APPLICATION_JSON, getAuthHeaderMap()).getEither();
-      response.ifRight(fail -> {
-        // check for 404
-        if (fail.getStatusType().getStatusCode() == Response.Status.NOT_FOUND.getStatusCode()) {
-          throw new NotFoundException("Dataset Access: no study found with dataset ID " + datasetId);
-        }
-        throw new RuntimeException("Failed to request permissions from dataset access: " + fail);
-      });
-      try (InputStream responseBody = response.getLeft()) {
-        JSONObject json = new JSONObject(ClientUtil.readSmallResponseBody(responseBody));
-        return new BasicStudyDatasetInfo(json);
+      var datasetMap = PermissionService.getUserPermissions(userId);
+      var infoMap    = new HashMap<String, StudyDatasetInfo>(datasetMap.size());
+
+      for (var entry : datasetMap.entrySet()) {
+        // reorganizing here; response JSON is keyed by dataset ID, but resulting map is keyed by study ID
+        infoMap.put(entry.getValue().getStudyId(), new StudyDatasetInfo(entry.getKey(), entry.getValue()));
       }
-    }
-    catch (WebApplicationException e) {
-      throw e;
-    }
-    catch (Exception e) {
+
+      return infoMap;
+    } catch (Exception e) {
       throw new RuntimeException("Unable to read permissions response", e);
     }
   }
 
   /**
-   * Looks up the permissions for the authenticated user, finds the study for the passed study ID, and
-   * returns only the StudyAccess portion of the dataset found.  This calls getStudyDatasetInfoMapForUser()
-   * so will return an empty optional unless the study is a curated study or the user has access via
-   * shared user dataset (even if the study exists as a user study this user does not have permissions on).
+   * Looks up the permissions for the target user, finds the study for the
+   * passed study ID, and returns only the {@link StudyAccess} portion of the
+   * dataset found.  This calls {@link #getStudyDatasetInfoMapForUser(long)} so will
+   * return an empty {@code Optional} unless the study is a curated study or the
+   * user has access via shared user dataset (even if the study exists as a user
+   * study this user does not have permissions on).
    * <p>
-   * Note this method (but not others) respects the ENABLE_DATASET_ACCESS_RESTRICTIONS environment variable;
-   * if set to false, the dataset access service is NOT queried, and a StudyAccess object is returned
-   * granting universal access to the study.  This was a hack added during development to support DBs not
-   * entirely populated with data and should eventually be removed.
+   * Note this method (but not others) respects the
+   * {@link #ENABLE_DATASET_ACCESS_RESTRICTIONS} environment variable; if set to
+   * {@code false}, the dataset access service is NOT queried, and a
+   * {@link StudyAccess} object is returned granting universal access to the
+   * study.
+   * <p>
+   * This was a hack added during development to support DBs not entirely
+   * populated with data and should eventually be removed.
    *
    * @param studyId study for which perms should be looked up
+   *
+   * @param userId Target user whose permissions should be checked.
+   *
    * @return set of access permissions to this study
    */
-  public Optional<StudyAccess> getStudyAccessByStudyId(String studyId) {
+  public static Optional<StudyAccess> getStudyAccessByStudyId(String studyId, long userId) {
     if (!Boolean.parseBoolean(Environment.getOptionalVar(ENABLE_DATASET_ACCESS_RESTRICTIONS, Boolean.TRUE.toString()))) {
       return Optional.of(new StudyAccess(true, true, true, true, true));
     }
-    // get the perms for this user of known studies
-    return getStudyDatasetInfoMapForUser().values().stream()
-        // filter to find this study
-        .filter(info -> info.getStudyId().equals(studyId))
-        // convert to optional
-        .findAny()
-        // fish out the perms
-        .map(BasicStudyDatasetInfo::getStudyAccess);
-  }
 
+    // get the perms for this user of known studies
+    return Optional.ofNullable(getStudyDatasetInfoMapForUser(userId).get(studyId))
+      // fish out the perms
+      .map(BasicStudyDatasetInfo::getStudyAccess);
+  }
 }

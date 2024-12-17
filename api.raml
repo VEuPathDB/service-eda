@@ -145,20 +145,6 @@ securitySchemes:
 
 /ss-internal/studies/{study-id}/entities/{entity-id}:
 
-  /count:
-    post:
-      securedBy: header-auth
-      description: |
-        Return a count of entities in this subset.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
-      body:
-        application/json:
-          type: lib.EntityCountPostRequest
-      responses:
-        200:
-          body:
-            application/json:
-              type: lib.EntityCountPostResponse
-
   /tabular:
     post:
       securedBy: header-auth
@@ -174,22 +160,6 @@ securitySchemes:
               type: lib.EntityTabularPostResponse
             application/json:
               type: lib.EntityTabularPostResponse
-
-  /variables/{variable-id}/distribution:
-    post:
-      securedBy: header-auth
-      description: |
-        Return the count of entities in the subset that have a value for this variable, and |
-        a distribution for this variable, i.e., entity counts for each value of this |
-        variable.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
-      body:
-        application/json:
-          type: lib.VariableDistributionPostRequest
-      responses:
-        200:
-          body:
-            application/json:
-              type: lib.VariableDistributionPostResponse
 
 # # # # # # # # # # # # # # # # # # #
 #                                   #
@@ -261,20 +231,6 @@ securitySchemes:
 # # # # # # # # # # # # # # # # # # #
 
 /merging-internal:
-
-  /derived-variables:
-    /metadata:
-      /variables:
-        displayName: Return metadata about a small collection of derived variables
-        post:
-          body:
-            application/json:
-              type: lib.DerivedVariableBulkMetadataRequest
-          responses:
-            200:
-              body:
-                application/json:
-                  type: lib.DerivedVariableMetadata[]
 
   /query:
     displayName: Merged Tabular Data Query
@@ -582,7 +538,6 @@ securitySchemes:
         body:
           application/json:
             type: lib.ExpiredJobsResponse
-
 /internal-jobs:
   get:
     responses:

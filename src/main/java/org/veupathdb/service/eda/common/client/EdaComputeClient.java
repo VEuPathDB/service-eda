@@ -2,27 +2,24 @@ package org.veupathdb.service.eda.common.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.ws.rs.core.MediaType;
+import io.vulpine.lib.jcfi.CheckedSupplier;
 import org.gusdb.fgputil.DelimitedDataParser;
-import org.gusdb.fgputil.IoUtil;
-import org.gusdb.fgputil.client.ClientUtil;
-import org.gusdb.fgputil.client.ResponseFuture;
 import org.gusdb.fgputil.iterator.CloseableIterator;
-import org.gusdb.fgputil.json.JsonUtil;
+import org.veupathdb.lib.jackson.Json;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.compute.EDACompute;
+import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
+import org.veupathdb.service.eda.compute.plugins.PluginRegistry;
 import org.veupathdb.service.eda.generated.model.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.*;
+import java.util.function.Supplier;
 
 import static org.gusdb.fgputil.FormatUtil.TAB;
 
@@ -49,37 +46,50 @@ public class EdaComputeClient {
   // parent path returns status; flag indicates not to restart
   private static final String STATUS_SEGMENT = "?autostart=false";
 
-  private static final String META_FILE_SEGMENT = "/meta";
-  private static final String STATS_FILE_SEGMENT = "/statistics";
-  private static final String TABULAR_FILE_SEGMENT = "/tabular";
+  private static final String META_FILE_SEGMENT = "meta";
+  private static final String STATS_FILE_SEGMENT = "statistics";
 
-  private final String _baseComputesUrl;
-  private final Map<String, String> _authHeader;
+  public static boolean isJobResultsAvailable(String computeName, ComputeRequestBase requestBody) {
+    var plugin = PluginRegistry.get(computeName);
+    if (plugin == null)
+      return false;
 
-  public EdaComputeClient(String serviceBaseUrl, Entry<String, String> authHeader) {
-    _baseComputesUrl = serviceBaseUrl + "/computes/";
-    _authHeader = Map.of(authHeader.getKey(), authHeader.getValue());
+    return EDACompute.getOrSubmitComputeJob(plugin, requestBody, false)
+      .getStatus()
+      .equals(JobStatus.COMPLETE);
   }
 
-  public boolean isJobResultsAvailable(String computeName, ComputeRequestBody requestBody) {
-    JobResponse response = readJsonResponse(getResponseFuture(computeName, STATUS_SEGMENT, requestBody), JobResponse.class);
-    return response.getStatus().equals(JobStatus.COMPLETE);
+  public static ComputedVariableMetadata getJobVariableMetadata(String computeName, ComputeRequestBody requestBody) {
+    var either = getResponseFuture(computeName, META_FILE_SEGMENT, requestBody);
+
+    if (either.isEmpty())
+      throw new RuntimeException("compute not found");
+
+    try (var stream = either.get().get()) {
+      return Json.getMapper().readValue(stream, ComputedVariableMetadata.class);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public ComputedVariableMetadata getJobVariableMetadata(String computeName, ComputeRequestBody requestBody) {
-    return readJsonResponse(getResponseFuture(computeName, META_FILE_SEGMENT, requestBody), ComputedVariableMetadataImpl.class);
+  public static InputStream getJobStatistics(String computeName, ComputeRequestBody requestBody) {
+    return getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody).orElseThrow().get();
   }
 
-  public ResponseFuture getJobStatistics(String computeName, ComputeRequestBody requestBody) {
-    return getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody);
+  public static <T> T getJobStatistics(String computeName, ComputeRequestBody requestBody, Class<T> expectedStatsClass) {
+    var either = getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody);
+
+    if (either.isEmpty())
+      throw new RuntimeException("compute not found");
+
+    try (var stream = either.get().get()) {
+      return Json.getMapper().readValue(stream, expectedStatsClass);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public <T> T getJobStatistics(String computeName, ComputeRequestBody requestBody, Class<T> expectedStatsClass) {
-    return readJsonResponse(getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody), expectedStatsClass);
-  }
-
-
-  private List<VariableSpec> getComputeVars(EntityDef targetEntity, List<VariableMapping> varMappings, ReferenceMetadata metadata) {
+  private static List<VariableSpec> getComputeVars(EntityDef targetEntity, List<VariableMapping> varMappings, ReferenceMetadata metadata) {
 
     // if no computed vars present, nothing to do
     if (varMappings.isEmpty()) return Collections.emptyList();
@@ -108,25 +118,19 @@ public class EdaComputeClient {
 
     return computedVars;
   }
+
   /**
-   * TODO migrate this to directly use compute functionality:
-   *  org.veupathdb.service.eda.compute.controller.ComputeController#resultFile(
-   *  org.veupathdb.service.eda.compute.plugins.PluginMeta, java.lang.String,
-   *  org.veupathdb.service.eda.generated.model.ComputeRequestBase, java.util.function.Function)
-   * <p>
-   *  This isn't expected to provide a particularly noticeable performance
-   *  improvement, but it will avoid overhead of HTTP.
+   * @deprecated TODO: move me to a more sensible location.
    */
-  public CloseableIterator<Map<String, String>> getJobTabularIteratorOutput(List<EntityDef> ancestors,
-                                                                            String computeName,
-                                                                            EntityDef computeEntity,
-                                                                            List<VariableMapping> variables,
-                                                                            ComputeRequestBody requestBody,
-                                                                            ReferenceMetadata referenceMetadata) {
+  public static CloseableIterator<Map<String, String>> getJobTabularIteratorOutput(
+    EntityDef computeEntity,
+    List<VariableMapping> variables,
+    ReferenceMetadata referenceMetadata,
+    CheckedSupplier<InputStream> tabularDataSupplier
+  ) {
     List<String> headers = VariableDef.toDotNotation(getComputeVars(computeEntity, variables, referenceMetadata));
 
-    try {
-      InputStream is = getJobTabularOutput(computeName, requestBody).getInputStream();
+    try(var is = tabularDataSupplier.get()) {
       InputStreamReader isReader = new InputStreamReader(is);
       BufferedReader bufferedReader = new BufferedReader(isReader);
       String headerLine = bufferedReader.readLine();
@@ -167,31 +171,32 @@ public class EdaComputeClient {
     }
   }
 
-  private String toDotNotation(VariableDef variableDef) {
-    return variableDef.getEntityId() + "." + variableDef.getVariableId();
-  }
+  private static Optional<Supplier<InputStream>> getResponseFuture(
+    String computeName,
+    String fileSegment,
+    ComputeRequestBase requestBody
+  ) {
+    var fileName = switch(fileSegment) {
+      case META_FILE_SEGMENT  -> ReservedFiles.OutputMeta;
+      case STATS_FILE_SEGMENT -> ReservedFiles.OutputStats;
+      default                 -> null;
+    };
+    if (fileName == null)
+      return Optional.empty();
 
-  private String toDotNotation(VariableSpec variableSpec) {
-    return variableSpec.getEntityId() + "." + variableSpec.getVariableId();
-  }
 
-  public ResponseFuture getJobTabularOutput(String computeName, ComputeRequestBody requestBody) {
-    return getResponseFuture(computeName, TABULAR_FILE_SEGMENT, requestBody);
-  }
+    var plugin = PluginRegistry.get(computeName);
+    if (plugin == null)
+      return Optional.empty();
 
-  private ResponseFuture getResponseFuture(String computeName, String fileSegment, ComputeRequestBody requestBody) {
-    return ClientUtil.makeAsyncPostRequest(
-        // note: need to use wildcard here since compute service serves all result files out at the same endpoint
-        _baseComputesUrl + computeName + fileSegment, requestBody, MediaType.MEDIA_TYPE_WILDCARD, _authHeader);
-  }
+    var file = EDACompute.getComputeJobFiles(plugin, requestBody)
+      .stream()
+      .filter(it -> it.getName().equals(fileName))
+      .findFirst()
+      .orElse(null);
+    if (file == null)
+      return Optional.empty();
 
-  private <T> T readJsonResponse(ResponseFuture response, Class<T> responseClass) {
-    try (InputStream responseBody = response.getEither().leftOrElseThrowWithRight(f -> new RuntimeException(f.toString()))) {
-      String json = IoUtil.readAllChars(new InputStreamReader(responseBody));
-      return JsonUtil.Jackson.readValue(json, responseClass);
-    }
-    catch (Exception e) {
-      throw new RuntimeException("Unable to make compute request or read/convert response", e);
-    }
+    return Optional.of(file::open);
   }
 }

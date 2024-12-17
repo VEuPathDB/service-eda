@@ -9,6 +9,7 @@ import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -172,6 +173,10 @@ public class VariableDef extends VariableSpecImpl {
 
   public static <T extends VariableSpec> List<String> toDotNotation(List<T> vars) {
     return vars.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
+  }
+
+  public static <T extends VariableSpec> Set<String> toDotNotationSet(List<T> vars) {
+    return vars.stream().map(VariableDef::toDotNotation).collect(Collectors.toSet());
   }
 
   public static boolean isSameVariable(VariableSpec v1, VariableSpec v2) {

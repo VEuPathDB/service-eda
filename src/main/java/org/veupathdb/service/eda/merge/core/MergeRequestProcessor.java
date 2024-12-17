@@ -55,7 +55,7 @@ public class MergeRequestProcessor {
     _resources = resources;
   }
 
-  public Consumer<OutputStream> createMergedResponseSupplier() throws ValidationException {
+  private StreamBundle prepareStreams() throws ValidationException {
     // gather request resources
     RootStreamingEntityNode targetStream = getRootStreamingEntityNode();
 
@@ -75,15 +75,39 @@ public class MergeRequestProcessor {
     @SuppressWarnings("resource") // closed by StreamingDataClient.processIteratorStreams
     AutoCloseableList<CloseableIterator<Map<String, String>>> closeableDataStreams = StreamingDataClient.buildIteratorStreams(requiredStreamSpecs, streamGenerator);
 
-    return out -> {
+    return new StreamBundle(targetStream, requiredStreamSpecs, closeableDataStreams);
+  }
 
+  /**
+   * Creates a JaxRS compatible output stream wrapper that writes the merged
+   * data as a response.
+   */
+  public Consumer<OutputStream> createMergedResponseSupplier() throws ValidationException {
+    var bundle = prepareStreams();
+
+    return out -> {
       // create stream processor
       ConsumerWithException<Map<String, CloseableIterator<Map<String, String>>>> streamProcessor =
-        dataStreams -> writeMergedStream(targetStream, dataStreams, out);
+        dataStreams -> writeMergedStream(bundle.targetStream, dataStreams, out);
 
       // build and process streams
-      StreamingDataClient.processIteratorStreams(requiredStreamSpecs, closeableDataStreams, streamProcessor);
+      StreamingDataClient.processIteratorStreams(bundle.requiredStreamSpecs, bundle.closeableDataStreams, streamProcessor);
     };
+  }
+
+  /**
+   * Creates an InputStream over the merged data.
+   */
+  public InputStream createMergeDataStream() throws ValidationException {
+    var bundle = prepareStreams();
+
+    return new MergeDataInputStream(
+      bundle.targetStream,
+      StreamingDataClient.iteratorStreamsToMap(
+        bundle.requiredStreamSpecs,
+        bundle.closeableDataStreams
+      )
+    );
   }
 
   @NotNull
@@ -91,7 +115,7 @@ public class MergeRequestProcessor {
     String targetEntityId = _resources.getTargetEntityId();
     List<VariableSpec> outputVarSpecs = _resources.getOutputVariableSpecs();
     ReferenceMetadata metadata = _resources.getMetadata();
-    Optional<ComputeInfo> computeInfo = _resources.getComputeInfo();
+    Optional<ComputeInfo> computeInfo = Optional.ofNullable(_resources.getComputeInfo());
 
     // request validated; convert requested entity and vars to defs
     EntityDef targetEntity = metadata.getEntity(targetEntityId).orElseThrow();
@@ -136,4 +160,10 @@ public class MergeRequestProcessor {
       throw new RuntimeException("Unable to write output stream", e);
     }
   }
+
+  private record StreamBundle(
+    RootStreamingEntityNode targetStream,
+    List<StreamSpec> requiredStreamSpecs,
+    AutoCloseableList<CloseableIterator<Map<String, String>>> closeableDataStreams
+  ) {}
 }

@@ -59,7 +59,7 @@ public class EdaComputeClient {
       .equals(JobStatus.COMPLETE);
   }
 
-  public static ComputedVariableMetadata getJobVariableMetadata(String computeName, ComputeRequestBody requestBody) {
+  public static ComputedVariableMetadata getJobVariableMetadata(String computeName, ComputeRequestBase requestBody) {
     var either = getResponseFuture(computeName, META_FILE_SEGMENT, requestBody);
 
     if (either.isEmpty())
@@ -72,11 +72,11 @@ public class EdaComputeClient {
     }
   }
 
-  public static InputStream getJobStatistics(String computeName, ComputeRequestBody requestBody) {
+  public static InputStream getJobStatistics(String computeName, ComputeRequestBase requestBody) {
     return getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody).orElseThrow().get();
   }
 
-  public static <T> T getJobStatistics(String computeName, ComputeRequestBody requestBody, Class<T> expectedStatsClass) {
+  public static <T> T getJobStatistics(String computeName, ComputeRequestBase requestBody, Class<T> expectedStatsClass) {
     var either = getResponseFuture(computeName, STATS_FILE_SEGMENT, requestBody);
 
     if (either.isEmpty())

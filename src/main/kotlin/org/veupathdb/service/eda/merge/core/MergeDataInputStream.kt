@@ -2,11 +2,13 @@ package org.veupathdb.service.eda.merge.core
 
 import org.gusdb.fgputil.iterator.CloseableIterator
 import org.veupathdb.service.eda.merge.core.stream.RootStreamingEntityNode
+import org.veupathdb.service.eda.util.logger
 import java.io.InputStream
+import kotlin.math.min
 
 class MergeDataInputStream(
   private val targetEntityStream: RootStreamingEntityNode,
-  private val dataStreams: Map<String, CloseableIterator<Map<String, String>>>,
+  dataStreams: Map<String, CloseableIterator<Map<String, String>>>,
 ) : InputStream() {
   private var nextLine: ByteArray
   private var lineIndex = 0
@@ -41,14 +43,16 @@ class MergeDataInputStream(
     if (!haveMoreBytes && !tryQueueNextLine())
       return -1
 
-    return if (b.size >= remainingBytes) {
+    return if (b.size > remainingBytes) {
+      fill(b, 0, b.size)
+    } else if (b.size >= remainingBytes) {
       nextLine.copyInto(b, 0, lineIndex)
-        .let { remainingBytes }
-        .also { lineIndex += it }
+      lineIndex = nextLine.size
+      remainingBytes
     } else {
       nextLine.copyInto(b, 0, lineIndex, b.size)
-        .let { b.size }
-        .also { lineIndex += it }
+      lineIndex += b.size
+      b.size
     }
   }
 
@@ -57,26 +61,47 @@ class MergeDataInputStream(
       throw IndexOutOfBoundsException()
     if (len < 0)
       throw IllegalArgumentException()
-    if (len == 0 || off == b.size-1)
-      return 0
-
     if (!haveMoreBytes && !tryQueueNextLine())
       return -1
+    if (len == 0 || off == b.size - 1)
+      return 0
 
-    return if (len >= remainingBytes) {
+    return if (len > remainingBytes) {
+      fill(b, off, len)
+    } else if (len == remainingBytes) {
       nextLine.copyInto(b, off, lineIndex)
-        .let { remainingBytes }
-        .also { lineIndex += it }
+      remainingBytes.also { lineIndex = nextLine.size }
     } else {
       nextLine.copyInto(b, off, lineIndex, len)
-        .let { len }
-        .also { lineIndex += it }
+      lineIndex += len
+      len
     }
   }
 
+  private fun fill(buffer: ByteArray, initialOffset: Int, max: Int): Int {
+    var offset = initialOffset
+    var readTotal = remainingBytes
+
+    nextLine.copyInto(buffer, offset, lineIndex)
+
+    while (readTotal < max) {
+      if (!tryQueueNextLine())
+        return readTotal
+
+      lineIndex = min(nextLine.size, max - readTotal)
+      nextLine.copyInto(buffer, offset, 0, lineIndex)
+      readTotal += lineIndex
+      offset += lineIndex
+    }
+
+    return readTotal
+  }
+
   private fun tryQueueNextLine(): Boolean {
-    if (!targetEntityStream.hasNext())
+    if (!targetEntityStream.hasNext()) {
+      logger().info("tryQueueNextLine -> false")
       return false
+    }
 
     nextLine = targetEntityStream.next().values.joinToString("\t", postfix = "\n").toByteArray()
     lineIndex = 0

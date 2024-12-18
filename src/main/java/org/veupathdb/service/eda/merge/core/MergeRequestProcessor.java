@@ -72,7 +72,6 @@ public class MergeRequestProcessor {
 
     final List<StreamSpec> requiredStreamSpecs  = new ArrayList<>(requiredStreams.values());
 
-    @SuppressWarnings("resource") // closed by StreamingDataClient.processIteratorStreams
     AutoCloseableList<CloseableIterator<Map<String, String>>> closeableDataStreams = StreamingDataClient.buildIteratorStreams(requiredStreamSpecs, streamGenerator);
 
     return new StreamBundle(targetStream, requiredStreamSpecs, closeableDataStreams);

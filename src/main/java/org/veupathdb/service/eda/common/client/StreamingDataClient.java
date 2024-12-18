@@ -14,7 +14,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
@@ -27,7 +26,7 @@ public interface StreamingDataClient {
   ) {
     return new AutoCloseableList<>(requiredStreams.stream()
       .map(streamGenerator)
-      .collect(Collectors.toList()));
+      .toList());
   }
 
   static void buildAndProcessIteratorStreams(

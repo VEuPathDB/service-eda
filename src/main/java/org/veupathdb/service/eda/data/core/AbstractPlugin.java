@@ -169,9 +169,6 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     _requestProcessed = true;
     logRequestTime("Initial request processing complete");
 
-    // create stream generator
-    var typedTuple = _computeInfo.map(info -> new Pair<String, Object>(info.getFirst(), info.getSecond()))
-      .orElse(null);
     CheckedFunction<StreamSpec, InputStream> streamGenerator = spec -> EdaMergingClient.getTabularDataStream(
       _referenceMetadata,
       _subsetFilters,

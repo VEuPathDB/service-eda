@@ -78,8 +78,14 @@ public class BetaDivScatterplotPlugin extends AbstractPlugin<BetaDivScatterplotP
     Map<String, VariableSpec> varMap = new HashMap<>();
     varMap.put("overlay", spec.getOverlayVariable());
     String valueSpec = "raw";
-    String showMissingness = spec.getShowMissingness() != null ? spec.getShowMissingness().getValue() : "noVariables";
-    String deprecatedShowMissingness = showMissingness.equals("FALSE") ? "noVariables" : showMissingness.equals("TRUE") ? "strataVariables" : showMissingness;
+    String showMissingness = spec.getShowMissingness() != null
+      ? spec.getShowMissingness().getValue()
+      : "noVariables";
+    String deprecatedShowMissingness = showMissingness.equals("FALSE")
+      ? "noVariables"
+      : showMissingness.equals("TRUE")
+        ? "strataVariables"
+        : showMissingness;
 
     ComputedVariableMetadata metadata = getComputedVariableMetadata();
     VariableSpec xComputedVarSpec = metadata.getVariables().stream()

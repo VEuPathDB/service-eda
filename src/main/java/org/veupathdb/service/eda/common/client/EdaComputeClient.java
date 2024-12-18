@@ -130,8 +130,8 @@ public class EdaComputeClient {
   ) {
     List<String> headers = VariableDef.toDotNotation(getComputeVars(computeEntity, variables, referenceMetadata));
 
-    try(var is = tabularDataSupplier.get()) {
-      InputStreamReader isReader = new InputStreamReader(is);
+    try {
+      InputStreamReader isReader = new InputStreamReader(tabularDataSupplier.get());
       BufferedReader bufferedReader = new BufferedReader(isReader);
       String headerLine = bufferedReader.readLine();
 

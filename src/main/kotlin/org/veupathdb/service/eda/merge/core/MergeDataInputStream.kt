@@ -2,7 +2,6 @@ package org.veupathdb.service.eda.merge.core
 
 import org.gusdb.fgputil.iterator.CloseableIterator
 import org.veupathdb.service.eda.merge.core.stream.RootStreamingEntityNode
-import org.veupathdb.service.eda.util.logger
 import java.io.InputStream
 import kotlin.math.min
 
@@ -24,7 +23,7 @@ class MergeDataInputStream(
 
     check(distributionMap.isEmpty()) {
       "Not all requested data streams were claimed by the processor tree.  " +
-        "Remaining: " + java.lang.String.join(", ", distributionMap.keys)
+        "Remaining: " + distributionMap.keys.joinToString(", ")
     }
 
     // write the header row
@@ -98,10 +97,8 @@ class MergeDataInputStream(
   }
 
   private fun tryQueueNextLine(): Boolean {
-    if (!targetEntityStream.hasNext()) {
-      logger().info("tryQueueNextLine -> false")
+    if (!targetEntityStream.hasNext())
       return false
-    }
 
     nextLine = targetEntityStream.next().values.joinToString("\t", postfix = "\n").toByteArray()
     lineIndex = 0

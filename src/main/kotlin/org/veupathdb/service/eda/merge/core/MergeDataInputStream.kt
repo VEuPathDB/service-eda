@@ -13,7 +13,7 @@ class MergeDataInputStream(
   private var lineIndex = 0
 
   private inline val remainingBytes get() = nextLine.size - lineIndex
-  private inline val haveMoreBytes get() = remainingBytes > 0
+  private inline val moreBytesInBuffer get() = remainingBytes > 0
 
   init {
     // distribute the streams to their processors and make sure they all get claimed
@@ -32,24 +32,24 @@ class MergeDataInputStream(
 
   override fun read(): Int {
     return when {
-      haveMoreBytes -> nextLine[lineIndex++].toInt()
+      moreBytesInBuffer  -> nextLine[lineIndex++].toInt()
       tryQueueNextLine() -> read()
       else -> -1
     }
   }
 
   override fun read(b: ByteArray): Int {
-    if (!haveMoreBytes && !tryQueueNextLine())
+    if (atEOF())
       return -1
 
     return if (b.size > remainingBytes) {
       fill(b, 0, b.size)
-    } else if (b.size >= remainingBytes) {
+    } else if (b.size == remainingBytes) {
       nextLine.copyInto(b, 0, lineIndex)
       lineIndex = nextLine.size
       remainingBytes
     } else {
-      nextLine.copyInto(b, 0, lineIndex, b.size)
+      nextLine.copyInto(b, 0, lineIndex, lineIndex + b.size)
       lineIndex += b.size
       b.size
     }
@@ -60,7 +60,7 @@ class MergeDataInputStream(
       throw IndexOutOfBoundsException()
     if (len < 0)
       throw IllegalArgumentException()
-    if (!haveMoreBytes && !tryQueueNextLine())
+    if (atEOF())
       return -1
     if (len == 0 || off == b.size - 1)
       return 0
@@ -71,17 +71,17 @@ class MergeDataInputStream(
       nextLine.copyInto(b, off, lineIndex)
       remainingBytes.also { lineIndex = nextLine.size }
     } else {
-      nextLine.copyInto(b, off, lineIndex, len)
+      nextLine.copyInto(b, off, lineIndex, lineIndex + len)
       lineIndex += len
       len
     }
   }
 
   private fun fill(buffer: ByteArray, initialOffset: Int, max: Int): Int {
-    var offset = initialOffset
-    var readTotal = remainingBytes
+    nextLine.copyInto(buffer, initialOffset, lineIndex)
 
-    nextLine.copyInto(buffer, offset, lineIndex)
+    var readTotal = remainingBytes
+    var offset = initialOffset + remainingBytes
 
     while (readTotal < max) {
       if (!tryQueueNextLine())
@@ -95,6 +95,9 @@ class MergeDataInputStream(
 
     return readTotal
   }
+
+  private fun atEOF(): Boolean =
+    !(moreBytesInBuffer || tryQueueNextLine())
 
   private fun tryQueueNextLine(): Boolean {
     if (!targetEntityStream.hasNext())

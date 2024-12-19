@@ -148,16 +148,13 @@ class PluginExecutor : JobExecutor {
       // Fetch the tabular data and write it out to the local workspace
       plugin.streamSpecs.forEach { spec ->
         Log.debug("retrieving tabular study data: {}", spec.streamName)
-        ctx.workspace.write(
-          spec.streamName,
-          EdaMergingClient.getTabularDataStream(
-            context.referenceMetadata,
-            request.filters,
-            request.derivedVariables,
-            null,
-            spec
-          )
-        )
+        EdaMergingClient.getTabularDataStream(
+          context.referenceMetadata,
+          request.filters,
+          request.derivedVariables,
+          null,
+          spec
+        ).use { ctx.workspace.write(spec.streamName, it) }
       }
     } catch (e: Throwable) {
       Log.error("Failed to fetch tabular data.", e)

@@ -432,6 +432,32 @@ securitySchemes:
             body:
               application/json: lib.DifferentialExpressionStatsResponse
 
+  /dimensionalityreduction:
+    post:
+      queryParameters:
+        autostart:
+          type: boolean
+          required: false
+          default: true
+      body:
+        application/json: lib.DimensionalityReductionPluginRequest
+      responses:
+        200:
+          body:
+            application/json: lib.JobResponse
+    /{file}:
+      uriParameters:
+        file:
+          type: string
+          description: MUST be one of "meta", "tabular", "statistics".
+      post:
+        body:
+          application/json: lib.DimensionalityReductionPluginRequest
+        responses:
+          200:
+            body:
+              text/plain: any
+
 
   /correlation:
     post:

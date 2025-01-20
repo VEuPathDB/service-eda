@@ -1209,6 +1209,15 @@ types:
     properties:
       effectSizeLabel: string
       statistics: DifferentialExpressionPoint[]
+  DimensionalityReductionPluginRequest:
+    type: ComputeRequestBase
+    properties:
+      config: DimensionalityReductionComputeConfig
+  DimensionalityReductionComputeConfig:
+    type: object
+    properties:
+      collectionVariable: CollectionSpec
+      nPCs: number
   ExamplePluginRequest:
     type: ComputeRequestBase
     properties:
@@ -1420,6 +1429,11 @@ types:
     properties:
       computeConfig: DifferentialExpressionComputeConfig
       config: EmptyDataPluginSpec
+  DimensionalityReductionScatterplotPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      computeConfig: DimensionalityReductionComputeConfig
+      # config: ScatterplotWith1ComputeSpec Ann change
   ContinuousVariableMetadataPostRequest:
     type: DataPluginRequestBase
     additionalProperties: false

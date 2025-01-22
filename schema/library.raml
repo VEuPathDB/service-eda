@@ -1433,7 +1433,24 @@ types:
     type: DataPluginRequestBase
     properties:
       computeConfig: DimensionalityReductionComputeConfig
-      # config: ScatterplotWith1ComputeSpec Ann change
+      config: DimensionalityReductionScatterplotSpec
+  DimensionalityReductionScatterplotSpec:
+    type: object
+    additionalProperties: false
+    properties:
+      outputEntityId: string
+      showMissingness:
+        type: ShowMissingnessNoAxes
+        required: false
+      xAxisSelection:
+        type: string
+        required: false
+      yAxisSelection:
+        type: string
+        required: false
+      overlayVariable:
+        type: VariableSpec
+        required: false
   ContinuousVariableMetadataPostRequest:
     type: DataPluginRequestBase
     additionalProperties: false

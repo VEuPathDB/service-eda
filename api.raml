@@ -1295,6 +1295,21 @@ securitySchemes:
               application/json:
                 type: lib.DifferentialExpressionStatsResponse
 
+  /dimensionalityreduction/visualizations:
+    displayName: Visualizations for understanding patterns in the data
+
+    /scatterplot:
+      post:
+        description: Returns data required to create a scatterplot from a dimensionality reduction analysis.
+        body:
+          application/json:
+            type: lib.DimensionalityReductionScatterplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.ScatterplotPostResponse
+
   /correlation/visualizations:
     displayName: Visualizations for discovering correlations between various assay data
 

@@ -9,7 +9,7 @@ import org.veupathdb.lib.s3.s34k.S3Config
 import org.veupathdb.lib.s3.s34k.fields.BucketName
 import org.veupathdb.lib.s3.s34k.objects.S3Object
 import org.veupathdb.service.eda.Main
-import org.veupathdb.service.eda.generated.resources.AdminRPC
+import org.veupathdb.service.eda.generated.resources.Admin
 
 private const val RunningFlag: UByte = 1u
 private const val CompletionFlag: UByte = 2u
@@ -22,7 +22,7 @@ private const val FlagExpired = ".expired"
 
 @Authenticated(adminOverride = Authenticated.AdminOverrideOption.ALLOW_ALWAYS)
 @AdminRequired
-class AdminController : AdminRPC {
+class AdminController : Admin {
   private val s3 = S3Api.newClient(S3Config(
     Main.config.s3Host,
     Main.config.s3Port.toUShort(),
@@ -33,7 +33,7 @@ class AdminController : AdminRPC {
     .buckets[BucketName(Main.config.s3Bucket)]!!
     .objects
 
-  override fun getAdminComputeListPossibleDeadWorkspaces(): AdminRPC.GetAdminComputeListPossibleDeadWorkspacesResponse {
+  override fun getAdminComputeListPossibleDeadWorkspaces(): Admin.GetAdminComputeListPossibleDeadWorkspacesResponse {
     val workspaces = s3
       .listAll()
       .stream()
@@ -42,7 +42,7 @@ class AdminController : AdminRPC {
       .filter { it.hasRunningFlag && !(it.hasCompletionFlag || it.hasExpiredFlag) }
       .map { it.jobID }
 
-    return AdminRPC.GetAdminComputeListPossibleDeadWorkspacesResponse.respond200WithTextPlain(StreamingOutput {
+    return Admin.GetAdminComputeListPossibleDeadWorkspacesResponse.respond200WithTextPlain(StreamingOutput {
       val out = it.bufferedWriter()
       workspaces.forEach {
         out.write(it)
@@ -52,7 +52,7 @@ class AdminController : AdminRPC {
     })
   }
 
-  override fun deleteAdminComputeWorkspacesByJobId(jobId: String): AdminRPC.DeleteAdminComputeWorkspacesByJobIdResponse {
+  override fun deleteAdminComputeWorkspacesByJobId(jobId: String): Admin.DeleteAdminComputeWorkspacesByJobIdResponse {
     val log = LogProvider.logger(javaClass)
 
     log.info("attempting to delete workspace contents for job {}", jobId)
@@ -66,7 +66,7 @@ class AdminController : AdminRPC {
       it.delete()
     }
 
-    return AdminRPC.DeleteAdminComputeWorkspacesByJobIdResponse.respond204()
+    return Admin.DeleteAdminComputeWorkspacesByJobIdResponse.respond204()
   }
 
   private fun Iterator<S3Object>.asWorkspaces() = sequence {

@@ -175,7 +175,12 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
       _derivedVariableSpecs,
       _computeInfo.map(info -> new ComputeInfo(
         info.getFirst(),
-        new EdaComputeClient.ComputeRequestBody(null, null, null, info.getSecond())
+        new EdaComputeClient.ComputeRequestBody(
+          request.getStudyId(),
+          request.getFilters(),
+          request.getDerivedVariables(),
+          info.getSecond()
+        )
       )).orElse(null),
       spec
     );

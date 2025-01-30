@@ -94,21 +94,36 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
         ? "strataVariables"
         : showMissingness;
 
-    ComputedVariableMetadata metadata = getComputedVariableMetadata();
-    // VariableSpec xComputedVarSpec = metadata.getVariables().stream()
-    //     .filter(var -> var.getPlotReference().getValue().equals("xAxis"))
-    //     .findFirst().orElseThrow().getVariableSpec();
-    // VariableSpec yComputedVarSpec = metadata.getVariables().stream()
-    //     .filter(var -> var.getPlotReference().getValue().equals("yAxis"))
-    //     .findFirst().orElseThrow().getVariableSpec();
+    ComputedVariableMetadata computedMetadata = getComputedVariableMetadata();
+    System.out.println(spec.getXAxisSelection());
+    VariableSpec xComputedVarSpec = computedMetadata.getVariables().stream()
+        .filter(var -> var.getVariableSpec().getVariableId().equals(spec.getXAxisSelection()))
+        .findFirst().orElseThrow().getVariableSpec();
+    VariableSpec yComputedVarSpec = computedMetadata.getVariables().stream()
+    .filter(var -> var.getVariableSpec().getVariableId().equals(spec.getYAxisSelection()))
+    .findFirst().orElseThrow().getVariableSpec();
+
 
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval(getUtil().getVoidEvalFreadCommand(DEFAULT_SINGLE_STREAM_NAME,
+          xComputedVarSpec,
+          yComputedVarSpec,
           spec.getOverlayVariable()));
 
+
+      // Creates 'variables' R variable
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
-      connection.voidEval(getVoidEvalComputedVariableMetadataList(metadata));
+      // Creates 'computedVariables' R variable
+      connection.voidEval(getVoidEvalComputedVariableMetadataList(computedMetadata));
+      
       connection.voidEval("variables <- veupathUtils::merge(variables, computedVariables)");
+
+      // Set axis variables
+      connection.voidEval("xIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getXAxisSelection() + "', variables)");
+      connection.voidEval("variables[[xIndex]]@plotReference <- veupathUtils::PlotReference(value = 'xAxis')");
+      connection.voidEval("yIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getYAxisSelection() + "', variables)");
+      connection.voidEval("variables[[yIndex]]@plotReference <- veupathUtils::PlotReference(value = 'yAxis')");
+
 
       String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
         valueSpec +

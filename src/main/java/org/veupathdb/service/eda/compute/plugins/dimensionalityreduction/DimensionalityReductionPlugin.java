@@ -47,7 +47,7 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
-    String nPCs = computeConfig.getNPCs() == null ? "5" : computeConfig.getNPCs().toString();
+    String nPCs = computeConfig.getNPCs() == null ? "2" : computeConfig.getNPCs().toString();
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
     List<VariableDef> idColumns = new ArrayList<>();

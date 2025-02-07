@@ -123,6 +123,7 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
     String deprecatedShowMissingness = showMissingness.equals("FALSE") ? "noVariables" : showMissingness.equals("TRUE") ? "strataVariables" : showMissingness;
     String yVarType = util.getVariableType(spec.getYAxisVariable());
     String correlationMethod = spec.getCorrelationMethod() != null ? spec.getCorrelationMethod().getValue() : "none";
+    String recordIdColumnName = util.toColNameOrEmpty(util.getEntityIdVarSpec(spec.getOutputEntityId()));
 
     if (yVarType.equals("DATE") && !valueSpec.equals("raw")) {
       LOG.error("Cannot calculate trend lines for y-axis date variables. The `valueSpec` property must be set to `raw`.");
@@ -139,6 +140,7 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
         nonStrataVarColNames,
         (name, conn) ->
         conn.voidEval(util.getVoidEvalFreadCommand(name,
+          util.getEntityIdVarSpec(spec.getOutputEntityId()),
           spec.getXAxisVariable(),
           spec.getYAxisVariable(),
           spec.getOverlayVariable(),
@@ -148,10 +150,22 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
 
     useRConnectionWithProcessedRemoteFiles(Resources.RSERVE_URL, filesProcessor, connection -> {
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
+      connection.voidEval("print(head(" + DEFAULT_SINGLE_STREAM_NAME + "))");
+      connection.voidEval("print("+DEFAULT_SINGLE_STREAM_NAME+ ")");
+      connection.voidEval("print('"+recordIdColumnName+"')");
       String cmd =
-          "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
-              valueSpec + "', NULL, correlationMethod = '" + correlationMethod + "', TRUE, TRUE, '" +
-              deprecatedShowMissingness + "')";
+          "plot.data::scattergl(" + 
+            DEFAULT_SINGLE_STREAM_NAME +
+            ", variables" +
+            ", value= '" + valueSpec +
+            "', overlayValues = NULL" + 
+            ", correlationMethod = '" + correlationMethod + 
+            "', sampleSizes=TRUE, completeCases=TRUE" +
+            ", evilMode='" + deprecatedShowMissingness + 
+            "', idColumn = '" + recordIdColumnName + 
+            "', returnPointIds = TRUE)";
+      System.out.println(cmd);
+      // connection.voidEval("print('"+ cmd + "')");
       streamResult(connection, cmd, out);
     });
   }

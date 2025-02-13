@@ -124,6 +124,7 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
     String yVarType = util.getVariableType(spec.getYAxisVariable());
     String correlationMethod = spec.getCorrelationMethod() != null ? spec.getCorrelationMethod().getValue() : "none";
     String recordIdColumnName = util.toColNameOrEmpty(util.getEntityIdVarSpec(spec.getOutputEntityId()));
+    String returnPointIds = spec.getReturnPointIds() != null ? String.valueOf(spec.getReturnPointIds()).toUpperCase() : "FALSE";
 
     if (yVarType.equals("DATE") && !valueSpec.equals("raw")) {
       LOG.error("Cannot calculate trend lines for y-axis date variables. The `valueSpec` property must be set to `raw`.");
@@ -150,9 +151,6 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
 
     useRConnectionWithProcessedRemoteFiles(Resources.RSERVE_URL, filesProcessor, connection -> {
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
-      connection.voidEval("print(head(" + DEFAULT_SINGLE_STREAM_NAME + "))");
-      connection.voidEval("print("+DEFAULT_SINGLE_STREAM_NAME+ ")");
-      connection.voidEval("print('"+recordIdColumnName+"')");
       String cmd =
           "plot.data::scattergl(" + 
             DEFAULT_SINGLE_STREAM_NAME +
@@ -163,9 +161,8 @@ public class ScatterplotPlugin extends AbstractEmptyComputePlugin<ScatterplotPos
             "', sampleSizes=TRUE, completeCases=TRUE" +
             ", evilMode='" + deprecatedShowMissingness + 
             "', idColumn = '" + recordIdColumnName + 
-            "', returnPointIds = TRUE)";
-      System.out.println(cmd);
-      // connection.voidEval("print('"+ cmd + "')");
+            "', returnPointIds = " + returnPointIds + ")";
+
       streamResult(connection, cmd, out);
     });
   }

@@ -1956,6 +1956,9 @@ types:
         required: false
         format: int64
       correlationMethod: ScatterCorrelationMethod
+      returnPointIds:
+        type: boolean
+        required: false
   Scatterplot:
     type: object
     additionalProperties: false
@@ -2235,6 +2238,9 @@ types:
         required: false
       r2:
         type: number
+        required: false
+      pointIds:
+        type: string[]
         required: false
   DensityplotData:
     type: object

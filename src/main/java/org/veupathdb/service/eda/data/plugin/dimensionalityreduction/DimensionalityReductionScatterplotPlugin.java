@@ -65,12 +65,6 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
 
   @Override
   protected List<StreamSpec> getRequestedStreams(DimensionalityReductionScatterplotSpec pluginSpec) {
-    System.out.println("getRequestedStreams");
-    System.out.println(List.of(
-      new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, pluginSpec.getOutputEntityId())
-        .addVar(pluginSpec.getOverlayVariable())
-        .setIncludeComputedVars(true)
-    ));
     return List.of(
       new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, pluginSpec.getOutputEntityId())
         .addVar(pluginSpec.getOverlayVariable())
@@ -80,7 +74,7 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
 
   @Override
   protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
-    System.out.println("writeResults");
+
     DimensionalityReductionScatterplotSpec spec = getPluginSpec();
     Map<String, VariableSpec> varMap = new HashMap<>();
     varMap.put("overlay", spec.getOverlayVariable());
@@ -95,7 +89,7 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
         : showMissingness;
 
     ComputedVariableMetadata computedMetadata = getComputedVariableMetadata();
-    System.out.println(spec.getXAxisSelection());
+
     VariableSpec xComputedVarSpec = computedMetadata.getVariables().stream()
         .filter(var -> var.getVariableSpec().getVariableId().equals(spec.getXAxisSelection()))
         .findFirst().orElseThrow().getVariableSpec();

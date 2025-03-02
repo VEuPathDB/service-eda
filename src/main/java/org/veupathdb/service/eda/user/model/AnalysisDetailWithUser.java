@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.gusdb.fgputil.functional.Functions;
+import org.veupathdb.lib.container.jaxrs.model.UserInfo;
 import org.veupathdb.service.eda.generated.model.AnalysisBase;
 import org.veupathdb.service.eda.generated.model.AnalysisDescriptor;
 import org.veupathdb.service.eda.generated.model.AnalysisDetailImpl;
@@ -15,7 +16,6 @@ import org.veupathdb.service.eda.generated.model.AnalysisProvenanceImpl;
 import org.veupathdb.service.eda.generated.model.OnImportProvenanceProps;
 import org.veupathdb.service.eda.generated.model.OnImportProvenancePropsImpl;
 import org.veupathdb.service.eda.user.Utils;
-import org.veupathdb.service.eda.user.model.AccountDbData.AccountDataPair;
 
 import static org.veupathdb.service.eda.user.Utils.checkMaxSize;
 import static org.veupathdb.service.eda.user.Utils.checkNonEmpty;
@@ -40,7 +40,7 @@ public class AnalysisDetailWithUser extends AnalysisDetailImpl {
     setIsPublic(request.getIsPublic());
   }
 
-  public AnalysisDetailWithUser(String newAnalysisId, long ownerId, AnalysisDetailWithUser source, AccountDataPair provenanceOwner) {
+  public AnalysisDetailWithUser(String newAnalysisId, long ownerId, AnalysisDetailWithUser source, UserInfo provenanceOwner) {
     setInitializationFields(newAnalysisId, ownerId);
     setBaseFields(source);
     setDescriptor(source.getDescriptor());
@@ -49,13 +49,13 @@ public class AnalysisDetailWithUser extends AnalysisDetailImpl {
     setProvenance(createProvenance(source, provenanceOwner));
   }
 
-  private static AnalysisProvenance createProvenance(AnalysisDetailWithUser source, AccountDataPair provenanceOwner) {
+  private static AnalysisProvenance createProvenance(AnalysisDetailWithUser source, UserInfo provenanceOwner) {
     AnalysisProvenance provenance = new AnalysisProvenanceImpl();
     OnImportProvenanceProps importProps = new OnImportProvenancePropsImpl();
     importProps.setAnalysisId(source.getAnalysisId());
     importProps.setAnalysisName(source.getDisplayName());
     importProps.setOwnerId(source.getUserId());
-    importProps.setOwnerName(provenanceOwner.getName());
+    importProps.setOwnerName(provenanceOwner.getDisplayName());
     importProps.setOwnerOrganization(provenanceOwner.getOrganization());
     importProps.setCreationTime(source.getCreationTime());
     importProps.setModificationTime(source.getModificationTime());

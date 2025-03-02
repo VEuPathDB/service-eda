@@ -69,8 +69,8 @@ repositories {
 //
 
 // versions
-val coreLib = "8.0.0"            // Container core lib version
-val fgputil = "2.14.2-jakarta"   // FgpUtil version
+val coreLib = "9.0.0"            // Container core lib version
+val fgputil = "2.15.2-jakarta"   // FgpUtil version
 
 // use local EDA compute compiled schema if project exists, else use released version;
 // this mirrors the way we use local EdaCommon code if available
@@ -93,7 +93,6 @@ dependencies {
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")
-  implementation("org.gusdb:fgputil-accountdb:${fgputil}")
   implementation("org.gusdb:fgputil-client:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
   implementation("org.veupathdb.lib:compute-platform:1.8.5")

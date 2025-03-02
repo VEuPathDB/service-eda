@@ -4,6 +4,7 @@ import jakarta.ws.rs.InternalServerErrorException;
 
 import org.glassfish.jersey.server.ContainerRequest;
 import org.veupathdb.lib.container.jaxrs.model.User;
+import org.veupathdb.lib.container.jaxrs.model.UserInfo;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 
 public class Util
@@ -16,12 +17,12 @@ public class Util
     return instance;
   }
 
-  public User mustGetUser(final ContainerRequest req) {
+  public UserInfo mustGetUser(final ContainerRequest req) {
     return UserProvider.lookupUser(req)
       .orElseThrow(InternalServerErrorException::new);
   }
 
-  public static User requireUser(final ContainerRequest req) {
+  public static UserInfo requireUser(final ContainerRequest req) {
     return getInstance().mustGetUser(req);
   }
 }

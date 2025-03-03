@@ -23,12 +23,16 @@ public class PublicDataService implements PublicAnalysesProjectId {
   }
 
   public List<AnalysisSummaryWithUser> populateOwnerData(List<AnalysisSummaryWithUser> analyses) {
-    // collect the set of users for whom we need data
+    // collect the set of users for whom we need data (dedup)
     Set<Long> userIdsForLookup = analyses.stream()
         .map(AnalysisSummaryWithUser::getUserId)
         .map(Number::longValue)
         .collect(Collectors.toSet());
+
+    // look up user information
     Map<Long, UserInfo> userData = UserProvider.getUsersById(userIdsForLookup);
+
+    // distribute user information among the public analyses
     return analyses.stream()
         .peek(analysis -> {
           UserInfo user = userData.get(analysis.getUserId().longValue());

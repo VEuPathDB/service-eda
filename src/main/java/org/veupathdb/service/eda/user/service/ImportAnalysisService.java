@@ -3,7 +3,8 @@ package org.veupathdb.service.eda.user.service;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.ContainerRequest;
-import org.veupathdb.lib.container.jaxrs.model.User;
+import org.veupathdb.lib.container.jaxrs.model.UserInfo;
+import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.service.eda.generated.model.AnalysisListPostResponse;
 import org.veupathdb.service.eda.generated.model.SingleAnalysisPublicInfo;
@@ -83,9 +84,9 @@ public class ImportAnalysisService implements ImportAnalysisProjectId {
     Utils.requireSubsettingPermission(request, oldAnalysis.getStudyId());
 
     // make a copy of the analysis, assign a new owner, check display name (must be unique) and insert
-    User newOwner = Utils.getActiveUser(request);
+    UserInfo newOwner = Utils.getActiveUser(request);
     dataFactory.addUserIfAbsent(newOwner);
-    AccountDbData.AccountDataPair provenanceOwner = new AccountDbData().getUserDataById(userId);
+    UserInfo provenanceOwner = UserProvider.getUsersById(List.of(userId)).get(userId);
     AnalysisDetailWithUser newAnalysis = new AnalysisDetailWithUser(
       IdGenerator.getNextAnalysisId(dataFactory), newOwner.getUserId(), oldAnalysis, provenanceOwner);
 
@@ -106,7 +107,7 @@ public class ImportAnalysisService implements ImportAnalysisProjectId {
 
   private static List<String> copyDerivedVariables(
     UserDataFactory dataFactory,
-    User newOwner,
+    UserInfo newOwner,
     List<String> originalDerivedVarsIds
   ) {
     // Look up the original derived variables from the database.

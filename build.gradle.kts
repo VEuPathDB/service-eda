@@ -69,8 +69,8 @@ repositories {
 //
 
 // versions
-val coreLib = "8.0.0"            // Container core lib version
-val fgputil = "2.14.2-jakarta"   // FgpUtil version
+val coreLib = "9.1.0"            // Container core lib version
+val fgputil = "2.16.0-jakarta"   // FgpUtil version
 
 // use local EDA compute compiled schema if project exists, else use released version;
 // this mirrors the way we use local EdaCommon code if available
@@ -93,24 +93,23 @@ dependencies {
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")
-  implementation("org.gusdb:fgputil-accountdb:${fgputil}")
   implementation("org.gusdb:fgputil-client:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
   implementation("org.veupathdb.lib:compute-platform:1.8.5")
   implementation("org.veupathdb.lib.s3:s34k-minio:0.7.2+s34k-0.11.0")
 
   // Jersey
-  implementation("org.glassfish.jersey.core:jersey-server:3.1.1")
+  implementation("org.glassfish.jersey.core:jersey-server:3.1.10")
 
   // Jackson
   implementation("org.veupathdb.lib:jackson-singleton:3.2.1")
-  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.2")
+  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
 
   // Log4J
-  implementation("org.apache.logging.log4j:log4j-api:2.24.0")
-  implementation("org.apache.logging.log4j:log4j-core:2.24.0")
-  runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.24.0")
-  implementation("org.slf4j:slf4j-api:1.7.36")
+  implementation("org.apache.logging.log4j:log4j-api:2.24.3")
+  implementation("org.apache.logging.log4j:log4j-core:2.24.3")
+  runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.24.3")
+  implementation("org.slf4j:slf4j-api:2.0.16")
 
   // Metrics
   implementation("io.prometheus:simpleclient:0.16.0")
@@ -122,11 +121,11 @@ dependencies {
   implementation("io.vulpine.lib:sql-import:0.2.1")
   implementation("io.vulpine.lib:lib-query-util:2.1.0")
   implementation("javax.mail", "mail", "1.5.0-b01")
-  implementation("org.antlr", "ST4", "4.3.1") // Access service email template parsing
+  implementation("org.antlr", "ST4", "4.3.4") // Access service email template parsing
 
   // Pico CLI
-  implementation("info.picocli:picocli:4.7.3")
-  annotationProcessor("info.picocli:picocli-codegen:4.7.3")
+  implementation("info.picocli:picocli:4.7.6")
+  annotationProcessor("info.picocli:picocli-codegen:4.7.6")
 
   // Job IDs
   implementation("org.veupathdb.lib:hash-id:1.1.0")
@@ -135,11 +134,11 @@ dependencies {
   implementation("org.hsqldb:hsqldb:2.7.1")
 
   // Unit Testing
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.1")
-  testImplementation("org.mockito:mockito-core:5.14.1")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.0")
+  testImplementation("org.mockito:mockito-core:5.15.2")
   testImplementation("org.veupathdb.lib.test", "test-utils", "1.1.2")
   testImplementation("org.awaitility:awaitility:4.2.2")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.1")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.0")
 }
 
 val test by tasks.getting(Test::class) {

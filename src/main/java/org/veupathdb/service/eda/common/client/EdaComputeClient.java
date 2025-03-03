@@ -119,8 +119,8 @@ public class EdaComputeClient {
     return computedVars;
   }
 
-  /**
-   * @deprecated TODO: move me to a more sensible location.
+  /*
+   * TODO: move me to a more sensible location.
    */
   public static CloseableIterator<Map<String, String>> getJobTabularIteratorOutput(
     EntityDef computeEntity,

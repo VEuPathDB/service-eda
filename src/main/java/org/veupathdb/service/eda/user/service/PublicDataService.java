@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.user.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.veupathdb.lib.container.jaxrs.model.UserInfo;
@@ -22,10 +23,11 @@ public class PublicDataService implements PublicAnalysesProjectId {
   }
 
   public List<AnalysisSummaryWithUser> populateOwnerData(List<AnalysisSummaryWithUser> analyses) {
-    List<Long> userIdsForLookup = analyses.stream()
+    // collect the set of users for whom we need data
+    Set<Long> userIdsForLookup = analyses.stream()
         .map(AnalysisSummaryWithUser::getUserId)
         .map(Number::longValue)
-        .collect(Collectors.toList());
+        .collect(Collectors.toSet());
     Map<Long, UserInfo> userData = UserProvider.getUsersById(userIdsForLookup);
     return analyses.stream()
         .peek(analysis -> {

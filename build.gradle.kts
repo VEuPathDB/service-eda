@@ -1,7 +1,7 @@
 plugins {
   kotlin("jvm") version "2.0.20" // needed for local compute import
   java
-  id("org.veupathdb.lib.gradle.container.container-utils") version "5.0.5"
+  id("org.veupathdb.lib.gradle.container.container-utils") version "5.0.4"
   id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 

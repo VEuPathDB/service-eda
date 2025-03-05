@@ -104,6 +104,7 @@ dependencies {
   // Jackson
   implementation("org.veupathdb.lib:jackson-singleton:3.2.1")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.3")
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")
 
   // Log4J
   implementation("org.apache.logging.log4j:log4j-api:2.24.3")

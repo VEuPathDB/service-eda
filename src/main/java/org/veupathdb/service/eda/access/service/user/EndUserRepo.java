@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import io.vulpine.lib.query.util.basic.*;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.access.model.*;
 import org.veupathdb.service.eda.access.repo.DB;
@@ -36,8 +36,6 @@ public class EndUserRepo
   public interface Insert
   {
     static void newEndUser(final EndUserRow row, final long creatorID) throws Exception {
-      log.trace("EndUserRepo$Insert#newEndUser(EndUserRow)");
-
       long endUserId = QueryUtil.performInsertWithIdGeneration(
         SQL.Insert.EndUser,
         QueryUtil::acctDbConnection,
@@ -46,9 +44,9 @@ public class EndUserRepo
           .setLong(row.getUserId())
           .setString(row.getDatasetId())
           .setShort(RestrictionLevelCache.getInstance()
-              .get(row.getRestrictionLevel()).orElseThrow())
+            .get(row.getRestrictionLevel()).orElseThrow())
           .setShort(ApprovalStatusCache.getInstance()
-              .get(row.getApprovalStatus()).orElseThrow())
+            .get(row.getApprovalStatus()).orElseThrow())
           .setObject(row.getStartDate(), Types.DATE)
           .setLong(row.getDuration())
           .setString(row.getPurpose())
@@ -64,7 +62,7 @@ public class EndUserRepo
 
       row.setEndUserID(endUserId);
 
-        // Insert history entry
+      // Insert history entry
       try (Connection con = QueryUtil.acctDbConnection()) {
         EndUserUtil.insertHistoryEvent(con, HistoryAction.CREATE, row, creatorID);
       }
@@ -73,6 +71,7 @@ public class EndUserRepo
 
   public interface Select
   {
+    @SuppressWarnings("resource")
     static List<EndUserRow> find(final SearchQuery query) throws Exception {
       return new BasicPreparedListReadQuery<>(
         SQL.Select.EndUsers.ByQuery,
@@ -101,6 +100,7 @@ public class EndUserRepo
       ).execute().getValue();
     }
 
+    @SuppressWarnings("resource")
     static int count(final SearchQuery query) throws Exception {
       return new BasicPreparedReadQuery<>(
         SQL.Select.EndUsers.CountByQuery,
@@ -121,41 +121,14 @@ public class EndUserRepo
       ).execute().getValue();
     }
 
-    static int countByDataset(final String datasetId) throws Exception {
-      log.trace("EndUserRepo$Select#countByDataset(String)");
-
-      return new BasicPreparedReadQuery<>(
-        SQL.Select.EndUsers.CountByDataset,
-        QueryUtil.getInstance()::getAcctDbConnection,
-        SqlUtil.reqParser(SqlUtil::parseSingleInt),
-        SqlUtil.prepareSingleString(datasetId)
-      ).execute().getValue();
-    }
-
-    static int countByDatasetFiltered(final String datasetId, final ApprovalStatus status)
-    throws Exception {
-      log.trace("EndUserRepo$Select#countByDatasetFiltered(String, ApprovalStatus)");
-
-      return new BasicPreparedReadQuery<>(
-        SQL.Select.EndUsers.CountByDatasetFiltered,
-        QueryUtil.getInstance()::getAcctDbConnection,
-        SqlUtil.reqParser(SqlUtil::parseSingleInt),
-        new PsBuilder().setString(datasetId).setShort(ApprovalStatusCache.getInstance()
-          .get(status)
-          .orElseThrow())::build
-      ).execute().getValue();
-    }
-
     /**
      * Returns a list of {@link EndUserRow} instances representing the results
      * of a <code>SELECT</code> query searching for at most <code>limit</code>
      * end user records (starting from offset <code>offset+1</code>) matching
      * the given <code>datasetId</code>.
      */
-    static List<EndUserRow> list(final String datasetId, final int limit, final int offset)
-    throws Exception {
-      log.trace("EndUserRepo$Select#list(String, int, int)");
-
+    @SuppressWarnings("resource")
+    static List<EndUserRow> list(final String datasetId, final int limit, final int offset) throws Exception {
       return new BasicPreparedListReadQuery<>(
         SQL.Select.EndUsers.ByDataset,
         QueryUtil.getInstance()::getAcctDbConnection,
@@ -164,37 +137,8 @@ public class EndUserRepo
       ).execute().getValue();
     }
 
-    /**
-     * Returns a list of {@link EndUserRow} instances representing the results
-     * of a <code>SELECT</code> query searching for at most <code>limit</code>
-     * end user records (starting from offset <code>offset+1</code>) matching
-     * the given <code>datasetId</code> and <code>status</code>.
-     */
-    static List<EndUserRow> filteredList(
-      final String datasetId,
-      final int limit,
-      final int offset,
-      final ApprovalStatus status
-    ) throws Exception {
-      log.trace("EndUserRepo$Select#filteredList(String, int, int, ApprovalStatus)");
-
-      return new BasicPreparedListReadQuery<>(
-        SQL.Select.EndUsers.ByDatasetFiltered,
-        QueryUtil.getInstance()::getAcctDbConnection,
-        EndUserUtil::parseEndUserRow,
-        new PsBuilder()
-          .setString(datasetId)
-          .setShort(ApprovalStatusCache.getInstance().get(status).orElseThrow())
-          .setInt(offset)
-          .setInt(limit)
-          ::build
-      ).execute().getValue();
-    }
-
-    static Optional<EndUserRow> endUser(final long userId, final String datasetId)
-    throws Exception {
-      log.trace("EndUserRepo$Select#endUser(long, String)");
-
+    @SuppressWarnings("resource")
+    static Optional<EndUserRow> endUser(final long userId, final String datasetId) throws Exception {
       return new BasicPreparedReadQuery<>(
         SQL.Select.EndUsers.ById,
         QueryUtil.getInstance()::getAcctDbConnection,
@@ -211,6 +155,7 @@ public class EndUserRepo
      *
      * @return a map of datasets to approval status for the given user
      */
+    @SuppressWarnings("resource")
     static Map<String,ApprovalStatus> datasets(final long userId) throws Exception {
       return new BasicPreparedMapReadQuery<>(
         SQL.Select.EndUsers.Datasets,
@@ -225,8 +170,7 @@ public class EndUserRepo
   public interface Update
   {
     static void self(final EndUserRow row, final long updaterID) throws Exception {
-      log.trace("EndUserRepo$Update#self(EndUserRow)");
-      log.info("Approval status: " + ApprovalStatusCache.getInstance().get(row.getApprovalStatus()));
+      log.info("Approval status: {}", ApprovalStatusCache.getInstance().get(row.getApprovalStatus()));
       try (var con = QueryUtil.acctDbConnection()) {
         new BasicPreparedWriteQuery(
           SQL.Update.EndUser.SelfUpdate,
@@ -250,8 +194,6 @@ public class EndUserRepo
     }
 
     static void mod(final EndUserRow row, final long updaterID) throws Exception {
-      log.trace("EndUserRepo$Update#mod(EndUserRow)");
-
       try (var con = QueryUtil.acctDbConnection()) {
         new BasicPreparedWriteQuery(
           SQL.Update.EndUser.ModUpdate,

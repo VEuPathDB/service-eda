@@ -1,7 +1,5 @@
 package org.veupathdb.service.eda.common.model;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.validation.ValidationBundle;
@@ -13,19 +11,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Encapsulates EDA study metadata for a single study, to be used by various services.  This includes native, computed,
- * and derived variables, which must be incorporated after the initial creation of an instance of this class.  The
- * reason we do not take all of [ the basic study, derived vars, and computed var ] metadata in the constructor is that
- * an instance of this class that does NOT contain the non-native variables is required for the creation of metadata for
- * those variables.
- *
- * Once created, this class provides both direct data access methods (e.g. to look up entities and variables by name or
- * by variable spec (entityID + variableId), and convenience methods to e.g. gather the expected tabular column headers
- * given an entity and a set of variables in a tabular request.
+ * Encapsulates EDA study metadata for a single study, to be used by various
+ * services.  This includes native, computed, and derived variables, which must
+ * be incorporated after the initial creation of an instance of this class.  The
+ * reason we do not take all of [ the basic study, derived vars, and computed
+ * var ] metadata in the constructor is that an instance of this class that does
+ * NOT contain the non-native variables is required for the creation of metadata
+ * for those variables.
+ * <p>
+ * Once created, this class provides both direct data access methods (e.g. to
+ * look up entities and variables by name or by variable spec (entityID +
+ * variableId)), and convenience methods to e.g. gather the expected tabular
+ * column headers given an entity and a set of variables in a tabular request.
  */
 public class ReferenceMetadata {
-
-  private static final Logger LOG = LogManager.getLogger(ReferenceMetadata.class);
 
   private final String _studyId;
   private final TreeNode<EntityDef> _entityTree;
@@ -37,7 +36,6 @@ public class ReferenceMetadata {
 
     // build an entity tree from the raw study metadata
     _entityTree = buildEntityTree(study.getRootEntity(), new ArrayList<>());
-
   }
 
   /**
@@ -50,9 +48,9 @@ public class ReferenceMetadata {
     if (computedVariables.isEmpty()) return;
 
     // all computed vars must be of the same entity (one compute per request)
-    String entityId = computedVariables.get(0).getVariableSpec().getEntityId();
+    String entityId = computedVariables.getFirst().getVariableSpec().getEntityId();
     EntityDef entity = getEntity(entityId).orElseThrow(() ->
-        new RuntimeException("Cannot find compute's entity in tree (" + entityId + ")"));
+      new RuntimeException("Cannot find compute's entity in tree (" + entityId + ")"));
 
     // get list of the entity and its descendants; will add computed vars to each
     List<EntityDef> entities = new ArrayList<>();
@@ -62,36 +60,37 @@ public class ReferenceMetadata {
     // convert each variable mapping to a variable def and add to all entities it will be available on
     for (VariableMapping computedVar : computedVariables) {
       if (!computedVar.getVariableSpec().getEntityId().equals(entityId)) {
-        throw new RuntimeException("Not all computed vars specs are delcared as the same entity");
+        throw new RuntimeException("Not all computed vars specs are declared as the same entity");
       }
       for (EntityDef treeEntity : entities) {
         entity.addVariable(new VariableDef(
-            entityId,
-            computedVar.getVariableSpec().getVariableId(),
-            computedVar.getDataType(),
-            computedVar.getDataShape(),
-            false,
-            computedVar.getImputeZero(),
-            // TODO: change VariableMapping have a single prop for range that contains a Range object (requires changes in R)
-            DataRange.fromBoundaryObjects(computedVar.getDisplayRangeMin(), computedVar.getDisplayRangeMax()).map(DataRanges::new),
-            // TODO: do computed variables ever have units?  If so, then need to add to VariableMapping for addition here
-            Optional.empty(),
-            null,
-            computedVar.getVocabulary(),  
-            false,
-            null,
-            entityId.equals(treeEntity.getId())
-                ? VariableSource.COMPUTED
-                : VariableSource.INHERITED
+          entityId,
+          computedVar.getVariableSpec().getVariableId(),
+          computedVar.getDataType(),
+          computedVar.getDataShape(),
+          false,
+          computedVar.getImputeZero(),
+          // TODO: change VariableMapping have a single prop for range that contains a Range object (requires changes in R)
+          DataRange.fromBoundaryObjects(computedVar.getDisplayRangeMin(), computedVar.getDisplayRangeMax()).map(DataRanges::new),
+          // TODO: do computed variables ever have units?  If so, then need to add to VariableMapping for addition here
+          Optional.empty(),
+          null,
+          computedVar.getVocabulary(),
+          false,
+          null,
+          entityId.equals(treeEntity.getId())
+            ? VariableSource.COMPUTED
+            : VariableSource.INHERITED
         ));
       }
     }
   }
 
   /**
-   * Incorporates raw derived variable metadata for a single derived variable into this instance, converting the passed
-   * object to a VariableDef and assigning it to its entity.
-   *
+   * Incorporates raw derived variable metadata for a single derived variable
+   * into this instance, converting the passed object to a VariableDef and
+   * assigning it to its entity.
+   * <p>
    * Note: incoming derived vars must be in dependency order; i.e. only later derived vars
    *       depend on earlier derived vars (plus no circular dependencies);
    *       name will also be pre-validated for uniqueness within study
@@ -106,8 +105,8 @@ public class ReferenceMetadata {
 
     // get this DV's entity and descendants and insert as available in all
     EntityDef specEntity = getEntity(derivedVariable.getEntityId()).orElseThrow(() ->
-        new IllegalArgumentException("Derived variable entity '" + derivedVariable.getEntityId() +
-            "' does not exist in study '" + _studyId + "'."));
+      new IllegalArgumentException("Derived variable entity '" + derivedVariable.getEntityId() +
+        "' does not exist in study '" + _studyId + "'."));
 
     List<EntityDef> entities = new ArrayList<>();
     entities.add(specEntity);
@@ -116,21 +115,21 @@ public class ReferenceMetadata {
     // add derived variables for this entity to itself and all children (who can inherit the derived var)
     for (EntityDef entity : entities) {
       entity.addVariable(new VariableDef(
-          derivedVariable.getEntityId(),
-          derivedVariable.getVariableId(),
-          derivedVariable.getVariableType(),
-          derivedVariable.getDataShape(),
-          false,
-          false,
-          DataRange.fromRange(derivedVariable.getDataRange()).map(DataRanges::new),
-          Optional.ofNullable(derivedVariable.getUnits()),
-          null,
-          derivedVariable.getVocabulary(),
-          false,
-          null,
-          entity.getId().equals(derivedVariable.getEntityId())
-            ? typedSource
-            : VariableSource.INHERITED
+        derivedVariable.getEntityId(),
+        derivedVariable.getVariableId(),
+        derivedVariable.getVariableType(),
+        derivedVariable.getDataShape(),
+        false,
+        false,
+        DataRange.fromRange(derivedVariable.getDataRange()).map(DataRanges::new),
+        Optional.ofNullable(derivedVariable.getUnits()),
+        null,
+        derivedVariable.getVocabulary(),
+        false,
+        null,
+        entity.getId().equals(derivedVariable.getEntityId())
+          ? typedSource
+          : VariableSource.INHERITED
       ));
     }
   }
@@ -147,95 +146,93 @@ public class ReferenceMetadata {
   private static TreeNode<EntityDef> buildEntityTree(APIEntity entity, List<VariableDef> ancestorVars) {
 
     EntityDef entityDef = new EntityDef(
-        entity.getId(),
-        entity.getDisplayName(),
-        entity.getIdColumnName(),
-        entity.getIsManyToOneWithParent()
+      entity.getId(),
+      entity.getDisplayName(),
+      entity.getIdColumnName(),
+      entity.getIsManyToOneWithParent()
     );
 
-    // someday we might have studyDependentVocabs for collections, 
-    // but for now and the near- to mid-term we dont.
+    // someday we might have studyDependentVocabs for collections,
+    // but for now and the near- to midterm we don't.
     entity.getCollections().stream().map(col ->
-        new CollectionDef(
-            entityDef,
-            col.getId(),
-            col.getDisplayName(),
-            col.getType(),
-            col.getDataShape(),
-            col.getImputeZero(),
-            col.getDistinctValuesCount(),
-            col.getVocabulary(),
-            col.getIsCompositional(),
-            col.getIsProportion(),
-            col.getNormalizationMethod(),
-            col.getMemberVariableIds(),
-            DataRanges.getDataRanges(col),
-            false,
-            col.getVariableSpecToImputeZeroesFor(),
-            col.getMember(),
-            col.getMemberPlural()
-        )
-    ).forEach(colDef -> entityDef.addCollection(colDef));
+      new CollectionDef(
+        entityDef,
+        col.getId(),
+        col.getDisplayName(),
+        col.getType(),
+        col.getDataShape(),
+        col.getImputeZero(),
+        col.getDistinctValuesCount(),
+        col.getVocabulary(),
+        col.getIsCompositional(),
+        col.getIsProportion(),
+        col.getNormalizationMethod(),
+        col.getMemberVariableIds(),
+        DataRanges.getDataRanges(col),
+        false,
+        col.getVariableSpecToImputeZeroesFor(),
+        col.getMember(),
+        col.getMemberPlural()
+      )
+    ).forEach(entityDef::addCollection);
 
     // add inherited variables from parent
     ancestorVars.forEach(vd -> entityDef.addVariable(
-        new VariableDef(
-          vd.getEntityId(),
-          vd.getVariableId(),
-          vd.getType(),
-          vd.getDataShape(),
-          vd.isMultiValue(),
-          vd.isImputeZero(),
-          vd.getDataRanges(),
-          vd.getUnits(),
-          vd.getParentId(),
-          vd.getVocabulary(),
-          vd.getHasStudyDependentVocabulary(),
-          vd.getVariableSpecToImputeZeroesFor(),
-          VariableSource.INHERITED)));
+      new VariableDef(
+        vd.getEntityId(),
+        vd.getVariableId(),
+        vd.getType(),
+        vd.getDataShape(),
+        vd.isMultiValue(),
+        vd.isImputeZero(),
+        vd.getDataRanges(),
+        vd.getUnits(),
+        vd.getParentId(),
+        vd.getVocabulary(),
+        vd.getHasStudyDependentVocabulary(),
+        vd.getVariableSpecToImputeZeroesFor(),
+        VariableSource.INHERITED)));
 
     // process category vars (may still have children!)
     entity.getVariables().stream()
       .filter(var -> var.getType().equals(APIVariableType.CATEGORY))
       .map(var -> (APIVariablesCategory)var)
       .map(var -> new VariableDef(
-          entity.getId(),
-          var.getId(),
-          APIVariableType.CATEGORY,
-          null,
-          false,
-          false,
-          Optional.empty(),
-          Optional.empty(),
-          var.getParentId(),
-          null,
-          false,
-          null,
-          VariableSource.NATIVE))
+        entity.getId(),
+        var.getId(),
+        APIVariableType.CATEGORY,
+        null,
+        false,
+        false,
+        Optional.empty(),
+        Optional.empty(),
+        var.getParentId(),
+        null,
+        false,
+        null,
+        VariableSource.NATIVE))
 
-      .forEach(cat -> {
-        // add category vars for this entity
-        entityDef.addCategory(cat);
-      });
+      // add category vars for this entity
+      .forEach(entityDef::addCategory);
 
     // process this entity's native vars
     entity.getVariables().stream()
       .filter(var -> !var.getType().equals(APIVariableType.CATEGORY))
       .map(var -> (APIVariableWithValues)var)
       .map(var -> new VariableDef(
-          entity.getId(),
-          var.getId(),
-          var.getType(),
-          var.getDataShape(),
-          var.getIsMultiValued(),
-          var.getImputeZero(),
-          DataRanges.getDataRanges(var),
-          getUnits(var),
-          var.getParentId(),
-          var.getVocabulary(),
-          var.getHasStudyDependentVocabulary(),
-          var.getVariableSpecToImputeZeroesFor(),
-          VariableSource.NATIVE))
+        entity.getId(),
+        var.getId(),
+        var.getType(),
+        var.getDataShape(),
+        var.getIsMultiValued(),
+        var.getImputeZero(),
+        DataRanges.getDataRanges(var),
+        getUnits(var),
+        var.getParentId(),
+        var.getVocabulary(),
+        var.getHasStudyDependentVocabulary(),
+        var.getVariableSpecToImputeZeroesFor(),
+        VariableSource.NATIVE))
       .forEach(vd -> {
         // add variables for this entity
         entityDef.addVariable(vd);
@@ -272,13 +269,13 @@ public class ReferenceMetadata {
   public Optional<EntityDef> getEntity(String entityId) {
     return Optional.ofNullable(
         _entityTree.findFirst(null, e -> e.getId()
-            .equals(entityId)))
-        .map(TreeNode::getContents);
+          .equals(entityId)))
+      .map(TreeNode::getContents);
   }
 
   /**
    * Returns the variable def for this variable spec.  Note that when vars can be
-   * inherited, they have more than one spec (with the second spec living on the
+   * inherited, they have more than one spec with the second spec living on the
    * inheriting entity and having source 'inherited'.  However, this method will
    * always return the spec for the var's 'native' entity.
    *
@@ -301,21 +298,21 @@ public class ReferenceMetadata {
    */
   public List<EntityDef> getChildren(EntityDef targetEntity) {
     return _entityTree
-        .findFirst(node -> node.getId().equals(targetEntity.getId()))
-        .getChildNodes()
-        .stream()
-        .map(TreeNode::getContents)
-        .collect(Collectors.toList());
+      .findFirst(node -> node.getId().equals(targetEntity.getId()))
+      .getChildNodes()
+      .stream()
+      .map(TreeNode::getContents)
+      .collect(Collectors.toList());
   }
 
   public List<EntityDef> getDescendants(EntityDef targetEntity) {
     return _entityTree
-        .findFirst(node -> node.getId().equals(targetEntity.getId()))
-        // find all nodes in this subtree except the root
-        .findAll(entity -> !entity.getId().equals(targetEntity.getId()))
-        .stream()
-        .map(TreeNode::getContents)
-        .collect(Collectors.toList());
+      .findFirst(node -> node.getId().equals(targetEntity.getId()))
+      // find all nodes in this subtree except the root
+      .findAll(entity -> !entity.getId().equals(targetEntity.getId()))
+      .stream()
+      .map(TreeNode::getContents)
+      .collect(Collectors.toList());
   }
 
   /**
@@ -326,9 +323,9 @@ public class ReferenceMetadata {
    */
   public List<EntityDef> getAncestors(EntityDef targetEntity) {
     return getAncestors(targetEntity, _entityTree, new ArrayList<>())
-        .orElseThrow(() -> new RuntimeException(
-            "Target entity '" + targetEntity.getId() +
-            "' could not be found in entity tree."));
+      .orElseThrow(() -> new RuntimeException(
+        "Target entity '" + targetEntity.getId() +
+          "' could not be found in entity tree."));
   }
 
   /**
@@ -353,11 +350,11 @@ public class ReferenceMetadata {
    */
   public List<String> getTabularIdColumns(EntityDef targetEntity) {
     return new ListBuilder<String>()
-        .add(targetEntity.getIdColumnDef().getVariableId())
-        .addAll(getAncestors(targetEntity).stream()
-            .map(entity -> entity.getIdColumnDef().getVariableId())
-            .collect(Collectors.toList()))
-        .toList();
+      .add(targetEntity.getIdColumnDef().getVariableId())
+      .addAll(getAncestors(targetEntity).stream()
+        .map(entity -> entity.getIdColumnDef().getVariableId())
+        .collect(Collectors.toList()))
+      .toList();
   }
 
   private static Optional<List<EntityDef>> getAncestors(EntityDef targetEntity, TreeNode<EntityDef> entityTree, List<EntityDef> ancestors) {
@@ -366,7 +363,7 @@ public class ReferenceMetadata {
     }
     for (TreeNode<EntityDef> child : entityTree.getChildNodes()) {
       List<EntityDef> supplementedAncestors = new ArrayList<>(ancestors);
-      supplementedAncestors.add(0, entityTree.getContents()); // in ascending order (up the tree)
+      supplementedAncestors.addFirst(entityTree.getContents()); // in ascending order (up the tree)
       Optional<List<EntityDef>> listForFoundEntity = getAncestors(targetEntity, child, supplementedAncestors);
       if (listForFoundEntity.isPresent()) {
         // entity found in this branch
@@ -402,8 +399,8 @@ public class ReferenceMetadata {
     List<VariableDef> vars = new ArrayList<>();
     for (VariableSpec varSpec : varSpecs) {
       getVariable(varSpec).ifPresentOrElse(
-          vars::add,
-          () -> validation.addError(VariableDef.toDotNotation(varSpec), "Variable does not exist.")
+        vars::add,
+        () -> validation.addError(VariableDef.toDotNotation(varSpec), "Variable does not exist.")
       );
     }
     validation.build().throwIfInvalid();

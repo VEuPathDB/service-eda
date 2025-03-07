@@ -1,11 +1,8 @@
 package org.veupathdb.service.eda.access.service.dataset;
 
 import java.sql.ResultSet;
-import java.util.Map;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import org.apache.logging.log4j.Logger;
-import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.access.model.Dataset;
 import org.veupathdb.service.eda.access.repo.DB.Column;
 import org.veupathdb.service.eda.access.util.Format;
@@ -13,12 +10,6 @@ import org.veupathdb.service.eda.access.util.Format;
 public class DatasetUtil
 {
   private static DatasetUtil instance;
-
-  private final Logger log;
-
-  public DatasetUtil() {
-    log = LogProvider.logger(getClass());
-  }
 
   public Dataset resultSetToDataset(final ResultSet rs) throws Exception {
    return new Dataset()
@@ -44,7 +35,7 @@ public class DatasetUtil
       .setDatasetSha1Digest(rs.getString(Column.DatasetPresenters.DatasetSha1Digest))
       .putProperties(Format.Json.readValue(
         rs.getString(Column.Misc.Properties),
-        new TypeReference<Map<Dataset.Property, String>>(){}));
+        new TypeReference<>() {}));
   }
 
   public static DatasetUtil getInstance() {

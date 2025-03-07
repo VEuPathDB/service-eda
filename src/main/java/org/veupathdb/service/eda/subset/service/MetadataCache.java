@@ -35,6 +35,7 @@ public class MetadataCache implements StudyProvider {
   private final Map<String, Study> _studies = new HashMap<>(); // cache the studies
   private final Map<String, Boolean> _studyHasFilesCache = new HashMap<>();
   private final ScheduledExecutorService _scheduledThreadPool = Executors.newScheduledThreadPool(1); // Shut this down.
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private final Optional<CountDownLatch> _appDbReadySignal;
 
   public MetadataCache(BinaryFilesManager binaryFilesManager, CountDownLatch appDbReadySignal) {
@@ -51,14 +52,13 @@ public class MetadataCache implements StudyProvider {
     _binaryFilesManager = binaryFilesManager;
     _sourceStudyProvider = () -> sourceStudyProvider;
     _scheduledThreadPool.scheduleAtFixedRate(this::synchronizeCacheState, 0L,
-        refreshInterval.toMillis(), TimeUnit.MILLISECONDS);
+      refreshInterval.toMillis(), TimeUnit.MILLISECONDS);
     _appDbReadySignal = Optional.empty();
   }
 
   @Override
   public synchronized Study getStudyById(String studyId) {
-    return _studies.computeIfAbsent(studyId,
-        id -> getCuratedStudyFactory().getStudyById(id));
+    return _studies.computeIfAbsent(studyId, id -> getCuratedStudyFactory().getStudyById(id));
   }
 
   @Override
@@ -76,16 +76,16 @@ public class MetadataCache implements StudyProvider {
 
   private StudyProvider getCuratedStudyFactory() {
     return new StudyFactory(
+      Resources.getApplicationDataSource(),
+      Resources.getAppDbSchema(),
+      StudyOverview.StudySourceType.CURATED,
+      new VariableFactory(
         Resources.getApplicationDataSource(),
         Resources.getAppDbSchema(),
-        StudyOverview.StudySourceType.CURATED,
-        new VariableFactory(
-            Resources.getApplicationDataSource(),
-            Resources.getAppDbSchema(),
-            new MetadataFileBinaryProvider(_binaryFilesManager),
-            this::studyHasFiles),
-        SORT_ENTITIES_ENABLED
-        );
+        new MetadataFileBinaryProvider(_binaryFilesManager),
+        this::studyHasFiles),
+      SORT_ENTITIES_ENABLED
+    );
   }
 
   public synchronized void clear() {
@@ -99,10 +99,11 @@ public class MetadataCache implements StudyProvider {
   }
 
   private void synchronizeCacheState() {
+    LOG.info("Synchronizing cache state");
     // Wait until main thread signals that the application database is ready. If we try to access it before, it will
     // not throw an exception, but it will use the internal stub DB implementation which will result in missing studies.
     if (_appDbReadySignal.isPresent()) {
-      LOG.info("Awaiting application database to be ready.");
+      LOG.debug("awaiting application database to be ready");
       try {
         _appDbReadySignal.get().await();
       } catch (InterruptedException e) {
@@ -112,15 +113,15 @@ public class MetadataCache implements StudyProvider {
       }
     }
 
-    LOG.info("Checking which studies are out of date in cache.");
+    LOG.debug("checking which studies are out of date in cache.");
     List<StudyOverview> dbStudies = _sourceStudyProvider.get().getStudyOverviews();
     List<Study> studiesToRemove = _studies.values().stream()
-        .filter(study -> isOutOfDate(study, dbStudies))
-        .toList();
+      .filter(study -> isOutOfDate(study, dbStudies))
+      .toList();
 
     synchronized (this) {
-      LOG.info("Removing the following out of date or missing studies from cache: "
-          + studiesToRemove.stream().map(StudyOverview::getStudyId).collect(Collectors.joining(",")));
+      LOG.debug("Removing the following out of date or missing studies from cache: {}",
+        () -> studiesToRemove.stream().map(StudyOverview::getStudyId).collect(Collectors.joining(",")));
 
       dbStudies.forEach(study -> {
         boolean studyHasFiles = _binaryFilesManager.studyHasFiles(study.getStudyId());
@@ -141,22 +142,19 @@ public class MetadataCache implements StudyProvider {
       // Remove any studies with full metadata loaded if they have been modified.
       // They will be lazily repopulated when requested by users.
       _studies.entrySet().removeIf(study ->
-          studiesToRemove.stream().anyMatch(removeStudy -> removeStudy.getStudyId().equals(study.getKey())));
+        studiesToRemove.stream().anyMatch(removeStudy -> removeStudy.getStudyId().equals(study.getKey())));
     }
   }
 
   private boolean isOutOfDate(StudyOverview studyOverview, List<StudyOverview> dbStudies) {
     Optional<StudyOverview> matchingDbStudy = dbStudies.stream()
-        .filter(dbStudy -> dbStudy.getStudyId().equals(studyOverview.getStudyId()))
-        .findAny();
-    
-    // Study not in DB anymore, remove it from cache.
-    if (matchingDbStudy.isEmpty()) {
-      return true;
-    }
+      .filter(dbStudy -> dbStudy.getStudyId().equals(studyOverview.getStudyId()))
+      .findAny();
 
     // If in DB, check if it's out of date.
-    return matchingDbStudy.get().getLastModified().after(studyOverview.getLastModified());
+    return matchingDbStudy.map(overview -> overview.getLastModified().after(studyOverview.getLastModified()))
+      // Study not in DB anymore, remove it from cache.
+      .orElse(true);
   }
 }
 

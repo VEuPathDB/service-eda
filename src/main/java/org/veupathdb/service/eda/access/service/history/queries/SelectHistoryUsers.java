@@ -97,8 +97,6 @@ FROM
 
     var query = assembleQuery();
 
-//    Log.debug("Running query: {}", query);
-
     return new BasicStatementMapReadQuery<>(
       query,
       con,

@@ -4,8 +4,6 @@ import jakarta.ws.rs.ForbiddenException;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -45,18 +43,21 @@ public class StudyAccess {
    * Looks up study metadata including whether the study is a user study, and
    * permissions for the user represented by the passed header.
    *
-   * @param authHeader authentication header to pass to dataset access service
-   * @param dataAccessServiceUrl dataset access service URL
-   * @param studyId study to look up
-   * @param accessPredicate test for access given a permissions map
+   * @param userId ID of the user whose permissions are being tested.
+   *
+   * @param studyId ID of the study to look up
+   *
+   * @param accessPredicate Predicate used to test for access given a
+   * permissions map.
+   *
+   * @throws ForbiddenException if the target user does not have the required
+   * permission.
    */
-  public static void confirmPermission(Entry<String,String> authHeader,
-      String dataAccessServiceUrl, String studyId, Predicate<StudyAccess> accessPredicate) {
+  public static void confirmPermission(long userId, String studyId, Predicate<StudyAccess> accessPredicate) {
     // check with dataset access service to see if attached auth header has permission to access
-    Optional<StudyAccess> perms = new DatasetAccessClient(dataAccessServiceUrl, authHeader).getStudyAccessByStudyId(studyId);
-    if (perms.isEmpty() || !accessPredicate.test(perms.get())) {
-      throw new ForbiddenException();
-    }
+    DatasetAccessClient.getStudyAccessByStudyId(studyId, userId)
+      .filter(accessPredicate)
+      .orElseThrow(ForbiddenException::new);
   }
 
   public JSONObject toJson() {

@@ -1,7 +1,6 @@
 package org.veupathdb.service.eda.common.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
@@ -10,16 +9,14 @@ import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Encapsulates information about variables across all data types and sources (inherited, computed, and derived vars.
+ * Encapsulates information about variables across all data types and sources
+ * (inherited, computed, and derived vars).
  */
-// for logging purposes and if these are ever serialized by JSON, we only want the VariableSpec fields
-@JsonPropertyOrder({
-    "entityId",
-    "variableId"
-})
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class VariableDef extends VariableSpecImpl {
 
   public static VariableSpec newVariableSpec(String entityId, String variableId) {
@@ -77,19 +74,19 @@ public class VariableDef extends VariableSpecImpl {
   private final List<String> _vocabulary;
 
   public VariableDef(
-      String entityId,
-      String variableId,
-      APIVariableType type,
-      APIVariableDataShape dataShape,
-      boolean isMultiValue,
-      boolean isImputZero,
-      Optional<DataRanges> dataRanges,
-      Optional<String> units,
-      String parentId,
-      List<String> vocabulary,
-      boolean hasStudyDependentVocabulary,
-      VariableSpec variableSpecToImputeZeroesFor,
-      VariableSource source) {
+    String entityId,
+    String variableId,
+    APIVariableType type,
+    APIVariableDataShape dataShape,
+    boolean isMultiValue,
+    boolean isImputZero,
+    Optional<DataRanges> dataRanges,
+    Optional<String> units,
+    String parentId,
+    List<String> vocabulary,
+    boolean hasStudyDependentVocabulary,
+    VariableSpec variableSpecToImputeZeroesFor,
+    VariableSource source) {
     setEntityId(entityId);
     setVariableId(variableId);
     _type = type;
@@ -169,13 +166,17 @@ public class VariableDef extends VariableSpecImpl {
   public String toString() {
     return JsonUtil.serializeObject(this);
   }
-  
+
   public static String toDotNotation(VariableSpec var) {
     return var.getEntityId() + "." + var.getVariableId();
   }
 
   public static <T extends VariableSpec> List<String> toDotNotation(List<T> vars) {
     return vars.stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
+  }
+
+  public static <T extends VariableSpec> Set<String> toDotNotationSet(List<T> vars) {
+    return vars.stream().map(VariableDef::toDotNotation).collect(Collectors.toSet());
   }
 
   public static boolean isSameVariable(VariableSpec v1, VariableSpec v2) {

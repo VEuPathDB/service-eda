@@ -40,7 +40,7 @@ enum class PluginQueue {
   /**
    * The job-queue name for this [PluginQueue] value.
    */
-  val queueName
+  val queueName: String
     get() = when(this) {
       Fast -> Main.config.fastQueueName
       Slow -> Main.config.slowQueueName

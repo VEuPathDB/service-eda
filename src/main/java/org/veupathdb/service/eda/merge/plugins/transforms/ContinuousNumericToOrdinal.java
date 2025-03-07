@@ -44,7 +44,7 @@ public class ContinuousNumericToOrdinal extends Transform<ContinuousNumericRecod
   }
 
   @Override
-  protected void acceptConfig(ContinuousNumericRecodingConfig config) throws ValidationException {
+  protected void acceptConfig(ContinuousNumericRecodingConfig config) {
     _inputVar = config.getInputVariable();
     _inputColumn = VariableDef.toDotNotation(_inputVar);
     _codingRules = config.getRules().stream().map(RuleApplier::new).toList();

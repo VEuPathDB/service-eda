@@ -6,7 +6,6 @@ import org.gusdb.fgputil.EncryptionUtil;
 import org.gusdb.fgputil.cache.ManagedMap;
 import org.gusdb.fgputil.cache.ValueProductionException;
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidationException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -31,11 +30,10 @@ import java.util.Map;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
 
 public class ContinuousVariablePlugin extends AbstractEmptyComputePlugin<ContinuousVariableMetadataPostRequest, ContinuousVariableMetadataSpec> {
-  
+
   private static final Logger LOG = LogManager.getLogger(ContinuousVariablePlugin.class);
 
-  private static final ManagedMap<String,String> RESULT_CACHE =
-      new ManagedMap<>(5000, 2000);
+  private static final ManagedMap<String,String> RESULT_CACHE = new ManagedMap<>(5000, 2000);
 
   private String _cacheKey;
   private String _cachedResponse;
@@ -50,14 +48,14 @@ public class ContinuousVariablePlugin extends AbstractEmptyComputePlugin<Continu
     return new ConstraintSpec()
       .dependencyOrder(List.of("variable"))
       .pattern()
-        .element("variable")
-          .shapes(APIVariableDataShape.CONTINUOUS)
-          .description("Variable must be continuous.")
+      .element("variable")
+      .shapes(APIVariableDataShape.CONTINUOUS)
+      .description("Variable must be continuous.")
       .done();
   }
-  
+
   @Override
-  protected void validateVisualizationSpec(ContinuousVariableMetadataSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(ContinuousVariableMetadataSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .var("variable", pluginSpec.getVariable()));
   }
@@ -66,7 +64,7 @@ public class ContinuousVariablePlugin extends AbstractEmptyComputePlugin<Continu
   protected List<StreamSpec> getRequestedStreams(ContinuousVariableMetadataSpec pluginSpec) {
     String entityId = pluginSpec.getVariable().getEntityId();
     _cacheKey = EncryptionUtil.md5(
-        _referenceMetadata.getStudyId() + "|" + entityId + "|" +
+      _referenceMetadata.getStudyId() + "|" + entityId + "|" +
         JsonUtil.serializeObject(getSubsetFilters()) +
         "|" + JsonUtil.serializeObject(pluginSpec)
     );
@@ -108,9 +106,9 @@ public class ContinuousVariablePlugin extends AbstractEmptyComputePlugin<Continu
               // sd bins return 6 bins at most, no user control supported in R currently
               String sdJson = connection.eval("veupathUtils::toJSON(veupathUtils::getDiscretizedBins(x, 'sd', NULL, FALSE), FALSE)").asString();
               json.put("binRanges", new JSONObject()
-                  .put("equalInterval", new JSONArray(equalIntervalJson))
-                  .put("quantile", new JSONArray(quantileJson))
-                  .put("standardDeviation", new JSONArray(sdJson)));
+                .put("equalInterval", new JSONArray(equalIntervalJson))
+                .put("quantile", new JSONArray(quantileJson))
+                .put("standardDeviation", new JSONArray(sdJson)));
             }
 
             if (requestedMetadata.contains("median")) {

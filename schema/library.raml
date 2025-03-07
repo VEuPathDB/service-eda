@@ -659,9 +659,6 @@ types:
     additionalProperties: false
     properties:
       tabular: string[][]
-  EmptyResponse:
-    type: object
-    additionalProperties: false
   Range:
     type: object
     additionalProperties: false
@@ -1148,7 +1145,7 @@ types:
     type: object
     properties:
       collectionVariable: CollectionSpec
-      comparator: ComparatorSpec
+      comparator: DifferentialAbundanceComparatorSpec
       differentialAbundanceMethod: DifferentialAbundanceMethod
       pValueFloor:
         type: string
@@ -1159,7 +1156,7 @@ types:
       - DESeq
       - ANCOMBC
       - Maaslin
-  ComparatorSpec:
+  DifferentialAbundanceComparatorSpec:
     type: object
     properties:
       variable: VariableSpec
@@ -1177,6 +1174,41 @@ types:
     properties:
       effectSizeLabel: string
       statistics: DifferentialAbundanceStats
+  DifferentialExpressionPluginRequest:
+    type: ComputeRequestBase
+    properties:
+      config: DifferentialExpressionComputeConfig
+  DifferentialExpressionComputeConfig:
+    type: object
+    properties:
+      collectionVariable: CollectionSpec
+      comparator: ComparatorSpec
+      differentialExpressionMethod: DifferentialExpressionMethod
+      pValueFloor:
+        type: string
+        required: false
+  DifferentialExpressionMethod:
+    type: string
+    enum:
+      - DESeq
+  ComparatorSpec:
+    type: object
+    properties:
+      variable: VariableSpec
+      groupA: LabeledRange[]
+      groupB: LabeledRange[]
+  DifferentialExpressionPoint:
+    type: object
+    properties:
+      effectSize: string
+      pValue: string
+      adjustedPValue: string
+      pointId: string
+  DifferentialExpressionStatsResponse:
+    type: object
+    properties:
+      effectSizeLabel: string
+      statistics: DifferentialExpressionPoint[]
   ExamplePluginRequest:
     type: ComputeRequestBase
     properties:
@@ -1382,6 +1414,11 @@ types:
     type: DataPluginRequestBase
     properties:
       computeConfig: DifferentialAbundanceComputeConfig
+      config: EmptyDataPluginSpec
+  DifferentialExpressionVolcanoplotPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      computeConfig: DifferentialExpressionComputeConfig
       config: EmptyDataPluginSpec
   ContinuousVariableMetadataPostRequest:
     type: DataPluginRequestBase
@@ -1919,6 +1956,9 @@ types:
         required: false
         format: int64
       correlationMethod: ScatterCorrelationMethod
+      returnPointIds:
+        type: boolean
+        required: false
   Scatterplot:
     type: object
     additionalProperties: false
@@ -2198,6 +2238,9 @@ types:
         required: false
       r2:
         type: number
+        required: false
+      pointIds:
+        type: string[]
         required: false
   DensityplotData:
     type: object

@@ -13,7 +13,7 @@ public class StubDb {
 
   private static final String STUB_DB_NAME = "stubDb";
 
-  private static DataSource _ds;
+  private static volatile DataSource _ds;
 
   public static DataSource getDataSource() {
     if (_ds == null) {

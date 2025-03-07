@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.merge.plugins.transforms;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.merge.core.derivedvars.Transform;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
@@ -25,13 +24,13 @@ public class Concatenation extends Transform<ConcatenationConfig> {
   }
 
   @Override
-  protected void acceptConfig(ConcatenationConfig config) throws ValidationException {
+  protected void acceptConfig(ConcatenationConfig config) {
     _config = config;
     _inputColumnNames = config.getInputVariables().stream().map(VariableDef::toDotNotation).collect(Collectors.toList());
   }
 
   @Override
-  protected void performSupplementalDependedVariableValidation() throws ValidationException {
+  protected void performSupplementalDependedVariableValidation() {
     // nothing else to do here
   }
 
@@ -42,13 +41,9 @@ public class Concatenation extends Transform<ConcatenationConfig> {
 
   @Override
   public String getValue(Map<String, String> row) {
-    return new StringBuilder()
-        .append(_config.getPrefix())
-        .append(_inputColumnNames.stream()
-            .map(row::get)
-            .collect(Collectors.joining(_config.getDelimiter())))
-        .append(_config.getSuffix())
-        .toString();
+    return _inputColumnNames.stream()
+      .map(row::get)
+      .collect(Collectors.joining(_config.getDelimiter(), _config.getPrefix(), _config.getSuffix()));
   }
 
   @Override
@@ -60,5 +55,4 @@ public class Concatenation extends Transform<ConcatenationConfig> {
   public APIVariableDataShape getDataShape() {
     return APIVariableDataShape.CONTINUOUS;
   }
-
 }

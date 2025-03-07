@@ -8,13 +8,14 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.FormatUtil;
+import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.Main;
 import org.veupathdb.service.eda.access.model.Dataset;
 import org.veupathdb.service.eda.access.model.Email;
 import org.veupathdb.service.eda.access.model.EndUserRow;
+import org.veupathdb.service.eda.access.model.MessageTemplate;
 import org.veupathdb.service.eda.access.util.Format;
 
 public class EmailService
@@ -30,17 +31,16 @@ public class EmailService
     final var template = Const.EndUserTemplate;
     final var util     = EmailUtil.getInstance();
 
-
     log.info("Sending email");
     sendEmail(new Email()
       .setSubject(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-          .withDataset(dataset)
-          .withTemplate(template.getSubject())
-          .build()))
+        .withDataset(dataset)
+        .withTemplate(template.subject())
+        .build()))
       .setBody(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-          .withDataset(dataset)
-          .withTemplate(template.getBody())
-          .build()))
+        .withDataset(dataset)
+        .withTemplate(template.body())
+        .build()))
       .setFrom(dataset.getProperties().get(Dataset.Property.REQUEST_EMAIL))
       .setTo(new String[]{address}));
   }
@@ -54,13 +54,13 @@ public class EmailService
 
     sendEmail(new Email()
       .setSubject(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-          .withDataset(dataset)
-          .withTemplate(template.getSubject())
-          .build()))
+        .withDataset(dataset)
+        .withTemplate(template.subject())
+        .build()))
       .setBody(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-          .withDataset(dataset)
-          .withTemplate(template.getBody())
-          .build()))
+        .withDataset(dataset)
+        .withTemplate(template.body())
+        .build()))
       .setFrom(dataset.getProperties().get(Dataset.Property.REQUEST_EMAIL))
       .setTo(new String[]{address}));
   }
@@ -78,15 +78,15 @@ public class EmailService
 
     sendEmail(new Email()
       .setSubject(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-          .withDataset(dataset)
-          .withTemplate(template.getSubject())
-          .build()))
+        .withDataset(dataset)
+        .withTemplate(template.subject())
+        .build()))
       .setBody(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-          .withDataset(dataset)
-          .withTemplate(template.getBody())
-          .withEndUserRow(user)
-          .withUserSpecificContent(userSpecificContent)
-          .build()))
+        .withDataset(dataset)
+        .withTemplate(template.body())
+        .withEndUserRow(user)
+        .withUserSpecificContent(userSpecificContent)
+        .build()))
       .setTo(
         Stream.concat(Arrays.stream(cc), Stream.of(Main.config.getSupportEmail()))
           .distinct()
@@ -99,48 +99,15 @@ public class EmailService
                                                    final Dataset dataset,
                                                    final EndUserRow user,
                                                    final String[] managerEmails) throws Exception {
-    final var template = Const.ApproveNotification;
-    final var util     = EmailUtil.getInstance();
-
-    sendEmail(new Email()
-        .setSubject(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-            .withDataset(dataset)
-            .withTemplate(template.getSubject())
-            .build()))
-        .setBody(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-            .withDataset(dataset)
-            .withTemplate(template.getBody())
-            .withEndUserRow(user)
-            .withManagerEmails(managerEmails)
-            .build()))
-        .setTo(cc)
-        .setCc(managerEmails)
-        .setFrom(dataset.getProperties().get(Dataset.Property.REQUEST_EMAIL)));
+    sendNotificationEmail(cc, dataset, user, managerEmails, Const.ApproveNotification);
   }
 
   public void sendDatasetDeniedNotificationEmail(final String[] cc,
                                                  final Dataset dataset,
                                                  final EndUserRow user,
                                                  final String[] managerEmails) throws Exception {
-    final var template = Const.DenyNotification;
-    final var util     = EmailUtil.getInstance();
-
-    sendEmail(new Email()
-        .setSubject(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-            .withDataset(dataset)
-            .withTemplate(template.getSubject())
-            .build()))
-        .setBody(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
-            .withDataset(dataset)
-            .withTemplate(template.getBody())
-            .withEndUserRow(user)
-            .withManagerEmails(managerEmails)
-            .build()))
-        .setTo(cc)
-        .setCc(managerEmails)
-        .setFrom(dataset.getProperties().get(Dataset.Property.REQUEST_EMAIL)));
+    sendNotificationEmail(cc, dataset, user, managerEmails, Const.DenyNotification);
   }
-
 
   public void sendEmail(final Email mail) throws Exception {
     log.trace("EmailService#sendEmail(Email)");
@@ -149,7 +116,7 @@ public class EmailService
       return;
     }
 
-    log.debug("Sending e-mail with subject: " + mail.getSubject());
+    log.debug("Sending e-mail with subject: {}", mail.getSubject());
     final var props = new Properties();
     try {
       final var util = EmailUtil.getInstance();
@@ -171,8 +138,7 @@ public class EmailService
       Transport.send(message);
     }
     catch (Exception e) {
-      log.error("Failed to create and send email message using config: " +
-          (props == null ? "???" : FormatUtil.prettyPrint(props, FormatUtil.Style.MULTI_LINE)), e);
+      log.error("Failed to create and send email message using config: {}", FormatUtil.prettyPrint(props, FormatUtil.Style.MULTI_LINE), e);
       throw e;
     }
   }
@@ -182,5 +148,30 @@ public class EmailService
       instance = new EmailService();
 
     return instance;
+  }
+
+  private void sendNotificationEmail(
+    final String[] cc,
+    final Dataset dataset,
+    final EndUserRow user,
+    final String[] managerEmails,
+    final MessageTemplate template
+  ) throws Exception {
+    final var util = EmailUtil.getInstance();
+
+    sendEmail(new Email()
+      .setSubject(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
+        .withDataset(dataset)
+        .withTemplate(template.subject())
+        .build()))
+      .setBody(util.populateTemplate(EmailUtil.TemplateInput.newBuilder()
+        .withDataset(dataset)
+        .withTemplate(template.body())
+        .withEndUserRow(user)
+        .withManagerEmails(managerEmails)
+        .build()))
+      .setTo(cc)
+      .setCc(managerEmails)
+      .setFrom(dataset.getProperties().get(Dataset.Property.REQUEST_EMAIL)));
   }
 }

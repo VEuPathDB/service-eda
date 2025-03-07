@@ -8,45 +8,33 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import org.apache.logging.log4j.Logger;
-import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
+
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 
 public class QueryUtil
 {
-  @SuppressWarnings("FieldMayBeFinal")
-  private static QueryUtil instance = new QueryUtil();
+  private static final QueryUtil instance = new QueryUtil();
 
-  private final Logger log = LogProvider.logger(QueryUtil.class);
-
+  @SuppressWarnings("resource")
   public Connection getAcctDbConnection() throws Exception {
-    log.trace("Util#getAcctDbConnection()");
-
     return DbManager.accountDatabase().getDataSource().getConnection();
   }
 
+  @SuppressWarnings("resource")
   public Connection getAppDbConnection() throws Exception {
-    log.trace("Util#getAppDbConnection()");
-
     return DbManager.applicationDatabase().getDataSource().getConnection();
   }
 
   public ResultSet runQueryLogged(final Statement s, final String q) throws Exception {
-    log.trace("Util#runQueryLogged(Statement, String)");
-
     return exec(s, q, PreparedStatement::executeQuery, Statement::executeQuery);
   }
 
   public boolean runLogged(final Statement s, final String q) throws Exception {
-    log.trace("Util#executeLogged(Statement, String)");
-
     return exec(s, q, PreparedStatement::execute, Statement::execute);
   }
 
   public PreparedStatement prepareSqlStatement(final Connection c, final String sql)
   throws Exception {
-    log.trace("Util#prepareSqlStatement(Connection, String)");
-
     try {
       return c.prepareStatement(sql);
     } catch (Exception e) {
@@ -59,8 +47,6 @@ public class QueryUtil
     final String sql,
     final String[] returning
   ) throws Exception {
-    log.trace("Util#prepareSqlStatement(con, sql, returning)");
-
     try {
       return con.prepareStatement(sql, returning);
     } catch (Exception e) {
@@ -74,8 +60,6 @@ public class QueryUtil
     final CheckedFunction< PreparedStatement, T > fn1,
     final CheckedBiFunction< Statement, String, T > fn2
   ) throws Exception {
-    log.trace("Util#exec(Statement, String, CheckedFunction, CheckedBiFunction)");
-
     try {
       return ps instanceof PreparedStatement
         ? fn1.apply((PreparedStatement) ps)

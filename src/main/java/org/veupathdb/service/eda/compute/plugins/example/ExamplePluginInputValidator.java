@@ -23,15 +23,15 @@ public class ExamplePluginInputValidator implements PluginConfigValidator<Exampl
     ExampleComputeConfig config = request.getConfig();
     VariableSpec inputVar = config.getInputVariable();
 
-    LOG.info("Checking var " + VariableDef.toDotNotation(inputVar));
+    LOG.info("Checking var {}", VariableDef.toDotNotation(inputVar));
 
     // check entity
     EntityDef entity = referenceMetadata.get().getEntity(inputVar.getEntityId())
-        .orElseThrow(() -> new BadRequestException("Invalid entity ID : " + inputVar.getEntityId()));
+      .orElseThrow(() -> new BadRequestException("Invalid entity ID : " + inputVar.getEntityId()));
 
     // check variable
-    VariableDef variable = entity.getVariable(inputVar)
-        .orElseThrow(() -> new BadRequestException("Invalid variable spec for output entity"));
+    entity.getVariable(inputVar)
+      .orElseThrow(() -> new BadRequestException("Invalid variable spec for output entity"));
 
     // check that suffix is present
     if (config.getValueSuffix() == null || config.getValueSuffix().contains("\t")) {

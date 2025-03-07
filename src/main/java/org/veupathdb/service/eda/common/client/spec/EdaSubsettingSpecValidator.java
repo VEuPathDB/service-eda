@@ -10,8 +10,8 @@ public class EdaSubsettingSpecValidator extends StreamSpecValidator {
   protected void enforceServiceSpecificRequirements(StreamSpec streamSpec, VariableDef variableDef, ValidationBundleBuilder validation) {
     if (!variableDef.getSource().equals(VariableSource.NATIVE)) {
       validation.addError(streamSpec.getStreamName(),
-          "Bad spec for subsetting request.  Variable '" + variableDef.getVariableId() +
-              "' must be a native variable of entity '" + streamSpec.getEntityId() + "'.");
+        "Bad spec for subsetting request.  Variable '" + variableDef.getVariableId() +
+          "' must be a native variable of entity '" + streamSpec.getEntityId() + "'.");
     }
   }
 }

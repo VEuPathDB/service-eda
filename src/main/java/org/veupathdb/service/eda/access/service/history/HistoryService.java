@@ -1,8 +1,6 @@
 package org.veupathdb.service.eda.access.service.history;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +29,7 @@ public class HistoryService
     Map<Long, HistoryUserRow> users;
 
     try {
+      //noinspection resource
       try (var con = DbManager.accountDatabase().getDataSource().getConnection()) {
 
         // If the user is marked as an owner, load the full history.
@@ -89,7 +88,7 @@ public class HistoryService
     var out = new HistoryCauseImpl();
 
     out.setAction(HistoryCause.ActionType.values()[row.historyAction.ordinal()]);
-    out.setTimestamp(convert(row.historyTimestamp));
+    out.setTimestamp(row.historyTimestamp);
     out.setUser(convert(user));
 
     return out;
@@ -103,14 +102,14 @@ public class HistoryService
     out.setDatasetPresenterID(row.datasetPresenterID);
     out.setRestrictionLevel(HistoryRow.RestrictionLevelType.valueOf(row.restrictionLevel.name()));
     out.setApprovalStatus(HistoryRow.ApprovalStatusType.valueOf(row.approvalStatus.name()));
-    out.setStartDate(convert(row.startDate));
+    out.setStartDate(row.startDate);
     out.setDuration(row.duration);
     out.setPurpose(row.purpose);
     out.setResearchQuestion(row.researchQuestion);
     out.setAnalysisPlan(row.analysisPlan);
     out.setPriorAuth(row.priorAuth);
     out.setDenialReason(row.denialReason);
-    out.setDateDenied(convert(row.dateDenied));
+    out.setDateDenied(row.dateDenied);
     out.setAllowSelfEdits(row.allowSelfEdits);
 
     return out;
@@ -126,9 +125,5 @@ public class HistoryService
     out.setOrganization(row.organization);
 
     return out;
-  }
-
-  private static Date convert(OffsetDateTime odt) {
-    return odt == null ? null : Date.from(odt.toInstant());
   }
 }

@@ -75,18 +75,18 @@ public class BubbleMapMarkersPlugin extends AbstractEmptyComputePlugin<Standalon
       .var("latitudeVariable", pluginSpec.getLatitudeVariable())
       .var("longitudeVariable", pluginSpec.getLongitudeVariable())
       .var("overlayVariable", Optional.ofNullable(pluginSpec.getOverlayConfig())
-          .map(QuantitativeOverlayConfig::getOverlayVariable)
-          .orElse(null)));
+        .map(QuantitativeOverlayConfig::getOverlayVariable)
+        .orElse(null)));
     if (pluginSpec.getOverlayConfig() != null) {
       try {
         if (pluginSpec.getOverlayConfig().getAggregationConfig() == null) {
           throw new ValidationException("aggregationConfig is a required field.");
         }
         _overlaySpecification = new QuantitativeAggregateConfiguration(
-            pluginSpec.getOverlayConfig().getAggregationConfig(),
-            getUtil().getVariableDataShape(pluginSpec.getOverlayConfig().getOverlayVariable()),
-            getUtil().getVariableType(pluginSpec.getOverlayConfig().getOverlayVariable()),
-            () -> getUtil().getVocabulary(pluginSpec.getOverlayConfig().getOverlayVariable()));
+          pluginSpec.getOverlayConfig().getAggregationConfig(),
+          getUtil().getVariableDataShape(pluginSpec.getOverlayConfig().getOverlayVariable()),
+          getUtil().getVariableType(pluginSpec.getOverlayConfig().getOverlayVariable()),
+          () -> getUtil().getVocabulary(pluginSpec.getOverlayConfig().getOverlayVariable()));
       } catch (IllegalArgumentException e) {
         throw new ValidationException(e.getMessage());
       }
@@ -101,8 +101,8 @@ public class BubbleMapMarkersPlugin extends AbstractEmptyComputePlugin<Standalon
         .addVar(pluginSpec.getLatitudeVariable())
         .addVar(pluginSpec.getLongitudeVariable())
         .addVar(Optional.ofNullable(pluginSpec.getOverlayConfig())
-            .map(QuantitativeOverlayConfig::getOverlayVariable)
-            .orElse(null)));
+          .map(QuantitativeOverlayConfig::getOverlayVariable)
+          .orElse(null)));
   }
 
   @Override
@@ -120,9 +120,9 @@ public class BubbleMapMarkersPlugin extends AbstractEmptyComputePlugin<Standalon
     int lonIndex     = indexOf.apply(spec.getLongitudeVariable());
     Optional<QuantitativeAggregateConfiguration> overlayConfig = Optional.ofNullable(_overlaySpecification);
     Integer overlayIndex = Optional.ofNullable(_pluginSpec.getOverlayConfig())
-        .map(QuantitativeOverlayConfig::getOverlayVariable)
-        .map(indexOf)
-        .orElse(null);
+      .map(QuantitativeOverlayConfig::getOverlayVariable)
+      .map(indexOf)
+      .orElse(null);
 
     // get map markers config
     GeolocationViewport viewport = GeolocationViewport.fromApiViewport(spec.getViewport());
@@ -130,8 +130,8 @@ public class BubbleMapMarkersPlugin extends AbstractEmptyComputePlugin<Standalon
     MapMarkerRowProcessor<Double> processor = new MapMarkerRowProcessor<>(geoVarIndex, latIndex, lonIndex);
 
     Supplier<MarkerAggregator<Double>> markerAggregatorSupplier = () -> overlayConfig
-        .map(aggregateConfig -> aggregateConfig.getAverageAggregatorProvider(overlayIndex))
-        .orElse(null);
+      .map(aggregateConfig -> aggregateConfig.getAverageAggregatorProvider(overlayIndex))
+      .orElse(null);
 
     // loop through rows of data stream, aggregating stats into a map from aggregate value to stats object
     Map<String, MarkerData<Double>> aggregatedDataByGeoVal = processor.process(reader, parser, viewport, markerAggregatorSupplier);

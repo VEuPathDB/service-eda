@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
@@ -11,7 +10,6 @@ import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.OverlaySpecification;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -84,12 +82,12 @@ public class FloatingLineplotPlugin extends AbstractEmptyComputePlugin<FloatingL
   @Override
   protected List<StreamSpec> getRequestedStreams(FloatingLineplotSpec pluginSpec) {
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>();
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
     plotVariableSpecs.add(pluginSpec.getYAxisVariable());
     Optional.ofNullable(pluginSpec.getOverlayConfig())
-        .map(OverlayConfig::getOverlayVariable)
-        .ifPresent(plotVariableSpecs::add);
+      .map(OverlayConfig::getOverlayVariable)
+      .ifPresent(plotVariableSpecs::add);
 
     List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
 
@@ -102,7 +100,7 @@ public class FloatingLineplotPlugin extends AbstractEmptyComputePlugin<FloatingL
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     FloatingLineplotSpec spec = getPluginSpec();
     String outputEntityId = spec.getOutputEntityId();
@@ -118,7 +116,7 @@ public class FloatingLineplotPlugin extends AbstractEmptyComputePlugin<FloatingL
     String numeratorValues = spec.getYAxisNumeratorValues() != null ? PluginUtil.listToRVector(spec.getYAxisNumeratorValues()) : "NULL";
     String denominatorValues = spec.getYAxisDenominatorValues() != null ? PluginUtil.listToRVector(spec.getYAxisDenominatorValues()) : "NULL";
     String overlayValues = _overlaySpecification == null ? "NULL" : _overlaySpecification.getRBinListAsString();
-   
+
     List<DynamicDataSpec> dataSpecsWithStudyDependentVocabs = getDynamicDataSpecsWithStudyDependentVocabs(outputEntityId);
     Map<String, InputStream> studyVocabs = getVocabByRootEntity(dataSpecsWithStudyDependentVocabs);
     dataStreams.putAll(studyVocabs);
@@ -148,15 +146,15 @@ public class FloatingLineplotPlugin extends AbstractEmptyComputePlugin<FloatingL
         }
       } else {
         String binWidth =
-            binSpec.getValue() == null ? "NULL" :
-                (xVarType.equals("NUMBER") || xVarType.equals("INTEGER"))
-                ? "as.numeric('" + binSpec.getValue() + "')"
-                : "'" + binSpec.getValue().toString() + " " + binSpec.getUnits().toString().toLowerCase() + "'";
+          binSpec.getValue() == null ? "NULL" :
+            (xVarType.equals("NUMBER") || xVarType.equals("INTEGER"))
+            ? "as.numeric('" + binSpec.getValue() + "')"
+            : "'" + binSpec.getValue().toString() + " " + binSpec.getUnits().toString().toLowerCase() + "'";
         connection.voidEval("binWidth <- " + binWidth);
       }
 
       String cmd = "plot.data::lineplot(data=" + inputData + ", " +
-                                        "variables=variables, binWidth=binWidth, " + 
+                                        "variables=variables, binWidth=binWidth, " +
                                         "value=" + singleQuote(valueSpec) + ", " +
                                         "errorBars=" + errorBars + ", " +
                                         "viewport=viewport, " +
@@ -165,9 +163,9 @@ public class FloatingLineplotPlugin extends AbstractEmptyComputePlugin<FloatingL
                                         "sampleSizes=FALSE," +
                                         "completeCases=FALSE," +
                                         "overlayValues=" + overlayValues + ", " +
-                                        "evilMode='noVariables')";  
-      System.out.println(cmd);                        
+                                        "evilMode='noVariables')";
+      System.out.println(cmd);
       streamResult(connection, cmd, out);
-    }); 
+    });
   }
 }

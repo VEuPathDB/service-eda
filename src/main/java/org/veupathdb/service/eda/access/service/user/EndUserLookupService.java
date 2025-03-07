@@ -5,15 +5,14 @@ import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.generated.model.EndUser;
 import org.veupathdb.service.eda.access.model.EndUserRow;
 
 public class EndUserLookupService
 {
-  @SuppressWarnings("FieldMayBeFinal")
-  private static EndUserLookupService instance = new EndUserLookupService();
+  private static final EndUserLookupService instance = new EndUserLookupService();
 
   private final Logger log = LogProvider.logger(EndUserLookupService.class);
 

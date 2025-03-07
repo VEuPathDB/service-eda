@@ -10,6 +10,10 @@ uses:
   error: https://raw.githubusercontent.com/VEuPathDB/docs-api-schema/v2.0.2/libraries/errors.raml
   lib: schema/library.raml
 
+annotationTypes:
+  className:
+    type: string
+
 securitySchemes:
   header-auth:
     description: Authentication based on a WDK auth cookie.
@@ -141,20 +145,6 @@ securitySchemes:
 
 /ss-internal/studies/{study-id}/entities/{entity-id}:
 
-  /count:
-    post:
-      securedBy: header-auth
-      description: |
-        Return a count of entities in this subset.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
-      body:
-        application/json:
-          type: lib.EntityCountPostRequest
-      responses:
-        200:
-          body:
-            application/json:
-              type: lib.EntityCountPostResponse
-
   /tabular:
     post:
       securedBy: header-auth
@@ -170,22 +160,6 @@ securitySchemes:
               type: lib.EntityTabularPostResponse
             application/json:
               type: lib.EntityTabularPostResponse
-
-  /variables/{variable-id}/distribution:
-    post:
-      securedBy: header-auth
-      description: |
-        Return the count of entities in the subset that have a value for this variable, and |
-        a distribution for this variable, i.e., entity counts for each value of this |
-        variable.  In the request, `filters` must be a subclass of [Filter](#type:lib.Filter)
-      body:
-        application/json:
-          type: lib.VariableDistributionPostRequest
-      responses:
-        200:
-          body:
-            application/json:
-              type: lib.VariableDistributionPostResponse
 
 # # # # # # # # # # # # # # # # # # #
 #                                   #
@@ -257,20 +231,6 @@ securitySchemes:
 # # # # # # # # # # # # # # # # # # #
 
 /merging-internal:
-
-  /derived-variables:
-    /metadata:
-      /variables:
-        displayName: Return metadata about a small collection of derived variables
-        post:
-          body:
-            application/json:
-              type: lib.DerivedVariableBulkMetadataRequest
-          responses:
-            200:
-              body:
-                application/json:
-                  type: lib.DerivedVariableMetadata[]
 
   /query:
     displayName: Merged Tabular Data Query
@@ -450,6 +410,29 @@ securitySchemes:
             body:
               application/json: lib.DifferentialAbundanceStatsResponse
 
+  /differentialexpression:
+    post:
+      queryParameters:
+        autostart:
+          type: boolean
+          required: false
+          default: true
+      body:
+        application/json: lib.DifferentialExpressionPluginRequest
+      responses:
+        200:
+          body:
+            application/json: lib.JobResponse
+    /statistics:
+      post:
+        body:
+          application/json: lib.DifferentialExpressionPluginRequest
+        responses:
+          200:
+            body:
+              application/json: lib.DifferentialExpressionStatsResponse
+
+
   /correlation:
     post:
       queryParameters:
@@ -500,6 +483,43 @@ securitySchemes:
   #                                                                           #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+/admin:
+  /compute:
+    /list-possible-dead-workspaces:
+      get:
+        description: |-
+          Returns a list of job IDs for compute jobs whose workspaces are in a
+          state where the jobs appear to be running, however no record of them
+          is present in the local postgres database.
+          
+          **NOTE**: A job ID appearing in this list _DOES NOT_ mean that they
+          are actually dead.  Jobs that are actively being run by another campus
+          will also appear in this list.
+          
+          This list may be used as a starting point in the process of locating
+          dead workspaces.
+        responses:
+          200:
+            body:
+              text/plain:
+                type: any
+
+    /workspaces:
+      /{job-id}:
+        uriParameters:
+          job-id:
+            type: string
+            minLength: 32
+            maxLength: 32
+            pattern: '^[\dA-Fa-f]{32}$'
+        delete:
+          description: |-
+            Deletes the contents of a workspace by force.  The target workspace
+            need not be valid for this operation.
+          responses:
+            204:
+
+
 /expire-compute-jobs:
   get:
     description: Expire jobs based on criteria
@@ -517,7 +537,6 @@ securitySchemes:
         body:
           application/json:
             type: lib.ExpiredJobsResponse
-
 /internal-jobs:
   get:
     responses:
@@ -544,7 +563,6 @@ securitySchemes:
             application/json:
               type: lib.InternalJob
 
-# NOTE: jobs endpoint is NOT publicly exposed for this service
 /jobs:
   /{job-id}:
     uriParameters:
@@ -1235,6 +1253,21 @@ securitySchemes:
               application/json:
                 type: lib.DifferentialAbundanceStatsResponse
 
+  /differentialexpression/visualizations:
+    displayName: Visualizations for interrogating differentially expressed genes
+
+    /volcanoplot:
+      post:
+        description: Returns data required to create a volcanoplot from a differential expression analysis.
+        body:
+          application/json:
+            type: lib.DifferentialExpressionVolcanoplotPostRequest
+        responses:
+          200:
+            body:
+              application/json:
+                type: lib.DifferentialExpressionStatsResponse
+
   /correlation/visualizations:
     displayName: Visualizations for discovering correlations between various assay data
 
@@ -1753,8 +1786,8 @@ securitySchemes:
         type: integer
         format: int64
         minimum: 1
-        maximum: 100
-        default: 100
+        maximum: 999
+        default: 999
       offset:
         type: integer
         format: int64

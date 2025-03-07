@@ -3,10 +3,9 @@ package org.veupathdb.service.eda.user.service;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.ContainerRequest;
-import org.gusdb.fgputil.FormatUtil;
-import org.veupathdb.lib.container.jaxrs.model.User;
+import org.veupathdb.lib.container.jaxrs.model.UserInfo;
+import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
-import org.veupathdb.service.eda.generated.model.AnalysisDetail;
 import org.veupathdb.service.eda.generated.model.AnalysisListPostResponse;
 import org.veupathdb.service.eda.generated.model.SingleAnalysisPublicInfo;
 import org.veupathdb.service.eda.generated.model.SingleAnalysisPublicInfoImpl;
@@ -19,7 +18,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import static org.gusdb.fgputil.functional.Functions.doThrow;
 import static org.veupathdb.service.eda.user.Utils.*;
 
 @Authenticated(allowGuests = true)
@@ -31,7 +29,7 @@ public class ImportAnalysisService implements ImportAnalysisProjectId {
   @Override
   public GetImportAnalysisByProjectIdAndAnalysisIdResponse getImportAnalysisByProjectIdAndAnalysisId(String projectId, String analysisId) {
     return GetImportAnalysisByProjectIdAndAnalysisIdResponse.respond200WithApplicationJson(
-        importAnalysis(projectId, analysisId, Optional.empty(), _request));
+      importAnalysis(projectId, analysisId, Optional.empty(), _request));
   }
 
   @Override
@@ -43,18 +41,25 @@ public class ImportAnalysisService implements ImportAnalysisProjectId {
   }
 
   /**
-   * After validating params, copies the analysis with the passed ID to a new analysis owned by the
-   * active user (i.e. whose credentials were provided.  The optional userID is for an endpoing whose
-   * path includes both userId and analysisId; so if present the analysis being copied must be owned
-   * by the user passed in (or 404 will be thrown).  The copier's permission to access the study of
-   * the analysis at the "visualization" level is also checked, with a 403 result if disallowed.
+   * After validating params, copies the analysis with the passed ID to a new
+   * analysis owned by the active user (i.e. whose credentials were provided).
+   * The optional userID is for an endpoint whose path includes both userId and
+   * analysisId; so if present the analysis being copied must be owned by the
+   * user passed in (or 404 will be thrown).  The copier's permission to access
+   * the study of the analysis at the "visualization" level is also checked,
+   * with a 403 result if disallowed.
    *
    * @param projectId project ID under which analysis is stored
+   *
    * @param analysisId ID of analysis to be copied
+   *
    * @param userIdOpt ID of owner of analysis to be copied (not required, but verified if provided)
+   *
    * @param request container request, used to look up submitted credentials
+   *
    * @return response describing newly created analysis
    */
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   public static AnalysisListPostResponse importAnalysis(String projectId, String analysisId, Optional<String> userIdOpt, ContainerRequest request) {
 
     // create data factory (validates projectId)
@@ -65,9 +70,13 @@ public class ImportAnalysisService implements ImportAnalysisProjectId {
 
     // if provided, verify URL's userId and analysisId match
     long userId = userIdOpt.map(userIdStr -> {
-        long verifiedId = FormatUtil.isLong(userIdStr) ? Long.valueOf(userIdStr) : doThrow(NotFoundException::new);
+      try {
+        long verifiedId = Long.parseLong(userIdStr);
         Utils.verifyOwnership(verifiedId, oldAnalysis);
         return verifiedId;
+      } catch (NumberFormatException e) {
+        throw new NotFoundException();
+      }
     }).orElse(oldAnalysis.getUserId());
 
     // make sure user importing has access to this analysis' study
@@ -75,11 +84,11 @@ public class ImportAnalysisService implements ImportAnalysisProjectId {
     Utils.requireSubsettingPermission(request, oldAnalysis.getStudyId());
 
     // make a copy of the analysis, assign a new owner, check display name (must be unique) and insert
-    User newOwner = Utils.getActiveUser(request);
+    UserInfo newOwner = Utils.getActiveUser(request);
     dataFactory.addUserIfAbsent(newOwner);
-    AccountDbData.AccountDataPair provenanceOwner = new AccountDbData().getUserDataById(userId);
+    UserInfo provenanceOwner = UserProvider.getUsersById(List.of(userId)).get(userId);
     AnalysisDetailWithUser newAnalysis = new AnalysisDetailWithUser(
-        IdGenerator.getNextAnalysisId(dataFactory), newOwner.getUserId(), oldAnalysis, provenanceOwner);
+      IdGenerator.getNextAnalysisId(dataFactory), newOwner.getUserId(), oldAnalysis, provenanceOwner);
 
     // If the owner ID has changed (meaning we are copying to a new user) AND we
     // have some derived variables attached to the analysis, copy the derived
@@ -98,7 +107,7 @@ public class ImportAnalysisService implements ImportAnalysisProjectId {
 
   private static List<String> copyDerivedVariables(
     UserDataFactory dataFactory,
-    User newOwner,
+    UserInfo newOwner,
     List<String> originalDerivedVarsIds
   ) {
     // Look up the original derived variables from the database.

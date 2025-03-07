@@ -6,7 +6,7 @@ import java.util.function.Function;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.generated.model.EndUserPatch;
 

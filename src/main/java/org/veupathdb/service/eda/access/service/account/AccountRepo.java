@@ -3,8 +3,6 @@ package org.veupathdb.service.eda.access.service.account;
 import java.util.Optional;
 
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
-import org.apache.logging.log4j.Logger;
-import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.access.repo.SQL;
 import org.veupathdb.service.eda.access.service.QueryUtil;
 import org.veupathdb.service.eda.access.util.SqlUtil;
@@ -15,12 +13,6 @@ public final class AccountRepo
   {
     private static Select instance;
 
-    private final Logger log;
-
-    public Select() {
-      log = LogProvider.logger(getClass());
-    }
-
     /**
      * Attempts to lookup a user's ID based on the given email address.
      *
@@ -29,9 +21,8 @@ public final class AccountRepo
      * @return An option that will contain the user id attached to the given
      *         email if any such record was found.
      */
+    @SuppressWarnings("resource")
     public Optional<Long> selectUserIdByEmail(final String email) throws Exception {
-      log.trace("AccountRepo$Select#selectUserIdByEmail(String)");
-
       return new BasicPreparedReadQuery<>(
         SQL.Select.Accounts.IdByEmail,
         QueryUtil.getInstance()::getAcctDbConnection,
@@ -40,6 +31,7 @@ public final class AccountRepo
       ).execute().getValue();
     }
 
+    @SuppressWarnings("resource")
     public Optional<String> selectEmailByUserId(final long userId) throws Exception {
       return new BasicPreparedReadQuery<>(
           SQL.Select.Accounts.EmailById,

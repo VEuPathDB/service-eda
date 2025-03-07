@@ -1,8 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
@@ -13,7 +10,6 @@ import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.OverlaySpecification;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -69,8 +65,8 @@ public class FloatingHistogramPlugin extends AbstractEmptyComputePlugin<Floating
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
       .var("overlayVariable", Optional.ofNullable(pluginSpec.getOverlayConfig())
-          .map(OverlayConfig::getOverlayVariable)
-          .orElse(null)));
+        .map(OverlayConfig::getOverlayVariable)
+        .orElse(null)));
     if (pluginSpec.getOverlayConfig() != null) {
       try {
         _overlaySpecification = new OverlaySpecification(pluginSpec.getOverlayConfig(), getUtil()::getVariableType, getUtil()::getVariableDataShape);
@@ -86,11 +82,11 @@ public class FloatingHistogramPlugin extends AbstractEmptyComputePlugin<Floating
   @Override
   protected List<StreamSpec> getRequestedStreams(FloatingHistogramSpec pluginSpec) {
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>();
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
     Optional.ofNullable(pluginSpec.getOverlayConfig())
-        .map(OverlayConfig::getOverlayVariable)
-        .ifPresent(plotVariableSpecs::add);
+      .map(OverlayConfig::getOverlayVariable)
+      .ifPresent(plotVariableSpecs::add);
 
     List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
 
@@ -101,9 +97,9 @@ public class FloatingHistogramPlugin extends AbstractEmptyComputePlugin<Floating
         .addVars(filterVarSpecsByEntityId(plotVariableSpecs, outputEntityId, true))
     );
   }
-  
+
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     FloatingHistogramSpec spec = getPluginSpec();
     String outputEntityId = spec.getOutputEntityId();
@@ -122,16 +118,16 @@ public class FloatingHistogramPlugin extends AbstractEmptyComputePlugin<Floating
 
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval(DEFAULT_SINGLE_STREAM_NAME + " <- data.table::fread('" + DEFAULT_SINGLE_STREAM_NAME + "', na.strings=c(''))");
-      String inputData = getRVariableInputDataWithImputedZeroesAsString(DEFAULT_SINGLE_STREAM_NAME, varMap, outputEntityId, "variables"); 
+      String inputData = getRVariableInputDataWithImputedZeroesAsString(DEFAULT_SINGLE_STREAM_NAME, varMap, outputEntityId, "variables");
       connection.voidEval(getVoidEvalVariableMetadataListWithStudyDependentVocabs(varMap, outputEntityId));
-     
+
       String viewportRString = getViewportAsRString(spec.getViewport(), xVarType);
       connection.voidEval(viewportRString);
-     
+
       BinSpec binSpec = spec.getBinSpec();
       validateBinSpec(binSpec, xVarType);
       String binReportValue = binSpec.getType().getValue() != null ? binSpec.getType().getValue() : "binWidth";
-      
+
       //consider reorganizing conditions, move check for null value up a level ?
       if (binReportValue.equals("numBins")) {
         if (binSpec.getValue() != null) {
@@ -149,10 +145,10 @@ public class FloatingHistogramPlugin extends AbstractEmptyComputePlugin<Floating
         }
       } else {
         String binWidth =
-            binSpec.getValue() == null ? "NULL" :
-                (xVarType.equals("NUMBER") || xVarType.equals("INTEGER"))
-                ? "as.numeric('" + binSpec.getValue() + "')"
-                : "'" + binSpec.getValue().toString() + " " + binSpec.getUnits().toString().toLowerCase() + "'";
+          binSpec.getValue() == null ? "NULL" :
+            (xVarType.equals("NUMBER") || xVarType.equals("INTEGER"))
+            ? "as.numeric('" + binSpec.getValue() + "')"
+            : "'" + binSpec.getValue().toString() + " " + binSpec.getUnits().toString().toLowerCase() + "'";
         connection.voidEval("binWidth <- " + binWidth);
       }
 
@@ -163,7 +159,7 @@ public class FloatingHistogramPlugin extends AbstractEmptyComputePlugin<Floating
                                   "value='" + spec.getValueSpec().getValue() + "', " +
                                   "binReportValue='" + binReportValue + "', " +
                                   "barmode='" + barMode + "', " +
-                                  "viewport=viewport, " + 
+                                  "viewport=viewport, " +
                                   "sampleSizes=FALSE, " +
                                   "completeCases=FALSE, " +
                                   "overlayValues=" + overlayValues + ", " +

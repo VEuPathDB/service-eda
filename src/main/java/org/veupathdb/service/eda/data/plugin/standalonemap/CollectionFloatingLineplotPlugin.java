@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
@@ -11,7 +10,6 @@ import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.utils.ValidationUtils;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -61,23 +59,23 @@ public class CollectionFloatingLineplotPlugin extends AbstractEmptyComputePlugin
   @Override
   protected void validateVisualizationSpec(CollectionFloatingLineplotSpec pluginSpec) throws ValidationException {
     List<VariableSpec> collectionMembers = variablesFromCollectionMembers(
-        pluginSpec.getOverlayConfig().getCollection(),
-        pluginSpec.getOverlayConfig().getSelectedMembers());
+      pluginSpec.getOverlayConfig().getCollection(),
+      pluginSpec.getOverlayConfig().getSelectedMembers());
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable()));
     ValidationUtils.validateCollectionMembers(getUtil(),
-        pluginSpec.getOverlayConfig().getCollection(),
-        collectionMembers);
+      pluginSpec.getOverlayConfig().getCollection(),
+      collectionMembers);
   }
 
   @Override
   protected List<StreamSpec> getRequestedStreams(CollectionFloatingLineplotSpec pluginSpec) {
     List<VariableSpec> collectionMembers = variablesFromCollectionMembers(
-        pluginSpec.getOverlayConfig().getCollection(),
-        pluginSpec.getOverlayConfig().getSelectedMembers());
+      pluginSpec.getOverlayConfig().getCollection(),
+      pluginSpec.getOverlayConfig().getSelectedMembers());
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>();
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
     plotVariableSpecs.addAll(collectionMembers);
 
@@ -92,13 +90,13 @@ public class CollectionFloatingLineplotPlugin extends AbstractEmptyComputePlugin
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     CollectionFloatingLineplotSpec spec = getPluginSpec();
     String outputEntityId = spec.getOutputEntityId();
     List<VariableSpec> inputVarSpecs = variablesFromCollectionMembers(
-        spec.getOverlayConfig().getCollection(),
-        spec.getOverlayConfig().getSelectedMembers());
+      spec.getOverlayConfig().getCollection(),
+      spec.getOverlayConfig().getSelectedMembers());
     inputVarSpecs.add(spec.getXAxisVariable());
     CollectionSpec overlayVariable = spec.getOverlayConfig().getCollection();
     Map<String, DynamicDataSpec> varMap = new HashMap<>();
@@ -110,11 +108,11 @@ public class CollectionFloatingLineplotPlugin extends AbstractEmptyComputePlugin
     String numeratorValues = spec.getYAxisNumeratorValues() != null ? PluginUtil.listToRVector(spec.getYAxisNumeratorValues()) : "NULL";
     String denominatorValues = spec.getYAxisDenominatorValues() != null ? PluginUtil.listToRVector(spec.getYAxisDenominatorValues()) : "NULL";
     String overlayValues = getRBinListAsString(spec.getOverlayConfig().getSelectedValues());
-   
+
     List<DynamicDataSpec> dataSpecsWithStudyDependentVocabs = getDynamicDataSpecsWithStudyDependentVocabs(outputEntityId);
     Map<String, InputStream> studyVocabs = getVocabByRootEntity(dataSpecsWithStudyDependentVocabs);
     dataStreams.putAll(studyVocabs);
-     
+
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval(DEFAULT_SINGLE_STREAM_NAME + " <- data.table::fread('" + DEFAULT_SINGLE_STREAM_NAME + "', na.strings=c(''))");
       String inputData = getRInputDataWithImputedZeroesAsString(DEFAULT_SINGLE_STREAM_NAME, varMap, outputEntityId, "variables");
@@ -123,7 +121,7 @@ public class CollectionFloatingLineplotPlugin extends AbstractEmptyComputePlugin
       connection.voidEval(viewportRString);
       BinWidthSpec binSpec = spec.getBinSpec();
       validateBinSpec(binSpec, collectionType);
-     
+
       String binWidth;
       if (collectionType.equals("NUMBER") || collectionType.equals("INTEGER")) {
         binWidth = binSpec.getValue() == null ? "NULL" : "as.numeric('" + binSpec.getValue() + "')";
@@ -133,17 +131,17 @@ public class CollectionFloatingLineplotPlugin extends AbstractEmptyComputePlugin
       connection.voidEval("binWidth <- " + binWidth);
 
       String cmd = "plot.data::lineplot(data=" + inputData + ", " +
-                                        "variables=variables, binWidth=binWidth, " + 
-                                        "value=" + singleQuote(valueSpec) + ", " +
-                                        "errorBars=" + errorBars + ", " +
-                                        "viewport=viewport, " +
-                                        "numeratorValues=" + numeratorValues + ", " +
-                                        "denominatorValues=" + denominatorValues + ", " +
-                                        "sampleSizes=FALSE," +
-                                        "completeCases=FALSE," +
-                                        "overlayValues=" + overlayValues + ", " +
-                                        "evilMode='noVariables')";                          
+        "variables=variables, binWidth=binWidth, " +
+        "value=" + singleQuote(valueSpec) + ", " +
+        "errorBars=" + errorBars + ", " +
+        "viewport=viewport, " +
+        "numeratorValues=" + numeratorValues + ", " +
+        "denominatorValues=" + denominatorValues + ", " +
+        "sampleSizes=FALSE," +
+        "completeCases=FALSE," +
+        "overlayValues=" + overlayValues + ", " +
+        "evilMode='noVariables')";
       streamResult(connection, cmd, out);
-    }); 
+    });
   }
 }

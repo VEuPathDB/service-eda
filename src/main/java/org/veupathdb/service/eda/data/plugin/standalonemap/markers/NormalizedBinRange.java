@@ -35,18 +35,18 @@ public class NormalizedBinRange {
   public static List<NormalizedBinRange> fromOverlayConfig(ContinousOverlayConfig overlayConfig, String variableType) {
     if (variableType.equalsIgnoreCase(APIVariableType.DATE.getValue())) {
       return overlayConfig.getOverlayValues().stream()
-          .map(binRange -> new NormalizedBinRange(
-              LocalDate.parse(binRange.getBinStart(), CommonFormats.TABULAR_DATE_FORMAT).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli(),
-              LocalDate.parse(binRange.getBinEnd(), CommonFormats.TABULAR_DATE_FORMAT).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli(),
-              binRange.getBinLabel()))
-          .collect(Collectors.toList());
+        .map(binRange -> new NormalizedBinRange(
+          LocalDate.parse(binRange.getBinStart(), CommonFormats.TABULAR_DATE_FORMAT).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli(),
+          LocalDate.parse(binRange.getBinEnd(), CommonFormats.TABULAR_DATE_FORMAT).atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli(),
+          binRange.getBinLabel()))
+        .collect(Collectors.toList());
     } else {
       return overlayConfig.getOverlayValues().stream()
-          .map(binRange -> new NormalizedBinRange(
-              Double.parseDouble(binRange.getBinStart()),
-              Double.parseDouble(binRange.getBinEnd()),
-              binRange.getBinLabel()))
-          .collect(Collectors.toList());
+        .map(binRange -> new NormalizedBinRange(
+          Double.parseDouble(binRange.getBinStart()),
+          Double.parseDouble(binRange.getBinEnd()),
+          binRange.getBinLabel()))
+        .collect(Collectors.toList());
     }
   }
 }

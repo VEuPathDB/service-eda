@@ -1,7 +1,5 @@
 package org.veupathdb.service.eda.access.repo;
 
-import org.veupathdb.service.eda.Resources;
-
 public interface DB
 {
   interface Schema

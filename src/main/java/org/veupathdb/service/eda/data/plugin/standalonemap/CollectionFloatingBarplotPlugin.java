@@ -1,16 +1,13 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
-import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.utils.ValidationUtils;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -60,11 +57,11 @@ public class CollectionFloatingBarplotPlugin extends AbstractEmptyComputePlugin<
   @Override
   protected void validateVisualizationSpec(CollectionFloatingBarplotSpec pluginSpec) throws ValidationException {
     List<VariableSpec> collectionMembers = variablesFromCollectionMembers(
-        pluginSpec.getOverlayConfig().getCollection(),
-        pluginSpec.getOverlayConfig().getSelectedMembers());
+      pluginSpec.getOverlayConfig().getCollection(),
+      pluginSpec.getOverlayConfig().getSelectedMembers());
     ValidationUtils.validateCollectionMembers(getUtil(),
-        pluginSpec.getOverlayConfig().getCollection(),
-        collectionMembers);
+      pluginSpec.getOverlayConfig().getCollection(),
+      collectionMembers);
     if (pluginSpec.getBarMode() == null) {
       throw new ValidationException("Property 'barMode' is required.");
     }
@@ -73,11 +70,10 @@ public class CollectionFloatingBarplotPlugin extends AbstractEmptyComputePlugin<
   @Override
   protected List<StreamSpec> getRequestedStreams(CollectionFloatingBarplotSpec pluginSpec) {
     List<VariableSpec> collectionMembers = variablesFromCollectionMembers(
-        pluginSpec.getOverlayConfig().getCollection(),
-        pluginSpec.getOverlayConfig().getSelectedMembers());
+      pluginSpec.getOverlayConfig().getCollection(),
+      pluginSpec.getOverlayConfig().getSelectedMembers());
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
-    plotVariableSpecs.addAll(collectionMembers);
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>(collectionMembers);
 
     List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
 
@@ -90,7 +86,7 @@ public class CollectionFloatingBarplotPlugin extends AbstractEmptyComputePlugin<
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     CollectionFloatingBarplotSpec spec = getPluginSpec();
     String outputEntityId = spec.getOutputEntityId();
     String barMode = spec.getBarMode().getValue();
@@ -98,7 +94,7 @@ public class CollectionFloatingBarplotPlugin extends AbstractEmptyComputePlugin<
 
     Map<String, CollectionSpec> varMap = new HashMap<>();
     varMap.put("overlay", spec.getOverlayConfig().getCollection());
-     
+
     List<DynamicDataSpec> dataSpecsWithStudyDependentVocabs = getDynamicDataSpecsWithStudyDependentVocabs(outputEntityId);
     Map<String, InputStream> studyVocabs = getVocabByRootEntity(dataSpecsWithStudyDependentVocabs);
     dataStreams.putAll(studyVocabs);
@@ -108,14 +104,14 @@ public class CollectionFloatingBarplotPlugin extends AbstractEmptyComputePlugin<
       String inputData = getRCollectionInputDataWithImputedZeroesAsString(DEFAULT_SINGLE_STREAM_NAME, varMap, outputEntityId, "variables");
       connection.voidEval(getVoidEvalCollectionMetadataListWithStudyDependentVocabs(varMap, outputEntityId));
       String cmd =
-          "plot.data::bar(data=" + inputData + ", " +
-              "variables=variables, " +
-              "value='" + spec.getValueSpec().getValue() + "', " +
-              "barmode='" + barMode + "', " +
-              "sampleSizes=FALSE, " +
-              "completeCases=FALSE, " + 
-              "overlayValues=" + overlayValues + ", " + 
-              "evilMode='noVariables')";
+        "plot.data::bar(data=" + inputData + ", " +
+          "variables=variables, " +
+          "value='" + spec.getValueSpec().getValue() + "', " +
+          "barmode='" + barMode + "', " +
+          "sampleSizes=FALSE, " +
+          "completeCases=FALSE, " +
+          "overlayValues=" + overlayValues + ", " +
+          "evilMode='noVariables')";
       streamResult(connection, cmd, out);
     });
   }

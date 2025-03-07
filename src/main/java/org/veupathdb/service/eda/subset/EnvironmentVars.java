@@ -5,14 +5,14 @@ import static org.gusdb.fgputil.runtime.Environment.getRequiredVar;
 
 public class EnvironmentVars {
 
-  protected boolean _developmentMode;
-  protected String _appDbSchema;
-  protected String _userStudySchema;
-  protected String _datasetAccessServiceUrl;
-  protected String _binaryFilesDirectory;
-  protected String _availableBinaryFilesPaths;
-  protected String _dbBuild;
-  protected boolean _fileBasedSubsettingEnabled;
+  protected final boolean _developmentMode;
+  protected final String _appDbSchema;
+  protected final String _userStudySchema;
+  protected final String _datasetAccessServiceUrl;
+  protected final String _binaryFilesDirectory;
+  protected final String _availableBinaryFilesPaths;
+  protected final String _dbBuild;
+  protected final boolean _fileBasedSubsettingEnabled;
   private final String _binaryFilesMount;
 
   public EnvironmentVars() {

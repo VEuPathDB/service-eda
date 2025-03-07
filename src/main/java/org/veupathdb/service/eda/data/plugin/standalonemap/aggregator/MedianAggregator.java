@@ -4,7 +4,7 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.function.Function;
 
-public class MedianAggregator implements MarkerAggregator {
+public class MedianAggregator implements MarkerAggregator<Double> {
 
   private Double currentMedian = null;
   // Initialize a min-heap for the elements greater than the running median.

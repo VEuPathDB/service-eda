@@ -1,10 +1,7 @@
 package org.veupathdb.service.eda.merge.core.stream;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.collection.InitialSizeStringMap;
 import org.gusdb.fgputil.iterator.CloseableIterator;
-import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.EntityDef;
@@ -13,48 +10,49 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableMapping;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 import org.veupathdb.service.eda.merge.core.derivedvars.DerivedVariableFactory;
+import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
 
-import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
- * Special instance of StreamingEntityNode which is used as the root of the entity stream tree.  As the root, its
- * additional responsibilities are:
- *
- * 1. Return an ordered row containing only the originally requested columns (all other nodes provide "extra"
- *    rows and are unordered)
+ * Special instance of StreamingEntityNode which is used as the root of the
+ * entity stream tree.  As the root, its additional responsibilities are:
+ * <p>
+ * 1. Return an ordered row containing only the originally requested columns
+ *    (all other nodes provide "extra" rows and are unordered)
  * 2. Collects StreamSpecs from the tree and logs them before returning
  * 3. Is the 'public' distributor of the data streams to the tree
- * 4. Applies computed vars if necessary.  There can be only one computed entity and it must be this node's
- *    entity (the target entity) or an ancestor
- * 5. Provides a method indicating whether any data manipulation is required (i.e. if the caller can get away
- *    with streaming its single tabular stream (from subsetting) without using the entity tree at all (much quicker)
+ * 4. Applies computed vars if necessary.  There can be only one computed
+ *    entity, and it must be this node's entity (the target entity) or an
+ *    ancestor
+ * 5. Provides a method indicating whether any data manipulation is required
+ *    (i.e. if the caller can get away with streaming its single tabular stream
+ *    (from subsetting) without using the entity tree at all (much quicker)
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class RootStreamingEntityNode extends StreamingEntityNode {
 
-  private static final Logger LOG = LogManager.getLogger(RootStreamingEntityNode.class);
-
-  // special name for the stream of computed tabular data (only ever one compute per merge request)
+  // special name for the stream of computed tabular data (only ever one compute
+  // per merge request)
   public static final String COMPUTED_VAR_STREAM_NAME = "__COMPUTED_VAR_STREAM__";
 
-  private final String[] _outputVars;
+  private final List<String> _outputVars;
   private final InitialSizeStringMap.Builder _outputRowBuilder;
 
   private final Optional<EntityStream> _computeStreamProcessor;
   private final boolean _computeEntityMatchesOurs;
 
   public RootStreamingEntityNode(
-      EntityDef targetEntity,
-      List<VariableDef> outputVarDefs,
-      List<APIFilter> subsetFilters,
-      ReferenceMetadata metadata,
-      DerivedVariableFactory derivedVariableFactory,
-      Optional<ComputeInfo> computeInfo) throws ValidationException {
+    EntityDef targetEntity,
+    List<VariableDef> outputVarDefs,
+    List<APIFilter> subsetFilters,
+    ReferenceMetadata metadata,
+    DerivedVariableFactory derivedVariableFactory,
+    Optional<ComputeInfo> computeInfo
+  ) throws ValidationException {
 
     super(targetEntity, outputVarDefs, subsetFilters, metadata, derivedVariableFactory, INITIAL_DEPENDENCY_DEPTH);
 
@@ -68,11 +66,10 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
     computeStreamSpec.ifPresent(fullOutputVarDefs::addAll);
 
     _outputVars = getOrderedOutputColumns(fullOutputVarDefs);
-    LOG.info("Root stream final output vars: " + String.join(", ", _outputVars));
-    _outputRowBuilder = new InitialSizeStringMap.Builder(_outputVars);
+    _outputRowBuilder = new InitialSizeStringMap.Builder(_outputVars.toArray(String[]::new));
   }
 
-  private String[] getOrderedOutputColumns(List<VariableSpec> fullOutputVarDefs) throws ValidationException {
+  private List<String> getOrderedOutputColumns(List<VariableSpec> fullOutputVarDefs) throws ValidationException {
     List<String> outputCols = VariableDef.toDotNotation(fullOutputVarDefs);
     Set<String> distinctnessCheck = new HashSet<>();
     for (String outputCol : outputCols) {
@@ -81,7 +78,7 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
       }
       distinctnessCheck.add(outputCol);
     }
-    return outputCols.toArray(new String[0]);
+    return outputCols;
   }
 
   private static Optional<StreamSpec> getComputeStreamSpec(List<VariableMapping> varMappings) {
@@ -103,18 +100,14 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
     });
 
     return Optional.of(new StreamSpec(COMPUTED_VAR_STREAM_NAME,
-        varMappings.get(0).getVariableSpec().getEntityId()).addVars(computedVars));
+      varMappings.getFirst().getVariableSpec().getEntityId()).addVars(computedVars));
   }
 
   @Override
   public List<StreamSpec> getRequiredStreamSpecs() {
     List<StreamSpec> streams = super.getRequiredStreamSpecs();
     _computeStreamProcessor.ifPresent(stream ->
-        streams.add(stream.getStreamSpec()));
-    LOG.info("Created "+ streams.size() + " stream specs needed to create this response: " + NL +
-        streams.stream().map(spec -> spec.toString() + NL + "  filtersOverride: " +
-            spec.getFiltersOverride().map(JsonUtil::serializeObject).orElse("none")
-        ).collect(Collectors.joining(NL)));
+      streams.add(stream.getStreamSpec()));
     return streams;
   }
 
@@ -141,7 +134,7 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
 
     // return only requested vars and in the correct order
     final InitialSizeStringMap outputRow = _outputRowBuilder.build();
-    final String[] outputVals = new String[_outputVars.length];
+    final String[] outputVals = new String[_outputVars.size()];
     int i = 0;
     for (String col : _outputVars) {
       outputVals[i++] = row.get(col);
@@ -163,7 +156,7 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
       // make sure ID matches
       if (!row.get(getEntityIdColumnName()).equals(nextComputedRow.get(getEntityIdColumnName()))) {
         throw new IllegalStateException("Computed row entity ID '" + nextComputedRow.get(getEntityIdColumnName()) +
-            " does not match expected ID " + row.get(getEntityIdColumnName()));
+          " does not match expected ID " + row.get(getEntityIdColumnName()));
       }
       // add values to row
       row.putAll(nextComputedRow);
@@ -177,14 +170,14 @@ public class RootStreamingEntityNode extends StreamingEntityNode {
   @Override
   public String toString() {
     return NL + "RootStream {" + NL +
-        "  outputVars: [ " + String.join(", ", _outputVars) + " ]," + NL +
-        "  computeStreamEntityMatchesOurs: " + _computeEntityMatchesOurs + NL +
-        "  computeStream:" + _computeStreamProcessor.map(c -> NL + c.toString(2)).orElse(" <none>") + NL +
-        "  nodeProperties:" + NL + toString(2) + NL +
-        "}" + NL;
+      "  outputVars: [ " + String.join(", ", _outputVars) + " ]," + NL +
+      "  computeStreamEntityMatchesOurs: " + _computeEntityMatchesOurs + NL +
+      "  computeStream:" + _computeStreamProcessor.map(c -> NL + c.toString(2)).orElse(" <none>") + NL +
+      "  nodeProperties:" + NL + toString(2) + NL +
+      "}" + NL;
   }
 
-  public String[] getOrderedOutputVars() {
+  public List<String> getOrderedOutputVars() {
     return _outputVars;
   }
 }

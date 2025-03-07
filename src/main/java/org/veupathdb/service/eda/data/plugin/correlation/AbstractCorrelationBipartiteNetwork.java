@@ -7,10 +7,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidationException;
+import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.generated.model.*;
@@ -33,7 +32,7 @@ public abstract class AbstractCorrelationBipartiteNetwork<T extends DataPluginRe
   }
 
   @Override
-  protected void validateVisualizationSpec(CorrelationNetworkSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(CorrelationNetworkSpec pluginSpec) {
     // nothing to do here
   }
 
@@ -56,7 +55,7 @@ public abstract class AbstractCorrelationBipartiteNetwork<T extends DataPluginRe
     // of nodes, links, column1NodeIDs, and column2NodeIDs.
 
     // Prep objects
-    ArrayList<LinkData> links = new ArrayList<LinkData>();
+    ArrayList<LinkData> links = new ArrayList<>();
     ArrayList<String> nodeIDs = new ArrayList<>();
     ArrayList<String> column1NodeIDs = new ArrayList<>();
     ArrayList<String> column2NodeIDs = new ArrayList<>();
@@ -65,7 +64,7 @@ public abstract class AbstractCorrelationBipartiteNetwork<T extends DataPluginRe
     // We want to grab the link, the nodes associated with the link, and make note of column assignments for
     // each node.
     stats.getStatistics().forEach((correlationRow) -> {
-      
+
       // Skip rows that have no correlation coefficient, a NaN correlation coef, or a correlation coef that is too small. Filtering here prevents us
       // from showing nodes with no links.
       if (correlationRow.getCorrelationCoef() == null) return;
@@ -86,29 +85,16 @@ public abstract class AbstractCorrelationBipartiteNetwork<T extends DataPluginRe
 
       // Next create links
       // Create source and target objects.
-      NodeData sourceNode = new NodeDataImpl();
-      sourceNode.setId(correlationRow.getData1());
-      NodeData targetNode = new NodeDataImpl();
-      targetNode.setId(correlationRow.getData2());
-      
-      // Create link with the data from this row and add to links array.
-      LinkData link = new LinkDataImpl();
-      link.setSource(sourceNode);
-      link.setTarget(targetNode);
-      link.setWeight(String.valueOf(Math.abs(Float.parseFloat(correlationRow.getCorrelationCoef()))));
-      // Link color is the sign of the correlation
-      String color = Float.parseFloat(correlationRow.getCorrelationCoef()) < 0 ? "-1" : "1";
-      link.setColor(color);
-      links.add(link);
+      links.add(getLinkData(correlationRow));
     });
 
     // Get unique IDs
-    List<String> uniqueColumn1IDs = column1NodeIDs.stream().distinct().collect(Collectors.toList());
-    List<String> uniqueColumn2IDs = column2NodeIDs.stream().distinct().collect(Collectors.toList());
-    List<String> uniqueNodeIDs = nodeIDs.stream().distinct().collect(Collectors.toList());
+    List<String> uniqueColumn1IDs = column1NodeIDs.stream().distinct().toList();
+    List<String> uniqueColumn2IDs = column2NodeIDs.stream().distinct().toList();
+    List<String> uniqueNodeIDs = nodeIDs.stream().distinct().toList();
 
     // Turn the node ids into an array of Node objects, each with an id property
-    ArrayList<NodeData> nodes = new ArrayList<NodeData>();
+    ArrayList<NodeData> nodes = new ArrayList<>();
     uniqueNodeIDs.forEach((nodeID) -> {
       NodeData node = new NodeDataImpl();
       node.setId(nodeID);
@@ -128,13 +114,13 @@ public abstract class AbstractCorrelationBipartiteNetwork<T extends DataPluginRe
     partition1NodeIdList.setNodeIds(uniqueColumn1IDs);
     NodeIdList partition2NodeIdList = new NodeIdListImpl();
     partition2NodeIdList.setNodeIds(uniqueColumn2IDs);
-    List<NodeIdList> partitions = new ArrayList<NodeIdList>();
+    List<NodeIdList> partitions = new ArrayList<>();
     partitions.add(partition1NodeIdList);
     partitions.add(partition2NodeIdList);
     bipartiteNetworkData.setPartitions(partitions);
 
     BipartiteNetworkConfig bipartiteNetworkConfig = new BipartiteNetworkConfigImpl();
-    List<String> partitionsMetadata = new ArrayList<String>();
+    List<String> partitionsMetadata = new ArrayList<>();
     partitionsMetadata.add(stats.getData1Metadata());
     partitionsMetadata.add(stats.getData2Metadata());
     bipartiteNetworkConfig.setPartitionsMetadata(partitionsMetadata);
@@ -151,5 +137,23 @@ public abstract class AbstractCorrelationBipartiteNetwork<T extends DataPluginRe
     JsonUtil.Jackson.writeValue(out, response);
     out.flush();
 
+  }
+
+  @NotNull
+  private static LinkData getLinkData(CorrelationPoint correlationRow) {
+    NodeData sourceNode = new NodeDataImpl();
+    sourceNode.setId(correlationRow.getData1());
+    NodeData targetNode = new NodeDataImpl();
+    targetNode.setId(correlationRow.getData2());
+
+    // Create link with the data from this row and add to links array.
+    LinkData link = new LinkDataImpl();
+    link.setSource(sourceNode);
+    link.setTarget(targetNode);
+    link.setWeight(String.valueOf(Math.abs(Float.parseFloat(correlationRow.getCorrelationCoef()))));
+    // Link color is the sign of the correlation
+    String color = Float.parseFloat(correlationRow.getCorrelationCoef()) < 0 ? "-1" : "1";
+    link.setColor(color);
+    return link;
   }
 }

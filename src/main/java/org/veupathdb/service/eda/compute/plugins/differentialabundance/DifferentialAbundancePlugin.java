@@ -71,7 +71,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
 
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
-    
+
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting differential abundance computation')");
 
@@ -93,17 +93,17 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
 
       // Turn the list of id columns into an array of strings for R
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
-      String dotNotatedIdColumnsString = "c(";
+      StringBuilder dotNotatedIdColumnsString = new StringBuilder("c(");
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
         if (first) {
           first = false;
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + singleQuote(idCol);
+          dotNotatedIdColumnsString.append(singleQuote(idCol));
         } else {
-          dotNotatedIdColumnsString = dotNotatedIdColumnsString + "," + singleQuote(idCol);
+          dotNotatedIdColumnsString.append(",").append(singleQuote(idCol));
         }
       }
-      dotNotatedIdColumnsString = dotNotatedIdColumnsString + ")";
+      dotNotatedIdColumnsString.append(")");
 
       // Turn the comparator bin lists into a string for R
       String rGroupA = util.getRBinListAsString(groupA);
@@ -112,7 +112,7 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
 
       // Create the comparator and input data objects
       connection.voidEval("comparator <- microbiomeComputations::Comparator(" +
-                                "variable=veupathUtils::VariableMetadata(" + 
+                                "variable=veupathUtils::VariableMetadata(" +
                                   "variableSpec=veupathUtils::VariableSpec(" +
                                     "variableId='" + comparisonVariableSpec.getVariableId() + "'," +
                                     "entityId='" + comparisonVariableSpec.getEntityId() + "')," +
@@ -121,8 +121,8 @@ public class DifferentialAbundancePlugin extends AbstractPlugin<DifferentialAbun
                                 "groupA=" + rGroupA + "," +
                                 "groupB=" + rGroupB +
                               ")");
-      
-      String abundanceDataClass = "AbundanceData"; 
+
+      String abundanceDataClass = "AbundanceData";
       if (util.getCollectionNormalizationMethod(collectionSpec).equals("NULL") &&
           util.getCollectionIsCompositional(collectionSpec) &&
           !util.getCollectionIsProportion(collectionSpec))

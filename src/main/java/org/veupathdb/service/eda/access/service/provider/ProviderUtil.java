@@ -2,7 +2,7 @@ package org.veupathdb.service.eda.access.service.provider;
 
 import java.sql.ResultSet;
 
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.generated.model.DatasetProvider;
 import org.veupathdb.service.eda.generated.model.DatasetProviderImpl;
@@ -13,7 +13,7 @@ import org.veupathdb.service.eda.access.service.user.UserUtil;
 
 public class ProviderUtil
 {
-  private static ProviderUtil instance = new ProviderUtil();
+  private static final ProviderUtil instance = new ProviderUtil();
 
   private final Logger log;
 
@@ -56,9 +56,5 @@ public class ProviderUtil
 
   public static ProviderUtil getInstance() {
     return instance;
-  }
-
-  public static ProviderRow rs2Row(final ResultSet rs) throws Exception {
-    return getInstance().resultToProviderRow(rs);
   }
 }

@@ -1,11 +1,10 @@
 package org.veupathdb.service.eda.subset.service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -45,8 +44,14 @@ import org.veupathdb.service.eda.subset.model.varcollection.StringVarCollection;
 import org.veupathdb.service.eda.subset.model.varcollection.VarCollection;
 import org.veupathdb.service.eda.subset.model.variable.*;
 
+import javax.annotation.Nullable;
+
 public class ApiConversionUtil {
   private static final Logger LOG = LogManager.getLogger(ApiConversionUtil.class);
+
+  // TODO: temporary hack until the deprecated java.util.Date usages are purged
+  //       from lib-eda-subsetting.
+  private static final ZoneOffset DEFAULT_ZONE_OFFSET = OffsetDateTime.now().getOffset();
 
   /** converts model study object to API study object */
   public static APIStudyDetail getApiStudyDetail(Study study) {
@@ -71,11 +76,11 @@ public class ApiConversionUtil {
       apiEntity.setIsManyToOneWithParent(entity.isManyToOneWithParent());
       apiEntity.setChildren(mappedChildren);
       apiEntity.setVariables(entity.getVariables().stream()
-          .map(ApiConversionUtil::variableToAPIVariable)
-          .collect(Collectors.toList()));
+        .map(ApiConversionUtil::variableToAPIVariable)
+        .collect(Collectors.toList()));
       apiEntity.setCollections(entity.getCollections().stream()
-          .map(ApiConversionUtil::collectionToAPICollection)
-          .collect(Collectors.toList()));
+        .map(ApiConversionUtil::collectionToAPICollection)
+        .collect(Collectors.toList()));
       return apiEntity;
     });
   }
@@ -84,7 +89,7 @@ public class ApiConversionUtil {
     APICollection collection = switch(col.getType()) {
       case DATE -> getDateCollection((DateVarCollection)col);
       case INTEGER -> getIntegerCollection((IntegerVarCollection)col);
-      case NUMBER -> getFloatCollection((FloatingPointVarCollection)col);
+      case NUMBER -> getFloatCollection((FloatingPointVarCollection<?>)col);
       case STRING -> getStringCollection((StringVarCollection)col);
     };
     collection.setId(col.getId());
@@ -119,7 +124,7 @@ public class ApiConversionUtil {
     return intCol;
   }
 
-  private static APICollection getFloatCollection(FloatingPointVarCollection col) {
+  private static APICollection getFloatCollection(FloatingPointVarCollection<?> col) {
     APINumberCollection floatCol = new APINumberCollectionImpl();
     floatCol.setDistributionDefaults(getFloatDistributionDefaults(col.getDistributionConfig()));
     floatCol.setUnits(col.getUnits());
@@ -140,8 +145,8 @@ public class ApiConversionUtil {
   /** converts model variable object to API variable object */
   private static APIVariable variableToAPIVariable(Variable var) {
     APIVariable apiVar = var.hasValues()
-        ? getValuesVar((VariableWithValues<?>)var)
-        : new APIVariablesCategoryImpl();
+      ? getValuesVar((VariableWithValues<?>)var)
+      : new APIVariablesCategoryImpl();
     // set props common to all variables
     apiVar.setId(var.getId());
     apiVar.setDisplayName(var.getDisplayName());
@@ -174,7 +179,7 @@ public class ApiConversionUtil {
     apiVar.setImputeZero(var.getImputeZero());
     apiVar.setHasStudyDependentVocabulary(var.hasStudyDependentVocabulary());
     apiVar.setVariableSpecToImputeZeroesFor(VariableDef.newVariableSpecFromDotNotation(
-        var.getVariableSpecToImputeZeroesFor()));
+      var.getVariableSpecToImputeZeroesFor()));
     return apiVar;
   }
 
@@ -244,9 +249,8 @@ public class ApiConversionUtil {
   }
 
   private static APIStringVariable getStringVar(StringVariable var) {
-    APIStringVariable apiStrVar = new APIStringVariableImpl();
     // currently no string-specific extra properties
-    return apiStrVar;
+    return new APIStringVariableImpl();
   }
 
   private static APILongitudeVariable getLongitudeVar(LongitudeVariable var) {
@@ -281,11 +285,11 @@ public class ApiConversionUtil {
 
   public static Optional<BinSpecWithRange> toInternalBinSpecWithRange(org.veupathdb.service.eda.generated.model.BinSpecWithRange binSpec) {
     return Optional.ofNullable(binSpec)
-        .map(b -> new BinSpecWithRange()
-            .setDisplayRangeMin(b.getDisplayRangeMin())
-            .setDisplayRangeMax(b.getDisplayRangeMax())
-            .setBinWidth(b.getBinWidth())
-            .setBinUnits(toInternalBinUnits(b.getBinUnits())));
+      .map(b -> new BinSpecWithRange()
+        .setDisplayRangeMin(b.getDisplayRangeMin())
+        .setDisplayRangeMax(b.getDisplayRangeMax())
+        .setBinWidth(b.getBinWidth())
+        .setBinUnits(toInternalBinUnits(b.getBinUnits())));
   }
 
   private static BinUnits toInternalBinUnits(org.veupathdb.service.eda.generated.model.BinUnits binUnits) {
@@ -302,10 +306,10 @@ public class ApiConversionUtil {
 
   public static List<org.veupathdb.service.eda.subset.model.tabular.SortSpecEntry> toInternalSorting(List<SortSpecEntry> sorting) {
     return sorting == null ? null : sorting.stream()
-        .map(e -> new org.veupathdb.service.eda.subset.model.tabular.SortSpecEntry()
-            .setDirection(SortDirection.valueOf(e.getDirection().name()))
-            .setKey(e.getKey()))
-        .collect(Collectors.toList());
+      .map(e -> new org.veupathdb.service.eda.subset.model.tabular.SortSpecEntry()
+        .setDirection(SortDirection.valueOf(e.getDirection().name()))
+        .setKey(e.getKey()))
+      .collect(Collectors.toList());
   }
 
   public static TabularHeaderFormat toInternalTabularHeaderFormat(org.veupathdb.service.eda.generated.model.TabularHeaderFormat headerFormat) {
@@ -317,33 +321,33 @@ public class ApiConversionUtil {
   }
 
   public static List<APIStudyOverview> toApiStudyOverviews(
-      Map<String, StudyDatasetInfo> datasetInfoMap,
-      Map<String, StudyOverview> overviewMap) {
+    Map<String, StudyDatasetInfo> datasetInfoMap,
+    Map<String, StudyOverview> overviewMap) {
     return datasetInfoMap.keySet().stream()
-        .filter(studyId -> {
-          final boolean studyInOverviews = overviewMap.containsKey(studyId);
-          if (!studyInOverviews) {
-            LOG.warn("Found study " + studyId + " in visible studies but not it's not being returned from canoncial list of studies.");
-          }
-          return studyInOverviews;
-        })
-        .map(studyId -> {
-          StudyDatasetInfo dataset = datasetInfoMap.get(studyId);
-          StudyOverview overview = overviewMap.get(studyId);
-          APIStudyOverview study = new APIStudyOverviewImpl();
-          study.setId(studyId);
-          study.setSourceType(switch (overview.getStudySourceType()) {
-            case CURATED -> StudySourceType.CURATED;
-            case USER_SUBMITTED -> StudySourceType.USERSUBMITTED;
-          });
-          study.setDatasetId(dataset.getDatasetId());
-          study.setSha1hash(dataset.getSha1Hash());
-          study.setDisplayName(dataset.getDisplayName());
-          study.setShortDisplayName(dataset.getShortDisplayName());
-          study.setDescription(dataset.getDescription());
-          study.setLastModified(overview.getLastModified());
-          return study;
-        }).collect(Collectors.toList());
+      .filter(studyId -> {
+        final boolean studyInOverviews = overviewMap.containsKey(studyId);
+        if (!studyInOverviews) {
+          LOG.warn("Found study {} in visible studies but not it's not being returned from canonical list of studies.", studyId);
+        }
+        return studyInOverviews;
+      })
+      .map(studyId -> {
+        StudyDatasetInfo dataset = datasetInfoMap.get(studyId);
+        StudyOverview overview = overviewMap.get(studyId);
+        APIStudyOverview study = new APIStudyOverviewImpl();
+        study.setId(studyId);
+        study.setSourceType(switch (overview.getStudySourceType()) {
+          case CURATED -> StudySourceType.CURATED;
+          case USER_SUBMITTED -> StudySourceType.USERSUBMITTED;
+        });
+        study.setDatasetId(dataset.getDatasetId());
+        study.setSha1hash(dataset.getSha1Hash());
+        study.setDisplayName(dataset.getDisplayName());
+        study.setShortDisplayName(dataset.getShortDisplayName());
+        study.setDescription(dataset.getDescription());
+        study.setLastModified(dateToOffsetDate(overview.getLastModified()));
+        return study;
+      }).toList();
   }
 
   /*
@@ -362,33 +366,19 @@ public class ApiConversionUtil {
 
       // validate filter's entity id
       Supplier<BadRequestException> excep =
-          () -> new BadRequestException(errPrfx + "entity ID: " + apiFilter.getEntityId());
+        () -> new BadRequestException(errPrfx + "entity ID: " + apiFilter.getEntityId());
       Entity entity = study.getEntity(apiFilter.getEntityId()).orElseThrow(excep);
 
-      Filter newFilter;
-      if (apiFilter instanceof APIDateRangeFilter) {
-        newFilter = unpackDateRangeFilter(apiFilter, entity, appDbSchema);
-      }
-      else if (apiFilter instanceof APIDateSetFilter) {
-        newFilter = unpackDateSetFilter(apiFilter, entity, appDbSchema);
-      }
-      else if (apiFilter instanceof APINumberRangeFilter) {
-        newFilter = unpackNumberRangeFilter(apiFilter, entity, appDbSchema);
-      }
-      else if (apiFilter instanceof APINumberSetFilter) {
-        newFilter = unpackNumberSetFilter(apiFilter, entity, appDbSchema);
-      }
-      else if (apiFilter instanceof APILongitudeRangeFilter) {
-        newFilter = unpackLongitudeRangeFilter(apiFilter, entity, appDbSchema);
-      }
-      else if (apiFilter instanceof APIStringSetFilter) {
-        newFilter = unpackStringSetFilter(apiFilter, entity, appDbSchema);
-      }
-      else if (apiFilter instanceof APIMultiFilter) {
-        newFilter = unpackMultiFilter(apiFilter, entity, appDbSchema);
-      }
-      else
-        throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
+      Filter newFilter = switch (apiFilter) {
+        case APIDateRangeFilter ignored -> unpackDateRangeFilter(apiFilter, entity, appDbSchema);
+        case APIDateSetFilter ignored -> unpackDateSetFilter(apiFilter, entity, appDbSchema);
+        case APINumberRangeFilter ignored -> unpackNumberRangeFilter(apiFilter, entity, appDbSchema);
+        case APINumberSetFilter ignored -> unpackNumberSetFilter(apiFilter, entity, appDbSchema);
+        case APILongitudeRangeFilter ignored -> unpackLongitudeRangeFilter(apiFilter, entity, appDbSchema);
+        case APIStringSetFilter ignored -> unpackStringSetFilter(apiFilter, entity, appDbSchema);
+        case APIMultiFilter ignored -> unpackMultiFilter(apiFilter, entity, appDbSchema);
+        default -> throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
+      };
 
       subsetFilters.add(newFilter);
     }
@@ -401,8 +391,8 @@ public class ApiConversionUtil {
     if (f.getMax() == null) throw new BadRequestException("Date range filter: max is a required property");
     DateVariable var = DateVariable.assertType(entity.getVariableOrThrow(f.getVariableId()));
     return new DateRangeFilter(appDbSchema, entity, var,
-        FormatUtil.parseDateTime(Utils.standardizeLocalDateTime(f.getMin())),
-        FormatUtil.parseDateTime(Utils.standardizeLocalDateTime(f.getMax())));
+      FormatUtil.parseDateTime(Utils.standardizeLocalDateTime(f.getMin())),
+      FormatUtil.parseDateTime(Utils.standardizeLocalDateTime(f.getMax())));
   }
 
   private static DateSetFilter unpackDateSetFilter(APIFilter apiFilter, Entity entity, String appDbSchema) {
@@ -426,14 +416,14 @@ public class ApiConversionUtil {
 
     // need to check for each number variable type
     Optional<NumberRangeFilter<Long>> intFilter = IntegerVariable.assertType(var)
-        .map(intVar -> new NumberRangeFilter<>(appDbSchema, entity, intVar, f.getMin(), f.getMax()));
+      .map(intVar -> new NumberRangeFilter<>(appDbSchema, entity, intVar, f.getMin(), f.getMax()));
     if (intFilter.isPresent()) return intFilter.get();
 
     // not integer var; try floating point or else throw
     return FloatingPointVariable.assertType(var)
-        .map(floatVar -> new NumberRangeFilter<>(appDbSchema, entity, floatVar, f.getMin(), f.getMax()))
-        .orElseThrow(() -> new BadRequestException("Variable " + var.getId() +
-            " of entity " + var.getEntityId() + " is not a number or integer variable."));
+      .map(floatVar -> new NumberRangeFilter<>(appDbSchema, entity, floatVar, f.getMin(), f.getMax()))
+      .orElseThrow(() -> new BadRequestException("Variable " + var.getId() +
+        " of entity " + var.getEntityId() + " is not a number or integer variable."));
   }
 
   private static NumberSetFilter<?> unpackNumberSetFilter(APIFilter apiFilter, Entity entity, String appDbSchema) {
@@ -445,14 +435,14 @@ public class ApiConversionUtil {
 
     // need to check for each number variable type
     Optional<NumberSetFilter<Long>> intFilter = IntegerVariable.assertType(var)
-        .map(intVar -> new NumberSetFilter<>(appDbSchema, entity, intVar, f.getNumberSet()));
+      .map(intVar -> new NumberSetFilter<>(appDbSchema, entity, intVar, f.getNumberSet()));
     if (intFilter.isPresent()) return intFilter.get();
 
     // not integer var; try floating point or else throw
     return FloatingPointVariable.assertType(var)
-        .map(floatVar -> new NumberSetFilter<>(appDbSchema, entity, floatVar, f.getNumberSet()))
-        .orElseThrow(() -> new BadRequestException("Variable " + var.getId() +
-            " of entity " + var.getEntityId() + " is not a number or integer variable."));
+      .map(floatVar -> new NumberSetFilter<>(appDbSchema, entity, floatVar, f.getNumberSet()))
+      .orElseThrow(() -> new BadRequestException("Variable " + var.getId() +
+        " of entity " + var.getEntityId() + " is not a number or integer variable."));
   }
 
   private static LongitudeRangeFilter unpackLongitudeRangeFilter(APIFilter apiFilter, Entity entity, String appDbSchema) {
@@ -479,7 +469,7 @@ public class ApiConversionUtil {
     // validate multifilter variable
     String mfVarId = f.getVariableId();
     Variable multiFilterVariable = entity.getVariable(mfVarId).orElseThrow(() ->
-        new BadRequestException("Multifilter includes invalid multifilter variable ID: " + mfVarId));
+      new BadRequestException("Multifilter includes invalid multifilter variable ID: " + mfVarId));
     if (multiFilterVariable.getDisplayType() != VariableDisplayType.MULTIFILTER)
       throw new BadRequestException("Multifilter variable does not have display type 'multifilter': " + mfVarId);
 
@@ -495,5 +485,10 @@ public class ApiConversionUtil {
     }
 
     return new MultiFilter(appDbSchema, entity, subFilters, MultiFilter.MultiFilterOperation.fromString(f.getOperation().getValue()));
+  }
+
+  @Nullable
+  private static OffsetDateTime dateToOffsetDate(@Nullable Date date) {
+    return date == null ? null : Instant.ofEpochMilli(date.getTime()).atOffset(DEFAULT_ZONE_OFFSET);
   }
 }

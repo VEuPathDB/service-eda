@@ -5,9 +5,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -44,7 +42,7 @@ public class EntityDef {
     _id = id;
     _displayName = displayName;
     _idColumnDef = new VariableDef(_id, idColumnName, APIVariableType.STRING,
-        APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), Optional.empty(), null, null, false, null, VariableSource.ID);
+      APIVariableDataShape.CONTINUOUS, false, false, Optional.empty(), Optional.empty(), null, null, false, null, VariableSource.ID);
     _isManyToOneWithParent = isManyToOneWithParent;
     _variables = new LinkedHashMap<>();
     _variables.put(new EntityChildUniquenessKey(_idColumnDef.getEntityId(), _idColumnDef.getVariableId()), _idColumnDef);
@@ -99,11 +97,11 @@ public class EntityDef {
 
     // add only native vars (not IDs or inherited or derived vars)
     Map<String, TreeNode<VariableDef>> allVarNodes = _variables.values().stream()
-        .filter(var -> var.getSource() == VariableSource.NATIVE)
-        .collect(Collectors.toMap(
-            VariableSpecImpl::getVariableId,
-            TreeNode::new
-        ));
+      .filter(var -> var.getSource() == VariableSource.NATIVE)
+      .collect(Collectors.toMap(
+        VariableSpecImpl::getVariableId,
+        TreeNode::new
+      ));
 
     // add categories for proper tree structure
     _categories.values().forEach(cat -> allVarNodes.put(cat.getVariableId(), new TreeNode<>(cat)));
@@ -121,8 +119,7 @@ public class EntityDef {
           // This can happen legally if parentId = this entity's ID OR if repeated measure is false,
           //   it can even be the ID of this entity's parent entity (!!).  For our purposes, any
           //   non-variable ID is not useful; treat as if parent is null and warn for debug purposes.
-          LOG.warn("Variable " + var + " contains parentId '" +
-              parentId + "' that does not map to a variable in this entity's tree." );
+          LOG.warn("Variable {} contains parentId '{}' that does not map to a variable in this entity's tree.", var, parentId);
           parentlessNodes.add(varNode);
         }
         else {
@@ -132,8 +129,8 @@ public class EntityDef {
     }
     switch(parentlessNodes.size()) {
       case 0: throw new RuntimeException("Found no native vars in entity " +
-          getId() + " with no parentId specified (illegal variable tree)");
-      case 1: return parentlessNodes.get(0);
+        getId() + " with no parentId specified (illegal variable tree)");
+      case 1: return parentlessNodes.getFirst();
       default:
         // create a dummy root containing all (>1) parentless nodes
         TreeNode<VariableDef> dummyRoot = new TreeNode<>(new VariableDef(
@@ -178,15 +175,7 @@ public class EntityDef {
     }
   }
 
-  private static class EntityChildUniquenessKey {
-    private final String entityId;
-    private final String childId;
-
-    public EntityChildUniquenessKey(String entityId, String childId) {
-      this.entityId = entityId;
-      this.childId = childId;
-    }
-
+  private record EntityChildUniquenessKey(String entityId, String childId) {
     static EntityChildUniquenessKey fromVar(VariableDef variableDef) {
       return new EntityChildUniquenessKey(variableDef.getEntityId(), variableDef.getVariableId());
     }
@@ -194,19 +183,5 @@ public class EntityDef {
     static EntityChildUniquenessKey fromCollection(CollectionDef collectionDef) {
       return new EntityChildUniquenessKey(collectionDef.getEntityId(), collectionDef.getCollectionId());
     }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      EntityChildUniquenessKey that = (EntityChildUniquenessKey) o;
-      return Objects.equals(entityId, that.entityId) && Objects.equals(childId, that.childId);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(entityId, childId);
-    }
   }
-
 }

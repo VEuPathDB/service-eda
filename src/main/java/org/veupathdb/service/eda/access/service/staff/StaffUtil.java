@@ -8,7 +8,7 @@ import org.veupathdb.service.eda.access.service.user.UserUtil;
 
 public class StaffUtil
 {
-  private static StaffUtil instance = new StaffUtil();
+  private static final StaffUtil instance = new StaffUtil();
 
   public StaffRow resultRowToStaffRow(final ResultSet rs) throws Exception {
     var out = new StaffRow();
@@ -20,9 +20,5 @@ public class StaffUtil
 
   public static StaffUtil getInstance() {
     return instance;
-  }
-
-  public static StaffRow rowToStaff(final ResultSet rs) throws Exception {
-    return getInstance().resultRowToStaffRow(rs);
   }
 }

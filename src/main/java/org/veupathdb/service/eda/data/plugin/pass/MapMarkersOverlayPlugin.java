@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.pass;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
@@ -11,7 +10,6 @@ import org.veupathdb.service.eda.generated.model.MapMarkersOverlayPostRequest;
 import org.veupathdb.service.eda.generated.model.MapMarkersOverlaySpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -53,7 +51,7 @@ public class MapMarkersOverlayPlugin extends AbstractEmptyComputePlugin<MapMarke
   }
 
   @Override
-  protected void validateVisualizationSpec(MapMarkersOverlaySpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(MapMarkersOverlaySpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
@@ -71,34 +69,33 @@ public class MapMarkersOverlayPlugin extends AbstractEmptyComputePlugin<MapMarke
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     PluginUtil util = getUtil();
     MapMarkersOverlaySpec spec = getPluginSpec();
     String showMissingness = spec.getShowMissingness() != null ? spec.getShowMissingness().getValue() : "noVariables";
     String deprecatedShowMissingness = showMissingness.equals("FALSE") ? "noVariables" : showMissingness.equals("TRUE") ? "strataVariables" : showMissingness;
     String valueSpec = singleQuote(spec.getValueSpec().getValue());
-    String xVarType = util.getVariableType(spec.getXAxisVariable());
 
     Map<String, VariableSpec> varMap = new HashMap<>();
     varMap.put("xAxis", spec.getXAxisVariable());
     varMap.put("geo", spec.getGeoAggregateVariable());
     varMap.put("latitude", spec.getLatitudeVariable());
     varMap.put("longitude", spec.getLongitudeVariable());
-      
+
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval(util.getVoidEvalFreadCommand(DEFAULT_SINGLE_STREAM_NAME,
-          spec.getXAxisVariable(),
-          spec.getGeoAggregateVariable(),
-          spec.getLatitudeVariable(),
-          spec.getLongitudeVariable()));
+        spec.getXAxisVariable(),
+        spec.getGeoAggregateVariable(),
+        spec.getLatitudeVariable(),
+        spec.getLongitudeVariable()));
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
       String viewportRString = getViewportAsRString(spec.getViewport());
       connection.voidEval(viewportRString);
 
       String cmd =
-          "plot.data::mapMarkers(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, " +
-              valueSpec + ", viewport, NULL, TRUE, TRUE, '" +
-              deprecatedShowMissingness + "')";
+        "plot.data::mapMarkers(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, " +
+          valueSpec + ", viewport, NULL, TRUE, TRUE, '" +
+          deprecatedShowMissingness + "')";
       streamResult(connection, cmd, out);
     });
   }

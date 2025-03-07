@@ -27,7 +27,7 @@ public class BodyMassIndex extends Transform<BodyMassIndexConfig> {
   }
 
   @Override
-  protected void acceptConfig(BodyMassIndexConfig config) throws ValidationException {
+  protected void acceptConfig(BodyMassIndexConfig config) {
     _heightVar = config.getHeightVariable();
     _heightColumn = VariableDef.toDotNotation(_heightVar);
     _weightVar = config.getWeightVariable();
@@ -44,10 +44,10 @@ public class BodyMassIndex extends Transform<BodyMassIndexConfig> {
 
   private Unit findVariableUnit(VariableSpec variable, String varDescription, Unit requiredUnitCompatibility) throws ValidationException {
     return _metadata.getVariable(variable).orElseThrow()
-        .getUnits()
-        .flatMap(Unit::findUnit)
-        .filter(unit -> unit.isCompatibleWith(requiredUnitCompatibility))
-        .orElseThrow(() -> new ValidationException("Selected " + varDescription + " variable must have a unit compatible with " + requiredUnitCompatibility));
+      .getUnits()
+      .flatMap(Unit::findUnit)
+      .filter(unit -> unit.isCompatibleWith(requiredUnitCompatibility))
+      .orElseThrow(() -> new ValidationException("Selected " + varDescription + " variable must have a unit compatible with " + requiredUnitCompatibility));
   }
 
   @Override

@@ -8,9 +8,7 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
-import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
-import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.service.eda.generated.model.NewStaffRequest;
 import org.veupathdb.service.eda.generated.model.Staff;
@@ -20,16 +18,12 @@ import org.veupathdb.service.eda.generated.model.StaffListImpl;
 import org.veupathdb.service.eda.generated.model.StaffPatch;
 import org.veupathdb.service.eda.generated.model.UserDetailsImpl;
 import org.veupathdb.service.eda.access.model.PartialStaffRow;
-import org.veupathdb.service.eda.access.model.ProviderRow;
 import org.veupathdb.service.eda.access.model.StaffRow;
-import org.veupathdb.service.eda.access.service.provider.ProviderRepo;
 import org.veupathdb.service.eda.access.util.Keys;
 
 public class StaffService {
 
   private static final StaffService instance = new StaffService();
-
-  private final Logger log = LogProvider.logger(StaffService.class);
 
   StaffService() {}
 
@@ -40,11 +34,9 @@ public class StaffService {
   /**
    * Looks up the current user and checks if they are a site owner.
    *
-   * @return whether or not the current user is a site owner.
+   * @return whether the current user is a site owner.
    */
   public boolean isUserOwner(final ContainerRequest req) {
-    log.trace("StaffService#isUserOwner(Request)");
-
     return isUserOwner(UserProvider.lookupUser(req)
       .orElseThrow(InternalServerErrorException::new)
       .getUserId());
@@ -59,8 +51,6 @@ public class StaffService {
   }
 
   public boolean isUserStaff(final ContainerRequest req) {
-    log.trace("StaffService#isUserStaff(Request)");
-
     return isUserStaff(UserProvider.lookupUser(req)
       .orElseThrow(InternalServerErrorException::new)
       .getUserId());
@@ -71,8 +61,6 @@ public class StaffService {
   }
 
   public boolean isUserStaff(final long userId) {
-    log.trace("StaffService#isUserStaff(long)");
-
     try {
       return StaffRepo.Select.byUserId(userId).isPresent();
     } catch (WebApplicationException e) {
@@ -85,11 +73,9 @@ public class StaffService {
   /**
    * Looks up whether the given userId belongs to a site owner.
    *
-   * @return whether or not the given userId belongs to a site owner.
+   * @return whether the given userId belongs to a site owner.
    */
   public boolean isUserOwner(final long userId) {
-    log.trace("StaffService#isUserOwner(long)");
-
     try {
       return StaffRepo.Select.byUserId(userId).filter(StaffRow::isOwner).isPresent();
     } catch (WebApplicationException e) {
@@ -107,7 +93,6 @@ public class StaffService {
   }
 
   public void updateStaffRecord(final StaffRow row) {
-    log.trace("StaffService#updateStaffRecord(StaffRow)");
     try {
       StaffRepo.Update.ownerFlagById(row);
     } catch (Throwable e) {
@@ -120,8 +105,6 @@ public class StaffService {
   }
 
   public StaffList getStaffList(final long limit, final long offset) {
-    log.trace("StaffService#getStaffList(long, long)");
-
     try {
       return rows2StaffList(StaffRepo.Select.list(limit, offset), offset, StaffRepo.Select.count());
     } catch (Throwable e) {
@@ -134,8 +117,6 @@ public class StaffService {
   }
 
   public StaffRow mustGetStaffById(final Long staffId) {
-    log.trace("StaffService#mustGetStaffById(int)");
-
     try {
       return StaffRepo.Select.byId(staffId).orElseThrow(NotFoundException::new);
     } catch (Throwable e) {
@@ -148,8 +129,6 @@ public class StaffService {
   }
 
   public long createNewStaff(final NewStaffRequest req) {
-    log.trace("StaffService#createStaff(NewStaffRequest)");
-
     final var row = new PartialStaffRow();
 
     row.setUserId(req.getUserId());
@@ -168,8 +147,6 @@ public class StaffService {
 
 
   public void deleteStaffRecord(final Long staffId) {
-    log.trace("StaffService#deleteStaff(int)");
-
     try {
       StaffRepo.Delete.byId(staffId);
     } catch (Exception e) {
@@ -183,8 +160,6 @@ public class StaffService {
 
   @SuppressWarnings("unchecked")
   public void validatePatchRequest(final List < StaffPatch > entity) {
-    log.trace("StaffService#validatePatchRequest(List)");
-
     if (entity == null || entity.isEmpty())
       throw new BadRequestException();
 
@@ -194,7 +169,7 @@ public class StaffService {
     // WARNING: This cast mess is due to a bug in the JaxRS generator, the type
     // it actually passes up is not the declared type, but a list of linked hash
     // maps instead.
-    final var mod = ((List< Map <String, Object> >)((Object) entity)).get(0);
+    final var mod = ((List< Map <String, Object> >)((Object) entity)).getFirst();
 
     if (!"replace".equals(mod.get(Keys.Json.KEY_OP)))
       throw new ForbiddenException();
@@ -212,8 +187,6 @@ public class StaffService {
     final long offset,
     final long total
   ) {
-    log.trace("StaffService#rows2StaffList(rows, offset, total)");
-
     final var out = new StaffListImpl();
 
     out.setOffset(offset);
@@ -227,8 +200,6 @@ public class StaffService {
   }
 
   private Staff row2Staff(final StaffRow row) {
-    log.trace("StaffService#row2Staff(row)");
-
     final var user = new UserDetailsImpl();
     user.setOrganization(row.getOrganization());
     user.setFirstName(row.getFirstName());

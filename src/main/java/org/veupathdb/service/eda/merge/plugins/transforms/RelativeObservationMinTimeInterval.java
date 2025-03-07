@@ -12,11 +12,13 @@ import java.util.Map;
 
 /**
  * Related Observation Operations (Original Requirements)
- *
- * We implement this feature by allowing the user to create a Time to Next variable on repeated measures entities.
- *   Ror example, on the Participant Repeated Measure entity, create a variable that captures, for all
- *   observations of PCR positive, the time to the nearest observation of a high fever
- *
+ * <p>
+ * We implement this feature by allowing the user to create a Time to Next
+ * variable on repeated measures entities.
+ *   Ror example, on the Participant Repeated Measure entity, create a variable
+ *   that captures, for all observations of PCR positive, the time to the
+ *   nearest observation of a high fever.
+ * <p>
  * The user flow is:
  *   - choose a repeated measures entity (eg, Participant Repeated Measures)
  *   - choose a boolean variable to identify anchor entities
@@ -25,17 +27,20 @@ import java.util.Map;
  *   - similar for identifying a target variable
  *   - the user chooses a ‘time’ variable
  *   - optionally specifies a minimal interval to consider
- *
+ * <p>
  * The computation:
  *   - for each anchor entity, we discover its parent entity
  *   - we scan all target RMs belonging to that parent
  *   - identify the one that has the nearest time variable value to the anchor (above the minimum interval, if specified)
  *   - assign the discovered time interval value as the derived variable value
- *
- * An advanced version of this feature (possibly in a follow up phase) is to allow anchor and target to be in different entities.  For example find the time between installation of bed nets and reduction of mosquito bites.
- *
- * How it works: we combine a number of 'helper' derived vars to produce this result:
- *
+ * <p>
+ * An advanced version of this feature (possibly in a follow-up phase) is to
+ * allow anchor and target to be in different entities.  For example find the
+ * time between installation of bed nets and reduction of mosquito bites.
+ * <p>
+ * How it works: we combine a number of 'helper' derived vars to produce this
+ * result:
+ * <p>
  *   A Reduction plugin that pulls set of [ boolean value + timestamp + ID ] from child entity
  *   B Transform plugin that does aggregation of A values and assigns min to each ID
  *   C Transform plugin that inherits B and assigns the correct value
@@ -86,7 +91,7 @@ public class RelativeObservationMinTimeInterval extends Transform<RelatedObserva
   }
 
   @Override
-  protected void performSupplementalDependedVariableValidation() throws ValidationException {
+  protected void performSupplementalDependedVariableValidation() {
     // nothing to do here
   }
 

@@ -17,8 +17,6 @@ public class HistoryController implements History
   public GetHistoryResponse getHistory(Long limit, Long offset) {
     var user = Util.requireUser(_request);
 
-    return GetHistoryResponse.respond200WithApplicationJson(
-      HistoryService.getHistory(user.getUserId(), limit, offset)
-    );
+    return GetHistoryResponse.respond200WithApplicationJson(HistoryService.getHistory(user.getUserId(), limit, offset));
   }
 }

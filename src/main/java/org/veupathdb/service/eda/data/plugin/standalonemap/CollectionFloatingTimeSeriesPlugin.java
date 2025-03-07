@@ -3,8 +3,6 @@ package org.veupathdb.service.eda.data.plugin.standalonemap;
 import java.util.List;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 
-import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
-
 public class CollectionFloatingTimeSeriesPlugin extends CollectionFloatingLineplotPlugin {
 
   @Override
@@ -17,11 +15,6 @@ public class CollectionFloatingTimeSeriesPlugin extends CollectionFloatingLinepl
     return "Visualize aggregate values of one variable across the sequential values of a temporal Variable Group";
   }
 
-  @Override
-  public List<String> getProjects() {
-    return List.of(VECTORBASE_PROJECT);
-  }
-  
   @Override
   public ConstraintSpec getConstraintSpec() {
     return new ConstraintSpec()

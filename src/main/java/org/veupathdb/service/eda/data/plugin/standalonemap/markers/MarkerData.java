@@ -6,12 +6,12 @@ import org.veupathdb.service.eda.data.plugin.standalonemap.aggregator.MarkerAggr
 public class MarkerData<T> {
 
   long count = 0;
-  LatLonAverager latLonAvg = new LatLonAverager();
+  final LatLonAverager latLonAvg = new LatLonAverager();
   double minLat = 90;
   double maxLat = -90;
   double minLon = 180;
   double maxLon = -180;
-  MarkerAggregator<T> markerAggregator;
+  final MarkerAggregator<T> markerAggregator;
 
   public MarkerData(MarkerAggregator<T> markerAggregator) {
     this.markerAggregator = markerAggregator;

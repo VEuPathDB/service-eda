@@ -1,7 +1,6 @@
 package org.veupathdb.service.eda.data.plugin.sample;
 
 import org.gusdb.fgputil.json.JsonUtil;
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.*;
@@ -21,7 +20,7 @@ public class CategoricalDistributionPlugin extends AbstractEmptyComputePlugin<Ca
   }
 
   @Override
-  protected void validateVisualizationSpec(VariableSpec variableSpec) throws ValidationException {
+  protected void validateVisualizationSpec(VariableSpec variableSpec) {
     // would rather see what happens when plugin fails to validate and subsetting client must handle
   }
 

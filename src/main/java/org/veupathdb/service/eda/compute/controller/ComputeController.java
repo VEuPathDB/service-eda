@@ -5,17 +5,14 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.StreamingOutput;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.server.ContainerRequest;
-import org.gusdb.fgputil.Tuples;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
-import org.veupathdb.service.eda.common.client.EdaMergingClient;
+import org.veupathdb.service.eda.common.client.DatasetAccessClient;
+import org.veupathdb.service.eda.common.client.EdaSubsettingClient;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
-import org.veupathdb.service.eda.compute.EDA;
+import org.veupathdb.service.eda.compute.EDACompute;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
 import org.veupathdb.service.eda.compute.plugins.PluginMeta;
 import org.veupathdb.service.eda.compute.plugins.PluginProvider;
@@ -24,13 +21,14 @@ import org.veupathdb.service.eda.compute.plugins.alphadiv.AlphaDivPluginProvider
 import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.correlation.CorrelationPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
+import org.veupathdb.service.eda.compute.plugins.differentialexpression.DifferentialExpressionPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.selfcorrelation.SelfCorrelationPluginProvider;
-import org.veupathdb.service.eda.Main;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Computes;
 import org.veupathdb.service.eda.generated.support.ResponseDelegate;
+import org.veupathdb.service.eda.merge.ServiceExternal;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -38,6 +36,8 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+
+import static org.veupathdb.service.eda.util.Exceptions.errToBadRequest;
 
 
 /**
@@ -56,13 +56,11 @@ import java.util.function.Supplier;
  * instance of the target {@link PluginProvider} for their plugin along with the
  * raw request body (entity).
  *
- * @author Elizabeth Paige Harper - https://github.com/foxcapades
+ * @author Elizabeth Paige Harper - <a href="https://github.com/foxcapades">https://github.com/foxcapades</a>
  * @since 1.0.0
  */
 @Authenticated(allowGuests = true)
 public class ComputeController implements Computes {
-
-  private static final Logger LOG = LogManager.getLogger(ComputeController.class);
 
   private static final String TABULAR = "tabular";
   private static final String METADATA = "meta";
@@ -128,13 +126,30 @@ public class ComputeController implements Computes {
   @Override
   public PostComputesDifferentialabundanceStatisticsResponse postComputesDifferentialabundanceStatistics(DifferentialAbundancePluginRequest entity) {
     return PostComputesDifferentialabundanceStatisticsResponse.respond200WithApplicationJson(new DifferentialAbundanceStatsResponseStream(out -> {
-        try {
-          getResultFileStreamer(new DifferentialAbundancePluginProvider(), STATISTICS, entity).write(out);
-        }
-        catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }));
+      try {
+        getResultFileStreamer(new DifferentialAbundancePluginProvider(), STATISTICS, entity).write(out);
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }));
+  }
+
+  @Override
+  public PostComputesDifferentialexpressionResponse postComputesDifferentialexpression(Boolean autostart, DifferentialExpressionPluginRequest entity) {
+    return PostComputesDifferentialexpressionResponse.respond200WithApplicationJson(submitJob(new DifferentialExpressionPluginProvider(), entity, autostart));
+  }
+
+  @Override
+  public PostComputesDifferentialexpressionStatisticsResponse postComputesDifferentialexpressionStatistics(DifferentialExpressionPluginRequest entity) {
+    return PostComputesDifferentialexpressionStatisticsResponse.respond200WithApplicationJson(new DifferentialExpressionStatsResponseStream(out -> {
+      try {
+        getResultFileStreamer(new DifferentialExpressionPluginProvider(), STATISTICS, entity).write(out);
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }));
   }
 
   @Override
@@ -145,13 +160,13 @@ public class ComputeController implements Computes {
   @Override
   public PostComputesCorrelationStatisticsResponse postComputesCorrelationStatistics(CorrelationPluginRequest entity) {
     return PostComputesCorrelationStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
-        try {
-          getResultFileStreamer(new CorrelationPluginProvider(), STATISTICS, entity).write(out);
-        }
-        catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }));
+      try {
+        getResultFileStreamer(new CorrelationPluginProvider(), STATISTICS, entity).write(out);
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }));
   }
 
   @Override
@@ -162,13 +177,13 @@ public class ComputeController implements Computes {
   @Override
   public PostComputesSelfcorrelationStatisticsResponse postComputesSelfcorrelationStatistics(SelfCorrelationPluginRequest entity) {
     return PostComputesSelfcorrelationStatisticsResponse.respond200WithApplicationJson(new CorrelationStatsResponseStream(out -> {
-        try {
-          getResultFileStreamer(new SelfCorrelationPluginProvider(), STATISTICS, entity).write(out);
-        }
-        catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }));
+      try {
+        getResultFileStreamer(new SelfCorrelationPluginProvider(), STATISTICS, entity).write(out);
+      }
+      catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }));
   }
 
   // endregion Plugin Endpoints
@@ -211,22 +226,17 @@ public class ComputeController implements Computes {
    * the target plugin accepts.
    */
   private <R extends ComputeRequestBase, C> JobResponse submitJob(PluginProvider<R, C> plugin, R requestObject, boolean autostart) {
-    var auth = UserProvider.getSubmittedAuth(request).orElseThrow();
+    var user = UserProvider.lookupUser(request).orElseThrow();
 
-    requirePermissions(requestObject, auth);
+    requirePermissions(requestObject, user.getUserId());
 
     // Validate the request body
     Supplier<ReferenceMetadata> referenceMetadata = () -> {
       var studyId = requestObject.getStudyId();
-      var meta = new ReferenceMetadata(
-          EDA.getAPIStudyDetail(studyId, auth)
-              .orElseThrow(() -> new BadRequestException("Invalid study ID: " + studyId)));
+      var meta = new ReferenceMetadata(EdaSubsettingClient.getStudy(studyId));
       var derivedVars = Optional.ofNullable(requestObject.getDerivedVariables()).orElse(Collections.emptyList());
-      if (!derivedVars.isEmpty()) {
-        var mergeClient = new EdaMergingClient(Main.config.getEdaMergeHost(), auth);
-        for (var derivedVar : mergeClient.getDerivedVariableMetadata(studyId, derivedVars)) {
-          meta.incorporateDerivedVariable(derivedVar);
-        }
+      for (var derivedVar : errToBadRequest(() -> ServiceExternal.processDvMetadataRequest(studyId, derivedVars))) {
+        meta.incorporateDerivedVariable(derivedVar);
       }
       return meta;
     };
@@ -244,7 +254,7 @@ public class ComputeController implements Computes {
     plugin.getValidator()
       .validate(requestObject, referenceMetadata);
 
-    return EDA.getOrSubmitComputeJob(plugin, requestObject, auth, autostart);
+    return EDACompute.getOrSubmitComputeJob(plugin, requestObject, autostart);
   }
 
   // generic wrapper around the streaming output producer below
@@ -272,17 +282,17 @@ public class ComputeController implements Computes {
    * @param <P> Type of the job configuration request body.
    */
   private <P extends ComputeRequestBase> StreamingOutput getResultFileStreamer(
-      PluginMeta<P> plugin,
-      String file,
-      ComputeRequestBase entity
+    PluginMeta<P> plugin,
+    String file,
+    ComputeRequestBase entity
   ) {
     // If there was no plugin with the given name, throw a 404
     if (plugin == null)
       throw new NotFoundException();
 
-    requirePermissions(entity, null);
+    requirePermissions(entity, UserProvider.lookupUser(request).orElseThrow().getUserId());
 
-    var jobFiles = EDA.getComputeJobFiles(plugin, entity);
+    var jobFiles = EDACompute.getComputeJobFiles(plugin, entity);
 
     var fileName = switch(file) {
       case METADATA   -> ReservedFiles.OutputMeta;
@@ -316,18 +326,13 @@ public class ComputeController implements Computes {
    * @param entity Raw request body containing the ID of the study the user must
    * have permissions on.
    *
-   * @param auth The auth header to use in validation, or {@code null} for the
-   * auth header from the {@link #request} context to be used.
+   * @param userId ID of the user whose permissions should be tested.
    *
    * @throws ForbiddenException If the requester does not have the required
    * permission(s) on the target study.
    */
-  private void requirePermissions(@NotNull ComputeRequestBase entity, @Nullable Tuples.TwoTuple<String, String> auth) {
-    if (auth == null)
-      auth = UserProvider.getSubmittedAuth(request).orElseThrow();
-
-    // Check that the user has permission to run compute jobs.
-    if (!EDA.getStudyPerms(entity.getStudyId(), auth).allowVisualizations())
-      throw new ForbiddenException();
+  private void requirePermissions(@NotNull ComputeRequestBase entity, long userId) {
+    DatasetAccessClient.getStudyAccessByStudyId(entity.getStudyId(), userId)
+      .orElseThrow(ForbiddenException::new);
   }
 }

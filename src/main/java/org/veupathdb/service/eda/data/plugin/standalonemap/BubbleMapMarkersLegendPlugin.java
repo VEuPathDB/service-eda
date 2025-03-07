@@ -37,10 +37,11 @@ import static org.gusdb.fgputil.FormatUtil.TAB;
 import static org.veupathdb.service.eda.data.metadata.AppsMetadata.VECTORBASE_PROJECT;
 
 /**
- * Plugin designed to provide legend information for bubble markers. This is required for a client to interpret
- * the results of the bubble markers plugin. The bubble marker plugin provides numeric results for the size and color
- * of a bubble marker. In order to render the size or color, this plugin provides ranges representing the min/max for
- * color and size for a given configuration.
+ * Plugin designed to provide legend information for bubble markers. This is
+ * required for a client to interpret the results of the bubble markers plugin.
+ * The bubble marker plugin provides numeric results for the size and color of a
+ * bubble marker. In order to render the size or color, this plugin provides
+ * ranges representing the min/max for color and size for a given configuration.
  */
 public class BubbleMapMarkersLegendPlugin extends AbstractEmptyComputePlugin<StandaloneMapBubblesLegendPostRequest, StandaloneMapBubblesLegendSpec> {
   private QuantitativeAggregateConfiguration _colorSpecification = null;
@@ -54,11 +55,11 @@ public class BubbleMapMarkersLegendPlugin extends AbstractEmptyComputePlugin<Sta
   public ConstraintSpec getConstraintSpec() {
     return new ConstraintSpec()
       .pattern()
-        .element("colorGeoVariable")
-          .types(APIVariableType.STRING)
-        .element("sizeGeoVariable")
-          .types(APIVariableType.STRING)
-        .done();
+      .element("colorGeoVariable")
+      .types(APIVariableType.STRING)
+      .element("sizeGeoVariable")
+      .types(APIVariableType.STRING)
+      .done();
   }
 
   @Override
@@ -75,20 +76,20 @@ public class BubbleMapMarkersLegendPlugin extends AbstractEmptyComputePlugin<Sta
     Optional<SizeLegendConfig> sizeConfig = Optional.ofNullable(pluginSpec.getSizeConfig());
 
     validateInputs(new DataElementSet()
-        .entity(pluginSpec.getOutputEntityId())
-        .var("colorGeoVariable", legendConfig.map(OverlayLegendConfig::getGeoAggregateVariable).orElse(null))
-        .var("colorVariable", Optional.ofNullable(pluginSpec.getColorLegendConfig())
-            .map(config -> config.getQuantitativeOverlayConfig().getOverlayVariable())
-            .orElse(null))
-        .var("sizeGeoVariable", sizeConfig.map(SizeLegendConfig::getGeoAggregateVariable).orElse(null)));
+      .entity(pluginSpec.getOutputEntityId())
+      .var("colorGeoVariable", legendConfig.map(OverlayLegendConfig::getGeoAggregateVariable).orElse(null))
+      .var("colorVariable", Optional.ofNullable(pluginSpec.getColorLegendConfig())
+        .map(config -> config.getQuantitativeOverlayConfig().getOverlayVariable())
+        .orElse(null))
+      .var("sizeGeoVariable", sizeConfig.map(SizeLegendConfig::getGeoAggregateVariable).orElse(null)));
     if (pluginSpec.getColorLegendConfig() != null) {
       try {
         final VariableSpec overlayVar = pluginSpec.getColorLegendConfig().getQuantitativeOverlayConfig().getOverlayVariable();
         _colorSpecification = new QuantitativeAggregateConfiguration(
-            pluginSpec.getColorLegendConfig().getQuantitativeOverlayConfig().getAggregationConfig(),
-            getUtil().getVariableDataShape(overlayVar),
-            getUtil().getVariableType(overlayVar),
-            () -> getUtil().getVocabulary(pluginSpec.getColorLegendConfig().getQuantitativeOverlayConfig().getOverlayVariable()));
+          pluginSpec.getColorLegendConfig().getQuantitativeOverlayConfig().getAggregationConfig(),
+          getUtil().getVariableDataShape(overlayVar),
+          getUtil().getVariableType(overlayVar),
+          () -> getUtil().getVocabulary(pluginSpec.getColorLegendConfig().getQuantitativeOverlayConfig().getOverlayVariable()));
       } catch (IllegalArgumentException e) {
         throw new ValidationException(e.getMessage());
       }
@@ -100,10 +101,10 @@ public class BubbleMapMarkersLegendPlugin extends AbstractEmptyComputePlugin<Sta
     Optional<OverlayLegendConfig> legendConfig = Optional.ofNullable(pluginSpec.getColorLegendConfig());
     Optional<SizeLegendConfig> sizeConfig = Optional.ofNullable(pluginSpec.getSizeConfig());
     return List.of(
-        new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, pluginSpec.getOutputEntityId())
-            .addVar(legendConfig.map(OverlayLegendConfig::getGeoAggregateVariable).orElse(null))
-            .addVar(legendConfig.map(colorLegendConfig -> colorLegendConfig.getQuantitativeOverlayConfig().getOverlayVariable()).orElse(null))
-            .addVar(sizeConfig.map(SizeLegendConfig::getGeoAggregateVariable).orElse(null)));
+      new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, pluginSpec.getOutputEntityId())
+        .addVar(legendConfig.map(OverlayLegendConfig::getGeoAggregateVariable).orElse(null))
+        .addVar(legendConfig.map(colorLegendConfig -> colorLegendConfig.getQuantitativeOverlayConfig().getOverlayVariable()).orElse(null))
+        .addVar(sizeConfig.map(SizeLegendConfig::getGeoAggregateVariable).orElse(null)));
   }
 
   @Override
@@ -152,28 +153,28 @@ public class BubbleMapMarkersLegendPlugin extends AbstractEmptyComputePlugin<Sta
                                                                    Map<String, MarkerAggregator<Integer>> countAggregators) {
     final StandaloneMapBubblesLegendPostResponse response = new StandaloneMapBubblesLegendPostResponseImpl();
     final List<Double> colorValues = colorAggregators.values().stream()
-        .map(MarkerAggregator::finish)
-        .toList();
+      .map(MarkerAggregator::finish)
+      .toList();
     final List<Integer> sizeValues = countAggregators.values().stream()
-        .map(MarkerAggregator::finish)
-        .toList();
+      .map(MarkerAggregator::finish)
+      .toList();
     if (_pluginSpec.getColorLegendConfig() != null) {
       response.setMaxColorValue(colorValues.stream()
-          .filter(Objects::nonNull)
-          .max(Comparator.comparingDouble(Double::doubleValue))
-          .map(_colorSpecification::serializeAverage)
-          .orElse(null));
+        .filter(Objects::nonNull)
+        .max(Comparator.comparingDouble(Double::doubleValue))
+        .map(_colorSpecification::serializeAverage)
+        .orElse(null));
       response.setMinColorValue(colorValues.stream()
-          .filter(Objects::nonNull)
-          .min(Comparator.comparingDouble(Double::doubleValue))
-          .map(_colorSpecification::serializeAverage)
-          .orElse(null));
+        .filter(Objects::nonNull)
+        .min(Comparator.comparingDouble(Double::doubleValue))
+        .map(_colorSpecification::serializeAverage)
+        .orElse(null));
     }
     if (_pluginSpec.getSizeConfig() != null) {
       response.setMinSizeValue(1);
       response.setMaxSizeValue(sizeValues.stream()
-          .max(Comparator.comparingInt(Integer::intValue))
-          .orElse(null));
+        .max(Comparator.comparingInt(Integer::intValue))
+        .orElse(null));
     }
     return response;
   }

@@ -1,11 +1,5 @@
 package org.veupathdb.service.eda.download;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.Function;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.Context;
@@ -25,6 +19,11 @@ import org.veupathdb.service.eda.common.client.DatasetAccessClient.StudyDatasetI
 import org.veupathdb.service.eda.generated.model.FileContentResponseStream;
 import org.veupathdb.service.eda.generated.resources.Download;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.function.Function;
+
 import static org.gusdb.fgputil.functional.Functions.cSwallow;
 
 @Authenticated(allowGuests = true)
@@ -37,57 +36,75 @@ public class Service implements Download {
 
   @Override
   public GetDownloadByProjectAndStudyIdResponse getDownloadByProjectAndStudyId(String project, String studyId) {
-    LOG.info("Get releases by " + project + " and " + studyId);
+    LOG.info("Get releases by {} and {}", project, studyId);
     StudyDatasetInfo datasetInfo = checkPermsAndFetchDatasetInfo(studyId, StudyAccess::allowStudyMetadata);
     return GetDownloadByProjectAndStudyIdResponse.respond200WithApplicationJson(
-        new FileStore(Resources.getDatasetsParentDir(project))
-            .getReleaseNames(datasetInfo.getSha1Hash())
-            .orElseThrow(NotFoundException::new));
+      new FileStore(Resources.getDatasetsParentDir(project))
+        .getReleaseNames(datasetInfo.getSha1Hash())
+        .orElseThrow(NotFoundException::new));
   }
 
   @Override
-  public GetDownloadByProjectAndStudyIdAndReleaseResponse getDownloadByProjectAndStudyIdAndRelease(String project, String studyId, String release) {
-    LOG.info("Get files by " + project + " and " + studyId + " and " + release);
+  public GetDownloadByProjectAndStudyIdAndReleaseResponse getDownloadByProjectAndStudyIdAndRelease(
+    String project,
+    String studyId,
+    String release
+  ) {
+    LOG.info("Get files by {} and {} and {}", project, studyId, release);
     StudyDatasetInfo datasetInfo = checkPermsAndFetchDatasetInfo(studyId, StudyAccess::allowStudyMetadata);
     return GetDownloadByProjectAndStudyIdAndReleaseResponse.respond200WithApplicationJson(
-        new FileStore(Resources.getDatasetsParentDir(project))
-            .getFiles(datasetInfo.getSha1Hash(), release)
-            .orElseThrow(NotFoundException::new));
+      new FileStore(Resources.getDatasetsParentDir(project))
+        .getFiles(datasetInfo.getSha1Hash(), release)
+        .orElseThrow(NotFoundException::new));
   }
 
   @Override
-  public GetDownloadByProjectAndStudyIdAndReleaseAndFileResponse getDownloadByProjectAndStudyIdAndReleaseAndFile(String project, String studyId, String release, String fileName) {
-    LOG.info("Get file content at " + project + " and " + studyId + " and " + release + " and " + fileName);
+  public GetDownloadByProjectAndStudyIdAndReleaseAndFileResponse getDownloadByProjectAndStudyIdAndReleaseAndFile(
+    String project,
+    String studyId,
+    String release,
+    String fileName
+  ) {
+    LOG.info("Get file content at {} and {} and {} and {}", project, studyId, release, fileName);
     StudyDatasetInfo datasetInfo = checkPermsAndFetchDatasetInfo(studyId, StudyAccess::allowResultsAll);
     Path filePath = new FileStore(Resources.getDatasetsParentDir(project))
-        .getFilePath(datasetInfo.getSha1Hash(), release, fileName)
-        .orElseThrow(() -> {
-          LOG.info("Unable to find a file with hash {}, release {}, and name {}.", datasetInfo.getSha1Hash(), release, fileName);
-          return new NotFoundException();
-        });
+      .getFilePath(datasetInfo.getSha1Hash(), release, fileName)
+      .orElseThrow(() -> {
+        LOG.info(
+          "Unable to find a file with hash {}, release {}, and name {}.",
+          datasetInfo.getSha1Hash(),
+          release,
+          fileName
+        );
+        return new NotFoundException();
+      });
     String dispositionHeaderValue = "attachment; filename=\"" + fileName + "\"";
     Optional<String> userId = UserProvider.lookupUser(_request)
-        .map(user -> Long.toString(user.getUserId()));
+      .map(user -> Long.toString(user.getUserId()));
     ServiceMetrics.reportDownloadCount(datasetInfo.getDatasetId(), userId.orElse("None"), fileName);
-    _request.setProperty(CustomResponseHeadersFilter.CUSTOM_HEADERS_KEY,
-        new MapBuilder<>(HttpHeaders.CONTENT_DISPOSITION, dispositionHeaderValue).toMap());
+    _request.setProperty(
+      CustomResponseHeadersFilter.CUSTOM_HEADERS_KEY,
+      new MapBuilder<>(HttpHeaders.CONTENT_DISPOSITION, dispositionHeaderValue).toMap()
+    );
     return GetDownloadByProjectAndStudyIdAndReleaseAndFileResponse.respond200WithTextPlain(
-        new FileContentResponseStream(cSwallow(
-            out -> IoUtil.transferStream(out, Files.newInputStream(filePath)))));
+      new FileContentResponseStream(cSwallow(
+        out -> IoUtil.transferStream(out, Files.newInputStream(filePath)))));
   }
 
   private StudyDatasetInfo checkPermsAndFetchDatasetInfo(String studyId, Function<StudyAccess, Boolean> accessGranter) {
     try {
-      Entry<String, String> authHeader = UserProvider.getSubmittedAuth(_request).orElseThrow();
-      Map<String, StudyDatasetInfo> studyMap =
-          new DatasetAccessClient(Resources.DATASET_ACCESS_SERVICE_URL, authHeader).getStudyDatasetInfoMapForUser();
-      StudyDatasetInfo study = studyMap.get(studyId);
+      var user  = UserProvider.lookupUser(_request).orElseThrow();
+      var study = DatasetAccessClient.getStudyDatasetInfoMapForUser(user.getUserId())
+        .get(studyId);
+
       if (study == null) {
         throw new NotFoundException("Study '" + studyId + "' cannot be found [dataset access service].");
       }
+
       if (!accessGranter.apply(study.getStudyAccess())) {
         throw new ForbiddenException("Permission Denied");
       }
+
       return study;
     } catch (Exception e) {
       LOG.error("Unable to check study permissions and convert studyId to dataset hash", e);

@@ -1,21 +1,14 @@
-import org.veupathdb.lib.gradle.container.util.Logger.Level
-
 plugins {
-  kotlin("jvm") version "1.9.20" // needed for local compute import
+  kotlin("jvm") version "2.0.20" // needed for local compute import
   java
-  id("org.veupathdb.lib.gradle.container.container-utils") version "4.8.9"
+  id("org.veupathdb.lib.gradle.container.container-utils") version "5.0.5"
   id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 // configure VEupathDB container plugin
 containerBuild {
-
-  // Change if debugging the build process is necessary.
-  logLevel = Level.Info
-
   // General project level configuration.
   project {
-
     // Project Name
     name = "eda-service"
 
@@ -27,44 +20,29 @@ containerBuild {
 
     // Project Root Package
     projectPackage = "org.veupathdb.service.eda"
-
-    // Main Class Name
-    mainClassName = "Main"
   }
 
   // Docker build configuration.
   docker {
-
-    // Docker build context
-    context = "."
-
-    // Name of the target docker file
-    dockerFile = "Dockerfile"
-
-    // Resulting image tag
     imageName = "eda-service"
-
   }
 }
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion = JavaLanguageVersion.of(21)
+    vendor = JvmVendorSpec.AMAZON
   }
 }
 
 kotlin {
   jvmToolchain {
-    languageVersion.set(JavaLanguageVersion.of(17))
+    languageVersion = JavaLanguageVersion.of(21)
+    vendor = JvmVendorSpec.AMAZON
   }
-}
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-  kotlinOptions {
-    jvmTarget = "17"
-    freeCompilerArgs = listOf(
-      "-Xjvm-default=all"
-    )
+  compilerOptions {
+    freeCompilerArgs = listOf("-Xjvm-default=all")
   }
 }
 
@@ -91,9 +69,8 @@ repositories {
 //
 
 // versions
-val coreLib       = "7.1.5"            // Container core lib version
-val fgputil       = "2.14.2-jakarta"   // FgpUtil version
-val libSubsetting = "4.16.9"           // lib-eda-subsetting version
+val coreLib = "9.1.1"            // Container core lib version
+val fgputil = "2.16.0-jakarta"   // FgpUtil version
 
 // use local EDA compute compiled schema if project exists, else use released version;
 // this mirrors the way we use local EdaCommon code if available
@@ -112,29 +89,28 @@ dependencies {
 
   // VEuPathDB libs, prefer local checkouts if available
   implementation(findProject(":core") ?: "org.veupathdb.lib:jaxrs-container-core:${coreLib}")
-  implementation(findProject(":libEdaSubsetting") ?: "org.veupathdb.eda:lib-eda-subsetting:${libSubsetting}")
-  implementation( "org.veupathdb.lib:compute-platform:1.7.4")
+  implementation(findProject(":libEdaSubsetting") ?: "org.veupathdb.lib:eda-subsetting:6.1.0")
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")
-  implementation("org.gusdb:fgputil-accountdb:${fgputil}")
   implementation("org.gusdb:fgputil-client:${fgputil}")
   implementation("org.gusdb:fgputil-db:${fgputil}")
+  implementation("org.veupathdb.lib:compute-platform:1.8.5")
+  implementation("org.veupathdb.lib.s3:s34k-minio:0.7.2+s34k-0.11.0")
 
   // Jersey
-  implementation("org.glassfish.jersey.core:jersey-server:3.1.1")
+  implementation("org.glassfish.jersey.core:jersey-server:3.1.10")
 
   // Jackson
-  implementation("com.fasterxml.jackson.core:jackson-databind:2.15.1")
-  implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.1")
-  implementation("org.veupathdb.lib:jackson-singleton:3.0.0")
-  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
+  implementation("org.veupathdb.lib:jackson-singleton:3.2.1")
+  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.3")
+  implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.3")
 
   // Log4J
-  implementation("org.apache.logging.log4j:log4j-api:2.20.0")
-  implementation("org.apache.logging.log4j:log4j-core:2.20.0")
-  runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.20.0")
-  implementation("org.slf4j:slf4j-api:1.7.36")
+  implementation("org.apache.logging.log4j:log4j-api:2.24.3")
+  implementation("org.apache.logging.log4j:log4j-core:2.24.3")
+  runtimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.24.3")
+  implementation("org.slf4j:slf4j-api:2.0.16")
 
   // Metrics
   implementation("io.prometheus:simpleclient:0.16.0")
@@ -146,11 +122,11 @@ dependencies {
   implementation("io.vulpine.lib:sql-import:0.2.1")
   implementation("io.vulpine.lib:lib-query-util:2.1.0")
   implementation("javax.mail", "mail", "1.5.0-b01")
-  implementation("org.antlr", "ST4", "4.3.1") // Access service email template parsing
+  implementation("org.antlr", "ST4", "4.3.4") // Access service email template parsing
 
   // Pico CLI
-  implementation("info.picocli:picocli:4.7.3")
-  annotationProcessor("info.picocli:picocli-codegen:4.7.3")
+  implementation("info.picocli:picocli:4.7.6")
+  annotationProcessor("info.picocli:picocli-codegen:4.7.6")
 
   // Job IDs
   implementation("org.veupathdb.lib:hash-id:1.1.0")
@@ -159,11 +135,11 @@ dependencies {
   implementation("org.hsqldb:hsqldb:2.7.1")
 
   // Unit Testing
-  testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
-  testImplementation("org.mockito:mockito-core:5.2.0")
+  testImplementation("org.junit.jupiter:junit-jupiter-api:5.12.0")
+  testImplementation("org.mockito:mockito-core:5.15.2")
   testImplementation("org.veupathdb.lib.test", "test-utils", "1.1.2")
-  testImplementation("org.awaitility:awaitility:4.2.0")
-  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
+  testImplementation("org.awaitility:awaitility:4.2.2")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.0")
 }
 
 val test by tasks.getting(Test::class) {

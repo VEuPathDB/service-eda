@@ -7,13 +7,12 @@ import org.veupathdb.lib.compute.platform.job.JobExecutor
 import org.veupathdb.lib.compute.platform.job.JobResult
 import org.veupathdb.lib.jackson.Json
 import org.veupathdb.service.eda.common.client.EdaMergingClient
-import org.veupathdb.service.eda.compute.EDA
+import org.veupathdb.service.eda.common.client.EdaSubsettingClient
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles
-import org.veupathdb.service.eda.compute.plugins.Plugin
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin
+import org.veupathdb.service.eda.compute.plugins.Plugin
 import org.veupathdb.service.eda.compute.plugins.PluginRegistry
 import org.veupathdb.service.eda.compute.plugins.PluginWorkspace
-import org.veupathdb.service.eda.Main
 
 /**
  * Standard set of files we will attempt to persist to S3 on "successful" job
@@ -113,16 +112,13 @@ class PluginExecutor : JobExecutor {
     ThreadContext.put(ThreadContextPluginKey, provider.urlSegment)
     Log.debug("loaded plugin provider")
 
-    // Deserialize the
+    // Deserialize the initial HTTP request config
     val request = Json.parse(jobPayload.request, provider.requestClass)
-
-    // Convert the auth header to a Map.Entry for use with eda-common code.
-    val authHeader = jobPayload.authHeader.toFgpTuple()
 
     // Fetch the study metadata and write it out to the local workspace
     val studyDetail = try {
       Log.debug("retrieving api study details")
-      EDA.requireAPIStudyDetail(request.studyId, authHeader)
+      EdaSubsettingClient.getStudy(request.studyId)
         .also { ctx.workspace.write(ReservedFiles.InputMeta, Json.convert(it)) }
     } catch (e: Throwable) {
       Log.error("Failed to fetch APIStudyDetail.", e)
@@ -137,7 +133,6 @@ class PluginExecutor : JobExecutor {
       it.workspace = PluginWorkspace(ctx.workspace)
       it.jobContext = ComputeJobContext(ctx.jobID)
       it.pluginMeta = provider
-      it.mergingClient = EdaMergingClient(Main.config.edaMergeHost, authHeader)
     }.build()
 
     // Create the plugin.
@@ -153,15 +148,13 @@ class PluginExecutor : JobExecutor {
       // Fetch the tabular data and write it out to the local workspace
       plugin.streamSpecs.forEach { spec ->
         Log.debug("retrieving tabular study data: {}", spec.streamName)
-        ctx.workspace.write(
-          spec.streamName, EDA.getMergeData(
-            context.referenceMetadata,
-            request.filters,
-            request.derivedVariables,
-            spec,
-            authHeader
-          )
-        )
+        EdaMergingClient.getTabularDataStream(
+          context.referenceMetadata,
+          request.filters,
+          request.derivedVariables,
+          null,
+          spec
+        ).use { ctx.workspace.write(spec.streamName, it) }
       }
     } catch (e: Throwable) {
       Log.error("Failed to fetch tabular data.", e)

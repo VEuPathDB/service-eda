@@ -61,7 +61,7 @@ public class RecordCountPlugin extends AbstractEmptyComputePlugin<RecordCountPos
         "|" + getReferenceMetadata().getStudyId() + "|" + entityId
     );
     _cachedResponse = RESULT_CACHE.get(_cacheKey);
-    LOG.info("Did I find a cached response? " + (_cachedResponse != null));
+    LOG.info("Did I find a cached response? {}", _cachedResponse != null);
 
     // only need one stream for the requested entity and no vars (IDs included automatically)
     return _cachedResponse != null ? Collections.emptyList() : List.of(
@@ -80,15 +80,15 @@ public class RecordCountPlugin extends AbstractEmptyComputePlugin<RecordCountPos
         _cachedResponse = RESULT_CACHE.getValue(_cacheKey, key -> {
           Timer t = new Timer();
           long subsettingRowCount = getSubsetCount(_pluginSpec.getEntityId());
-          LOG.info("Retrieved record count from subsetting (" + subsettingRowCount + ") in " + t.getElapsedStringAndRestart());
+          LOG.info("Retrieved record count from subsetting ({}) in {}", subsettingRowCount, t.getElapsedStringAndRestart());
           Wrapper<Long> rowCount = new Wrapper<>(0L);
           new Scanner(dataStreams.get(getPluginSpec().getEntityId()))
-              .useDelimiter("\n")
-              .forEachRemaining(str -> rowCount.set(rowCount.get() + 1));
+            .useDelimiter("\n")
+            .forEachRemaining(str -> rowCount.set(rowCount.get() + 1));
           long recordCount = rowCount.get() - 1; // subtract 1 for header row
           RecordCountPostResponse value = new RecordCountPostResponseImpl();
           value.setRecordCount((int)recordCount);
-          LOG.info("Calculated record count result to add to cache (" + recordCount + ") in " + t.getElapsedString());
+          LOG.info("Calculated record count result to add to cache ({}) in {}", recordCount, t.getElapsedString());
           return value;
         });
       }

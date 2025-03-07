@@ -5,10 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Date;
-import java.util.regex.Pattern;
 import javax.activation.DataHandler;
 import javax.mail.Address;
 import javax.mail.Message;
@@ -18,38 +15,17 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 import org.stringtemplate.v4.ST;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.service.eda.Main;
 import org.veupathdb.service.eda.access.model.Dataset;
-import org.veupathdb.service.eda.access.model.DatasetEmails;
 import org.veupathdb.service.eda.access.model.Email;
 import org.veupathdb.service.eda.access.model.EndUserRow;
-import org.veupathdb.service.eda.access.repo.DB;
-import org.veupathdb.service.eda.access.util.PatternUtil;
 
 public class EmailUtil
 {
   private static final char TEMPLATE_DELIM = '$';
-
-  private static final Pattern splitPattern = Pattern.compile("((?:\".+?\"|[^@ ]+)@[^, ]+)(?:,|$)");
-
-  /**
-   * Dataset property names of the properties relevant to sending emails.
-   */
-  private static final String
-    EMAIL_TO_PROP   = "requestEmailBcc",
-    EMAIL_FROM_PROP = "requestEmail";
-
-  /**
-   * Error messages
-   */
-  private static final String
-    ERR_DUP  = "Dataset '%s' has duplicate '%s' properties.",
-    ERR_UNK  = "Unrecognized property '%s' in results for dataset '%s'.",
-    ERR_MISS = "Dataset '%s' is missing property '%s'.",
-    ERR_MULT = "Properties returned for more than one dataset.  Ids retrieved were '%s' and '%s'.";
 
   private static EmailUtil instance;
 
@@ -75,52 +51,6 @@ public class EmailUtil
     }
 
     return inject.render();
-  }
-
-  public String[] splitEmails(final String emails) {
-    return PatternUtil.matchStream(splitPattern, emails, 1).toArray(String[]::new);
-  }
-
-  public DatasetEmails resultSetToEmail(final ResultSet rs) throws SQLException {
-    String to   = null;
-    String from = null;
-    String id   = null;
-
-    while (rs.next()) {
-      if (id == null) {
-        id = rs.getString(DB.Column.DatasetProperties.DatasetId);
-      } else {
-        var tmp = rs.getString(DB.Column.DatasetProperties.DatasetId);
-        if (!id.equals(tmp))
-          throw new IllegalStateException(String.format(ERR_MULT, id, tmp));
-      }
-
-      var prop = rs.getString(DB.Column.DatasetProperties.Property);
-
-      switch (prop) {
-        case EMAIL_TO_PROP -> {
-          if (to != null)
-            throw new IllegalStateException(String.format(ERR_DUP, id, prop));
-          to = rs.getString(DB.Column.DatasetProperties.Value);
-        }
-
-        case EMAIL_FROM_PROP -> {
-          if (from != null)
-            throw new IllegalStateException(String.format(ERR_DUP, id, prop));
-          from = rs.getString(DB.Column.DatasetProperties.Value);
-        }
-
-        default -> throw new IllegalStateException(String.format(ERR_UNK, prop, id));
-      }
-    }
-
-    if (to == null)
-      throw new IllegalStateException(String.format(ERR_MISS, id, EMAIL_TO_PROP));
-
-    if (from == null)
-      throw new IllegalStateException(String.format(ERR_MISS, id, EMAIL_FROM_PROP));
-
-    return new DatasetEmails(to, from);
   }
 
   public static EmailUtil getInstance() {
@@ -172,7 +102,7 @@ public class EmailUtil
 
   private static class HTMLDataSource implements javax.activation.DataSource {
 
-    private String html;
+    private final String html;
 
     public HTMLDataSource(String htmlString) {
       html = htmlString;
@@ -231,12 +161,9 @@ public class EmailUtil
      * dataset.
      */
     public static final class FirstStepTemplateBuilder {
-      private Dataset dataset;
-
       // Unlock second step builder methods after dataset is specified.
       public SecondStepTemplateBuilder withDataset(Dataset val) {
-        dataset = val;
-        return new SecondStepTemplateBuilder(dataset);
+        return new SecondStepTemplateBuilder(val);
       }
     }
 

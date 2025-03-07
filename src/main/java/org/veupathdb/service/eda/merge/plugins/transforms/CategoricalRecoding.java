@@ -23,7 +23,7 @@ public class CategoricalRecoding extends Transform<CategoricalRecodingConfig> {
   }
 
   @Override
-  protected void acceptConfig(CategoricalRecodingConfig config) throws ValidationException {
+  protected void acceptConfig(CategoricalRecodingConfig config) {
     _inputVar = config.getInputVariable();
     _inputColumn = VariableDef.toDotNotation(_inputVar);
     _recodingRules = config.getRules();

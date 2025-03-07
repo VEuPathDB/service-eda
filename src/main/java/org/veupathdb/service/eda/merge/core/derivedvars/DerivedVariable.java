@@ -19,14 +19,14 @@ import java.util.List;
 // only serialize metadata fields since these are used directly to output metadata (not converted to DerivedVariableMetadataImpl)
 @JsonSerialize(as=DerivedVariableMetadata.class)
 @JsonPropertyOrder({
-    "entityId",
-    "variableId",
-    "derivationType",
-    "variableType",
-    "dataShape",
-    "vocabulary",
-    "units",
-    "dataRange"
+  "entityId",
+  "variableId",
+  "derivationType",
+  "variableType",
+  "dataShape",
+  "vocabulary",
+  "units",
+  "dataRange"
 })
 public interface DerivedVariable extends DerivedVariableMetadata {
 

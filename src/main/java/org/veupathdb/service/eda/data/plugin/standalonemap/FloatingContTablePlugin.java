@@ -1,16 +1,12 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import org.gusdb.fgputil.ListBuilder;
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
-import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -59,7 +55,7 @@ public class FloatingContTablePlugin extends AbstractEmptyComputePlugin<Floating
   }
 
   @Override
-  protected void validateVisualizationSpec(FloatingContTableSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(FloatingContTableSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
@@ -69,7 +65,7 @@ public class FloatingContTablePlugin extends AbstractEmptyComputePlugin<Floating
   @Override
   protected List<StreamSpec> getRequestedStreams(FloatingContTableSpec pluginSpec) {
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>();
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
     plotVariableSpecs.add(pluginSpec.getYAxisVariable());
 
@@ -84,14 +80,13 @@ public class FloatingContTablePlugin extends AbstractEmptyComputePlugin<Floating
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
-    PluginUtil util = getUtil();
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     FloatingContTableSpec spec = getPluginSpec();
     String outputEntityId = spec.getOutputEntityId();
     Map<String, VariableSpec> varMap = new HashMap<>();
     varMap.put("xAxis", spec.getXAxisVariable());
     varMap.put("yAxis", spec.getYAxisVariable());
-   
+
     List<DynamicDataSpec> dataSpecsWithStudyDependentVocabs = getDynamicDataSpecsWithStudyDependentVocabs(outputEntityId);
     Map<String, InputStream> studyVocabs = getVocabByRootEntity(dataSpecsWithStudyDependentVocabs);
     dataStreams.putAll(studyVocabs);
@@ -100,10 +95,10 @@ public class FloatingContTablePlugin extends AbstractEmptyComputePlugin<Floating
       connection.voidEval(DEFAULT_SINGLE_STREAM_NAME + " <- data.table::fread('" + DEFAULT_SINGLE_STREAM_NAME + "', na.strings=c(''))");
       String inputData = getRVariableInputDataWithImputedZeroesAsString(DEFAULT_SINGLE_STREAM_NAME, varMap, outputEntityId, "variables");
       connection.voidEval(getVoidEvalVariableMetadataListWithStudyDependentVocabs(varMap, outputEntityId));
-      String cmd = "plot.data::mosaic(data=" + inputData + ", " + 
-                                        "variables=variables, " + 
-                                        "statistic='chiSq', " + 
-                                        "columnReferenceValue=NA_character_, " + 
+      String cmd = "plot.data::mosaic(data=" + inputData + ", " +
+                                        "variables=variables, " +
+                                        "statistic='chiSq', " +
+                                        "columnReferenceValue=NA_character_, " +
                                         "rowReferenceValue=NA_character_, "+
                                         "sampleSizes=FALSE, " +
                                         "completeCases=FALSE, " +

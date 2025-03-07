@@ -3,3 +3,4 @@
 /build/
 /.tools
 readme.adoc
+src/main/java/org/veupathdb/service/eda/generated/

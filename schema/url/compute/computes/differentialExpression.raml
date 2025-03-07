@@ -1,0 +1,40 @@
+#%RAML 1.0 Library
+
+types:
+
+  DifferentialExpressionPluginRequest:
+    type: ComputeRequestBase
+    properties:
+      config: DifferentialExpressionComputeConfig
+
+  DifferentialExpressionComputeConfig:
+    properties:
+      collectionVariable: CollectionSpec
+      comparator: ComparatorSpec
+      differentialExpressionMethod: DifferentialExpressionMethod
+      pValueFloor:
+        type: string
+        required: false
+        
+  DifferentialExpressionMethod:
+    type: string
+    enum: ['DESeq']
+
+  ComparatorSpec:
+    type: object
+    properties:
+      variable: VariableSpec
+      groupA: LabeledRange[]
+      groupB: LabeledRange[]
+
+  DifferentialExpressionPoint:
+    properties:
+      effectSize: string
+      pValue: string
+      adjustedPValue: string
+      pointId: string
+
+  DifferentialExpressionStatsResponse:
+    properties:
+      effectSizeLabel: string
+      statistics: DifferentialExpressionPoint[]

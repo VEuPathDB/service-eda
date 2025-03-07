@@ -1,7 +1,6 @@
 package org.veupathdb.service.eda.compute.controller;
 
 import jakarta.ws.rs.BadRequestException;
-import jakarta.ws.rs.ForbiddenException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -11,10 +10,8 @@ import org.veupathdb.lib.compute.platform.job.JobFileReference;
 import org.veupathdb.lib.compute.platform.job.JobStatus;
 import org.veupathdb.lib.compute.platform.model.JobReference;
 import org.veupathdb.lib.container.jaxrs.server.annotations.AdminRequired;
-import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.hash_id.HashID;
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles;
-import org.veupathdb.service.eda.Main;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponse;
 import org.veupathdb.service.eda.generated.model.ExpiredJobsResponseImpl;
 import org.veupathdb.service.eda.generated.resources.ExpireComputeJobs;
@@ -29,10 +26,10 @@ import java.util.concurrent.ForkJoinPool;
 
 /**
  * Responsible for expiring jobs on command.  Service takes two optional arguments:
- *
+ * <p>
  * - study ID: if passed, endpoint will only expire jobs run against this study
  * - plugin name: if passed, endpoint will only expire jobs run using this plugin
- *
+ * <p>
  * If neither argument is passed, a call to this endpoint will expire all job results
  */
 @AdminRequired
@@ -47,13 +44,13 @@ public class ExpirationController implements ExpireComputeJobs {
     }
     List<HashID> filteredJobIds = findJobs(Optional.ofNullable(jobId), Optional.ofNullable(studyId), Optional.ofNullable(pluginName));
     int numJobsExpired = manuallyExpireJobs(filteredJobIds);
-    LOG.info("Expired " + numJobsExpired + " jobs in response to the following expiration request: " +
-        "jobId = " + jobId + ", studyId = " + studyId + ", pluginName = " + pluginName);
+    LOG.info("Expired {} jobs in response to the following expiration request: jobId = {}, studyId = {}, pluginName = {}", numJobsExpired, jobId, studyId, pluginName);
     ExpiredJobsResponse response = new ExpiredJobsResponseImpl();
     response.setNumJobsExpired(numJobsExpired);
     return GetExpireComputeJobsResponse.respond200WithApplicationJson(response);
   }
 
+  @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "resource"})
   private List<HashID> findJobs(Optional<String> jobIdOption, Optional<String> studyIdOption, Optional<String> pluginNameOption) {
     ForkJoinPool customThreadPool = null;
     try {
@@ -62,36 +59,35 @@ public class ExpirationController implements ExpireComputeJobs {
 
         AsyncPlatform.listJobReferences().parallelStream()
 
-        // can only expire owned jobs
-        .filter(JobReference::getOwned)
+          // can only expire owned jobs
+          .filter(JobReference::getOwned)
 
-        // convert to job ID
-        .map(JobReference::getJobID)
+          // convert to job ID
+          .map(JobReference::getJobID)
 
-        // get job details
-        .map(AsyncPlatform::getJob)
+          // get job details
+          .map(AsyncPlatform::getJob)
 
-        // filter out jobs that no longer exist?  (race condition?)
-        .filter(Objects::nonNull)
+          // filter out jobs that no longer exist?  (race condition?)
+          .filter(Objects::nonNull)
 
-        // filter out already-expired jobs
-        .filter(job -> JobStatus.Expired != job.getStatus())
+          // filter out already-expired jobs
+          .filter(job -> JobStatus.Expired != job.getStatus())
 
-        .map(AsyncJob::getJobID)
+          .map(AsyncJob::getJobID)
 
-        // filter jobs by requested criteria
-        .filter(jobId ->
+          // filter jobs by requested criteria
+          .filter(jobId ->
 
-          // if job ID specified, then match exactly if job IDs match
-          jobIdOption.isPresent() ? jobId.getString().equals(jobIdOption.get()) :
+            // if job ID specified, then match exactly if job IDs match
+            // only need to look up config if criteria specified
+            jobIdOption.map(s -> jobId.getString().equals(s))
+              .orElseGet(() -> (studyIdOption.isEmpty() && pluginNameOption.isEmpty()) ||
+                jobMatchesCriteria(jobId, studyIdOption, pluginNameOption))
+          )
 
-          // only need to look up config if criteria specified
-          (studyIdOption.isEmpty() && pluginNameOption.isEmpty()) ||
-              jobMatchesCriteria(jobId, studyIdOption, pluginNameOption)
-        )
-
-        // collect remaining job IDs
-        .toList()
+          // collect remaining job IDs
+          .toList()
       ).get();
     }
     catch (ExecutionException e) {
@@ -101,15 +97,18 @@ public class ExpirationController implements ExpireComputeJobs {
       throw new RuntimeException("Expiration request interrupted before completion", e);
     }
     finally {
-      customThreadPool.shutdown();
+      if (customThreadPool != null) {
+        customThreadPool.shutdown();
+      }
     }
   }
 
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private boolean jobMatchesCriteria(HashID jobId, Optional<String> studyIdOption, Optional<String> pluginNameOption) {
     // find the config file
-    JobFileReference configFile = AsyncPlatform.INSTANCE.getJobFile(jobId, ReservedFiles.InputConfig);
+    JobFileReference configFile = AsyncPlatform.getJobFile(jobId, ReservedFiles.InputConfig);
     if (configFile == null) {
-      LOG.warn("Could not find job config file in non-expired job " + jobId);
+      LOG.warn("Could not find job config file in non-expired job {}", jobId);
       return false;
     }
     // read the config file
@@ -122,7 +121,7 @@ public class ExpirationController implements ExpireComputeJobs {
       return matchesPluginName && matchesStudyId;
     }
     catch (IOException e) {
-      LOG.error("Could not open or parse job config file for job " + jobId);
+      LOG.error("Could not open or parse job config file for job {}", jobId);
       return true;
     }
   }
@@ -135,7 +134,7 @@ public class ExpirationController implements ExpireComputeJobs {
         count++;
       }
       catch (Exception e) {
-        LOG.error("Unable to expire Job with ID " + id, e);
+        LOG.error("Unable to expire Job with ID {}", id, e);
       }
     }
     return count;

@@ -4,31 +4,17 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class MessageTemplate
-{
+public record MessageTemplate(@JsonGetter(FIELD_SUBJECT) String subject, @JsonGetter(FIELD_BODY) String body) {
   public static final String
-    FIELD_SUBJECT = "subject",
-    FIELD_BODY    = "body";
-
-  private final String subject;
-  private final String body;
+                             FIELD_SUBJECT = "subject";
+  public static final String FIELD_BODY    = "body";
 
   @JsonCreator
   public MessageTemplate(
     @JsonProperty(FIELD_SUBJECT) final String subject,
-    @JsonProperty(FIELD_BODY)    final  String body
+    @JsonProperty(FIELD_BODY) final String body
   ) {
     this.subject = subject;
-    this.body    = body;
-  }
-
-  @JsonGetter(FIELD_SUBJECT)
-  public String getSubject() {
-    return subject;
-  }
-
-  @JsonGetter(FIELD_BODY)
-  public String getBody() {
-    return body;
+    this.body = body;
   }
 }

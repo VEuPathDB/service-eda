@@ -38,4 +38,4 @@ await "${S3_HOST}" "${S3_PORT}" || exit 1
 
 cmd="java -jar -XX:+HeapDumpOnOutOfMemoryError $JVM_MEM_ARGS $JVM_ARGS /service.jar"
 echo "Running command: $cmd"
-$cmd
+exec $cmd

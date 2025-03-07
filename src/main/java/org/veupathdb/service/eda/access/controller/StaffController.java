@@ -56,7 +56,7 @@ public class StaffController implements Staff
     // WARNING: This cast mess is due to a bug in the JaxRS generator, the type
     // it actually passes up is not the declared type, but a list of linked hash
     // maps instead.
-    final var item = ((List< Map <String, Object> >)((Object) entity)).get(0);
+    final var item = ((List< Map <String, Object> >)((Object) entity)).getFirst();
 
 
     row.setOwner((boolean) item.get(Keys.Json.KEY_VALUE));

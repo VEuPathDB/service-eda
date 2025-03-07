@@ -44,7 +44,7 @@ public class MultiStreamPlugin extends AbstractEmptyComputePlugin<MultiStreamPos
   @Override
   protected void validateVisualizationSpec(MultiStreamSpec pluginSpec) throws ValidationException {
     getReferenceMetadata().getEntity(pluginSpec.getEntityId())
-        .orElseThrow(() -> new ValidationException("Invalid entity ID: " + pluginSpec.getEntityId()));
+      .orElseThrow(() -> new ValidationException("Invalid entity ID: " + pluginSpec.getEntityId()));
   }
 
   /**

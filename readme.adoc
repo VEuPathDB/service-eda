@@ -2,6 +2,11 @@
 
 Public-facing service providing all EDA data to EDA client apps
 
+api doc: https://veupathdb.github.io/service-eda/api.html
+
+check https://github.com/VEuPathDB/service-eda-compute/blob/main/readme.adoc for compute plugins.
+
+
 ## docker-compose
 
 ### preliminary requirements

@@ -1,22 +1,14 @@
 package org.veupathdb.service.eda.common.plugin.util;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.functional.TreeNode;
-import org.veupathdb.service.eda.common.client.EdaMergingClient;
 import org.veupathdb.service.eda.common.model.CollectionDef;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.generated.model.CollectionSpec;
-import org.veupathdb.service.eda.generated.model.DynamicDataSpec;
-import org.veupathdb.service.eda.generated.model.LabeledRange;
-import org.veupathdb.service.eda.generated.model.VariableSpec;
-import org.veupathdb.service.eda.generated.model.VariableSpecImpl;
+import org.veupathdb.service.eda.generated.model.*;
 
-import java.lang.StringBuilder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -26,14 +18,12 @@ import java.util.stream.Collectors;
  */
 public class PluginUtil {
 
-  private static final Logger LOG = LogManager.getLogger(PluginUtil.class);
-
   private final ReferenceMetadata _metadata;
-  private final EdaMergingClient _mergingClient;
+  private final Function<VariableSpec, String> _varToColumnHeader;
 
-  public PluginUtil(ReferenceMetadata metadata, EdaMergingClient mergingClient) {
+  public PluginUtil(ReferenceMetadata metadata, Function<VariableSpec, String> varToColumnHeader) {
     _metadata = metadata;
-    _mergingClient = mergingClient;
+    _varToColumnHeader = varToColumnHeader;
   }
 
   /*****************************************************************
@@ -64,8 +54,8 @@ public class PluginUtil {
 
   private String getVariableAttribute(Function<VariableDef, ?> getter, VariableSpec var) {
     return var == null ? "" : getter.apply(_metadata.getVariable(var)
-        .orElseThrow(() -> new IllegalArgumentException(
-            String.format("Unable to find variable with spec %s, %s", var.getEntityId(), var.getVariableId())))).toString();
+      .orElseThrow(() -> new IllegalArgumentException(
+        String.format("Unable to find variable with spec %s, %s", var.getEntityId(), var.getVariableId())))).toString();
   }
 
   public String getCollectionType(CollectionSpec collection) {
@@ -126,9 +116,7 @@ public class PluginUtil {
   }
 
   public boolean getHasStudyDependentVocabulary(VariableSpec var) {
-    boolean hasStudyDependentVocabulary = getVariableAttribute(VariableDef::getHasStudyDependentVocabulary, var).equals("true") ? true : false;
-
-    return hasStudyDependentVocabulary;
+    return getVariableAttribute(VariableDef::getHasStudyDependentVocabulary, var).equals("true");
   }
 
   public boolean getHasStudyDependentVocabulary(List<VariableSpec> vars, int index) {
@@ -136,9 +124,7 @@ public class PluginUtil {
   }
 
   public boolean getHasStudyDependentVocabulary(CollectionSpec collection) {
-    boolean hasStudyDependentVocabulary = getCollectionAttribute(CollectionDef::getHasStudyDependentVocabulary, collection).equals("true") ? true : false;
-
-    return hasStudyDependentVocabulary;
+    return getCollectionAttribute(CollectionDef::getHasStudyDependentVocabulary, collection).equals("true");
   }
 
   public List<VariableDef> getCollectionMembers(CollectionSpec collection) {
@@ -152,12 +138,12 @@ public class PluginUtil {
 
   public static List<VariableSpec> variablesFromCollectionMembers(CollectionSpec collection, List<String> memberIds) {
     return memberIds.stream()
-        .map(memberVarId -> {
-          VariableSpec varSpec = new VariableSpecImpl();
-          varSpec.setEntityId(collection.getEntityId());
-          varSpec.setVariableId(memberVarId);
-          return varSpec;
-        }).toList();
+      .map(memberVarId -> {
+        VariableSpec varSpec = new VariableSpecImpl();
+        varSpec.setEntityId(collection.getEntityId());
+        varSpec.setVariableId(memberVarId);
+        return varSpec;
+      }).toList();
   }
 
   //deprecated
@@ -177,13 +163,13 @@ public class PluginUtil {
    ****************************************************************/
 
   public String toColNameOrEmpty(VariableSpec var) {
-    return var == null ? "" : _mergingClient.varToColumnHeader(var);
+    return var == null ? "" : _varToColumnHeader.apply(var);
   }
 
   public String toColNameOrEmpty(DynamicDataSpec data) {
     if (data.isCollectionSpec()) {
       // TODO and when we get there it might need an option to return either the dot notated collection spec directly vs a list of dot notated member var specs
-      return "";    
+      return "";
     } else if (data.isVariableSpec()) {
       return toColNameOrEmpty(data.getVariableSpec());
     } else {
@@ -206,24 +192,24 @@ public class PluginUtil {
 
   public static String listToRVector(List<String> values) {
     return
-        "c(" +
+      "c(" +
         values.stream()
-            .map(PluginUtil::doubleQuote)
-            .collect(Collectors.joining(", ")) +
+          .map(PluginUtil::doubleQuote)
+          .collect(Collectors.joining(", ")) +
         ")";
   }
 
   public String getVoidEvalFreadCommand(String fileName, VariableSpec... vars) {
-    return getVoidEvalFreadCommand(fileName, new ListBuilder<VariableSpec>().addAll(vars).toList());
+    return getVoidEvalFreadCommand(fileName, Arrays.asList(vars));
   }
 
   public String getVoidEvalFreadCommand(String fileName, List<VariableSpec> vars) {
-    boolean first = true;
-    String namedTypes = "";
+    boolean       first      = true;
+    StringBuilder namedTypes = new StringBuilder();
 
     for(VariableSpec var : vars) {
       String varName = toColNameOrEmpty(var);
-      if (varName.equals("")) continue;
+      if (varName.isEmpty()) continue;
       String varType = getVariableType(var);
       String varShape = getVariableDataShape(var);
       String rBaseType;
@@ -236,43 +222,43 @@ public class PluginUtil {
       }
       if (first) {
         first = false;
-        namedTypes = singleQuote(varName) + "=" + singleQuote(rBaseType);
+        namedTypes = new StringBuilder(singleQuote(varName) + "=" + singleQuote(rBaseType));
       } else {
-        namedTypes = namedTypes + "," + singleQuote(varName) + "=" + singleQuote(rBaseType);
+        namedTypes.append(",").append(singleQuote(varName)).append("=").append(singleQuote(rBaseType));
       }
     }
 
     return fileName +
-        " <- data.table::fread(" + singleQuote(fileName) +
-        ", select=c(" + namedTypes + ")" +
-        ", na.strings=c(''))";
+      " <- data.table::fread(" + singleQuote(fileName) +
+      ", select=c(" + namedTypes + ")" +
+      ", na.strings=c(''))";
   }
 
   public String getDotNotatedIdColumnsAsRVectorString(List<String> dotNotatedIdColumns) {
     StringBuilder dotNotatedIdColumnsString = new StringBuilder("c(");
-      boolean first = true;
-      for (String idCol : dotNotatedIdColumns) {
-        if (first) {
-          first = false;
-          dotNotatedIdColumnsString.append(singleQuote(idCol));
-        } else {
-          dotNotatedIdColumnsString.append("," + singleQuote(idCol));
-        }
+    boolean first = true;
+    for (String idCol : dotNotatedIdColumns) {
+      if (first) {
+        first = false;
+        dotNotatedIdColumnsString.append(singleQuote(idCol));
+      } else {
+        dotNotatedIdColumnsString.append(",").append(singleQuote(idCol));
       }
-      dotNotatedIdColumnsString.append(")");
+    }
+    dotNotatedIdColumnsString.append(")");
 
     return dotNotatedIdColumnsString.toString();
   }
-  
+
   public String getIdColumnSpecsAsRVectorString(List<VariableSpec> idColumnSpecs) {
     List<String> dotNotatedIdColumns = idColumnSpecs.stream().map(VariableDef::toDotNotation).toList();
-  
+
     return getDotNotatedIdColumnsAsRVectorString(dotNotatedIdColumns);
   }
 
   public String getIdColumnDefsAsRVectorString(List<VariableDef> idColumnDefs) {
     List<String> dotNotatedIdColumns = idColumnDefs.stream().map(VariableDef::toDotNotation).toList();
-  
+
     return getDotNotatedIdColumnsAsRVectorString(dotNotatedIdColumns);
   }
 
@@ -288,7 +274,7 @@ public class PluginUtil {
 
   public String getEntityAncestorsAsRVectorString(String entityId, ReferenceMetadata meta, boolean includeSelf) {
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
-   
+
     return getEntityAncestorsAsRVectorString(entity, meta, includeSelf);
   }
 
@@ -308,52 +294,52 @@ public class PluginUtil {
   }
 
   public String getRCategoricalBinListAsString(List<String> labels) {
-    String rBinList = "veupathUtils::BinList(S4Vectors::SimpleList(";
+    StringBuilder rBinList = new StringBuilder("veupathUtils::BinList(S4Vectors::SimpleList(");
 
     boolean first = true;
-    for (int i = 0; i < labels.size(); i++) {
-      String rBin = "veupathUtils::Bin(binLabel='" + labels.get(i) + "'";
+    for (String label : labels) {
+      String rBin = "veupathUtils::Bin(binLabel='" + label + "'";
       rBin += ")";
 
       if (first) {
-        rBinList += rBin;
+        rBinList.append(rBin);
         first = false;
       } else {
-        rBinList += "," + rBin;
+        rBinList.append(",").append(rBin);
       }
     }
 
     return rBinList + "))";
   }
-  
+
   // Maps ranges in a LabeledRange to bins in an R veupathUtils::BinList object. Returns
   // a string that should be evaluated in R.
   public String getRBinListAsString(List<LabeledRange> labelledRangeList) {
 
-    String rString = "veupathUtils::BinList(S4Vectors::SimpleList(";
+    StringBuilder rString = new StringBuilder("veupathUtils::BinList(S4Vectors::SimpleList(");
 
     boolean first = true;
-    for (int i = 0; i < labelledRangeList.size(); i++) {
-      String rBin = "veupathUtils::Bin(binLabel='" + labelledRangeList.get(i).getLabel() + "'";
+    for (LabeledRange labeledRange : labelledRangeList) {
+      String rBin = "veupathUtils::Bin(binLabel='" + labeledRange.getLabel() + "'";
 
       // All bins in R BinList objects must have labels, but not necessarily bin starts and ends
-      if (labelledRangeList.get(i).getMin() != null) {
-        rBin += ",binStart=" + String.valueOf(labelledRangeList.get(i).getMin()) + 
-                ",binEnd=" + String.valueOf(labelledRangeList.get(i).getMax());
+      if (labeledRange.getMin() != null) {
+        rBin += ",binStart=" + labeledRange.getMin() +
+          ",binEnd=" + labeledRange.getMax();
       }
       rBin += ")";
 
       if (first) {
-        rString += rBin;
+        rString.append(rBin);
         first = false;
       } else {
-        rString += "," + rBin;
+        rString.append(",").append(rBin);
       }
     }
 
-    rString += "))";
+    rString.append("))");
 
-    return rString;
+    return rString.toString();
 
   }
 

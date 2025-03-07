@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.alphadiv;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
@@ -11,7 +10,6 @@ import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -61,9 +59,9 @@ public class AlphaDivBoxplotPlugin extends AbstractPlugin<AlphaDivBoxplotPostReq
           .description("Variable(s) must have 7 or fewer unique values and be of the same or a parent entity of the Overlay variable.")
       .done();
   }
-  
+
   @Override
-  protected void validateVisualizationSpec(BoxplotWith1ComputeSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(BoxplotWith1ComputeSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
@@ -83,7 +81,7 @@ public class AlphaDivBoxplotPlugin extends AbstractPlugin<AlphaDivBoxplotPostReq
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     BoxplotWith1ComputeSpec spec = getPluginSpec();
     PluginUtil util = getUtil();
     Map<String, VariableSpec> varMap = new HashMap<>();
@@ -102,7 +100,7 @@ public class AlphaDivBoxplotPlugin extends AbstractPlugin<AlphaDivBoxplotPostReq
     VariableSpec computedVarSpec = metadata.getVariables().stream()
         .filter(var -> var.getPlotReference().getValue().equals("yAxis"))
         .findFirst().orElseThrow().getVariableSpec();
-    
+
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       // TODO this needs to add the computed vars now as well
       connection.voidEval(util.getVoidEvalFreadCommand(DEFAULT_SINGLE_STREAM_NAME,
@@ -111,15 +109,15 @@ public class AlphaDivBoxplotPlugin extends AbstractPlugin<AlphaDivBoxplotPostReq
           spec.getOverlayVariable(),
           util.getVariableSpecFromList(spec.getFacetVariable(), 0),
           util.getVariableSpecFromList(spec.getFacetVariable(), 1)));
-      
+
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
       connection.voidEval(getVoidEvalComputedVariableMetadataList(metadata));
       connection.voidEval("variables <- veupathUtils::merge(variables, computedVariables)");
 
       String command = "plot.data::box(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
           spec.getPoints().getValue() + "', " +
-          showMean + ", " + 
-          computeStats + ", NULL, TRUE, TRUE, '" + 
+          showMean + ", " +
+          computeStats + ", NULL, TRUE, TRUE, '" +
           deprecatedShowMissingness +"')";
       RServeClient.streamResult(connection, command, out);
     });

@@ -3,7 +3,6 @@ package org.veupathdb.service.eda.common.client.spec;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.common.model.VariableDef;
-import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -17,7 +16,7 @@ import static org.gusdb.fgputil.FormatUtil.NL;
 
 /**
  * Specifies an entity and set of variables desired in a named tabular stream.
- *
+ * <p>
  * Semantics differ slightly depending on whether this spec is being
  * submitted to the subsetting service vs the merging service.  For
  * example, if submitting to the subsetting service, all variables must
@@ -91,8 +90,8 @@ public class StreamSpec extends ArrayList<VariableSpec> {
   @Override
   public String toString() {
     List<String> vars = stream()
-        .map(JsonUtil::serializeObject)
-        .collect(Collectors.toList());
+      .map(JsonUtil::serializeObject)
+      .collect(Collectors.toList());
     return new JSONObject()
       .put("name", _streamName)
       .put("entityId", _entityId)
@@ -101,11 +100,11 @@ public class StreamSpec extends ArrayList<VariableSpec> {
   }
 
   public String toString(int indentLength) {
-      String indent = " ".repeat(indentLength);
-      return indent + "{" + NL +
-          indent + "  name: " + getStreamName() + NL +
-          indent + "  entityId: " + getEntityId() + NL +
-          indent + "  vars: [ " + stream().map(VariableDef::toDotNotation).collect(Collectors.joining()) + " ]" + NL +
-          indent + "}";
+    String indent = " ".repeat(indentLength);
+    return indent + "{" + NL +
+      indent + "  name: " + getStreamName() + NL +
+      indent + "  entityId: " + getEntityId() + NL +
+      indent + "  vars: [ " + stream().map(VariableDef::toDotNotation).collect(Collectors.joining()) + " ]" + NL +
+      indent + "}";
   }
 }

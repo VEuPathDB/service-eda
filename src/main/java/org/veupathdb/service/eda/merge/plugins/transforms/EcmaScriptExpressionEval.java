@@ -37,7 +37,7 @@ public class EcmaScriptExpressionEval extends Transform<EcmaScriptExpressionEval
   }
 
   @Override
-  protected void acceptConfig(EcmaScriptExpressionEvalConfig config) throws ValidationException {
+  protected void acceptConfig(EcmaScriptExpressionEvalConfig config) {
     _scriptExpression = config.getEcmaScriptExpression();
     _variableRefs = config.getInputVariables();
     _expectedType = config.getExpectedType();
@@ -50,10 +50,10 @@ public class EcmaScriptExpressionEval extends Transform<EcmaScriptExpressionEval
     try {
       for (VariableSpec spec : getRequiredInputVars()) {
         checkVariable("Input variable", spec, List.of(
-            // only allow these input types for now
-            APIVariableType.INTEGER,
-            APIVariableType.NUMBER,
-            APIVariableType.STRING
+          // only allow these input types for now
+          APIVariableType.INTEGER,
+          APIVariableType.NUMBER,
+          APIVariableType.STRING
         ), null); // any shape is fine
       }
       // need to wait and set up the script engine here since we need to know the types of the input vars
@@ -65,9 +65,9 @@ public class EcmaScriptExpressionEval extends Transform<EcmaScriptExpressionEval
       String parameterList = _variableRefs.stream().map(VariableReference::getName).collect(Collectors.joining(", "));
       _engine.eval("function " + JS_FUNCTION_NAME + "(" + parameterList + ") { return " + _scriptExpression + "; }");
       _scriptParams = _variableRefs.stream()
-          .map(ref -> _metadata.getVariable(ref.getVariable()).orElseThrow())
-          .map(var -> new TwoTuple<>(VariableDef.toDotNotation(var), var.getType()))
-          .toList();
+        .map(ref -> _metadata.getVariable(ref.getVariable()).orElseThrow())
+        .map(var -> new TwoTuple<>(VariableDef.toDotNotation(var), var.getType()))
+        .toList();
     }
     catch (ScriptException e) {
       throw new ValidationException("JavaScript expression is not valid: " + _scriptExpression);

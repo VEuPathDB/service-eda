@@ -1,17 +1,6 @@
 package org.veupathdb.service.eda.subset.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import jakarta.validation.ValidationException;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
@@ -26,49 +15,44 @@ import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.functional.TreeNode;
 import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.web.UrlEncodedForm;
-import org.gusdb.oauth2.client.veupathdb.User;
+import org.veupathdb.lib.container.jaxrs.model.UserInfo;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.lib.container.jaxrs.server.middleware.CustomResponseHeadersFilter;
+import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
-import org.veupathdb.service.eda.common.client.DatasetAccessClient.StudyDatasetInfo;
-import org.veupathdb.service.eda.generated.model.APIEntity;
-import org.veupathdb.service.eda.generated.model.APIStudyDetail;
-import org.veupathdb.service.eda.generated.model.EntityCountPostRequest;
-import org.veupathdb.service.eda.generated.model.EntityCountPostResponse;
-import org.veupathdb.service.eda.generated.model.EntityCountPostResponseImpl;
-import org.veupathdb.service.eda.generated.model.EntityIdGetResponse;
-import org.veupathdb.service.eda.generated.model.EntityIdGetResponseImpl;
-import org.veupathdb.service.eda.generated.model.EntityTabularPostRequest;
-import org.veupathdb.service.eda.generated.model.EntityTabularPostResponseStream;
-import org.veupathdb.service.eda.generated.model.StudiesGetResponse;
-import org.veupathdb.service.eda.generated.model.StudiesGetResponseImpl;
-import org.veupathdb.service.eda.generated.model.StudyIdGetResponse;
-import org.veupathdb.service.eda.generated.model.StudyIdGetResponseImpl;
-import org.veupathdb.service.eda.generated.model.ValueSpec;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostRequest;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponse;
-import org.veupathdb.service.eda.generated.model.VariableDistributionPostResponseImpl;
-import org.veupathdb.service.eda.generated.model.VocabByRootEntityPostRequest;
-import org.veupathdb.service.eda.generated.model.VocabByRootEntityPostResponseStream;
+import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Studies;
-import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.subset.model.Entity;
 import org.veupathdb.service.eda.subset.model.Study;
 import org.veupathdb.service.eda.subset.model.StudyOverview;
-import org.veupathdb.service.eda.subset.model.db.*;
+import org.veupathdb.service.eda.subset.model.db.ExtendedRootVocabHandler;
+import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
+import org.veupathdb.service.eda.subset.model.db.RootVocabHandler;
 import org.veupathdb.service.eda.subset.model.distribution.DistributionFactory;
+import org.veupathdb.service.eda.subset.model.filter.Filter;
 import org.veupathdb.service.eda.subset.model.reducer.BinaryValuesStreamer;
-import org.veupathdb.service.eda.subset.model.reducer.MetadataFileBinaryProvider;
 import org.veupathdb.service.eda.subset.model.tabular.DataSourceType;
 import org.veupathdb.service.eda.subset.model.tabular.TabularReportConfig;
 import org.veupathdb.service.eda.subset.model.tabular.TabularResponses;
-import org.veupathdb.service.eda.subset.model.variable.Variable;
 import org.veupathdb.service.eda.subset.model.variable.VariableType;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
 import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.subset.model.variable.binary.SimpleStudyFinder;
+
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.veupathdb.service.eda.subset.service.ApiConversionUtil.*;
 
@@ -84,22 +68,22 @@ public class StudiesService implements Studies {
 
   @Override
   public GetStudiesResponse getStudies() {
+    var user = UserProvider.lookupUser(_request).orElseThrow();
+
     // get IDs of studies visible to this user
-    Map<String, StudyDatasetInfo> visibleStudyMap = new DatasetAccessClient(
-        Resources.getDatasetAccessServiceUrl(),
-        UserProvider.getSubmittedAuth(_request).orElseThrow()
-    ).getStudyDatasetInfoMapForUser();
-    Set<String> visibleStudyIds = visibleStudyMap.keySet();
+    var visibleStudyMap = DatasetAccessClient.getStudyDatasetInfoMapForUser(user.getUserId());
 
     // filter overviews by visible studies
-    Map<String, StudyOverview> visibleOverviewMap = Resources.getStudyResolver()
-        .getStudyOverviews().stream()
-        .filter(overview -> visibleStudyIds.contains(overview.getStudyId()))
-        .collect(Collectors.toMap(StudyOverview::getStudyId, Function.identity()));
+    var visibleOverviewMap = Resources.getStudyResolver()
+      .getStudyOverviews()
+      .stream()
+      .filter(overview -> visibleStudyMap.containsKey(overview.getStudyId()))
+      .collect(Collectors.toMap(StudyOverview::getStudyId, Function.identity()));
 
     // convert to API objects and return
     StudiesGetResponse out = new StudiesGetResponseImpl();
     out.setStudies(ApiConversionUtil.toApiStudyOverviews(visibleStudyMap, visibleOverviewMap));
+
     return GetStudiesResponse.respond200WithApplicationJson(out);
   }
 
@@ -133,7 +117,7 @@ public class StudiesService implements Studies {
   }
 
   @Override
-  public PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse 
+  public PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
     checkPerms(_request, studyId, StudyAccess::allowSubsetting);
@@ -172,14 +156,17 @@ public class StudiesService implements Studies {
   }
 
   @Override
-  public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId,
-      String entityId, EntityTabularPostRequest requestBody) {
+  public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(
+    String studyId,
+    String entityId,
+    EntityTabularPostRequest requestBody
+  ) {
     return handleTabularRequest(_request, studyId, entityId, requestBody, true, (streamer, responseType) ->
       responseType == TabularResponses.Type.JSON
         ? PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
-            .respond200WithApplicationJson(streamer)
+          .respond200WithApplicationJson(streamer)
         : PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse
-            .respond200WithTextTabSeparatedValues(streamer)
+          .respond200WithTextTabSeparatedValues(streamer)
     );
   }
 
@@ -187,22 +174,21 @@ public class StudiesService implements Studies {
   public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId, String entityId) {
     UrlEncodedForm form = new UrlEncodedForm(_request.getEntityStream());
     String requestJson = form.getFirstParamValue("data")
-        .orElseThrow(() -> new BadRequestException(
-            "Form must contain parameter 'data' containing tabular request JSON."));
+      .orElseThrow(() -> new BadRequestException("Form must contain parameter 'data' containing tabular request JSON."));
     try {
       EntityTabularPostRequest request = JsonUtil.Jackson.readValue(requestJson, EntityTabularPostRequest.class);
       PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse typedResponse =
-          postStudiesEntitiesTabularByStudyIdAndEntityId(studyId, entityId, request);
+        postStudiesEntitiesTabularByStudyIdAndEntityId(studyId, entityId, request);
       // success so far; add header to response
       String entityDisplay = Resources.getStudyResolver().getStudyById(studyId).getEntity(entityId).orElseThrow().getDisplayName();
       String fileName = studyId + "_" + entityDisplay + "_subsettedData.txt";
       String dispositionHeaderValue = "attachment; filename=\"" + fileName + "\"";
       ServiceMetrics.reportSubsetDownload(studyId, UserProvider.lookupUser(_request)
-          .map(User::getUserId)
-          .map(id -> Long.toString(id))
-          .orElse("None"), entityDisplay);
+        .map(UserInfo::getUserId)
+        .map(id -> Long.toString(id))
+        .orElse("None"), entityDisplay);
       _request.setProperty(CustomResponseHeadersFilter.CUSTOM_HEADERS_KEY,
-          new MapBuilder<>(HttpHeaders.CONTENT_DISPOSITION, dispositionHeaderValue).toMap());
+        new MapBuilder<>(HttpHeaders.CONTENT_DISPOSITION, dispositionHeaderValue).toMap());
       return typedResponse;
     }
     catch (JsonProcessingException e) {
@@ -213,39 +199,26 @@ public class StudiesService implements Studies {
   @Override
   public PostStudiesEntitiesVariablesRootVocabByStudyIdAndEntityIdAndVariableIdResponse postStudiesEntitiesVariablesRootVocabByStudyIdAndEntityIdAndVariableId(String studyId, String entityId, String variableId, VocabByRootEntityPostRequest body) {
     checkPerms(_request, studyId, StudyAccess::allowSubsetting);
-    Study study = Resources.getStudyResolver().getStudyById(studyId);
-    String dataSchema = resolveSchema(study);
 
-
-    // Validate entity/variable ID existence
-    Variable var = study.getEntity(entityId)
-        .orElseThrow(() -> new ValidationException(String.format("Entity %s not found in study %s.", entityId, studyId)))
-        .getVariable(variableId)
-        .orElseThrow(() -> new ValidationException(String.format("Variable ID %s not found on entity %s in study %s.", variableId, entityId, studyId)));
-
-    // Trivially, only works on variables with values
-    if (!(var instanceof VariableWithValues<?>)) {
-      throw new ValidationException("Unable to retrieve vocabulary for a variable without values.");
-    }
-
-    VariableWithValues<?> variableWithValues = (VariableWithValues<?>) var;
-    if (variableWithValues.getType() != VariableType.STRING || variableWithValues.getVocabulary() == null) {
-      throw new ValidationException("Specified variable must be a string with a vocabulary.");
-    }
+    var study = Resources.getStudyResolver().getStudyById(studyId);
+    var dataSchema = resolveSchema(study);
+    var variable = getVariableForRootVocab(study, entityId, variableId);
 
     VocabByRootEntityPostResponseStream streamer = new VocabByRootEntityPostResponseStream(outputStream -> {
-      final OutputStreamWriter writer = new OutputStreamWriter(outputStream);
-      final BufferedWriter bufferedWriter = new BufferedWriter(writer);
-      TabularResponses.ResultConsumer resultConsumer = TabularResponses.Type.TABULAR.getFormatter().getFormatter(bufferedWriter);
+      var bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream));
+      var resultConsumer = TabularResponses.Type.TABULAR.getFormatter().getFormatter(bufferedWriter);
 
       // TODO: probably want a singleton RootVocabHandler with caching implemented.
-      final RootVocabHandler vocabHandler = new RootVocabHandler();
-      vocabHandler.queryStudyVocab(dataSchema,
-          Resources.getApplicationDataSource(),
-          study.getEntityTree().getContents(),
-          variableWithValues,
-          resultConsumer,
-          toInternalFilters(study, body.getFilters(), dataSchema));
+      var vocabHandler = new RootVocabHandler();
+
+      vocabHandler.queryStudyVocab(
+        dataSchema,
+        Resources.getApplicationDataSource(),
+        study.getEntityTree().getContents(),
+        variable,
+        resultConsumer,
+        toInternalFilters(study, body.getFilters(), dataSchema)
+      );
 
       try {
         bufferedWriter.flush();
@@ -255,6 +228,41 @@ public class StudiesService implements Studies {
     });
 
     return PostStudiesEntitiesVariablesRootVocabByStudyIdAndEntityIdAndVariableIdResponse.respond200WithTextTabSeparatedValues(streamer);
+  }
+
+  private static VariableWithValues<?> getVariableForRootVocab(Study study, String entityId, String variableId) {
+    var variable = study.getEntity(entityId)
+      .orElseThrow(() -> new ValidationException(String.format("Entity %s not found in study %s.", entityId, study.getStudyId())))
+      .getVariable(variableId)
+      .orElseThrow(() -> new ValidationException(String.format("Variable ID %s not found on entity %s in study %s.", variableId, entityId, study.getStudyId())));
+
+    // Trivially, only works on variables with values
+    if (!(variable instanceof VariableWithValues<?> variableWithValues)) {
+      throw new ValidationException("Unable to retrieve vocabulary for a variable without values.");
+    }
+
+    if (variableWithValues.getType() != VariableType.STRING || variableWithValues.getVocabulary() == null) {
+      throw new ValidationException("Specified variable must be a string with a vocabulary.");
+    }
+
+    return variableWithValues;
+  }
+
+  // TODO: relocate me!
+  public static InputStream getVocabByRootEntity(
+    Study study,
+    String dataSchema,
+    String entityId,
+    String variableId,
+    List<Filter> filters
+  ) {
+    return ExtendedRootVocabHandler.queryStudyVocab(
+      dataSchema,
+      Resources.getAccountsDataSource(),
+      study.getEntityTree().getContents(),
+      getVariableForRootVocab(study, entityId, variableId),
+      filters
+    );
   }
 
   public static <T> T handleTabularRequest(
@@ -286,14 +294,14 @@ public class StudiesService implements Studies {
     final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager,
             Resources.getFileChannelThreadPool(), Resources.getDeserializerThreadPool());
     if (shouldRunFileBasedSubsetting(request, binaryFilesManager)) {
-      LOG.debug("Running file-based subsetting for study " + studyId);
+      LOG.debug("Running file-based subsetting for study {}", studyId);
       EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream(outStream ->
-          FilteredResultFactory.produceTabularSubsetFromFile(request.getStudy(), entity,
-              request.getRequestedVariables(), request.getFilters(), responseType.getBinaryFormatter(),
-              request.getReportConfig(), outStream, binaryValuesStreamer));
+        FilteredResultFactory.produceTabularSubsetFromFile(request.getStudy(), entity,
+          request.getRequestedVariables(), request.getFilters(), responseType.getBinaryFormatter(),
+          request.getReportConfig(), outStream, binaryValuesStreamer));
       return responseConverter.apply(streamer, responseType);
     }
-    LOG.debug("Performing oracle-based subsetting for study " + studyId);
+    LOG.debug("Performing oracle-based subsetting for study {}", studyId);
     EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream(outStream ->
         FilteredResultFactory.produceTabularSubset(Resources.getApplicationDataSource(), dataSchema,
             request.getStudy(), entity, request.getRequestedVariables(), request.getFilters(),
@@ -319,8 +327,7 @@ public class StudiesService implements Studies {
    * 3. Any data is missing in files (i.e. MissingDataException is thrown).
    **/
   private static boolean shouldRunFileBasedSubsetting(RequestBundle requestBundle, BinaryFilesManager binaryFilesManager) {
-    LOG.debug("Determining whether to use file-based subsetting in request for study '" +
-        requestBundle.getStudy().getStudyId() + "', entity '" + requestBundle.getTargetEntity() + "'.");
+    LOG.debug("Determining whether to use file-based subsetting in request for study '{}', entity '{}'.", requestBundle.getStudy().getStudyId(), requestBundle.getTargetEntity());
 
     if (requestBundle.getReportConfig().requiresSorting()) {
       return false;
@@ -332,34 +339,34 @@ public class StudiesService implements Studies {
     }
 
     if (!binaryFilesManager.studyHasCompatibleFiles(requestBundle.getStudy())) {
-      LOG.debug("Unable to find study dir for " + requestBundle.getStudy().getStudyId() + " in study files.");
+      LOG.debug("Unable to find study dir for {} in study files.", requestBundle.getStudy().getStudyId());
       return false;
     }
 
     if (!binaryFilesManager.entityDirExists(requestBundle.getStudy(), requestBundle.getTargetEntity())) {
-      LOG.debug("Unable to find entity dir for " + requestBundle.getTargetEntity().getId() + " in study files.");
+      LOG.debug("Unable to find entity dir for {} in study files.", requestBundle.getTargetEntity().getId());
       return false;
     }
     if (!binaryFilesManager.idMapFileExists(requestBundle.getStudy(), requestBundle.getTargetEntity())) {
-      LOG.debug("Unable to find ID file for " + requestBundle.getTargetEntity().getId() + " in study files.");
+      LOG.debug("Unable to find ID file for {} in study files.", requestBundle.getTargetEntity().getId());
       return false;
     }
     if (!requestBundle.getTargetEntity().getAncestorEntities().isEmpty() && !binaryFilesManager.ancestorFileExists(requestBundle.getStudy(), requestBundle.getTargetEntity())) {
-      LOG.debug("Unable to find ancestor file for " + requestBundle.getTargetEntity().getId() + " in study files.");
+      LOG.debug("Unable to find ancestor file for {} in study files.", requestBundle.getTargetEntity().getId());
       return false;
     }
-    for (VariableWithValues outputVar: requestBundle.getRequestedVariables()) {
+    for (VariableWithValues<?> outputVar: requestBundle.getRequestedVariables()) {
       if (!binaryFilesManager.variableFileExists(requestBundle.getStudy(), requestBundle.getTargetEntity(), outputVar)) {
-        LOG.debug("Unable to find output var " + outputVar.getId() + " in study files.");
+        LOG.debug("Unable to find output var {} in study files.", outputVar.getId());
         return false;
       }
     }
-    List<VariableWithValues> filterVars = requestBundle.getFilters().stream()
-        .flatMap(filter -> filter.getAllVariables().stream())
-        .collect(Collectors.toList());
-    for (VariableWithValues filterVar: filterVars) {
+    List<VariableWithValues<?>> filterVars = requestBundle.getFilters().stream()
+      .flatMap(filter -> filter.getAllVariables().stream())
+      .toList();
+    for (VariableWithValues<?> filterVar: filterVars) {
       if (!binaryFilesManager.variableFileExists(requestBundle.getStudy(), filterVar.getEntity(), filterVar)) {
-        LOG.debug("Unable to find filterVar var " + filterVar.getId() + " in study files.");
+        LOG.debug("Unable to find filterVar var {} in study files.", filterVar.getId());
         return false;
       }
     }
@@ -407,9 +414,41 @@ public class StudiesService implements Studies {
     return response;
   }
 
+  public static EntityCountPostResponse handleCountRequest(String studyId, String entityId, List<APIFilter> filters) {
+    Study study = Resources.getStudyResolver().getStudyById(studyId);
+    String dataSchema = resolveSchema(study);
+
+    // unpack data from API input to model objects
+    RequestBundle request = RequestBundle.unpack(dataSchema, study, entityId, filters, Collections.emptyList(), null);
+
+    TreeNode<Entity> prunedEntityTree = FilteredResultFactory.pruneTree(
+      request.getStudy().getEntityTree(), request.getFilters(), request.getTargetEntity());
+
+    final BinaryFilesManager binaryFilesManager = new BinaryFilesManager(
+      new SimpleStudyFinder(Resources.getBinaryFilesDirectory().toString()));
+
+    final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager,
+      Resources.getFileChannelThreadPool(), Resources.getDeserializerThreadPool());
+
+    EntityCountPostResponse response = new EntityCountPostResponseImpl();
+    if (shouldRunFileBasedSubsetting(request, binaryFilesManager)) {
+      long count = FilteredResultFactory.getEntityCount(prunedEntityTree, request.getTargetEntity(), request.getFilters(),
+        binaryValuesStreamer, study);
+      response.setCount(count);
+    }
+    else {
+      long count = FilteredResultFactory.getEntityCount(
+        Resources.getApplicationDataSource(), dataSchema, prunedEntityTree, request.getTargetEntity(), request.getFilters());
+      response.setCount(count);
+    }
+
+    return response;
+  }
+
+
   private static void checkPerms(ContainerRequest request, String studyId, Predicate<StudyAccess> accessPredicate) {
-    Entry<String, String> authHeader = UserProvider.getSubmittedAuth(request).orElseThrow();
-    StudyAccess.confirmPermission(authHeader, Resources.getDatasetAccessServiceUrl(), studyId, accessPredicate);
+    var user = UserProvider.lookupUser(request).orElseThrow();
+    StudyAccess.confirmPermission(user.getUserId(), studyId, accessPredicate);
   }
 
   private static String resolveSchema(Study study) {
@@ -434,10 +473,10 @@ public class StudiesService implements Studies {
     if (req.getRequestedVariables().isEmpty()) {
       throw new RuntimeException("No requested variables (empty URL segment?)");
     }
-    Variable var = req.getRequestedVariables().get(0);
-    if (!(var instanceof VariableWithValues)) {
+    VariableWithValues<?> var = req.getRequestedVariables().getFirst();
+    if (var == null) {
       throw new BadRequestException("Distribution endpoint can only be called with a variable that has values.");
     }
-    return (VariableWithValues<?>)var;
+    return var;
   }
 }

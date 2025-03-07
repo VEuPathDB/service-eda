@@ -9,8 +9,6 @@ public interface MarkerAggregator<T> {
 
   /**
    * Returns true if
-   * @param rec
-   * @return
    */
   boolean appliesTo(String[] rec);
 

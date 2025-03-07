@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+
+set -e
+
+OPTIONS="e:p:t:f"
+
+EXECUTION_ID="$(uuidgen)"
+
+ZOMBIE_LIST_FILE_NAME="/tmp/eda-zombies-${EXECUTION_ID}"
+
+trap "rm -f ${ZOMBIE_LIST_FILE_NAME}" EXIT
+
+function printUsage() {
+  echo "Usage:"
+  echo "  find-zombie-workspaces -e <qa|prod> -p <PROJECT>"
+  echo ""
+  echo "Generates a list of workspaces that appear to be in a 'zombie' state"
+  echo "where neither campus claims ownership."
+  echo ""
+  echo "Example:"
+  echo "  find-zombie-workspaces -e qa -p plasmodb"
+  echo ""
+  echo "Options:"
+  echo "  -e <qa|prod> - Target environment."
+  echo "  -p <PROJECT> - Target project name (e.g. plasmodb)."
+  echo "  -f           - Execute deletes instead of printing zombie workspaces."
+}
+
+function resolveURL() {
+  local resolved="$(curl --fail -Ls -o /dev/null -w '%{url_effective}' "$1")"
+  if [ $? -ne 0 ]; then
+    echo "failed to resolve project for $1"
+    return 1
+  fi
+  dirname "$resolved"
+}
+
+function getAdminToken() {
+  sudo pconf "eda_$1" \
+    | jq ".\"eda_$1_eda-service_1.Config\".Env" \
+    | grep 'ADMIN_AUTH_TOKEN' \
+    | sed 's/.\+=\(.\+\)",/\1/'
+}
+
+TIME_SUB=$(date '+%s' | wc -c)
+
+function timestamp() {
+  date '+%s%N' | cut -c-$(( TIME_SUB + 2 ))
+}
+
+START_TIME=$(timestamp)
+
+function dur() {
+  printf '%06d' $(( $(timestamp) - START_TIME ))
+}
+
+function logErr() {
+  log "\033[31m"$@"\033[0m"
+}
+
+function log() {
+  echo -e "\033[90m[$(dur)]\033[0m" "$@" >&2
+}
+
+function logStart() {
+  echo -en "\033[90m[$(dur)]\033[0m" "$@" >&2
+}
+
+function logMid() {
+  echo -en "$@" >&2
+}
+
+function logEnd() {
+  echo -e "$@" >&2
+}
+
+function request() {
+  curl --fail -s "$@" || (logErr "request failed: curl -s $@" && exit 1)
+}
+
+function getHttpStatus() {
+  curl -s -o /dev/null -w '%{http_code}' "$1"
+}
+
+function main() {
+  case "$1" in
+    qa)
+      local -ra subdomains=('q1' 'q2')
+      ;;
+    prod)
+      local -ra subdomains=('w1' 'w2')
+      ;;
+    *)
+      logErr "Invalid target environment, must be one of 'qa' or 'prod'"
+      exit 1
+      ;;
+  esac
+
+  local -r adminToken="$(getAdminToken $1)"
+
+  local -a urls=()
+
+  for sub in "${subdomains[@]}"; do
+    urls+=("$(resolveURL "${sub}.$2.org")/eda")
+  done
+
+  log "Fetching possible dead job workspace listing."
+  touch "${ZOMBIE_LIST_FILE_NAME}"
+  request -H"Admin-Token: ${adminToken}" -o"${ZOMBIE_LIST_FILE_NAME}" "${urls[0]}/admin/compute/list-possible-dead-workspaces"
+
+  entryCount=$(cat ${ZOMBIE_LIST_FILE_NAME} | wc -l)
+
+  if [ $entryCount -eq 0 ]; then
+    log "No workspaces found"
+    exit 0
+  fi
+
+  log "Found ${entryCount} possible zombie workspaces.\n"
+
+  while read line; do
+    if [ -z "$line" ]; then
+      continue
+    fi
+
+    logStart "testing ${line} "
+
+    dudCount=0
+
+    for url in "${urls[@]}"; do
+      status=$(getHttpStatus "${url}/internal-jobs/${line}")
+
+      if [ "$status" -eq "404" ]; then
+        logMid -n 'x'
+        ((dudCount++))
+      elif [ "$status" -eq "200" ]; then
+        logMid -n $'\u2713'
+      else
+        logEnd ''
+        logErr "Unexpected response from server: $status"
+        exit 1
+      fi
+    done
+
+    logEnd ''
+
+    if [ $dudCount -ne 2 ]; then
+      log "at least one campus claimed ownership."
+      continue
+    fi
+
+    log "no campus claimed ownership; workspace is dead"
+
+    if [ $3 -eq 1 ]; then
+      log "deleting workspace ${line}"
+      request -X'DELETE' -H"Admin-Token: ${adminToken}" "${urls[0]}/admin/compute/workspaces/${line}"
+    else
+      echo "$line"
+    fi
+
+  done<${ZOMBIE_LIST_FILE_NAME}
+}
+
+while getopts "${OPTIONS}" opt; do
+  case "${opt}" in
+    e)
+      declare -r targetEnv="${OPTARG}"
+      ;;
+    p)
+      declare -r targetProject="${OPTARG}"
+      ;;
+    f)
+      declare -r realRun=1
+      ;;
+    :)
+      printUsage
+      exit 1
+      ;;
+    *)
+      printUsage
+      exit 1
+      ;;
+  esac
+done
+
+if [ -z "$targetEnv" ] || [ -z "$targetProject" ]; then
+  printUsage
+  exit 1
+fi
+
+main "$targetEnv" "$targetProject" "${realRun:-0}"

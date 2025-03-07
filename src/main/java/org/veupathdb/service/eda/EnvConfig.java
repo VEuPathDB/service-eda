@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda;
 
-import org.jetbrains.annotations.Nullable;
 import org.veupathdb.lib.container.jaxrs.config.Options;
 import picocli.CommandLine;
 
@@ -15,23 +14,23 @@ public class EnvConfig extends Options {
   private static final int DefaultQueueDBPort = 5432;
   private static final int DefaultQueueDBPoolSize = 10;
 
-// Job Queue Defaults
+  // Job Queue Defaults
   private static final int DefaultJobQueuePort = 5672;
+
   private static final String DefaultSlowQueueName = "slow-jobs";
   private static final int DefaultSlowQueueWorkers = 5;
+  private static final int DefaultSlowQueueJobTimeoutMinutes = 30;
+
   private static final String DefaultFastQueueName = "fast-jobs";
   private static final int DefaultFastQueueWorkers = 5;
+  private static final int DefaultFastQueueJobTimeoutMinutes = 30;
 
-
-// S3 Defaults
+  // S3 Defaults
   private static final int DefaultS3Port     = 80;
   private static final boolean DefaultS3UseHttps = true;
 
-// Job Cache Defaults
+  // Job Cache Defaults
   private static final int DefaultJobCacheTimeoutDays = 30;
-
-// RServe Defaults
-  private static final int DefaultRServePort = 6311;
 
 
   @CommandLine.Option(
@@ -39,7 +38,7 @@ public class EnvConfig extends Options {
     defaultValue = "${env:ENABLE_EMAIL}",
     arity = "1"
   )
-  @SuppressWarnings("FieldMayBeFinal")
+  @SuppressWarnings("CanBeFinal")
   private boolean enableEmail = true;
 
   @CommandLine.Option(
@@ -55,7 +54,7 @@ public class EnvConfig extends Options {
     defaultValue = "${env:EMAIL_DEBUG}",
     arity = "1"
   )
-  @SuppressWarnings("FieldMayBeFinal")
+  @SuppressWarnings("CanBeFinal")
   private boolean emailDebug = false;
 
   @CommandLine.Option(
@@ -80,7 +79,7 @@ public class EnvConfig extends Options {
     arity = "1",
     description = "Path to the user registration client app component relative to $SITE_URL."
   )
-  @SuppressWarnings("FieldMayBeFinal")
+  @SuppressWarnings("CanBeFinal")
   private String registrationPath = DEFAULT_REGISTRATION_PATH;
 
   @CommandLine.Option(
@@ -89,9 +88,9 @@ public class EnvConfig extends Options {
     arity = "1",
     description = "Path to the client app component used to manage dataset access relative to $SITE_URL."
   )
-  @SuppressWarnings("FieldMayBeFinal")
+  @SuppressWarnings("CanBeFinal")
   private String applicationPath = DEFAULT_APPLICATION_PATH;
-  
+
   /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
     ┃  Service URLs                                                        ┃
   \*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
@@ -102,7 +101,7 @@ public class EnvConfig extends Options {
     arity = "1",
     description = "Base URL for internal subsettting service endpoints."
   )
-  @SuppressWarnings("FieldMayBeFinal")
+  @SuppressWarnings("CanBeFinal")
   private String edaSubsettingHost = UnconfiguredStringValue;
 
 
@@ -112,7 +111,7 @@ public class EnvConfig extends Options {
     arity = "1",
     description = "Base URL for internal merge service endpoints."
   )
-  @SuppressWarnings("FieldMayBeFinal")
+  @SuppressWarnings("CanBeFinal")
   private String edaMergeHost = UnconfiguredStringValue;
 
   @CommandLine.Option(
@@ -121,7 +120,7 @@ public class EnvConfig extends Options {
     arity = "1",
     description = "Base URL for access service endpoints."
   )
-  @SuppressWarnings("FieldMayBeFinal")
+  @SuppressWarnings("CanBeFinal")
   private String datasetAccessHost = UnconfiguredStringValue;
 
 
@@ -131,8 +130,10 @@ public class EnvConfig extends Options {
     arity = "1",
     description = "Base URL for rserve."
   )
-  @SuppressWarnings("FieldMayBeFinal")
+  @SuppressWarnings("CanBeFinal")
   private String rserveHost = UnconfiguredStringValue;
+
+  // region Postgres
 
   /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
     ┃  Queue PostgreSQL                                                    ┃
@@ -145,6 +146,7 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   private String queueDBName = UnconfiguredStringValue;
 
   @CommandLine.Option(
@@ -154,6 +156,7 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String queueDBHost = UnconfiguredStringValue;
 
   @CommandLine.Option(
@@ -162,6 +165,7 @@ public class EnvConfig extends Options {
       description = "Queue database host port",
       arity = "1"
   )
+  @SuppressWarnings("CanBeFinal")
   int queueDBPort = DefaultQueueDBPort;
 
   @CommandLine.Option(
@@ -171,6 +175,7 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String queueDBUsername = UnconfiguredStringValue;
 
   @CommandLine.Option(
@@ -180,6 +185,7 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String queueDBPassword = UnconfiguredStringValue;
 
   @CommandLine.Option(
@@ -188,6 +194,7 @@ public class EnvConfig extends Options {
       description = "Queue database pool size",
       arity = "1"
   )
+  @SuppressWarnings("CanBeFinal")
   int queueDBPoolSize = DefaultQueueDBPoolSize;
 
   // endregion Postgres
@@ -205,8 +212,8 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String jobQueueUsername;
-  
 
   @CommandLine.Option(
       names = "--job-queue-password",
@@ -215,8 +222,8 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String jobQueuePassword;
-  
 
   @CommandLine.Option(
       names = "--job-queue-host",
@@ -225,8 +232,8 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String jobQueueHost;
-  
 
   @CommandLine.Option(
       names = "--job-queue-port",
@@ -234,8 +241,8 @@ public class EnvConfig extends Options {
       description = "Host port for the RabbitMQ instance.",
       arity = "1"
   )
-  int jobQueuePort;
-  
+  @SuppressWarnings("CanBeFinal")
+  int jobQueuePort = DefaultJobQueuePort;
 
   @CommandLine.Option(
       names = "--slow-queue-name",
@@ -243,8 +250,8 @@ public class EnvConfig extends Options {
       description = "Name of the slow jobs queue.",
       arity = "1"
   )
-  String slowQueueName;
-  
+  @SuppressWarnings("CanBeFinal")
+  String slowQueueName = DefaultSlowQueueName;
 
   @CommandLine.Option(
       names = "--slow-queue-workers",
@@ -252,8 +259,8 @@ public class EnvConfig extends Options {
       description = "Number of worker threads used by the slow job queue.",
       arity = "1"
   )
-  int slowQueueWorkers;
-  
+  @SuppressWarnings("CanBeFinal")
+  int slowQueueWorkers = DefaultSlowQueueWorkers;
 
   @CommandLine.Option(
       names = "--fast-queue-name",
@@ -261,8 +268,8 @@ public class EnvConfig extends Options {
       description = "Name of the fast jobs queue.",
       arity = "1"
   )
+  @SuppressWarnings("CanBeFinal")
   String fastQueueName = DefaultFastQueueName;
-  
 
   @CommandLine.Option(
       names = "--fast-queue-workers",
@@ -270,8 +277,8 @@ public class EnvConfig extends Options {
       description = "Number of worker threads used by the fast job queue.",
       arity = "1"
   )
+  @SuppressWarnings("CanBeFinal")
   int fastQueueWorkers = DefaultFastQueueWorkers;
-  
 
   // endregion RabbitMQ
 
@@ -288,8 +295,8 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String s3Host = UnconfiguredStringValue;
-  
 
   @CommandLine.Option(
       names = "--s3-bucket",
@@ -298,8 +305,8 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String s3Bucket = UnconfiguredStringValue;
-  
 
   @CommandLine.Option(
       names = "--s3-access-token",
@@ -308,8 +315,8 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String s3AccessToken = UnconfiguredStringValue;
-  
 
   @CommandLine.Option(
       names = "--s3-secret-key",
@@ -318,8 +325,8 @@ public class EnvConfig extends Options {
       arity = "1",
       required = true
   )
+  @SuppressWarnings("CanBeFinal")
   String s3SecretKey = UnconfiguredStringValue;
-  
 
   @CommandLine.Option(
       names = "--s3-port",
@@ -327,8 +334,8 @@ public class EnvConfig extends Options {
       description = "S3 host port",
       arity = "1"
   )
+  @SuppressWarnings("CanBeFinal")
   int s3Port = DefaultS3Port;
-  
 
   @CommandLine.Option(
       names = "--s3-use-https",
@@ -336,8 +343,8 @@ public class EnvConfig extends Options {
       description = "Whether the platform should use HTTPS when connecting to S3",
       arity = "1"
   )
+  @SuppressWarnings("CanBeFinal")
   boolean s3UseHttps = DefaultS3UseHttps;
-  
 
   // endregion Minio (S3)
 
@@ -353,25 +360,28 @@ public class EnvConfig extends Options {
       description = "Number of days a job will be kept in the cache after it was last accessed.",
       arity = "1"
   )
+  @SuppressWarnings("CanBeFinal")
   int jobCacheTimeoutDays = DefaultJobCacheTimeoutDays;
-  
+
+  @CommandLine.Option(
+    names = "--slow-queue-job-timeout",
+    defaultValue = "${env:SLOW_QUEUE_JOB_TIMEOUT_MINUTES}",
+    description = "Max number of minutes a slow queue job may take to complete before the job message from the queue is skipped.",
+    arity = "1"
+  )
+  @SuppressWarnings("CanBeFinal")
+  int slowQueueJobTimeout = DefaultSlowQueueJobTimeoutMinutes;
+
+  @CommandLine.Option(
+    names = "--fast-queue-job-timeout",
+    defaultValue = "${env:FAST_QUEUE_JOB_TIMEOUT_MINUTES}",
+    description = "Max number of minutes a fast queue job may take to complete before the job message from the queue is skipped.",
+    arity = "1"
+  )
+  @SuppressWarnings("CanBeFinal")
+  int fastQueueJobTimeout = DefaultFastQueueJobTimeoutMinutes;
 
   // endregion Job Configuration
-
-  // region EDA Services
-
-  /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
-    ┃  External EDA Service Connection Configuration                       ┃
-  \*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
-
-  // endregion EDA Services
-
-  // region RServe
-
-  /*┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓*\
-    ┃  RServe Connection Configuration                                     ┃
-  \*┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛*/
-
 
   public boolean isEmailEnabled() {
     return enableEmail;
@@ -501,4 +511,11 @@ public class EnvConfig extends Options {
     return rserveHost;
   }
 
+  public int getSlowQueueJobTimeout() {
+    return slowQueueJobTimeout;
+  }
+
+  public int getFastQueueJobTimeout() {
+    return fastQueueJobTimeout;
+  }
 }

@@ -1,17 +1,14 @@
 package org.veupathdb.service.eda.data.plugin.standalonemap;
 
-import org.gusdb.fgputil.ListBuilder;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
-import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.data.core.AbstractEmptyComputePlugin;
 import org.veupathdb.service.eda.data.plugin.standalonemap.markers.OverlaySpecification;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -19,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collector;
 
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.streamResult;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
@@ -67,8 +63,8 @@ public class FloatingBarplotPlugin extends AbstractEmptyComputePlugin<FloatingBa
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
       .var("overlayVariable", Optional.ofNullable(pluginSpec.getOverlayConfig())
-          .map(OverlayConfig::getOverlayVariable)
-          .orElse(null)));
+        .map(OverlayConfig::getOverlayVariable)
+        .orElse(null)));
     if (pluginSpec.getOverlayConfig() != null) {
       try {
         _overlaySpecification = new OverlaySpecification(pluginSpec.getOverlayConfig(), getUtil()::getVariableType, getUtil()::getVariableDataShape);
@@ -84,11 +80,11 @@ public class FloatingBarplotPlugin extends AbstractEmptyComputePlugin<FloatingBa
   @Override
   protected List<StreamSpec> getRequestedStreams(FloatingBarplotSpec pluginSpec) {
     String outputEntityId = pluginSpec.getOutputEntityId();
-    List<VariableSpec> plotVariableSpecs = new ArrayList<VariableSpec>();
+    List<VariableSpec> plotVariableSpecs = new ArrayList<>();
     plotVariableSpecs.add(pluginSpec.getXAxisVariable());
     Optional.ofNullable(pluginSpec.getOverlayConfig())
-        .map(OverlayConfig::getOverlayVariable)
-        .ifPresent(plotVariableSpecs::add);
+      .map(OverlayConfig::getOverlayVariable)
+      .ifPresent(plotVariableSpecs::add);
 
     List<VariableSpec> varSpecsForMainRequest = getVarSpecsForStandaloneMapMainStream(outputEntityId, plotVariableSpecs);
 
@@ -101,9 +97,8 @@ public class FloatingBarplotPlugin extends AbstractEmptyComputePlugin<FloatingBa
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     FloatingBarplotSpec spec = getPluginSpec();
-    PluginUtil util = getUtil();
     String outputEntityId = spec.getOutputEntityId();
     String barMode = spec.getBarMode().getValue();
     VariableSpec overlayVariable = _overlaySpecification != null ? _overlaySpecification.getOverlayVariable() : null;
@@ -117,21 +112,21 @@ public class FloatingBarplotPlugin extends AbstractEmptyComputePlugin<FloatingBa
     List<DynamicDataSpec> dataSpecsWithStudyDependentVocabs = getDynamicDataSpecsWithStudyDependentVocabs(outputEntityId);
     Map<String, InputStream> studyVocabs = getVocabByRootEntity(dataSpecsWithStudyDependentVocabs);
     dataStreams.putAll(studyVocabs);
- 
+
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval(DEFAULT_SINGLE_STREAM_NAME + " <- data.table::fread('" + DEFAULT_SINGLE_STREAM_NAME + "', na.strings=c(''))");
 
       String inputData = getRVariableInputDataWithImputedZeroesAsString(DEFAULT_SINGLE_STREAM_NAME, varMap, outputEntityId, "variables");
       connection.voidEval(getVoidEvalVariableMetadataListWithStudyDependentVocabs(varMap, outputEntityId));
       String cmd =
-          "plot.data::bar(data=" + inputData + ", " +
-              "variables=variables, " +
-              "value='" + spec.getValueSpec().getValue() + "', " +
-              "barmode='" + barMode + "', " +
-              "sampleSizes=FALSE, " +
-              "completeCases=FALSE, " + 
-              "overlayValues=" + overlayValues + ", " + 
-              "evilMode='noVariables')";
+        "plot.data::bar(data=" + inputData + ", " +
+          "variables=variables, " +
+          "value='" + spec.getValueSpec().getValue() + "', " +
+          "barmode='" + barMode + "', " +
+          "sampleSizes=FALSE, " +
+          "completeCases=FALSE, " +
+          "overlayValues=" + overlayValues + ", " +
+          "evilMode='noVariables')";
       streamResult(connection, cmd, out);
     });
   }

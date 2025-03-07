@@ -1,6 +1,5 @@
 package org.veupathdb.service.eda.data.plugin.alphadiv;
 
-import org.gusdb.fgputil.validation.ValidationException;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.ConstraintSpec;
 import org.veupathdb.service.eda.common.plugin.constraint.DataElementSet;
@@ -11,7 +10,6 @@ import org.veupathdb.service.eda.data.metadata.AppsMetadata;
 import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.generated.model.*;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -21,7 +19,7 @@ import java.util.Map;
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
 
 public class AlphaDivScatterplotPlugin extends AbstractPlugin<AlphaDivScatterplotPostRequest, ScatterplotWith1ComputeSpec, AlphaDivComputeConfig> {
-  
+
   @Override
   public String getDisplayName() {
     return "Scatter plot";
@@ -65,7 +63,7 @@ public class AlphaDivScatterplotPlugin extends AbstractPlugin<AlphaDivScatterplo
           .description("Variable must be a number or date and be of the same or a parent entity as the Y-axis variable.")
         .element("overlayVariable")
           .required(false)
-          .types(APIVariableType.NUMBER, APIVariableType.INTEGER) 
+          .types(APIVariableType.NUMBER, APIVariableType.INTEGER)
           .description("Variable must be a number, or have 8 or fewer values, and be of the same or a parent entity as the X-axis variable.")
         .element("facetVariable")
           .required(false)
@@ -74,9 +72,9 @@ public class AlphaDivScatterplotPlugin extends AbstractPlugin<AlphaDivScatterplo
           .description("Variable(s) must have 10 or fewer unique values and be of the same or a parent entity as the Overlay variable.")
       .done();
   }
-  
+
   @Override
-  protected void validateVisualizationSpec(ScatterplotWith1ComputeSpec pluginSpec) throws ValidationException {
+  protected void validateVisualizationSpec(ScatterplotWith1ComputeSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("xAxisVariable", pluginSpec.getXAxisVariable())
@@ -96,7 +94,7 @@ public class AlphaDivScatterplotPlugin extends AbstractPlugin<AlphaDivScatterplo
   }
 
   @Override
-  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) throws IOException {
+  protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
     ScatterplotWith1ComputeSpec spec = getPluginSpec();
     PluginUtil util = getUtil();
     Map<String, VariableSpec> varMap = new HashMap<>();
@@ -107,7 +105,7 @@ public class AlphaDivScatterplotPlugin extends AbstractPlugin<AlphaDivScatterplo
     String valueSpec = spec.getValueSpec().getValue();
     String showMissingness = spec.getShowMissingness() != null ? spec.getShowMissingness().getValue() : "noVariables";
     String deprecatedShowMissingness = showMissingness.equals("FALSE") ? "noVariables" : showMissingness.equals("TRUE") ? "strataVariables" : showMissingness;
-   
+
     ComputedVariableMetadata metadata = getComputedVariableMetadata();
     VariableSpec computedVarSpec = metadata.getVariables().stream()
         .filter(var -> var.getPlotReference().getValue().equals("yAxis"))
@@ -120,16 +118,16 @@ public class AlphaDivScatterplotPlugin extends AbstractPlugin<AlphaDivScatterplo
           spec.getOverlayVariable(),
           util.getVariableSpecFromList(spec.getFacetVariable(), 0),
           util.getVariableSpecFromList(spec.getFacetVariable(), 1)));
-      
+
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
       connection.voidEval(getVoidEvalComputedVariableMetadataList(metadata));
       connection.voidEval("variables <- veupathUtils::merge(variables, computedVariables)");
-      
-      String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" + 
-                                                  valueSpec + 
-                                                  "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" + 
+
+      String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
+                                                  valueSpec +
+                                                  "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" +
                                                   deprecatedShowMissingness + "')";
       RServeClient.streamResult(connection, command, out);
-    }); 
+    });
   }
 }

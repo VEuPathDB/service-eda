@@ -1,3 +1,4 @@
+--This is the ORACLE version of this file.  See also the POSTGRES file.
 SELECT
   s.staff_id,
   s.user_id,

@@ -1,3 +1,4 @@
+-- This is the POSTGRES version of this file.  See also the ORACLE version
 SELECT
   v.*
 , (
@@ -37,5 +38,4 @@ WHERE
   AND v.approval_status_id = ?
 ORDER BY
   user_id
-OFFSET ? ROWS
-FETCH NEXT ? ROWS ONLY
+OFFSET ? LIMIT ?

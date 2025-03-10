@@ -75,7 +75,8 @@ public interface SQL
         ById           = select(Table.Providers, "by-id"),
         CountByDataset = select(Table.Providers, "count-by-dataset"),
         ByUserId       = select(Table.Providers, "by-user-id"),
-        ByUserDataset  = select(Table.Providers, "by-user-id-and-dataset"),
+        ByUserDatasetPg   = select(Table.Providers, "by-user-id-and-dataset.postgres"),
+        ByUserDatasetOra  = select(Table.Providers, "by-user-id-and-dataset.oracle"),
         Datasets       = select(Table.Providers, "datasets");
     }
 

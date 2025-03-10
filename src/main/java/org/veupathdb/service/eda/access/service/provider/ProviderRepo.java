@@ -8,6 +8,11 @@ import io.vulpine.lib.query.util.basic.BasicPreparedListReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedMapReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedWriteQuery;
+
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
+
+import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 import org.veupathdb.service.eda.access.model.PartialProviderRow;
 import org.veupathdb.service.eda.access.model.ProviderRow;
 import org.veupathdb.service.eda.access.repo.DB;
@@ -72,8 +77,12 @@ public class ProviderRepo
 
     public static Optional<ProviderRow> byUserAndDataset(final long userId, final String datasetId)
     throws Exception {
+      SupportedPlatform platform = DbManager.accountDatabase().getPlatform().getPlatformEnum();
       return new BasicPreparedReadQuery<>(
-        SQL.Select.Providers.ByUserDataset,
+        switch(platform) {
+          case ORACLE -> SQL.Select.Providers.ByUserDatasetOra;
+          case POSTGRESQL -> SQL.Select.Providers.ByUserDatasetPg;
+        },
         QueryUtil::acctDbConnection,
         SqlUtil.optParser(ProviderUtil.getInstance()::resultToProviderRow),
         new PsBuilder().setLong(userId).setString(datasetId)::build

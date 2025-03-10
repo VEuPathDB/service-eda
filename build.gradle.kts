@@ -88,8 +88,8 @@ dependencies {
   implementation("org.rosuda.REngine:Rserve:1.8.1")
 
   // VEuPathDB libs, prefer local checkouts if available
-  implementation(findProject(":core") ?: "org.veupathdb.lib:jaxrs-container-core:${coreLib}")
-  implementation(findProject(":libEdaSubsetting") ?: "org.veupathdb.lib:eda-subsetting:6.1.0")
+  implementation("org.veupathdb.lib:jaxrs-container-core:${coreLib}")
+  implementation("org.veupathdb.lib:eda-subsetting:6.1.0")
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")

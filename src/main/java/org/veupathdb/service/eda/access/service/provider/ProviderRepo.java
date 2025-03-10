@@ -9,7 +9,6 @@ import io.vulpine.lib.query.util.basic.BasicPreparedMapReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedWriteQuery;
 
-import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
 
 import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;

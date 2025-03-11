@@ -7,6 +7,8 @@ import io.vulpine.lib.query.util.basic.BasicPreparedListReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
 import io.vulpine.lib.query.util.basic.BasicPreparedWriteQuery;
 import io.vulpine.lib.query.util.basic.BasicStatementReadQuery;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
+import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 import org.veupathdb.service.eda.access.model.PartialStaffRow;
 import org.veupathdb.service.eda.access.model.StaffRow;
 import org.veupathdb.service.eda.access.repo.DB;
@@ -73,8 +75,12 @@ public class StaffRepo
     }
 
     static List<StaffRow> list(final long limit, final long offset) throws Exception {
+      SupportedPlatform platform = DbManager.accountDatabase().getPlatform().getPlatformEnum();
       return new BasicPreparedListReadQuery<>(
-        SQL.Select.Staff.All,
+        switch(platform) {
+          case ORACLE -> SQL.Select.Staff.AllOra;
+          case POSTGRESQL -> SQL.Select.Staff.AllPg;
+          },
         QueryUtil.getInstance()::getAcctDbConnection,
         StaffUtil.getInstance()::resultRowToStaffRow,
         new PsBuilder().setLong(offset).setLong(limit)::build

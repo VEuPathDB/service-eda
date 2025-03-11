@@ -1,6 +1,8 @@
 package org.veupathdb.service.eda.access.service.dataset;
 
 import io.vulpine.lib.query.util.basic.BasicPreparedReadQuery;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
+import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 import org.veupathdb.service.eda.access.model.Dataset;
 import org.veupathdb.service.eda.access.model.DatasetAccessLevel;
 import org.veupathdb.service.eda.access.model.DatasetProps;
@@ -84,8 +86,12 @@ public final class DatasetRepo
 
     @SuppressWarnings("resource")
     public Optional<Dataset> selectDataset(final String datasetId) throws Exception {
+      SupportedPlatform platform = DbManager.accountDatabase().getPlatform().getPlatformEnum();
       return new BasicPreparedReadQuery<>(
-        SQL.Select.Datasets.ById,
+        switch(platform) {
+          case ORACLE -> SQL.Select.Datasets.ByIdOra;
+          case POSTGRESQL -> SQL.Select.Datasets.ByIdPg;
+          },
         QueryUtil.getInstance()::getAppDbConnection,
         SqlUtil.optParser(DatasetUtil.getInstance()::resultSetToDataset),
         SqlUtil.prepareSingleString(datasetId)

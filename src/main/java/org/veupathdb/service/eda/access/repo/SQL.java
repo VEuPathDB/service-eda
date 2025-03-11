@@ -61,7 +61,7 @@ public interface SQL
         ById                   = select(Table.EndUsers, "by-id"),
         CountByQueryPg         = select(Table.EndUsers, "count-by-query.postgres"),
         CountByQueryOra        = select(Table.EndUsers, "count-by-query.oracle"),
-        ByDatasetPg              = select(Table.EndUsers, "by-dataset.postgres"),
+        ByDatasetPg            = select(Table.EndUsers, "by-dataset.postgres"),
         ByDatasetOra           = select(Table.EndUsers, "by-dataset.oracle"),
         ByQuery                = select(Table.EndUsers, "by-query"),
         Datasets               = select(Table.EndUsers, "datasets");
@@ -81,7 +81,7 @@ public interface SQL
     interface Staff
     {
       String
-        AllPg      = select(Table.Staff, "all.postgres"),
+        AllPg    = select(Table.Staff, "all.postgres"),
         AllOra   = select(Table.Staff, "all.oracle"),
         ById     = select(Table.Staff, "by-id"),
         ByUserId = select(Table.Staff, "by-user-id"),
@@ -93,7 +93,7 @@ public interface SQL
       String
         Exists = select(Table.Datasets, "exists"),
         ByIdPg   = select(Table.Datasets, "by-id.postgres"),
-        ByIdOra   = select(Table.Datasets, "by-id.oracle"),
+        ByIdOra  = select(Table.Datasets, "by-id.oracle"),
         Emails = select(Table.DatasetProperties, "emails"),
         Access = select(Table.DatasetProperties, "access");
     }

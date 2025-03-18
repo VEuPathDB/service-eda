@@ -4,6 +4,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.fgputil.runtime.Environment;
 import org.gusdb.fgputil.runtime.ProjectSpecificProperties;
 import org.veupathdb.lib.container.jaxrs.config.Options;
@@ -40,11 +41,11 @@ import org.veupathdb.service.eda.subset.service.ClearMetadataCacheService;
 import org.veupathdb.service.eda.subset.service.InternalClientsService;
 import org.veupathdb.service.eda.subset.service.MetadataCache;
 import org.veupathdb.service.eda.subset.service.StudiesService;
+import org.veupathdb.service.eda.subset.test.StubDb;
 import org.veupathdb.service.eda.user.service.ImportAnalysisService;
 import org.veupathdb.service.eda.user.service.MetricsService;
 import org.veupathdb.service.eda.user.service.PublicDataService;
 import org.veupathdb.service.eda.user.service.UserService;
-import org.veupathdb.service.eda.user.stubdb.StubDb;
 
 import javax.sql.DataSource;
 import java.nio.file.Files;
@@ -65,6 +66,7 @@ import static org.gusdb.fgputil.runtime.ProjectSpecificProperties.PropertySpec.r
  * should be registered.
  */
 public class Resources extends ContainerResources {
+
   private static final Logger LOG = LogManager.getLogger(Resources.class);
 
   // Subsetting Config
@@ -162,7 +164,7 @@ public class Resources extends ContainerResources {
     final BinaryFilesManager         binaryFilesManager         = Resources.getBinaryFilesManager();
     final MetadataFileBinaryProvider metadataFileBinaryProvider = new MetadataFileBinaryProvider(binaryFilesManager);
     final VariableFactory variableFactory = new VariableFactory(
-      Resources.getApplicationDataSource(),
+      Resources.getApplicationDatabase().getDataSource(),
       Resources.getVdiDatasetsSchema() + ".",
       metadataFileBinaryProvider,
       binaryFilesManager::studyHasFiles
@@ -170,7 +172,7 @@ public class Resources extends ContainerResources {
     return new StudyResolver(
       METADATA_CACHE,
       new StudyFactory(
-        Resources.getApplicationDataSource(),
+        Resources.getApplicationDatabase().getDataSource(),
         Resources.getVdiDatasetsSchema() + ".",
         StudyOverview.StudySourceType.USER_SUBMITTED,
         variableFactory,
@@ -188,10 +190,10 @@ public class Resources extends ContainerResources {
   }
 
   @SuppressWarnings("resource")
-  public static DataSource getApplicationDataSource() {
+  public static DatabaseInstance getApplicationDatabase() {
     return USE_IN_MEMORY_TEST_DATABASE
-      ? StubDb.getDataSource()
-      : DbManager.applicationDatabase().getDataSource();
+      ? StubDb.getDatabaseInstance()
+      : DbManager.applicationDatabase();
   }
 
   public static String getAppDbSchema() {

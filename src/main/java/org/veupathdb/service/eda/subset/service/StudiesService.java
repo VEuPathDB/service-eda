@@ -140,7 +140,7 @@ public class StudiesService implements Studies {
       if (request.getValueSpec() == null) request.setValueSpec(ValueSpec.COUNT);
 
       DistributionResult result = DistributionFactory.processDistributionRequest(
-          Resources.getApplicationDataSource(), dataSchema, req.getStudy(), req.getTargetEntity(),
+          Resources.getApplicationDatabase(), dataSchema, req.getStudy(), req.getTargetEntity(),
           getRequestedVariable(req), req.getFilters(), toInternalValueSpec(request.getValueSpec()),
           toInternalBinSpecWithRange(request.getBinSpec()));
 
@@ -213,7 +213,7 @@ public class StudiesService implements Studies {
 
       vocabHandler.queryStudyVocab(
         dataSchema,
-        Resources.getApplicationDataSource(),
+        Resources.getApplicationDatabase().getDataSource(),
         study.getEntityTree().getContents(),
         variable,
         resultConsumer,
@@ -303,7 +303,7 @@ public class StudiesService implements Studies {
     }
     LOG.debug("Performing oracle-based subsetting for study {}", studyId);
     EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream(outStream ->
-        FilteredResultFactory.produceTabularSubset(Resources.getApplicationDataSource(), dataSchema,
+        FilteredResultFactory.produceTabularSubset(Resources.getApplicationDatabase(), dataSchema,
             request.getStudy(), entity, request.getRequestedVariables(), request.getFilters(),
             request.getReportConfig(), responseType.getFormatter(), outStream));
     return responseConverter.apply(streamer, responseType);
@@ -407,7 +407,7 @@ public class StudiesService implements Studies {
     }
     else {
       long count = FilteredResultFactory.getEntityCount(
-          Resources.getApplicationDataSource(), dataSchema, prunedEntityTree, request.getTargetEntity(), request.getFilters());
+          Resources.getApplicationDatabase().getDataSource(), dataSchema, prunedEntityTree, request.getTargetEntity(), request.getFilters());
       response.setCount(count);
     }
 
@@ -438,7 +438,7 @@ public class StudiesService implements Studies {
     }
     else {
       long count = FilteredResultFactory.getEntityCount(
-        Resources.getApplicationDataSource(), dataSchema, prunedEntityTree, request.getTargetEntity(), request.getFilters());
+        Resources.getApplicationDatabase().getDataSource(), dataSchema, prunedEntityTree, request.getTargetEntity(), request.getFilters());
       response.setCount(count);
     }
 

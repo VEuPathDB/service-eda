@@ -1,8 +1,4 @@
-<<<<<<< HEAD:src/main/resources/sql/select/studyaccess/end_users/by-dataset.postgres.sql
--- This is the POSTGRES version of this file.  See also the ORACLE version
-=======
 -- This is the ORACLE version of this file.  See also the POSTGRES version
->>>>>>> master:src/main/resources/sql/select/studyaccess/end_users/by-dataset_oracle.sql
 SELECT
   v.*
 , (
@@ -41,4 +37,5 @@ WHERE
   v.dataset_presenter_id = ?
 ORDER BY
   user_id
-OFFSET ? LIMIT ?
+OFFSET ? ROWS
+  FETCH NEXT ? ROWS ONLY

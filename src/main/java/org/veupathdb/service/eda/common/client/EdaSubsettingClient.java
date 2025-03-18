@@ -72,7 +72,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
       internalFilters,
       Resources.getBinaryValuesStreamer(),
       fileBasedSubsetting,
-      Resources.getApplicationDataSource(),
+      Resources.getApplicationDatabase(),
       schemaName
     );
   }

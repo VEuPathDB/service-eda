@@ -89,7 +89,7 @@ dependencies {
 
   // VEuPathDB libs, prefer local checkouts if available
   implementation("org.veupathdb.lib:jaxrs-container-core:${coreLib}")
-  implementation("org.veupathdb.lib:eda-subsetting:6.2.0")
+  implementation("org.veupathdb.lib:eda-subsetting:7.0.0-alpha1")
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")

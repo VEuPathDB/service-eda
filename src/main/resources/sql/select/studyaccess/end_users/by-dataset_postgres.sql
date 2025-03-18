@@ -1,3 +1,4 @@
+-- This is the POSTGRES version of this file.  See also the ORACLE version
 SELECT
   v.*
 , (
@@ -34,8 +35,6 @@ FROM
     ON v.user_id = a.user_id
 WHERE
   v.dataset_presenter_id = ?
-  AND v.approval_status_id = ?
 ORDER BY
   user_id
-OFFSET ? ROWS
-FETCH NEXT ? ROWS ONLY
+OFFSET ? LIMIT ?

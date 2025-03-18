@@ -1,6 +1,7 @@
+-- This is the POSTGRES version of this file.  See also the ORACLE version
 WITH
-  dataset(id)  AS (SELECT ? FROM DUAL)
-, status (val) AS (SELECT ? FROM DUAL)
+  dataset(id)  AS (SELECT ?)
+, status (val) AS (SELECT ?)
 SELECT
   count(1)
 FROM

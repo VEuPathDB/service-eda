@@ -1,3 +1,4 @@
+-- This is the POSTGRES version of this file.  See also the ORACLE version.
 SELECT
   dataset_presenter_id
 , name
@@ -14,7 +15,7 @@ SELECT
 , dataset_sha1_digest
 , (
     SELECT
-      JSON_OBJECTAGG(property VALUE value)
+      json_object_agg(property, value)
     FROM
       apidbtuning.datasetproperty
     WHERE

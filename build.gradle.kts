@@ -89,7 +89,7 @@ dependencies {
 
   // VEuPathDB libs, prefer local checkouts if available
   implementation("org.veupathdb.lib:jaxrs-container-core:${coreLib}")
-  implementation("org.veupathdb.lib:eda-subsetting:6.1.0")
+  implementation("org.veupathdb.lib:eda-subsetting:6.2.0")
 
   // published VEuPathDB libs
   implementation("org.gusdb:fgputil-core:${fgputil}")
@@ -139,6 +139,7 @@ dependencies {
   testImplementation("org.veupathdb.lib.test", "test-utils", "1.1.2")
   testImplementation("org.awaitility:awaitility:4.2.2")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.12.0")
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.0")
 }
 
 val test by tasks.getting(Test::class) {

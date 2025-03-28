@@ -1331,6 +1331,9 @@ types:
       overlayVariable:
         type: VariableSpec
         required: false
+      returnPointIds:
+        type: boolean
+        required: false
   CorrelationNetworkSpec:
     type: object
     additionalProperties: false
@@ -3006,6 +3009,9 @@ types:
       facetVariable:
         type: VariableSpec[]
         maxItems: 2
+        required: false
+      returnPointIds:
+        type: boolean
         required: false
   Aggregator:
     type: string

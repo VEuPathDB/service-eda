@@ -5,7 +5,6 @@ plugins {
   id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-// configure VEupathDB container plugin
 containerBuild {
   // General project level configuration.
   project {

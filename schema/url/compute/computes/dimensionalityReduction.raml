@@ -1,0 +1,19 @@
+#%RAML 1.0 Library
+
+types:
+
+  DimensionalityReductionPluginRequest:
+    type: ComputeRequestBase
+    properties:
+      config: DimensionalityReductionComputeConfig
+
+  DimensionalityReductionComputeConfig:
+    properties:
+      collectionVariable: CollectionSpec
+      nPCs: number
+      # DimensionalityReductionMethod: DimensionalityReductionMethod
+
+# For future use
+  # DimensionalityReductionMethod:
+  #   type: string
+  #   enum: ['pca', 'pcoa', 'mapper']

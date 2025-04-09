@@ -132,7 +132,7 @@ public class Resources extends ContainerResources {
       map -> map.get(RAW_FILES_DIR_PROP)
     ).toMap();
 
-    if (opts.getAppDbOpts().name().isPresent() || opts.getAppDbOpts().tnsName().isPresent()) {
+    if (opts.getAppDbOpts().name().isPresent() || opts.getAppDbOpts().lookupCn().isPresent()) {
       // application database configured; use it
       USE_IN_MEMORY_TEST_DATABASE = false;
     } else {

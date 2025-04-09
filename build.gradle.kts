@@ -68,7 +68,7 @@ repositories {
 //
 
 // versions
-val coreLib = "9.4.4"            // Container core lib version
+val coreLib = "9.5.0"            // Container core lib version
 val fgputil = "2.16.3-jakarta"   // FgpUtil version
 
 // use local EDA compute compiled schema if project exists, else use released version;

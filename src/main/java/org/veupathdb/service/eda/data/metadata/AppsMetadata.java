@@ -9,6 +9,7 @@ import org.veupathdb.service.eda.data.core.AbstractPlugin;
 import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
 import org.veupathdb.service.eda.data.plugin.differentialexpression.DifferentialExpressionVolcanoplotPlugin;
+import org.veupathdb.service.eda.data.plugin.dimensionalityreduction.DimensionalityReductionScatterplotPlugin;
 import org.veupathdb.service.eda.data.plugin.betadiv.BetaDivScatterplotPlugin;
 import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivBoxplotPlugin;
 import org.veupathdb.service.eda.data.plugin.alphadiv.AlphaDivScatterplotPlugin;
@@ -132,6 +133,10 @@ public class AppsMetadata {
       "Find genes that are differentially expressed between two groups.",
       MBIO_PLUS_GENOMICS_PROJECTS,
       viz("volcanoplot", new DifferentialAbundanceVolcanoplotPlugin())),
+    app("dimensionalityreduction", "Dimensionality Reduction", "dimensionalityreduction",
+      "Investigate dataset features using dimensionality reduction techniques.",
+      MBIO_PLUS_GENOMICS_PROJECTS,
+      viz("scatterplot", new DimensionalityReductionScatterplotPlugin())),
     app("correlationassaymetadata", "Correlation (Taxa, Functional Data v. Metadata)", "correlation",
       "Discover relationships between metadata variables and taxonomic abundance.",
       List.of(MICROBIOME_PROJECT),

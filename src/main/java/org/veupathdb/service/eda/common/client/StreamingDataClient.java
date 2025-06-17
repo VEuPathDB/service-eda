@@ -80,22 +80,21 @@ public interface StreamingDataClient {
     AutoCloseableList<InputStream> dataStreams,
     FunctionalInterfaces.ConsumerWithException<Map<String, InputStream>> streamProcessor
   ) {
-    try (dataStreams) {
-      // convert auto-closeable list into a named stream map for processing
-      Map<String, InputStream> streamMap = new LinkedHashMap<>();
-      for (int i = 0; i < dataStreams.size(); i++) {
-        streamMap.put(requiredStreams.get(i).getStreamName(), dataStreams.get(i));
-      }
-      cSwallow(streamProcessor).accept(streamMap);
+    // convert auto-closeable list into a named stream map for processing
+    Map<String, InputStream> streamMap = new LinkedHashMap<>();
+    for (int i = 0; i < dataStreams.size(); i++) {
+      streamMap.put(requiredStreams.get(i).getStreamName(), dataStreams.get(i));
     }
+    cSwallow(streamProcessor).accept(streamMap);
   }
 
   static AutoCloseableList<InputStream> buildDataStreams(
     List<StreamSpec> requiredStreams,
     CheckedFunction<StreamSpec, InputStream> streamGenerator
   ) {
+    var dataStreams = new AutoCloseableList<InputStream>();
+
     try {
-      var dataStreams = new AutoCloseableList<InputStream>();
       dataStreams.ensureCapacity(requiredStreams.size());
 
       // parallelize the calls
@@ -107,8 +106,10 @@ public interface StreamingDataClient {
     // Explicitly catch EmptyResult so that it can be re-thrown and caught
     // downstream without being wrapped in generic catch.
     } catch (NonEmptyResultStream.EmptyResultException e) {
+      dataStreams.close();
       throw e;
     } catch (Exception e) {
+      dataStreams.close();
       // throw as a runtime exception
       throw new RuntimeException("Unable to fetch all required data", e);
     }

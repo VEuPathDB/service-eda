@@ -1,5 +1,8 @@
+CREATE SCHEMA IF NOT EXISTS edauser;
+GRANT USAGE ON SCHEMA edauser TO comm_wdk_w;
+
 -- USERS table
-CREATE TABLE users (
+CREATE TABLE edauser.users (
   user_id INTEGER NOT NULL,
   is_guest INTEGER NOT NULL,
   preferences TEXT, 
@@ -7,10 +10,10 @@ CREATE TABLE users (
 );
 
 -- Grant privileges (PostgreSQL syntax)
-GRANT SELECT, INSERT, UPDATE, DELETE ON users TO comm_wdk_w;
+GRANT SELECT, INSERT, UPDATE, DELETE ON edauser.users TO comm_wdk_w;
 
 -- ANALYSIS table
-CREATE TABLE analysis (
+CREATE TABLE edauser.analysis (
   analysis_id VARCHAR(50) NOT NULL,
   user_id INTEGER NOT NULL,
   study_id VARCHAR(50) NOT NULL,
@@ -28,7 +31,7 @@ CREATE TABLE analysis (
   notes TEXT,
   provenance TEXT,
   PRIMARY KEY (analysis_id),
-  FOREIGN KEY (user_id) REFERENCES users (user_id)
+  FOREIGN KEY (user_id) REFERENCES edauser.users (user_id)
 );
 
-CREATE INDEX analysis_user_id_idx ON analysis (user_id);
+CREATE INDEX analysis_user_id_idx ON edauser.analysis (user_id);

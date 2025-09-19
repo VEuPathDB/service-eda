@@ -1,4 +1,6 @@
 -- Schema creation (if needed)
+set role COMM_WDK_W;  -- TODO: remove GRANTs
+
 CREATE SCHEMA IF NOT EXISTS studyaccess;
 GRANT USAGE ON SCHEMA studyaccess TO COMM_WDK_W;
 
@@ -9,12 +11,22 @@ CREATE TABLE studyaccess.approval_status (
 );
 GRANT SELECT, INSERT, UPDATE, DELETE ON studyaccess.approval_status TO COMM_WDK_W;
 
+INSERT INTO studyaccess.approval_status (approval_status_id, name) VALUES(0, 'approved');
+INSERT INTO studyaccess.approval_status (approval_status_id, name) VALUES(1, 'requested');
+INSERT INTO studyaccess.approval_status (approval_status_id, name) VALUES(2, 'denied');
+
 -- restriction_level
 CREATE TABLE studyaccess.restriction_level (
-  restriction_level_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  restriction_level_id INTEGER PRIMARY KEY,
   name VARCHAR(24) UNIQUE NOT NULL
 );
 GRANT SELECT, INSERT, UPDATE, DELETE ON studyaccess.restriction_level TO COMM_WDK_W;
+
+INSERT INTO studyaccess.restriction_level (restriction_level_id, name) VALUES(1, 'public');
+INSERT INTO studyaccess.restriction_level (restriction_level_id, name) VALUES(2, 'prerelease');
+INSERT INTO studyaccess.restriction_level (restriction_level_id, name) VALUES(3, 'protected');
+INSERT INTO studyaccess.restriction_level (restriction_level_id, name) VALUES(4, 'controlled');
+INSERT INTO studyaccess.restriction_level (restriction_level_id, name) VALUES(5, 'private');
 
 -- staff
 CREATE TABLE studyaccess.staff (
@@ -22,6 +34,7 @@ CREATE TABLE studyaccess.staff (
   user_id BIGINT NOT NULL UNIQUE,
   is_owner BOOLEAN DEFAULT FALSE NOT NULL
 );
+ALTER SEQUENCE studyaccess.staff_staff_id_seq INCREMENT BY 10;
 GRANT SELECT, INSERT, UPDATE, DELETE ON studyaccess.staff TO COMM_WDK_W;
 
 -- providers
@@ -32,6 +45,7 @@ CREATE TABLE studyaccess.providers (
   dataset_id VARCHAR(15) NOT NULL,
   CONSTRAINT provider_user_ds_uq UNIQUE (user_id, dataset_id)
 );
+ALTER SEQUENCE studyaccess.providers_provider_id_seq INCREMENT BY 10;
 GRANT SELECT, INSERT, UPDATE, DELETE ON studyaccess.providers TO COMM_WDK_W;
 
 -- end_users
@@ -53,6 +67,7 @@ CREATE TABLE studyaccess.end_users (
   allow_self_edits BOOLEAN DEFAULT FALSE NOT NULL,
   CONSTRAINT end_user_ds_user_uq UNIQUE (user_id, dataset_presenter_id)
 );
+ALTER SEQUENCE studyaccess.end_users_end_user_id_seq INCREMENT BY 10;
 GRANT SELECT, INSERT, UPDATE, DELETE ON studyaccess.end_users TO COMM_WDK_W;
 
 -- end_user_history

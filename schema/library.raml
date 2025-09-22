@@ -478,6 +478,7 @@ types:
       - geo
       - latitude
       - longitude
+      - undefined
   VariableMapping:
     type: object
     additionalProperties: false
@@ -1209,6 +1210,15 @@ types:
     properties:
       effectSizeLabel: string
       statistics: DifferentialExpressionPoint[]
+  DimensionalityReductionPluginRequest:
+    type: ComputeRequestBase
+    properties:
+      config: DimensionalityReductionComputeConfig
+  DimensionalityReductionComputeConfig:
+    type: object
+    properties:
+      collectionVariable: CollectionSpec
+      nPCs: number
   ExamplePluginRequest:
     type: ComputeRequestBase
     properties:
@@ -1423,6 +1433,28 @@ types:
     properties:
       computeConfig: DifferentialExpressionComputeConfig
       config: EmptyDataPluginSpec
+  DimensionalityReductionScatterplotPostRequest:
+    type: DataPluginRequestBase
+    properties:
+      computeConfig: DimensionalityReductionComputeConfig
+      config: DimensionalityReductionScatterplotSpec
+  DimensionalityReductionScatterplotSpec:
+    type: object
+    additionalProperties: false
+    properties:
+      outputEntityId: string
+      showMissingness:
+        type: ShowMissingnessNoAxes
+        required: false
+      xAxisSelection:
+        type: string
+        required: false
+      yAxisSelection:
+        type: string
+        required: false
+      overlayVariable:
+        type: VariableSpec
+        required: false
   ContinuousVariableMetadataPostRequest:
     type: DataPluginRequestBase
     additionalProperties: false

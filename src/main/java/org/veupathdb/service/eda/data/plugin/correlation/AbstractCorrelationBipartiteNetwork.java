@@ -74,6 +74,17 @@ public abstract class AbstractCorrelationBipartiteNetwork<T extends DataPluginRe
         if (Float.parseFloat(correlationRow.getPValue()) > pValueThreshold.floatValue()) return;
       }
 
+      // Skip rows that do not match the correlation direction, if specified
+      // Do nothing if the direction is "both".
+      String correlationDirection = getPluginSpec().getCorrelationDirection() != null ? getPluginSpec().getCorrelationDirection().getValue() : "both";
+      if (correlationDirection != null && !correlationDirection.equals("both")) {
+        if (correlationDirection.equals("positive") && Float.parseFloat(correlationRow.getCorrelationCoef()) < 0) {
+          return;
+        } else if (correlationDirection.equals("negative") && Float.parseFloat(correlationRow.getCorrelationCoef()) > 0) {
+          return;
+        }
+      }
+
       // First add the node ids (data1 and data2 from this row) to our growing list of node ids
       // We'll worry about duplicates later.
       nodeIDs.add(correlationRow.getData1());

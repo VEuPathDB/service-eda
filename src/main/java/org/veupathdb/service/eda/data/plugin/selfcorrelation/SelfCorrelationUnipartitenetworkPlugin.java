@@ -63,6 +63,7 @@ public class SelfCorrelationUnipartitenetworkPlugin extends AbstractPlugin<SelfC
     writeComputeStatsResponseToOutput(statsBytes);
     ByteArrayInputStream statsIn = new ByteArrayInputStream(statsBytes.toByteArray());
     dataStreams.put("statsFile.json", statsIn);
+    String correlationDirection = spec.getCorrelationDirection() != null ? spec.getCorrelationDirection().getValue() : "both";
 
     // some default filtering thresholds
     Number correlationCoefThreshold = getPluginSpec().getCorrelationCoefThreshold() != null ? getPluginSpec().getCorrelationCoefThreshold() : 0.2;
@@ -74,6 +75,11 @@ public class SelfCorrelationUnipartitenetworkPlugin extends AbstractPlugin<SelfC
       connection.voidEval("names(edgeList) <- c('source', 'target', 'correlationCoef', 'pValue')");
       connection.voidEval("edgeList$pValue <- as.numeric(edgeList$pValue)");
       connection.voidEval("edgeList$correlationCoef <- as.numeric(edgeList$correlationCoef)");
+      if (correlationDirection.equals("positive")) {
+        connection.voidEval("edgeList <- edgeList[edgeList$correlationCoef >= 0, ]");
+      } else if (correlationDirection.equals("negative")) {
+        connection.voidEval("edgeList <- edgeList[edgeList$correlationCoef <= 0, ]");
+      }
       connection.voidEval("net <- plot.data::CorrelationNetwork(edgeList" +
           ", correlationCoefThreshold = as.numeric(" + correlationCoefThreshold + ")" +
           ", pValueThreshold = as.numeric(" + pValueThreshold + ")" +

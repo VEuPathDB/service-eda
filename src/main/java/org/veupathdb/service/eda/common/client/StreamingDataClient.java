@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.common.client;
 import io.vulpine.lib.jcfi.CheckedFunction;
 import org.apache.logging.log4j.LogManager;
 import org.gusdb.fgputil.AutoCloseableList;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.functional.FunctionalInterfaces;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
@@ -92,6 +93,10 @@ public interface StreamingDataClient {
     List<StreamSpec> requiredStreams,
     CheckedFunction<StreamSpec, InputStream> streamGenerator
   ) {
+    // Temp var external to the try/catch so we can close the loose connection
+    // that was opened if/when new NonEmptyResultStream() throws an exception.
+    InputStream temp = null;
+
     var dataStreams = new AutoCloseableList<InputStream>();
 
     try {
@@ -99,16 +104,19 @@ public interface StreamingDataClient {
 
       // parallelize the calls
       for (StreamSpec spec : requiredStreams) {
-        dataStreams.add(new NonEmptyResultStream(spec.getStreamName(), streamGenerator.apply(spec)));
+        temp = streamGenerator.apply(spec);
+        dataStreams.add(new NonEmptyResultStream(spec.getStreamName(), temp));
       }
 
       return dataStreams;
     // Explicitly catch EmptyResult so that it can be re-thrown and caught
     // downstream without being wrapped in generic catch.
     } catch (NonEmptyResultStream.EmptyResultException e) {
+      IoUtil.closeQuietly(temp);
       dataStreams.close();
       throw e;
     } catch (Exception e) {
+      IoUtil.closeQuietly(temp);
       dataStreams.close();
       // throw as a runtime exception
       throw new RuntimeException("Unable to fetch all required data", e);

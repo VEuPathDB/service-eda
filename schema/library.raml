@@ -1154,6 +1154,13 @@ types:
           - circle
           - nicely
       degree: boolean
+      correlationDirection:
+        type: string
+        required: false
+        enum:
+          - both
+          - positive
+          - negative
   CorrelationPluginRequest:
     type: ComputeRequestBase
     properties:

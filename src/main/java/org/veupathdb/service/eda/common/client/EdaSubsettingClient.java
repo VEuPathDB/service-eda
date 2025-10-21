@@ -14,9 +14,10 @@ import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.subset.model.Study;
 import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
-import org.veupathdb.service.eda.subset.model.filter.Filter;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
+import org.veupathdb.service.eda.subset.service.RequestBundle;
 import org.veupathdb.service.eda.subset.service.StudiesService;
 
 import java.io.InputStream;
@@ -57,31 +58,26 @@ public class EdaSubsettingClient implements StreamingDataClient {
     // Convert everything to internal subsetting classes to bridge the gap from merging/data services.
     final Study study = Resources.getStudyResolver().getStudyById(studyId);
 
-    // Use metadata cache directly, which bypasses user studies, since user studies don't currently have files.
-    final boolean fileBasedSubsetting = Resources.getMetadataCache().studyHasFiles(study.getStudyId());
-
     // Resolve schema based on whether study is user or curated.
-    final String schemaName = resolveSchema(study);
-    LOG.debug("Resolved schema name: {} from study: {} with study source type: {}", schemaName, studyId, study.getStudySourceType());
-    final List<Filter> internalFilters = ApiConversionUtil.toInternalFilters(study, variableFilters, schemaName);
+    final String schemaName = StudiesService.resolveSchema(study);
 
+    // convert study/streamspec to internal subsetting objects to check files vs DB and convert to internal classes
+    final var variableNames = streamSpec.stream().map(VariableSpec::getVariableId).collect(Collectors.toList());
+    final RequestBundle request = RequestBundle.unpack(schemaName, study, streamSpec.getEntityId(), variableFilters, variableNames, new APITabularReportConfigImpl());
+    final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();
+    final boolean useFileBasedSubsetting = StudiesService.shouldRunFileBasedSubsetting(request, binaryFilesManager);
+
+    LOG.debug("Resolved schema name: {} from study: {} with study source type: {}", schemaName, studyId, study.getStudySourceType());
     return FilteredResultFactory.tabularSubsetIterator(
       study,
       study.getEntity(streamSpec.getEntityId()).orElseThrow(),
       getVariablesFromStreamSpec(streamSpec, study),
-      internalFilters,
+      request.getFilters(),
       Resources.getBinaryValuesStreamer(),
-      fileBasedSubsetting,
+      useFileBasedSubsetting,
       Resources.getApplicationDatabase(),
       schemaName
     );
-  }
-
-  private static String resolveSchema(Study study) {
-    return switch(study.getStudySourceType()) {
-      case USER_SUBMITTED -> Resources.getVdiDatasetsSchema() + ".";
-      case CURATED -> Resources.getAppDbSchema();
-    };
   }
 
   private static List<VariableWithValues<?>> getVariablesFromStreamSpec(StreamSpec spec, Study study) {

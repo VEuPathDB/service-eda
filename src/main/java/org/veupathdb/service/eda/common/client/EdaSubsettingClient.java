@@ -16,7 +16,9 @@ import org.veupathdb.service.eda.subset.model.Study;
 import org.veupathdb.service.eda.subset.model.db.FilteredResultFactory;
 import org.veupathdb.service.eda.subset.model.filter.Filter;
 import org.veupathdb.service.eda.subset.model.variable.VariableWithValues;
+import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
+import org.veupathdb.service.eda.subset.service.RequestBundle;
 import org.veupathdb.service.eda.subset.service.StudiesService;
 
 import java.io.InputStream;
@@ -58,10 +60,13 @@ public class EdaSubsettingClient implements StreamingDataClient {
     final Study study = Resources.getStudyResolver().getStudyById(studyId);
 
     // Use metadata cache directly, which bypasses user studies, since user studies don't currently have files.
-    final boolean fileBasedSubsetting = Resources.getMetadataCache().studyHasFiles(study.getStudyId());
+    final var variableNames = streamSpec.stream().map(VariableSpec::getVariableId).collect(Collectors.toList());
+    final RequestBundle request = RequestBundle.unpack(resolveSchema(study), study, streamSpec.getEntityId(), variableFilters, variableNames, new APITabularReportConfigImpl());
+    final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();
+    final boolean useFileBasedSubsetting = StudiesService.shouldRunFileBasedSubsetting(request, binaryFilesManager);
 
     // Resolve schema based on whether study is user or curated.
-    final String schemaName = resolveSchema(study);
+    final String schemaName = StudiesService.resolveSchema(study);
     LOG.debug("Resolved schema name: {} from study: {} with study source type: {}", schemaName, studyId, study.getStudySourceType());
     final List<Filter> internalFilters = ApiConversionUtil.toInternalFilters(study, variableFilters, schemaName);
 
@@ -71,7 +76,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
       getVariablesFromStreamSpec(streamSpec, study),
       internalFilters,
       Resources.getBinaryValuesStreamer(),
-      fileBasedSubsetting,
+      useFileBasedSubsetting,
       Resources.getApplicationDatabase(),
       schemaName
     );

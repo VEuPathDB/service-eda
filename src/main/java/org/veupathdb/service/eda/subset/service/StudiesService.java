@@ -326,38 +326,40 @@ public class StudiesService implements Studies {
    * 2. getReportConfig().getDataSourceType() is not specified or is specified as DATABASE
    * 3. Any data is missing in files (i.e. MissingDataException is thrown).
    **/
-  private static boolean shouldRunFileBasedSubsetting(RequestBundle requestBundle, BinaryFilesManager binaryFilesManager) {
-    LOG.debug("Determining whether to use file-based subsetting in request for study '{}', entity '{}'.", requestBundle.getStudy().getStudyId(), requestBundle.getTargetEntity());
+  public static boolean shouldRunFileBasedSubsetting(RequestBundle requestBundle, BinaryFilesManager binaryFilesManager) {
+    final var studyId = requestBundle.getStudy().getStudyId();
+    LOG.debug("Determining whether to use file-based subsetting in request for study '{}', entity '{}'.", studyId, requestBundle.getTargetEntity());
 
     if (requestBundle.getReportConfig().requiresSorting()) {
+      LOG.debug("Won't use files for study {} because incoming request requires sorting.", studyId);
       return false;
     }
 
     if (requestBundle.getReportConfig().getDataSourceType() == DataSourceType.DATABASE) {
-      LOG.debug("Can't use files because: client request specified data source to be DATABASE");
+      LOG.debug("Can't use files for study {} because: client request specified data source to be DATABASE.", studyId);
       return false;
     }
 
     if (!binaryFilesManager.studyHasCompatibleFiles(requestBundle.getStudy())) {
-      LOG.debug("Unable to find study dir for {} in study files.", requestBundle.getStudy().getStudyId());
+      LOG.debug("Unable to find study dir for study {}.", studyId);
       return false;
     }
 
     if (!binaryFilesManager.entityDirExists(requestBundle.getStudy(), requestBundle.getTargetEntity())) {
-      LOG.debug("Unable to find entity dir for {} in study files.", requestBundle.getTargetEntity().getId());
+      LOG.debug("Unable to find entity dir for {} in files for study {}.", requestBundle.getTargetEntity().getId(), studyId);
       return false;
     }
     if (!binaryFilesManager.idMapFileExists(requestBundle.getStudy(), requestBundle.getTargetEntity())) {
-      LOG.debug("Unable to find ID file for {} in study files.", requestBundle.getTargetEntity().getId());
+      LOG.debug("Unable to find ID file for {} in files for study {}.", requestBundle.getTargetEntity().getId(), studyId);
       return false;
     }
     if (!requestBundle.getTargetEntity().getAncestorEntities().isEmpty() && !binaryFilesManager.ancestorFileExists(requestBundle.getStudy(), requestBundle.getTargetEntity())) {
-      LOG.debug("Unable to find ancestor file for {} in study files.", requestBundle.getTargetEntity().getId());
+      LOG.debug("Unable to find ancestor file for {} in files for study {}.", requestBundle.getTargetEntity().getId(), studyId);
       return false;
     }
     for (VariableWithValues<?> outputVar: requestBundle.getRequestedVariables()) {
       if (!binaryFilesManager.variableFileExists(requestBundle.getStudy(), requestBundle.getTargetEntity(), outputVar)) {
-        LOG.debug("Unable to find output var {} in study files.", outputVar.getId());
+        LOG.debug("Unable to find output var {} in files for study {}.", outputVar.getId(), studyId);
         return false;
       }
     }
@@ -366,11 +368,12 @@ public class StudiesService implements Studies {
       .toList();
     for (VariableWithValues<?> filterVar: filterVars) {
       if (!binaryFilesManager.variableFileExists(requestBundle.getStudy(), filterVar.getEntity(), filterVar)) {
-        LOG.debug("Unable to find filterVar var {} in study files.", filterVar.getId());
+        LOG.debug("Unable to find filterVar var {} in files for study {}.", filterVar.getId(), studyId);
         return false;
       }
     }
 
+    LOG.debug("Will use file-based subsetting for study {}.", studyId);
     return true;
   }
 
@@ -451,7 +454,7 @@ public class StudiesService implements Studies {
     StudyAccess.confirmPermission(user.getUserId(), studyId, accessPredicate);
   }
 
-  private static String resolveSchema(Study study) {
+  public static String resolveSchema(Study study) {
     return switch(study.getStudySourceType()) {
       case USER_SUBMITTED -> Resources.getVdiDatasetsSchema() + ".";
       case CURATED -> Resources.getAppDbSchema();

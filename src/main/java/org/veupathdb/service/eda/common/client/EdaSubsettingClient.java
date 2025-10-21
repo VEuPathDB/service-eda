@@ -61,7 +61,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
     // Resolve schema based on whether study is user or curated.
     final String schemaName = StudiesService.resolveSchema(study);
 
-    // Use metadata cache directly, which bypasses user studies, since user studies don't currently have files.
+    // convert study/streamspec to internal subsetting objects to check files vs DB and convert to internal classes
     final var variableNames = streamSpec.stream().map(VariableSpec::getVariableId).collect(Collectors.toList());
     final RequestBundle request = RequestBundle.unpack(schemaName, study, streamSpec.getEntityId(), variableFilters, variableNames, new APITabularReportConfigImpl());
     final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();

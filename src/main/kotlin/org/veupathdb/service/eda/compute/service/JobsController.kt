@@ -61,6 +61,7 @@ class JobsController : Jobs {
     } catch (e: IllegalArgumentException) {
       // If it is not a valid hash ID string, throw a not found exception as
       // there are no jobs that can be located with an invalid ID.
+      
       throw NotFoundException()
     }
   }

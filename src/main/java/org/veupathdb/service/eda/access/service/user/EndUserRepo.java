@@ -7,8 +7,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import io.vulpine.lib.query.util.basic.*;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
 import org.slf4j.Logger;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
+import org.veupathdb.lib.container.jaxrs.utils.db.DbManager;
 import org.veupathdb.service.eda.access.model.*;
 import org.veupathdb.service.eda.access.repo.DB;
 import org.veupathdb.service.eda.access.repo.SQL;
@@ -102,8 +104,12 @@ public class EndUserRepo
 
     @SuppressWarnings("resource")
     static int count(final SearchQuery query) throws Exception {
+      SupportedPlatform platform = DbManager.accountDatabase().getPlatform().getPlatformEnum();
       return new BasicPreparedReadQuery<>(
-        SQL.Select.EndUsers.CountByQuery,
+        switch(platform) {
+          case ORACLE -> SQL.Select.EndUsers.CountByQueryOra;
+          case POSTGRESQL -> SQL.Select.EndUsers.CountByQueryPg;
+        },
         QueryUtil.getInstance()::getAcctDbConnection,
         SqlUtil.reqParser(SqlUtil::parseSingleInt),
         ps -> {
@@ -129,8 +135,12 @@ public class EndUserRepo
      */
     @SuppressWarnings("resource")
     static List<EndUserRow> list(final String datasetId, final int limit, final int offset) throws Exception {
+      SupportedPlatform platform = DbManager.accountDatabase().getPlatform().getPlatformEnum();
       return new BasicPreparedListReadQuery<>(
-        SQL.Select.EndUsers.ByDataset,
+        switch(platform) {
+          case ORACLE -> SQL.Select.EndUsers.ByDatasetOra;
+          case POSTGRESQL -> SQL.Select.EndUsers.ByDatasetPg;
+        },
         QueryUtil.getInstance()::getAcctDbConnection,
         EndUserUtil::parseEndUserRow,
         new PsBuilder().setString(datasetId).setInt(offset).setInt(limit)::build

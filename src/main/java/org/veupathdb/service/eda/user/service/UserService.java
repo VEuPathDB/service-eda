@@ -7,7 +7,7 @@ import jakarta.ws.rs.core.Context;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.gusdb.fgputil.StringUtil;
 import org.veupathdb.lib.container.jaxrs.errors.UnprocessableEntityException;
-import org.veupathdb.lib.container.jaxrs.model.User;
+import org.veupathdb.lib.container.jaxrs.model.UserInfo;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.UsersUserId;
@@ -26,7 +26,7 @@ public class UserService implements UsersUserId {
   @Override
   public GetUsersPreferencesByUserIdAndProjectIdResponse getUsersPreferencesByUserIdAndProjectId(String userId, String projectId) {
     UserDataFactory dataFactory = new UserDataFactory(projectId);
-    User user = Utils.getAuthorizedUser(_request, userId);
+    UserInfo user = Utils.getAuthorizedUser(_request, userId);
     String prefs = dataFactory.readPreferences(user.getUserId());
     return GetUsersPreferencesByUserIdAndProjectIdResponse.respond200WithApplicationJson(prefs);
   }
@@ -34,7 +34,7 @@ public class UserService implements UsersUserId {
   @Override
   public PutUsersPreferencesByUserIdAndProjectIdResponse putUsersPreferencesByUserIdAndProjectId(String userId, String projectId, String entity) {
     UserDataFactory dataFactory = new UserDataFactory(projectId);
-    User user = Utils.getAuthorizedUser(_request, userId);
+    UserInfo user = Utils.getAuthorizedUser(_request, userId);
     dataFactory.addUserIfAbsent(user);
     dataFactory.writePreferences(user.getUserId(), entity);
     return PutUsersPreferencesByUserIdAndProjectIdResponse.respond202();
@@ -51,7 +51,7 @@ public class UserService implements UsersUserId {
   @Override
   public PostUsersAnalysesByUserIdAndProjectIdResponse postUsersAnalysesByUserIdAndProjectId(String userId, String projectId, AnalysisListPostRequest entity) {
     UserDataFactory dataFactory = new UserDataFactory(projectId);
-    User user = Utils.getAuthorizedUser(_request, userId);
+    UserInfo user = Utils.getAuthorizedUser(_request, userId);
     dataFactory.addUserIfAbsent(user);
     AnalysisDetailWithUser newAnalysis = new AnalysisDetailWithUser(
         IdGenerator.getNextAnalysisId(dataFactory), user.getUserId(), entity);
@@ -62,7 +62,7 @@ public class UserService implements UsersUserId {
   @Override
   public PatchUsersAnalysesByUserIdAndProjectIdResponse patchUsersAnalysesByUserIdAndProjectId(String userId, String projectId, AnalysisListPatchRequest entity) {
     UserDataFactory dataFactory = new UserDataFactory(projectId);
-    User user = Utils.getAuthorizedUser(_request, userId);
+    UserInfo user = Utils.getAuthorizedUser(_request, userId);
     performBulkDeletion(dataFactory, user, entity.getAnalysisIdsToDelete());
     performInheritGuestAnalyses(dataFactory, user, entity.getInheritOwnershipFrom());
     return PatchUsersAnalysesByUserIdAndProjectIdResponse.respond202();
@@ -71,7 +71,7 @@ public class UserService implements UsersUserId {
   @Override
   public GetUsersAnalysesByUserIdAndProjectIdAndAnalysisIdResponse getUsersAnalysesByUserIdAndProjectIdAndAnalysisId(String userId, String projectId, String analysisId) {
     UserDataFactory dataFactory = new UserDataFactory(projectId);
-    User user = Utils.getAuthorizedUser(_request, userId);
+    UserInfo user = Utils.getAuthorizedUser(_request, userId);
     AnalysisDetailWithUser analysis = dataFactory.getAnalysisById(analysisId);
     Utils.verifyOwnership(user.getUserId(), analysis);
     ProvenancePropsLookup.assignCurrentProvenanceProps(dataFactory, List.of(analysis));
@@ -81,7 +81,7 @@ public class UserService implements UsersUserId {
   @Override
   public PatchUsersAnalysesByUserIdAndProjectIdAndAnalysisIdResponse patchUsersAnalysesByUserIdAndProjectIdAndAnalysisId(String userId, String projectId, String analysisId, SingleAnalysisPatchRequest entity) {
     UserDataFactory dataFactory = new UserDataFactory(projectId);
-    User user = Utils.getAuthorizedUser(_request, userId);
+    UserInfo user = Utils.getAuthorizedUser(_request, userId);
     AnalysisDetailWithUser analysis = dataFactory.getAnalysisById(analysisId);
     Utils.verifyOwnership(user.getUserId(), analysis);
 
@@ -106,7 +106,7 @@ public class UserService implements UsersUserId {
   @Override
   public DeleteUsersAnalysesByUserIdAndProjectIdAndAnalysisIdResponse deleteUsersAnalysesByUserIdAndProjectIdAndAnalysisId(String userId, String projectId, String analysisId) {
     UserDataFactory dataFactory = new UserDataFactory(projectId);
-    User user = Utils.getAuthorizedUser(_request, userId);
+    UserInfo user = Utils.getAuthorizedUser(_request, userId);
     Utils.verifyOwnership(dataFactory, user.getUserId(), analysisId);
     dataFactory.deleteAnalyses(analysisId);
     return DeleteUsersAnalysesByUserIdAndProjectIdAndAnalysisIdResponse.respond202();
@@ -201,7 +201,7 @@ public class UserService implements UsersUserId {
     return PatchUsersDerivedVariablesByUserIdAndProjectIdAndDerivedVariableIdResponse.respond204();
   }
 
-  private void performBulkDeletion(UserDataFactory dataFactory, User user, List<String> analysisIdsToDelete) {
+  private void performBulkDeletion(UserDataFactory dataFactory, UserInfo user, List<String> analysisIdsToDelete) {
     if (analysisIdsToDelete == null || analysisIdsToDelete.isEmpty())
       return;
     try {
@@ -215,7 +215,7 @@ public class UserService implements UsersUserId {
     }
   }
 
-  private void performInheritGuestAnalyses(UserDataFactory dataFactory, User user, Long guestUserId) {
+  private void performInheritGuestAnalyses(UserDataFactory dataFactory, UserInfo user, Long guestUserId) {
     if (guestUserId == null)
       return;
     if (user.isGuest())
@@ -224,7 +224,7 @@ public class UserService implements UsersUserId {
     dataFactory.transferGuestAnalysesOwnership(guestUserId, user.getUserId());
   }
 
-  private static void editAnalysis(User user, AnalysisDetail analysis, SingleAnalysisPatchRequest entity) {
+  private static void editAnalysis(UserInfo user, AnalysisDetail analysis, SingleAnalysisPatchRequest entity) {
     boolean changeMade = false;
     if (entity.getIsPublic() != null) {
       if (user.isGuest() && entity.getIsPublic()) {
@@ -280,7 +280,7 @@ public class UserService implements UsersUserId {
    * @return The unioned list of the two input lists of derived variable IDs.
    */
   private static List<String> processPatchedDerivedVars(
-    User user,
+    UserInfo user,
     UserDataFactory dataFactory,
     AnalysisDetailWithUser analysis,
     List<String> oldIDs,

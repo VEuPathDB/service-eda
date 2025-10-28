@@ -9,7 +9,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
-import org.veupathdb.lib.container.jaxrs.model.User;
+import org.veupathdb.lib.container.jaxrs.model.UserInfo;
 import org.veupathdb.lib.container.jaxrs.providers.LogProvider;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
 import org.veupathdb.service.eda.generated.model.DatasetProviderCreateRequest;
@@ -43,7 +43,7 @@ public class ProviderService
    */
   public DatasetProviderCreateResponse createNewProvider(
     final DatasetProviderCreateRequest body,
-    final User user
+    final UserInfo user
   ) {
     log.trace("ProviderService#createNewProvider(DatasetProviderCreateRequest)");
 
@@ -98,7 +98,7 @@ public class ProviderService
     final String datasetId,
     final Long limit,
     final Long offset,
-    final User currentUser
+    final UserInfo currentUser
   ) {
     log.trace("ProviderService#getDatasetProviderList(String, int, int, UserProfile)");
 
@@ -177,7 +177,7 @@ public class ProviderService
     log.trace("ProviderService#userIsManager(Request, String)");
 
     return isUserManager(UserProvider.lookupUser(req)
-      .map(User::getUserId)
+      .map(UserInfo::getUserId)
       .orElseThrow(InternalServerErrorException::new), datasetId);
   }
 
@@ -272,7 +272,7 @@ public class ProviderService
     final String datasetId,
     final Long limit,
     final Long offset,
-    final User user
+    final UserInfo user
   ) {
     return getInstance().getDatasetProviderList(datasetId, limit, offset, user);
   }

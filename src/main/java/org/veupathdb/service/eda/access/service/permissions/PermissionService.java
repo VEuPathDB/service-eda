@@ -6,7 +6,7 @@ import jakarta.ws.rs.WebApplicationException;
 import org.glassfish.jersey.server.ContainerRequest;
 import org.gusdb.fgputil.Wrapper;
 import org.jetbrains.annotations.NotNull;
-import org.veupathdb.lib.container.jaxrs.model.User;
+import org.veupathdb.lib.container.jaxrs.model.UserInfo;
 import org.veupathdb.service.eda.access.controller.Util;
 import org.veupathdb.service.eda.access.model.ApprovalStatus;
 import org.veupathdb.service.eda.access.model.DatasetProps;
@@ -34,7 +34,7 @@ public class PermissionService
 
   public static StudyPermissionInfo getUserPermissions(ContainerRequest request, String datasetId) {
     try {
-      User user = Util.requireUser(request);
+      UserInfo user = Util.requireUser(request);
 
       // find the one for this study if it exists
       var studyPermission = Optional.ofNullable(getUserPermissions(user.getUserId(), datasetId))
@@ -120,7 +120,7 @@ public class PermissionService
     }
   }
 
-  public PermissionsGetResponse getUserPermissions(User user) {
+  public PermissionsGetResponse getUserPermissions(UserInfo user) {
     var out = new PermissionsGetResponseImpl();
 
     try {

@@ -9,7 +9,7 @@ import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.json.JSONObject;
-import org.veupathdb.lib.container.jaxrs.model.User;
+import org.veupathdb.lib.container.jaxrs.model.UserInfo;
 import org.veupathdb.lib.jackson.Json;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.Resources;
@@ -341,7 +341,7 @@ public class UserDataFactory {
       " select %d as user_id, %s as is_guest, '{}' as preferences" + Resources.getUserPlatform().getDummyTable() +
       " where not exists (select user_id from " + TABLE_USERS + " where user_id = %d)";
 
-  public void addUserIfAbsent(User user) {
+  public void addUserIfAbsent(UserInfo user) {
     mapException(() -> {
       // need to use format vs prepared statement for first two macros since they are in a select
       String sql = String.format(

@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.access.controller;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.veupathdb.lib.container.jaxrs.server.annotations.AdminRequired;
 import org.veupathdb.lib.container.jaxrs.server.annotations.Authenticated;
 import org.veupathdb.service.eda.generated.model.EndUserPatch;
 import org.veupathdb.service.eda.generated.model.EndUserPatchImpl;
@@ -26,9 +27,12 @@ import java.time.format.TextStyle;
 import java.time.temporal.ChronoField;
 import java.util.List;
 
-@Authenticated(allowGuests = true)
+@AdminRequired
 public class ApproveEligibleStudiesController implements ApproveEligibleAccessRequests {
+
+  // any approvals will be recorded as made by this user ID
   private static final long SERVICE_USER_ID = 1926010L;
+
   private static final DateTimeFormatter APPROVAL_REASON_FORMAT = new DateTimeFormatterBuilder()
     .appendText(ChronoField.DAY_OF_WEEK, TextStyle.SHORT)
     .appendPattern(", ")

@@ -76,11 +76,11 @@ public class MetadataCache implements StudyProvider {
 
   private StudyProvider getCuratedStudyFactory() {
     return new StudyFactory(
-      Resources.getApplicationDataSource(),
+      Resources.getApplicationDatabase().getDataSource(),
       Resources.getAppDbSchema(),
       StudyOverview.StudySourceType.CURATED,
       new VariableFactory(
-        Resources.getApplicationDataSource(),
+        Resources.getApplicationDatabase().getDataSource(),
         Resources.getAppDbSchema(),
         new MetadataFileBinaryProvider(_binaryFilesManager),
         this::studyHasFiles),

@@ -38,7 +38,7 @@ public class StudiesTest {
   @BeforeAll
   public static void setUp() {
     _model = new MockModel();
-    DataSource dataSource = StubDb.getDataSource();
+    DataSource dataSource = StubDb.getDatabaseInstance().getDataSource();
     BinaryFilesManager binaryFilesManager = Mockito.mock(BinaryFilesManager.class);
     Mockito.when(binaryFilesManager.studyHasFiles(anyString())).thenReturn(false);
     _study = new StudyFactory(dataSource, StubDb.APP_DB_SCHEMA, StudyOverview.StudySourceType.CURATED,

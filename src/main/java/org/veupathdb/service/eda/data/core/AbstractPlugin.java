@@ -185,25 +185,26 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
       spec
     );
 
-    @SuppressWarnings("resource") // closed by StreamingDataClient.processDataStreams
-    final var dataStreams = StreamingDataClient.buildDataStreams(_requiredStreams, streamGenerator);
-
     return out -> {
       if (!_requestProcessed) {
         throw new RuntimeException("Output cannot be streamed until request has been processed.");
       }
 
-      // create stream processor
-      // TODO: might make disallowing empty results optional in the future; this is the original implementation
-      //ConsumerWithException<Map<String,InputStream>> streamProcessor = map -> writeResults(out, map);
-      ConsumerWithException<Map<String, InputStream>> streamProcessor = map -> writeResults(out,
-        Functions.mapValues(map, entry -> new NonEmptyResultStream(entry.getKey(), entry.getValue())));
+      try (final var dataStreams = StreamingDataClient.buildDataStreams(_requiredStreams, streamGenerator)) {
+        // create stream processor
+        // TODO: might make disallowing empty results optional in the future; this is the original implementation
+        //ConsumerWithException<Map<String,InputStream>> streamProcessor = map -> writeResults(out, map);
+        ConsumerWithException<Map<String, InputStream>> streamProcessor = map -> writeResults(
+          out,
+          Functions.mapValues(map, entry -> new NonEmptyResultStream(entry.getKey(), entry.getValue()))
+        );
 
-      // build and process streams
-      logRequestTime("Making requests for data streams");
-      LOG.info("Building and processing {} required data streams.", _requiredStreams.size());
-      StreamingDataClient.processDataStreams(_requiredStreams, dataStreams, streamProcessor);
-      logRequestTime("Data streams processed; response written; request complete");
+        // build and process streams
+        logRequestTime("Making requests for data streams");
+        LOG.info("Building and processing {} required data streams.", _requiredStreams.size());
+        StreamingDataClient.processDataStreams(_requiredStreams, dataStreams, streamProcessor);
+        logRequestTime("Data streams processed; response written; request complete");
+      }
     };
   }
 

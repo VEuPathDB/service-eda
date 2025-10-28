@@ -15,6 +15,10 @@ types:
         type: string
         enum: ['none','force','circle','nicely']
       degree: boolean
+      correlationDirection: 
+        type: string
+        enum: ['both','positive','negative']
+        required: false
 
   CorrelationBipartiteNetworkPostResponse:
     additionalProperties: false

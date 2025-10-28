@@ -22,7 +22,7 @@ public class RequestBundle {
 
   private static final Logger LOG = LogManager.getLogger(RequestBundle.class);
 
-  static RequestBundle unpack(String dataSchema, Study study, String entityId, List<APIFilter> apiFilters, List<String> variableIds, APITabularReportConfig apiReportConfig) {
+  public static RequestBundle unpack(String dataSchema, Study study, String entityId, List<APIFilter> apiFilters, List<String> variableIds, APITabularReportConfig apiReportConfig) {
 
     Entity entity = study.getEntity(entityId).orElseThrow(() -> new NotFoundException("In " + study.getStudyId() + " Entity ID not found: " + entityId));
 

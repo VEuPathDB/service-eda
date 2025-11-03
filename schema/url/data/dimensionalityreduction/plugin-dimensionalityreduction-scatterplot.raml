@@ -7,25 +7,7 @@ types:
     type: DataPluginRequestBase
     properties:
       computeConfig: DimensionalityReductionComputeConfig
-      config: DimensionalityReductionScatterplotSpec
+      config: ScatterplotSpec
+  
 
-  # This scatterplot is a little different because the frontend says
-  # which dimensions to plot, instead of selecting variables for the x and y axes.
-  DimensionalityReductionScatterplotSpec:
-    additionalProperties: false
-    properties:
-      outputEntityId:
-        type: string
-      showMissingness:
-        type: ShowMissingnessNoAxes
-        required: false
-      xAxisSelection:
-        type: string
-        required: false
-      yAxisSelection:
-        type: string
-        required: false
-      overlayVariable:
-        type: VariableSpec
-        required: false
       

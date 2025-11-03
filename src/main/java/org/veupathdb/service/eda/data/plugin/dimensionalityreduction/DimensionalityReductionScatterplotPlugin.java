@@ -17,7 +17,7 @@ import java.util.Map;
 
 import static org.veupathdb.service.eda.common.plugin.util.RServeClient.useRConnectionWithRemoteFiles;
 
-public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<DimensionalityReductionScatterplotPostRequest, DimensionalityReductionScatterplotSpec, DimensionalityReductionComputeConfig> {
+public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<DimensionalityReductionScatterplotPostRequest, ScatterplotSpec, DimensionalityReductionComputeConfig> {
 
   @Override
   public String getDisplayName() {
@@ -26,17 +26,17 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
 
   @Override
   public String getDescription() {
-    return "Visualize a 2-dimensional projection of samples based on their beta diversitiy";
+    return "Visualize a 2-dimensional projection of samples based on their principal components.";
   }
 
   @Override
   public List<String> getProjects() {
-    return List.of(AppsMetadata.MICROBIOME_PROJECT);
+    return AppsMetadata.MBIO_PLUS_GENOMICS_PROJECTS;
   }
 
   @Override
   protected ClassGroup getTypeParameterClasses() {
-    return new ClassGroup(DimensionalityReductionScatterplotPostRequest.class, DimensionalityReductionScatterplotSpec.class, DimensionalityReductionComputeConfig.class);
+    return new ClassGroup(DimensionalityReductionScatterplotPostRequest.class, ScatterplotSpec.class, DimensionalityReductionComputeConfig.class);
   }
 
   @Override
@@ -57,14 +57,14 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
   }
 
   @Override
-  protected void validateVisualizationSpec(DimensionalityReductionScatterplotSpec pluginSpec) {
+  protected void validateVisualizationSpec(ScatterplotSpec pluginSpec) {
     validateInputs(new DataElementSet()
       .entity(pluginSpec.getOutputEntityId())
       .var("overlayVariable", pluginSpec.getOverlayVariable()));
   }
 
   @Override
-  protected List<StreamSpec> getRequestedStreams(DimensionalityReductionScatterplotSpec pluginSpec) {
+  protected List<StreamSpec> getRequestedStreams(ScatterplotSpec pluginSpec) {
     return List.of(
       new StreamSpec(DEFAULT_SINGLE_STREAM_NAME, pluginSpec.getOutputEntityId())
         .addVar(pluginSpec.getOverlayVariable())
@@ -75,7 +75,7 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
   @Override
   protected void writeResults(OutputStream out, Map<String, InputStream> dataStreams) {
 
-    DimensionalityReductionScatterplotSpec spec = getPluginSpec();
+    ScatterplotSpec spec = getPluginSpec();
     Map<String, VariableSpec> varMap = new HashMap<>();
     varMap.put("overlay", spec.getOverlayVariable());
     String valueSpec = "raw";
@@ -91,10 +91,10 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
     ComputedVariableMetadata computedMetadata = getComputedVariableMetadata();
 
     VariableSpec xComputedVarSpec = computedMetadata.getVariables().stream()
-        .filter(var -> var.getVariableSpec().getVariableId().equals(spec.getXAxisSelection()))
+        .filter(var -> var.getVariableSpec().getVariableId().equals(spec.getXAxisVariable().getVariableId()))
         .findFirst().orElseThrow().getVariableSpec();
     VariableSpec yComputedVarSpec = computedMetadata.getVariables().stream()
-    .filter(var -> var.getVariableSpec().getVariableId().equals(spec.getYAxisSelection()))
+    .filter(var -> var.getVariableSpec().getVariableId().equals(spec.getYAxisVariable().getVariableId()))
     .findFirst().orElseThrow().getVariableSpec();
 
 
@@ -113,9 +113,9 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
       connection.voidEval("variables <- veupathUtils::merge(variables, computedVariables)");
 
       // Set axis variables
-      connection.voidEval("xIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getXAxisSelection() + "', variables)");
+      connection.voidEval("xIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getXAxisVariable().getVariableId() + "', variables)");
       connection.voidEval("variables[[xIndex]]@plotReference <- veupathUtils::PlotReference(value = 'xAxis')");
-      connection.voidEval("yIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getYAxisSelection() + "', variables)");
+      connection.voidEval("yIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getYAxisVariable().getVariableId() + "', variables)");
       connection.voidEval("variables[[yIndex]]@plotReference <- veupathUtils::PlotReference(value = 'yAxis')");
 
 

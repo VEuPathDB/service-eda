@@ -27,7 +27,6 @@ import org.veupathdb.service.eda.data.plugin.correlation.CorrelationAssayMetadat
 import org.veupathdb.service.eda.data.plugin.correlation.CorrelationBipartitenetworkPlugin;
 import org.veupathdb.service.eda.data.plugin.differentialabundance.DifferentialAbundanceVolcanoplotPlugin;
 import org.veupathdb.service.eda.data.plugin.differentialexpression.DifferentialExpressionVolcanoplotPlugin;
-import org.veupathdb.service.eda.data.plugin.dimensionalityreduction.DimensionalityReductionScatterplotPlugin;
 import org.veupathdb.service.eda.data.plugin.pass.*;
 import org.veupathdb.service.eda.data.plugin.sample.*;
 import org.veupathdb.service.eda.data.plugin.selfcorrelation.SelfCorrelationUnipartitenetworkPlugin;
@@ -356,13 +355,6 @@ public class AppsService implements Apps {
   public PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse postAppsDifferentialexpressionVisualizationsVolcanoplot(DifferentialExpressionVolcanoplotPostRequest entity) {
     return wrapPlugin(() -> PostAppsDifferentialexpressionVisualizationsVolcanoplotResponse.respond200WithApplicationJson(
       new DifferentialExpressionStatsResponseStream(processRequest(new DifferentialExpressionVolcanoplotPlugin(), entity))));
-  }
-
-  @DisableJackson
-  @Override
-  public PostAppsDimensionalityreductionVisualizationsScatterplotResponse postAppsDimensionalityreductionVisualizationsScatterplot(DimensionalityReductionScatterplotPostRequest entity) {
-    return wrapPlugin(() -> PostAppsDimensionalityreductionVisualizationsScatterplotResponse.respond200WithApplicationJson(
-      new ScatterplotPostResponseStream(processRequest(new DimensionalityReductionScatterplotPlugin(), entity))));
   }
 
   @DisableJackson

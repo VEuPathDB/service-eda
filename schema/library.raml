@@ -1569,37 +1569,6 @@ types:
     properties:
       computeConfig: DifferentialExpressionComputeConfig
       config: EmptyDataPluginSpec
-  DimensionalityReductionComputeConfig:
-    type: object
-    properties:
-      collectionVariable: CollectionSpec
-      nPCs: number
-  DimensionalityReductionPluginRequest:
-    type: ComputeRequestBase
-    properties:
-      config: DimensionalityReductionComputeConfig
-  DimensionalityReductionScatterplotPostRequest:
-    type: DataPluginRequestBase
-    properties:
-      computeConfig: DimensionalityReductionComputeConfig
-      config: ScatterplotSpec
-  DimensionalityReductionScatterplotSpec:
-    type: object
-    additionalProperties: false
-    properties:
-      outputEntityId: string
-      showMissingness:
-        type: ShowMissingnessNoAxes
-        required: false
-      xAxisSelection:
-        type: string
-        required: false
-      yAxisSelection:
-        type: string
-        required: false
-      overlayVariable:
-        type: VariableSpec
-        required: false
   DynamicDataSpec: CollectionSpec | VariableSpec
   EcmaScriptExpressionEvalConfig:
     type: object
@@ -2718,7 +2687,6 @@ types:
       - geo
       - latitude
       - longitude
-      - undefined
   PluginOverview:
     displayName: Plugin Overview
     type: object

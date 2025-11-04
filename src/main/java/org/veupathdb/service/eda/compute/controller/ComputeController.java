@@ -22,7 +22,6 @@ import org.veupathdb.service.eda.compute.plugins.betadiv.BetaDivPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.correlation.CorrelationPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialabundance.DifferentialAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.differentialexpression.DifferentialExpressionPluginProvider;
-import org.veupathdb.service.eda.compute.plugins.dimensionalityreduction.DimensionalityReductionPluginProvider;
 import org.veupathdb.service.eda.compute.plugins.example.ExamplePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.rankedabundance.RankedAbundancePluginProvider;
 import org.veupathdb.service.eda.compute.plugins.selfcorrelation.SelfCorrelationPluginProvider;
@@ -151,16 +150,6 @@ public class ComputeController implements Computes {
         throw new RuntimeException(e);
       }
     }));
-  }
-
-  @Override
-  public PostComputesDimensionalityreductionResponse postComputesDimensionalityreduction(Boolean autostart, DimensionalityReductionPluginRequest entity) {
-    return PostComputesDimensionalityreductionResponse.respond200WithApplicationJson(submitJob(new DimensionalityReductionPluginProvider(), entity, autostart));
-  }
-
-  @Override
-  public PostComputesDimensionalityreductionByFileResponse postComputesDimensionalityreductionByFile(String file, DimensionalityReductionPluginRequest entity) {
-    return resultFile(new DimensionalityReductionPluginProvider(), file, entity, PostComputesDimensionalityreductionByFileResponse::respond200WithTextPlain);
   }
 
   @Override

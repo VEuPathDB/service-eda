@@ -9,7 +9,7 @@ import org.glassfish.jersey.server.ContainerRequest;
 import org.gusdb.fgputil.FormatUtil;
 import org.veupathdb.lib.container.jaxrs.model.UserInfo;
 import org.veupathdb.lib.container.jaxrs.providers.UserProvider;
-import org.veupathdb.lib.jackson.Json;
+import org.veupathdb.lib.jackson.json.Json;
 import org.veupathdb.service.eda.access.service.permissions.PermissionService;
 import org.veupathdb.service.eda.generated.model.AnalysisSummary;
 import org.veupathdb.service.eda.user.model.AnalysisDetailWithUser;

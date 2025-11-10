@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager
 import org.gusdb.fgputil.json.JsonUtil
 import org.json.JSONObject
 import org.veupathdb.lib.hash_id.HashID
-import org.veupathdb.lib.jackson.Json
+import org.veupathdb.lib.jackson.json.Json
 import org.veupathdb.service.eda.generated.model.ComputeRequestBase
 import java.util.*
 
@@ -37,8 +37,11 @@ object JobIDs {
   fun of(pluginName: String, entity: ComputeRequestBase) : HashID {
 
     // fill null values with arrays so non-submission returns same hash as empty arrays
-    if (entity.filters == null) entity.filters = Collections.emptyList()
-    if (entity.derivedVariables == null) entity.derivedVariables = Collections.emptyList()
+    if (entity.filters == null)
+      entity.filters = Collections.emptyList()
+
+    if (entity.derivedVariables == null)
+      entity.derivedVariables = Collections.emptyList()
 
     // order of JSON object properties is not guaranteed in Jackson; use key-sorted serializer
     val unorderedString = Json.Mapper.writeValueAsString(entity)

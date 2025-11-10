@@ -10,7 +10,7 @@ import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.json.JSONObject;
 import org.veupathdb.lib.container.jaxrs.model.UserInfo;
-import org.veupathdb.lib.jackson.Json;
+import org.veupathdb.lib.jackson.json.Json;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.user.Utils;

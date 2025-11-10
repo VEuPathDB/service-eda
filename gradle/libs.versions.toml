@@ -1,0 +1,76 @@
+[versions]
+fgputil = "2.16.3-jakarta"
+log4j = "2.24.3"
+
+
+[plugins]
+kotlin = { id = "org.jetbrains.kotlin.jvm", version = "2.2.21" }
+shadowJar = { id = "com.gradleup.shadow", version = "9.2.2" }
+containerUtils = { id = "org.veupathdb.lib.gradle.container.container-utils", version = "5.0.5" }
+
+
+[libraries]
+rServe = { module = "org.rosuda.REngine:Rserve", version = "1.8.1" }
+
+jersey-server = { module = "org.glassfish.jersey.core:jersey-server", version = "3.1.10" }
+
+config-cli-api = { module = "info.picocli:picocli", version = "4.7.6" }
+config-cli-generator = { module = "info.picocli:picocli-codegen", version = "4.7.6" }
+
+logging-slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.17" }
+logging-log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
+logging-log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
+logging-log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
+
+metrics-prometheus-api = { module = "io.prometheus:simpleclient", version = "0.16.0" }
+metrics-prometheus-client = { module = "io.prometheus:simpleclient_common", version = "0.16.0" }
+
+sql-imports = { module = "io.vulpine.lib:sql-import", version = "0.2.1" }
+sql-extras = { module = "io.vulpine.lib:lib-query-util", version = "2.1.0" }
+sql-stubDb = { module = "org.hsqldb:hsqldb", version = "2.7.1" }
+
+util-checkedLambdas = { module = "io.vulpine.lib:Jackfish", version = "1.1.0" }
+util-idGenerator = { module = "com.devskiller.friendly-id:friendly-id", version = "1.1.0" }
+
+email-client = { module = "javax.mail:mail", version = "1.5.0-b01" }
+email-templating = { module = "org.antlr:ST4", version = "4.3.4" }
+
+vpdb-fgputil-core = { module = "org.gusdb:fgputil-core", version.ref = "fgputil" }
+vpdb-fgputil-client = { module = "org.gusdb:fgputil-client", version.ref = "fgputil" }
+vpdb-fgputil-db = { module = "org.gusdb:fgputil-db", version.ref = "fgputil" }
+
+vpdb-edaSubsetting = { module = "org.veupathdb.lib:eda-subsetting", version = "7.0.0" }
+vpdb-coreLib = { module = "org.veupathdb.lib:jaxrs-container-core", version = "9.5.0" }
+vpdb-hashId = { module = "org.veupathdb.lib:hash-id", version = "1.1.0" }
+vpdb-asyncPlatform = { module = "org.veupathdb.lib:compute-platform", version = "1.8.6" }
+vpdb-s34k = { module = "org.veupathdb.lib.s3:s34k-minio", version = "0.7.2+s34k-0.11.0" }
+vpdb-json = { module = "org.veupathdb.lib:jackson-singleton-json", version = "4.0.5" }
+vpdb-yaml = { module = "org.veupathdb.lib:jackson-singleton-yaml", version = "4.0.5" }
+
+# Testing
+
+junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version = "5.12.0" }
+junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version = "5.12.0" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.12.0" }
+
+mockito-core = { module = "org.mockito:mockito-core", version = "5.15.2" }
+
+test-await = { module = "org.awaitility:awaitility", version = "4.2.2" }
+
+vpdb-test-utils = { module = "org.veupathdb.lib.test:test-utils", version = "1.1.2" }
+
+
+[bundles]
+fgputil = [ "vpdb-fgputil-core", "vpdb-fgputil-client", "vpdb-fgputil-db" ]
+
+platform-async = [ "vpdb-asyncPlatform", "vpdb-s34k", "vpdb-hashId" ]
+platform-http = [ "jersey-server", "vpdb-coreLib", "config-cli-api", "config-cli-generator" ]
+
+email = [ "email-client", "email-templating" ]
+serialization = [ "vpdb-json", "vpdb-yaml" ]
+
+logging = [ "logging-slf4j-api", "logging-log4j-api", "logging-log4j-core", "logging-log4j-slf4j" ]
+metrics = [ "metrics-prometheus-api", "metrics-prometheus-client" ]
+
+test-implementation = [ "junit-api", "mockito-core", "test-await", "vpdb-test-utils" ]
+test-runtime = [ "junit-engine", "junit-launcher" ]

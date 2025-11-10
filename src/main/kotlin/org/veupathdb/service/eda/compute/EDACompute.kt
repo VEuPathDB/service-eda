@@ -5,7 +5,7 @@ import jakarta.ws.rs.NotFoundException
 import org.apache.logging.log4j.LogManager
 import org.veupathdb.lib.compute.platform.AsyncPlatform
 import org.veupathdb.lib.compute.platform.job.JobFileReference
-import org.veupathdb.lib.jackson.Json
+import org.veupathdb.lib.jackson.json.Json
 import org.veupathdb.service.eda.compute.exec.PluginJobPayload
 import org.veupathdb.service.eda.compute.plugins.PluginMeta
 import org.veupathdb.service.eda.compute.util.JobIDs

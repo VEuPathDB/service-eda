@@ -32,7 +32,6 @@ public class EnvConfig extends Options {
   // Job Cache Defaults
   private static final int DefaultJobCacheTimeoutDays = 30;
 
-
   @CommandLine.Option(
     names = "--enable-email",
     defaultValue = "${env:ENABLE_EMAIL}",

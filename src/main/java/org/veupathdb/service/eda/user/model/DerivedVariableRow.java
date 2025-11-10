@@ -1,7 +1,7 @@
 package org.veupathdb.service.eda.user.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.veupathdb.lib.jackson.Json;
+import org.veupathdb.lib.jackson.json.Json;
 import org.veupathdb.service.eda.generated.model.DerivedVariableGetResponse;
 import org.veupathdb.service.eda.generated.model.DerivedVariableGetResponseImpl;
 import org.veupathdb.service.eda.generated.model.DerivedVariablePostRequest;

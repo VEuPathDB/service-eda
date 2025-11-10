@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vulpine.lib.jcfi.CheckedSupplier;
 import org.gusdb.fgputil.DelimitedDataParser;
 import org.gusdb.fgputil.iterator.CloseableIterator;
-import org.veupathdb.lib.jackson.Json;
+import org.veupathdb.lib.jackson.json.Json;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;

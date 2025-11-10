@@ -5,7 +5,7 @@ import org.apache.logging.log4j.ThreadContext
 import org.veupathdb.lib.compute.platform.job.JobContext
 import org.veupathdb.lib.compute.platform.job.JobExecutor
 import org.veupathdb.lib.compute.platform.job.JobResult
-import org.veupathdb.lib.jackson.Json
+import org.veupathdb.lib.jackson.json.Json
 import org.veupathdb.service.eda.common.client.EdaMergingClient
 import org.veupathdb.service.eda.common.client.EdaSubsettingClient
 import org.veupathdb.service.eda.compute.jobs.ReservedFiles

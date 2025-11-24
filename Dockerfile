@@ -16,24 +16,25 @@ RUN apk add --no-cache npm \
   && npm install -gs raml2html raml2html-modern-theme
 
 # copy files required to build dev environment and fetch dependencies
-COPY build.gradle.kts settings.gradle.kts startup.sh ./
+COPY ["build.gradle.kts", "settings.gradle.kts", "startup.sh", "gradlew", "./"]
+COPY gradle/ gradle/
 
 # download raml tools (these never change)
-RUN gradle install-raml-4-jax-rs install-raml-merge
+RUN ./gradlew install-raml-4-jax-rs install-raml-merge
 
 # download project dependencies in advance
-RUN gradle download-dependencies
+RUN ./gradlew download-dependencies
 
 # copy raml over for merging, then perform code and documentation generation
 COPY api.raml ./
 COPY schema schema
-RUN gradle generate-jaxrs generate-raml-docs
+RUN ./gradlew generate-jaxrs generate-raml-docs
 
 # copy remaining files
 COPY src/ src
 
 # build the project
-RUN gradle clean test shadowJar
+RUN ./gradlew clean test shadowJar
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

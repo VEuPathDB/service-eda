@@ -1,5 +1,5 @@
-CREATE SCHEMA IF NOT EXISTS edauser;
-GRANT USAGE ON SCHEMA edauser TO comm_wdk_w;
+-- The SCHEMA may only be created by the DBA or a superuser.
+CREATE SCHEMA IF NOT EXISTS edauser AUTHORIZATION comm_wdk_w;
 
 -- USERS table
 CREATE TABLE edauser.users (
@@ -9,8 +9,8 @@ CREATE TABLE edauser.users (
   PRIMARY KEY (user_id)
 );
 
--- Grant privileges (PostgreSQL syntax)
-GRANT SELECT, INSERT, UPDATE, DELETE ON edauser.users TO comm_wdk_w;
+-- Make sure the table is owned by comm_wdk_w role, not the user running the script.
+ALTER TABLE edauser.users OWNER TO comm_wdk_w;
 
 -- ANALYSIS table
 CREATE TABLE edauser.analysis (
@@ -33,5 +33,8 @@ CREATE TABLE edauser.analysis (
   PRIMARY KEY (analysis_id),
   FOREIGN KEY (user_id) REFERENCES edauser.users (user_id)
 );
+
+-- Make sure the table is owned by comm_wdk_w role, not the user running the script.
+ALTER TABLE edauser.analysis OWNER TO comm_wdk_w;
 
 CREATE INDEX analysis_user_id_idx ON edauser.analysis (user_id);

@@ -59,6 +59,10 @@ public class AppsMetadata {
     .add(VECTORBASE_PROJECT)
     .addAll(NON_VB_GENOMICS_PROJECTS)
     .toList();
+  public static final List<String> ALL_GENOMICS_PROJECTS = new ListBuilder<String>()
+    .add(VECTORBASE_PROJECT)
+    .addAll(NON_VB_GENOMICS_PROJECTS)
+    .toList();
 
   // NOTE: these names must match the url segments defined in the api.raml
   // Pass vizs are now different based on mbio vs clinepi so we need to adjust the below array?
@@ -131,8 +135,8 @@ public class AppsMetadata {
       viz("volcanoplot", new DifferentialAbundanceVolcanoplotPlugin())),
     app("differentialexpression", "Differential Expression", "differentialexpression",
       "Find genes that are differentially expressed between two groups.",
-      MBIO_PLUS_GENOMICS_PROJECTS,
-      viz("volcanoplot", new DifferentialAbundanceVolcanoplotPlugin())),
+      ALL_GENOMICS_PROJECTS,
+      viz("volcanoplot", new DifferentialExpressionVolcanoplotPlugin())),
     app("dimensionalityreduction", "Dimensionality Reduction", "dimensionalityreduction",
       "Investigate dataset features using dimensionality reduction techniques.",
       MBIO_PLUS_GENOMICS_PROJECTS,

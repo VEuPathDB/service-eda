@@ -592,6 +592,7 @@ The most important display consideration is **entity naming**, which will change
 ## Migration Checklist
 
 ### RAML Schema
+- [ ] Check that https://github.com/VEuPathDB/service-eda/pull/100 has been merged to `main` before working on the wide-to-tall refactor. This will add `limma` method support for differential expression computations to the service code (RAML and Java).
 - [ ] Remove `collectionVariable` from differential expression request schema
 - [ ] Add `identifierVariable` (gene/taxon/pathway identifier column) and `valueVariable` (count/expression column)
 - [ ] Update documentation: variable collections no longer used for expression data organization

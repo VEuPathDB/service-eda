@@ -4,11 +4,11 @@
 
 ## Executive Summary
 
-This document outlines the strategy for transitioning gene expression and microbiome data models from **wide format** (one column per gene/taxon) to **tall format** (separate columns for identifier and value). The primary drivers are front-end efficiency and simplified data management: computing metadata for 20,000+ variables is slow, displaying them in the UI is unwieldy, and collection-based predicates require complex boolean logic.
+This document outlines the strategy for transitioning gene expression and microbiome data models from **wide format** (one column per gene/taxon) to **tall format** (separate columns for identifier and value). The primary drivers are front-end efficiency and simplified data management: computing metadata for 20,000+ variables is slow and displaying them in the UI is unwieldy.
 
 **Key Architectural Changes**:
 
-1. **Data Structure**: Wide format (100 samples × 20,000 genes = 100 rows) → Tall format (100 samples × 20,000 genes = 2,000,000 rows with 2 variables)
+1. **Data Structure**: Wide format (100 samples × 20,000 genes = 100 rows) → Tall format (100 samples × 20,000 genes = 2,000,000 rows with 2 variables) _Note, in both cases the low-level data storage in EDA is effectively tall._
 
 2. **Variable Identifiers as Ontology Terms**: Variable `stable_id` values will use standardized ontology terms instead of arbitrary digests:
    - **EDAM ontology** for identifiers: `EDAM:2295` (gene identifier), `EDAM:1868` (taxon name), `EDAM:2365` (pathway accession), `EDAM:1011` (EC number)
@@ -20,8 +20,8 @@ This document outlines the strategy for transitioning gene expression and microb
 **Impact by Layer**:
 - **Data Layer / Study Wrangler**: Assign ontology term IDs to variables during dataset ingestion
 - **RAML/API**: Replace `collectionVariable` with `identifierVariable` + `valueVariable`
-- **Java (service-eda)**: Add pivoting step to convert tall → wide before passing to R; minimal other changes
-- **R (veupathUtils)**: No changes required - continues to receive wide format after Java pivot
+- **Java (service-eda)**: Add pivoting step (using R via RServe) to convert tall → wide; minimal other changes
+- **R (veupathUtils)**: No changes required - continues to receive wide format after Java/R pivot
 - **Front-End (web-monorepo)**: Replace collection-based predicates with variable-pair predicates using ontology term matching
 
 **Key Benefits**: 2 variables instead of 20,000 per dataset, self-documenting ontology term IDs, simplified predicates, faster metadata computation, cleaner UI.
@@ -681,7 +681,7 @@ Tabular data → Java reads 20k columns → R CountDataCollection (wide) →
 transpose → DESeq2/limma (genes as rows) → results with pointIDs
 
 [Tall Format - Proposed]
-Tabular data (tall) → Java reads 3 columns → Java pivots to wide →
+Tabular data (tall) → Java reads 3 columns → Java/R pivot to wide →
 R CountDataCollection (wide) → transpose → DESeq2/limma → results with pointIDs
 ```
 
@@ -694,6 +694,7 @@ R CountDataCollection (wide) → transpose → DESeq2/limma → results with poi
 3. What column name convention should be used post-pivot if gene IDs contain special characters?
 4. Should we support both wide and tall formats during a transition period?
 5. Should ontology term information be exposed in the UI (e.g., via tooltips showing "EDAM:2295 = gene identifier") for user education, or keep it hidden as an implementation detail?
+   - variables already have display name, definition etc, and the stable IDs are largely hidden from the user (except in some URLs) so I (Bob) think we are good here.
 
 ---
 

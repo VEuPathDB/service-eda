@@ -4,7 +4,7 @@ CREATE SCHEMA IF NOT EXISTS edauser AUTHORIZATION comm_wdk_w;
 -- USERS table
 CREATE TABLE edauser.users (
   user_id INTEGER NOT NULL,
-  is_guest INTEGER NOT NULL,
+  is_guest BOOLEAN NOT NULL,
   preferences TEXT, 
   PRIMARY KEY (user_id)
 );
@@ -23,7 +23,7 @@ CREATE TABLE edauser.analysis (
   description TEXT,
   creation_time TIMESTAMP NOT NULL,
   modification_time TIMESTAMP NOT NULL,
-  is_public INTEGER NOT NULL,
+  is_public BOOLEAN NOT NULL,
   num_filters INTEGER NOT NULL,
   num_computations INTEGER NOT NULL,
   num_visualizations INTEGER NOT NULL,

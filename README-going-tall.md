@@ -332,6 +332,8 @@ This shift eliminates the need for complex metadata logic and makes predicates s
 
 Predicates will be defined as simple functions matching specific ontology term IDs.
 
+Implementation note: ontology term IDs should be defined as constants in a dedicated *.ts file, rather than hardcoded as in the examples below. We could potentially future-proof by these constants defining them as `{ id: string, displayName: string }` in case we need a user-facing version (perhaps in error messages?). But maybe also YAGNI?
+
 **Location**: `/home/maccallr/work/EDA/web-monorepo/packages/libs/eda/src/lib/core/components/computations/Utils.ts`
 
 **RNA-Seq Predicates:**

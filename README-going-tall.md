@@ -1,4 +1,4 @@
-# Going Tall: Migration Strategy for Differential Expression Data Model (and other EDA computations such as in MicrobiomeDB)
+# Going Tall: Migration Strategy for Differential Expression Data Model (and other omics computations)
 
 ## Executive Summary
 

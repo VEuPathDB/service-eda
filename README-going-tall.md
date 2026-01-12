@@ -1,7 +1,5 @@
 # Going Tall: Migration Strategy for Differential Expression Data Model
 
-**Note:** this is still a rough cut!
-
 ## Executive Summary
 
 This document outlines the strategy for transitioning gene expression and microbiome data models from **wide format** (one column per gene/taxon) to **tall format** (separate columns for identifier and value). The primary drivers are front-end efficiency and simplified data management: computing metadata for 20,000+ variables is slow and displaying them in the UI is unwieldy.

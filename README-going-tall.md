@@ -4,9 +4,66 @@
 
 ## Executive Summary
 
-This document outlines the implications of transitioning the gene expression data model from **wide format** (one column per gene) to **tall format** (gene identifier and expression value as separate columns). The primary driver is front-end efficiency: computing metadata for 20,000+ gene variables is slow, and displaying them in the UI is unwieldy.
+This document outlines the strategy for transitioning gene expression and microbiome data models from **wide format** (one column per gene/taxon) to **tall format** (separate columns for identifier and value). The primary drivers are front-end efficiency and simplified data management: computing metadata for 20,000+ variables is slow, displaying them in the UI is unwieldy, and collection-based predicates require complex boolean logic.
 
-**Key Finding**: The migration requires changes primarily at the **Java ingestion layer**. The R computation code (`veupathUtils::differentialExpression`) can remain largely unchanged, as it already expects wide format internally.
+**Key Architectural Changes**:
+
+1. **Data Structure**: Wide format (100 samples × 20,000 genes = 100 rows) → Tall format (100 samples × 20,000 genes = 2,000,000 rows with 2 variables)
+
+2. **Variable Identifiers as Ontology Terms**: Variable `stable_id` values will use standardized ontology terms instead of arbitrary digests:
+   - **EDAM ontology** for identifiers: `EDAM:2295` (gene identifier), `EDAM:1868` (taxon name), `EDAM:2365` (pathway accession), `EDAM:1011` (EC number)
+   - **STATO ontology** for data types: `STATO:0000064` (count data), `STATO:0000104` (normalized data), `STATO:0000207` (relative frequency)
+   - This makes variable IDs self-documenting and affects **upstream data processing** (Study Wrangler must assign these ontology terms during dataset loading)
+
+3. **Front-End Predicate Simplification**: Replace complex collection metadata checks with simple string matching: `identifierVar.id === 'EDAM:2295' && valueVar.id === 'STATO:0000064'`
+
+**Impact by Layer**:
+- **Data Layer / Study Wrangler**: Assign ontology term IDs to variables during dataset ingestion
+- **RAML/API**: Replace `collectionVariable` with `identifierVariable` + `valueVariable`
+- **Java (service-eda)**: Add pivoting step to convert tall → wide before passing to R; minimal other changes
+- **R (veupathUtils)**: No changes required - continues to receive wide format after Java pivot
+- **Front-End (web-monorepo)**: Replace collection-based predicates with variable-pair predicates using ontology term matching
+
+**Key Benefits**: 2 variables instead of 20,000 per dataset, self-documenting ontology term IDs, simplified predicates, faster metadata computation, cleaner UI.
+
+---
+
+## Table of Contents
+
+- [Current Data Flow (Wide Format)](#current-data-flow-wide-format)
+  - [1. Data Structure](#1-data-structure)
+  - [2. Collection Concept](#2-collection-concept)
+  - [3. Column Naming Convention](#3-column-naming-convention)
+  - [4. How Data Reaches R](#4-how-data-reaches-r)
+  - [5. R Processing](#5-r-processing)
+  - [6. PointID Generation](#6-pointid-generation)
+- [Proposed Data Flow (Tall Format)](#proposed-data-flow-tall-format)
+  - [1. New Data Structure](#1-new-data-structure)
+  - [2. Variable Collection Concept Evolution](#2-variable-collection-concept-evolution)
+  - [3. API/RAML Changes](#3-apiraml-changes)
+  - [4. Required Java Changes](#4-required-java-changes)
+  - [5. Ontology Terms as Variable Identifiers](#5-ontology-terms-as-variable-identifiers)
+  - [6. R Code Changes](#6-r-code-changes)
+  - [7. Front-End Changes](#7-front-end-changes)
+    - [7.1 Overview: From Collection-Based to Variable-Pair-Based Predicates](#71-overview-from-collection-based-to-variable-pair-based-predicates)
+    - [7.2 Ontology Term Assignments](#72-ontology-term-assignments)
+    - [7.3 Predicate Design](#73-predicate-design)
+    - [7.4 Implementation Guidance](#74-implementation-guidance)
+    - [7.5 Comparison: Before vs After](#75-comparison-before-vs-after)
+    - [7.6 Benefits for Front-End](#76-benefits-for-front-end)
+    - [7.7 Critical Files for Implementation](#77-critical-files-for-implementation)
+- [Migration Checklist](#migration-checklist)
+  - [RAML Schema](#raml-schema)
+  - [Java Layer (service-eda)](#java-layer-service-eda)
+  - [R Layer (veupathUtils)](#r-layer-veupathutils)
+  - [Front-End](#front-end)
+  - [Data Layer / Subsetting](#data-layer--subsetting)
+- [Benefits](#benefits)
+- [Risks & Considerations](#risks--considerations)
+- [References](#references)
+  - [Key Code Files](#key-code-files)
+  - [Data Flow Summary](#data-flow-summary)
+- [Questions for Consideration](#questions-for-consideration)
 
 ---
 

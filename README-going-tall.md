@@ -62,6 +62,7 @@ This document outlines the strategy for transitioning **gene expression data** f
 - [References](#references)
   - [Key Code Files](#key-code-files)
   - [Data Flow Summary](#data-flow-summary)
+- [Microbiome: Out of Scope](#microbiome-out-of-scope)
 - [Questions for Consideration](#questions-for-consideration)
 
 ---

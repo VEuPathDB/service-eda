@@ -137,8 +137,7 @@ sample2  | ENSG00000001           | 38
 ...
 ```
 
-The gene column heading follows the standard `entityId.variableId` dot-notation (`EUPA_0000123.VEUPATHDB_GENE_ID`), where `VEUPATHDB_GENE_ID` is our self-documenting variable stable ID.
-The count column uses `SEQUENCE_READ_COUNT`, the Statistics Ontology term for "count data".
+The gene column heading follows the standard `entityId.variableId` dot-notation (`EUPA_0000123.VEUPATHDB_GENE_ID`), where `VEUPATHDB_GENE_ID` is our self-documenting variable stable ID. Same goes for the count column.
 The gene column **values** are the actual gene identifiers (e.g., `ENSG00000001`, `ENSG00000002`, etc.).
 
 For 100 samples × 20,000 genes = 2,000,000 rows (vs. 100 rows × 20,000 columns)

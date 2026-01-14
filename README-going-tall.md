@@ -1,16 +1,18 @@
-# Going Tall: Migration Strategy for Differential Expression Data Model (and other omics computations)
+# Going Tall: Migration Strategy for Gene Expression Data Model
 
 ## Executive Summary
 
-This document outlines the strategy for transitioning gene expression and microbiome data models from **wide format** (one column per gene/taxon) to **tall format** (separate columns for identifier and value). The primary drivers are front-end efficiency and simplified data management: computing metadata for 20,000+ variables is slow and displaying them in the UI is unwieldy.
+This document outlines the strategy for transitioning **gene expression data** from **wide format** (one column per gene) to **tall format** (separate columns for identifier and value). The primary drivers are front-end efficiency and simplified data management: computing metadata for 20,000+ variables is slow and displaying them in the UI is unwieldy.
+
+**Note**: This migration focuses exclusively on **genomics computations** (differential expression with DESeq2/limma, and WGCNA). Microbiome data will remain in wide format for now, as the multiple taxon-level collections require additional design consideration (see [Microbiome: Out of Scope](#microbiome-out-of-scope)).
 
 **Key Architectural Changes**:
 
 1. **Data Structure**: Wide format (100 samples × 20,000 genes = 100 rows) → Tall format (100 samples × 20,000 genes = 2,000,000 rows with 2 variables) _Note, in both cases the low-level data storage in EDA is effectively tall._
 
-2. **Variable Identifiers as Pseudo-Ontology Terms**: Variable `stable_id` values will use standardized human-readable identifiers such as `SEQUENCE_READ_COUNT` instead of arbitrary digests (e.g. `VAR_bdc8e679`):
-   - Why not proper ontologies? **EDAM** and **STATO** ontologies were almost fit-for-purpose but let us down for WGCNA-related terms, and likely other use-cases in future.
+2. **Self-Documenting Variable Identifiers**: Variable `stable_id` values will use standardized human-readable identifiers such as `SEQUENCE_READ_COUNT` instead of arbitrary digests (e.g. `VAR_bdc8e679`):
    - This makes variable IDs self-documenting and affects **upstream data processing** (Study Wrangler must assign these stable IDs during dataset loading)
+   - Bespoke IDs are preferred over ontology terms for pragmatic reasons: needed terms don't always exist in current ontologies, and we're unlikely to perform ontology reasoning in the near future
 
 3. **Front-End Predicate Simplification**: Replace complex collection metadata checks with simple string matching: `identifierVar.id === 'VEUPATHDB_GENE_ID' && valueVar.id === 'SEQUENCE_READ_COUNT'`
 
@@ -163,14 +165,14 @@ For 100 samples × 20,000 genes = 2,000,000 rows (vs. 100 rows × 20,000 columns
 **Proposed**: `entityId + identifierVariable + valueVariable`
 
 Where:
-- `identifierVariable` is the gene/taxon/pathway identifier column (e.g., variable with ID `VEUPATHDB_GENE_ID` for gene identifiers)
-- `valueVariable` is the numeric expression/count column (e.g., variable with ID `SEQUENCE_READ_COUNT` for counts)
+- `identifierVariable` is the gene identifier column (variable with ID `VEUPATHDB_GENE_ID`)
+- `valueVariable` is the numeric expression/count column (e.g., variable with ID `SEQUENCE_READ_COUNT` for counts or `NORMALIZED_EXPRESSION` for normalized expression)
 
 The RAML schema will need to be updated to:
 - Remove references to `collectionVariable` in differential expression endpoints
-- Add `identifierVariable` parameter (the gene/taxon/pathway identifier column)
+- Add `identifierVariable` parameter (the gene identifier column)
 - Add `valueVariable` parameter (the count/expression column)
-- Document that EDA variable collections are no longer directly referenced in the API (filtering/subsetting happens before the plugin)
+- Document that EDA variable collections are no longer directly referenced in the API for gene expression data (filtering/subsetting happens before the plugin)
 
 ### 4. Required Java Changes
 
@@ -205,18 +207,14 @@ This pivoting step is **the key change**. After pivoting, the gene IDs (from the
 
 **Key Design Decision**: Variable `stable_id` values will be self-documenting constants instead of arbitrary digest strings. This makes the system self-documenting and enables front-end predicates to identify compatible data through simple string matching.
 
-**Examples**:
+**Gene Expression Variable Stable IDs**:
 - Gene identifier variable: **`VEUPATHDB_GENE_ID`**
-- Count data variable: **`SEQUENCE_READ_COUNT`**
-- Normalized expression variable: **`NORMALIZED_EXPRESSION`**
-- Taxon name variable: **`EDAM:1868`**
-- Pathway accession variable: **`EDAM:2365`**
-- EC number variable: **`EDAM:1011`**
-- Relative abundance variable: **`STATO:0000207`**
+- Count data variable (for DESeq2): **`SEQUENCE_READ_COUNT`**
+- Normalized expression variable (for limma): **`NORMALIZED_EXPRESSION`**
 
 **Column Naming in Tall Format**:
 
-The gene/taxon column in tall format is named using standard dot-notation: **`EUPA_0000123.VEUPATHDB_GENE_ID`** (for genes) or **`EUPA_0000123.EDAM:1868`** (for taxa)
+The gene column in tall format is named using standard dot-notation: **`EUPA_0000123.VEUPATHDB_GENE_ID`**
 The count/expression column is named: **`EUPA_0000123.SEQUENCE_READ_COUNT`** (for counts) or **`EUPA_0000123.NORMALIZED_EXPRESSION`** (for normalized expression)
 
 The **values** in the identifier column are the actual gene IDs: **`ENSG00000001`**, **`ENSG00000002`**, etc.
@@ -260,55 +258,44 @@ The "going tall" migration fundamentally changes how the front-end identifies su
 
 **Current (Wide) Approach:**
 ```typescript
-// Predicate filters collections containing 20,000 gene variables
-isNotAbsoluteAbundanceVariableCollection(collection) {
-  return collection.normalizationMethod !== 'NULL' ||
-         !collection.isCompositional ||
-         !!collection.isProportion;
+// Predicate filters collections containing 20,000 gene variables based on metadata
+function isCompatibleCollection(collection: CollectionVariableTreeNode): boolean {
+  // Complex metadata checks to determine if collection is suitable
+  return collection.member === 'gene' &&
+         collection.normalizationMethod !== undefined;
 }
 ```
 
 **New (Tall) Approach:**
 ```typescript
-// Predicate matches exact term IDs for variable pairs
-isDESeqCompatible(identifierVar, valueVar) {
+// Predicate matches exact stable IDs for variable pairs
+function isDESeqCompatible(identifierVar: Variable, valueVar: Variable): boolean {
   return identifierVar.id === 'VEUPATHDB_GENE_ID' &&  // gene identifier
          valueVar.id === 'SEQUENCE_READ_COUNT';      // count data
 }
 ```
 
-This shift eliminates the need for complex metadata logic and makes predicates self-documenting through standardized terms.
+This shift eliminates the need for complex metadata logic and makes predicates self-documenting through standardized stable IDs.
 
 #### 7.2 Variable Stable IDs
 
-**RNA-Seq Data**:
+**Gene Expression Data**:
 
 | Variable Type | Analysis Method | Stable ID |
 |--------------|--------------|---------------|
-| Gene identifier |  | **VEUPATHDB_GENE_ID** |
+| Gene identifier | All | **VEUPATHDB_GENE_ID** |
 | Integer count | DESeq2 | **SEQUENCE_READ_COUNT** |
-| Non-integer expression, e.g. array intensities or normalized values | limma | **NORMALIZED_EXPRESSION** |
-
-**Microbiome Data**:
-
-| Variable Type | Stable ID |
-|--------------|---------------|
-| Taxon name | **EDAM:1868** |
-| Pathway accession | **EDAM:2365** |
-| EC number | **EDAM:1011** |
-| Relative abundance | **STATO:0000207** |
-
-**Note**: The distinction between absolute counts (SEQUENCE_READ_COUNT) and relative abundance (STATO:0000207) directly maps to the current `isCompositional` and `isProportion` metadata flags, making the data type explicit in the variable ID itself.
+| Non-integer expression (array intensities, normalized values) | limma | **NORMALIZED_EXPRESSION** |
 
 #### 7.3 Predicate Design
 
 Predicates will be defined as simple functions matching stable IDs.
 
-Implementation note: variable stable IDs should be defined as constants in a dedicated *.ts file, rather than hardcoded as in the examples below. We could potentially future-proof by these constants defining them as `{ id: string, displayName: string }` in case we need a user-facing version (perhaps in error messages?). But maybe also YAGNI?
+Implementation note: variable stable IDs should be defined as constants in a dedicated `*.ts` file, rather than hardcoded as in the examples below.
 
 **Location**: `/home/maccallr/work/EDA/web-monorepo/packages/libs/eda/src/lib/core/components/computations/Utils.ts`
 
-**RNA-Seq Predicates:**
+**Gene Expression Predicates:**
 
 ```typescript
 /**
@@ -349,63 +336,6 @@ export function isDifferentialExpressionCompatibleVariablePair(
   return (
     isDESeqCompatibleVariablePair(identifierVariable, valueVariable) ||
     isLimmaCompatibleVariablePair(identifierVariable, valueVariable)
-  );
-}
-```
-
-**Microbiome Predicates:**
-
-```typescript
-/**
- * Returns true if the variable pair represents taxonomic abundance data suitable
- * for microbiome analyses (alpha diversity, beta diversity, differential abundance).
- * Rejects absolute abundance (count + not compositional).
- */
-export function isTaxonomicAbundanceVariablePair(
-  identifierVariable: Variable,
-  valueVariable: Variable
-): boolean {
-  const isTaxonIdentifier = identifierVariable.id === 'EDAM:1868';
-  const isRelativeAbundance = valueVariable.id === 'STATO:0000207';
-
-  // Accept relative abundance (compositional data)
-  if (isTaxonIdentifier && isRelativeAbundance) {
-    return true;
-  }
-
-  // Reject absolute abundance (counts that are not compositional)
-  // This maintains the current isNotAbsoluteAbundanceVariableCollection behavior
-  return false;
-}
-
-/**
- * Returns true if the variable pair represents functional genomics data
- * (pathways or EC numbers).
- */
-export function isFunctionalAbundanceVariablePair(
-  identifierVariable: Variable,
-  valueVariable: Variable
-): boolean {
-  const isFunctionalIdentifier =
-    identifierVariable.id === 'EDAM:2365' ||  // pathway accession
-    identifierVariable.id === 'EDAM:1011';    // EC number
-
-  const isRelativeAbundance = valueVariable.id === 'STATO:0000207';
-
-  return isFunctionalIdentifier && isRelativeAbundance;
-}
-
-/**
- * Returns true if the variable pair is compatible with microbiome computations.
- * This combines taxonomic and functional data types, rejecting only absolute abundance.
- */
-export function isMicrobiomeCompatibleVariablePair(
-  identifierVariable: Variable,
-  valueVariable: Variable
-): boolean {
-  return (
-    isTaxonomicAbundanceVariablePair(identifierVariable, valueVariable) ||
-    isFunctionalAbundanceVariablePair(identifierVariable, valueVariable)
   );
 }
 ```
@@ -497,48 +427,31 @@ function isEnabledInPicker(params: IsEnabledInPickerParams): boolean {
 
 The most important display consideration is **entity naming**, which will change when we go tall. Since collections are being replaced by variable pairs, entity display names should reflect the data type rather than the collection concept. Typically, plurals are used for user-facing displays.
 
-**RNA-Seq Examples:**
+**Gene Expression Display Examples:**
 
 | Context | Current (Wide) | Proposed (Tall) |
 |---------|----------------|-----------------|
-| Counts | "Samples > RNA-Seq sense assays (counts)" | "Samples > RNA-Seq sense raw counts (sample × gene)" |
-| Normalized | "Samples > RNA-Seq sense assays (normalized)" | "Samples > RNA-Seq sense normalized expression (sample × gene)" |
-
-**Antibody Array Examples:**
-
-| Context | Current (Wide) | Proposed (Tall) |
-|---------|----------------|-----------------|
-| Expression | "Samples > Antibody array assays" | "Samples > Antibody array expression values (sample × protein)" |
-
-**Microbiome Examples:**
-
-| Context | Current (Wide) | Proposed (Tall) |
-|---------|----------------|-----------------|
-| Taxon abundance | "Samples > 16S rRNA assays (relative abundance)" | "Samples > 16S rRNA relative abundance (sample × taxon)" |
-| Pathway abundance | "Samples > Metagenomic pathways (relative abundance)" | "Samples > Metagenomic pathway abundance (sample × pathway)" |
-| EC number abundance | "Samples > Enzyme abundance" | "Samples > Enzyme abundance (sample × EC number)" |
+| RNA-Seq Counts | "Samples > RNA-Seq sense assays (counts)" | "Samples > RNA-Seq sense raw counts (sample × gene)" |
+| RNA-Seq Normalized | "Samples > RNA-Seq sense assays (normalized)" | "Samples > RNA-Seq sense normalized expression (sample × gene)" |
+| Antibody Array | "Samples > Antibody array assays" | "Samples > Antibody array expression values (sample × protein)" |
 
 **Naming Rationale:**
 - The **(sample × identifier)** suffix clarifies the tall format data shape for users
 - Avoids the word "assays" which implied a collection structure
-- Emphasizes the data type (counts, expression, abundance) rather than the collection mechanism
-- Maintains consistency across different -omics data types
+- Emphasizes the data type (counts, expression) rather than the collection mechanism
 
 #### 7.5 Comparison: Before vs After
 
 | Aspect | Before (Collection-Based) | After (Variable-Pair-Based) |
 |--------|---------------------------|----------------------------|
-| **Data Structure** | Collection with 20,000 gene variables | 2 variables: identifier (VEUPATHDB_GENE_ID) + value (SEQUENCE_READ_COUNT) |
-| **Predicate Logic** | `normalizationMethod !== 'NULL' \|\| !isCompositional \|\| !!isProportion` | `identifierVar.id === 'VEUPATHDB_GENE_ID' && valueVar.id === 'SEQUENCE_READ_COUNT'` |
+| **Data Structure** | Collection with 20,000 gene variables | 2 variables: identifier (VEUPATHDB_GENE_ID) + value (SEQUENCE_READ_COUNT or NORMALIZED_EXPRESSION) |
+| **Predicate Logic** | Complex metadata checks: `member='gene' && normalizationMethod !== undefined` | Simple ID matching: `identifierVar.id === 'VEUPATHDB_GENE_ID' && valueVar.id === 'SEQUENCE_READ_COUNT'` |
 | **Variable Selection** | Select collection from dropdown | Select variable pair from dropdown |
-| **DESeq2** | Filter collections with `member='gene'` + count metadata | Match `VEUPATHDB_GENE_ID` (gene ID) + `SEQUENCE_READ_COUNT` (count) |
-| **limma** | Filter collections with `member='gene'` + normalized metadata | Match `VEUPATHDB_GENE_ID` (gene ID) + `NORMALIZED_EXPRESSION` (normalized) |
-| **Alpha Diversity (Taxon)** | Filter with `member='taxon'` + `isCompositional=true` | Match `EDAM:1868` (taxon) + `STATO:0000207` (relative abundance) |
-| **Alpha Diversity (Pathway)** | Filter with `member='pathway'` + `normalizationMethod='RPK'` | Match `EDAM:2365` (pathway) + `STATO:0000207` (relative abundance) |
-| **Alpha Diversity (EC)** | Not supported | Match `EDAM:1011` (EC number) + `STATO:0000207` (relative abundance) |
+| **DESeq2** | Filter collections with `member='gene'` + count metadata | Match `VEUPATHDB_GENE_ID` + `SEQUENCE_READ_COUNT` |
+| **limma** | Filter collections with `member='gene'` + normalized metadata | Match `VEUPATHDB_GENE_ID` + `NORMALIZED_EXPRESSION` |
 | **Metadata Computation** | 20,000+ variables per collection | 2 variables per dataset |
-| **UI Display** | Scroll through 20,000 variables | Select from ~2-10 variable pairs per entity |
-| **Variable IDs** | Arbitrary digest (VAR_bdc8e679) | Standardized self-documenting term (VEUPATHDB_GENE_ID) |
+| **UI Display** | Scroll through 20,000 variables | Select from ~2-4 variable pairs per entity |
+| **Variable IDs** | Arbitrary digest (VAR_bdc8e679) | Self-documenting term (VEUPATHDB_GENE_ID, SEQUENCE_READ_COUNT) |
 
 #### 7.6 Benefits for Front-End
 
@@ -553,11 +466,7 @@ The most important display consideration is **entity naming**, which will change
 
 **Front-end files requiring changes:**
 - `web-monorepo/packages/libs/eda/src/lib/core/components/computations/Utils.ts` - Define new predicate functions
-- `web-monorepo/packages/libs/eda/src/lib/core/components/computations/plugins/differentialExpression.tsx` - Update config and UI
-- `web-monorepo/packages/libs/eda/src/lib/core/components/computations/plugins/alphaDiv.tsx` - Update config and UI
-- `web-monorepo/packages/libs/eda/src/lib/core/components/computations/plugins/betadiv.tsx` - Update config and UI
-- `web-monorepo/packages/libs/eda/src/lib/core/components/computations/plugins/differentialabundance.tsx` - Update config and UI
-- `web-monorepo/packages/libs/eda/src/lib/core/components/computations/plugins/abundance.tsx` - Update config and UI
+- `web-monorepo/packages/libs/eda/src/lib/core/components/computations/plugins/differentialExpression.tsx` - Update config and UI for differential expression
 - `web-monorepo/packages/libs/eda/src/lib/core/types/study.ts` - Ensure Variable type supports variable stable IDs
 - `web-monorepo/packages/libs/eda/src/lib/core/types/variable.ts` - Define VariablePairDescriptor type
 
@@ -568,8 +477,8 @@ The most important display consideration is **entity naming**, which will change
 ### RAML Schema
 - [ ] Check that https://github.com/VEuPathDB/service-eda/pull/100 has been merged to `main` before working on the wide-to-tall refactor. This will add `limma` method support for differential expression computations to the service code (RAML and Java).
 - [ ] Remove `collectionVariable` from differential expression request schema
-- [ ] Add `identifierVariable` (gene/taxon/pathway identifier column) and `valueVariable` (count/expression column)
-- [ ] Update documentation: variable collections no longer used for expression data organization
+- [ ] Add `identifierVariable` (gene identifier column) and `valueVariable` (count/expression column)
+- [ ] Update documentation: variable collections no longer used for gene expression data organization
 
 ### Java Layer (service-eda)
 - [ ] Modify `DifferentialExpressionPlugin.java` to:
@@ -589,28 +498,21 @@ The most important display consideration is **entity naming**, which will change
 - [ ] The `differentialExpression()`, `deseq()`, `limma()` functions work as-is
 
 ### Front-End
-- [ ] Update computation configuration types (remove `collectionVariable`, add `identifierVariable` and `valueVariable`)
-- [ ] Define variable stable ID constants for easy reference throughout codebase
+- [ ] Update differential expression configuration types (remove `collectionVariable`, add `identifierVariable` and `valueVariable`)
+- [ ] Define gene expression variable stable ID constants for easy reference throughout codebase
 - [ ] Implement new predicate functions in `Utils.ts`:
   - [ ] `isDESeqCompatibleVariablePair()` - VEUPATHDB_GENE_ID + SEQUENCE_READ_COUNT
   - [ ] `isLimmaCompatibleVariablePair()` - VEUPATHDB_GENE_ID + NORMALIZED_EXPRESSION
-  - [ ] `isTaxonomicAbundanceVariablePair()` - EDAM:1868 + STATO:0000207
-  - [ ] `isFunctionalAbundanceVariablePair()` - EDAM:2365/EDAM:1011 + STATO:0000207
-  - [ ] `isMicrobiomeCompatibleVariablePair()` - combination predicate
+  - [ ] `isDifferentialExpressionCompatibleVariablePair()` - combination predicate
   - [ ] Helper functions: `findVariableById()`, `findCompatibleVariablePairs()`
 - [ ] Create/update variable pair selection UI components (or adapt `VariableTreeDropdown`)
-- [ ] Update `isEnabledInPicker` functions in all computation plugins to check for compatible variable pairs
-- [ ] Update configuration panels in each computation plugin:
-  - [ ] `differentialExpression.tsx` - gene expression data
-  - [ ] `alphaDiv.tsx` - microbiome diversity
-  - [ ] `betadiv.tsx` - microbiome diversity
-  - [ ] `differentialabundance.tsx` - microbiome abundance
-  - [ ] `abundance.tsx` - microbiome abundance
-- [ ] Update configuration description components to display variable pairs (e.g., "Gene × Count")
+- [ ] Update `isEnabledInPicker` function in `differentialExpression.tsx` to check for compatible variable pairs
+- [ ] Update configuration panel in `differentialExpression.tsx`:
+  - [ ] Replace `VariableCollectionSingleSelect` with variable pair selection
+  - [ ] Update configuration description to display variable pairs (e.g., "Gene × Count")
 - [ ] Handle pointIDs as actual gene IDs like `ENSG00000001` (no longer `entityId.variableId` dot-notation)
 - [ ] Verify visualization plugins consume new pointID format correctly
-- [ ] Test all microbiome computations with new predicate logic
-- [ ] Test all expression computations with new variable pair selection
+- [ ] Test differential expression computations with new variable pair selection
 
 ### Data Layer / Subsetting
 - [ ] Gene filtering/subsetting (already covered per notes)
@@ -659,15 +561,55 @@ R CountDataCollection (wide) → transpose → DESeq2/limma → results with poi
 
 ---
 
+## Microbiome: Out of Scope
+
+The wide-to-tall migration is currently **scoped exclusively for gene expression computations** (differential expression with DESeq2/limma, and WGCNA). Microbiome data will remain in wide format for the time being.
+
+**Why microbiome is more complex:**
+
+Microbiome data has **multiple variable collections per entity**, one for each taxonomic level (Kingdom, Phylum, Class, Order, Family, Genus, Species). The current UI uses `VariableCollectionSingleSelect` to filter collections from each entity and displays `collection.displayName` in dropdown menus, allowing users to select which taxonomic level they want to analyze.
+
+Going tall for microbiome would require:
+1. **Variable stable ID design** that encodes taxonomic level (e.g., `TAXON_COUNTS:Kingdom`, `TAXON_COUNTS:Phylum`, etc.)
+2. **UI filtering logic** that can extract taxonomic level information from variable IDs without resorting to string splitting (e.g., avoid `split(':')` approaches)
+3. **Display label generation** from structured variable metadata rather than hard-coded string manipulation
+4. **Predicate functions** that can match taxonomic levels flexibly
+
+These design considerations need more thought before extending the tall format approach to microbiome computations. The current wide format works well for microbiome use cases, so this is not urgent.
+
+---
+
 ## Questions for Consideration
 
 1. Should pointIDs include `entityId.` prefix for consistency (e.g., `EUPA_0000123.ENSG00000001`), or just the gene IDs (e.g., `ENSG00000001`)?
 2. How should the pivot handle duplicate sample-gene combinations (e.g., average, sum, first)?
 3. What column name convention should be used post-pivot if gene IDs contain special characters?
 4. Should we support both wide and tall formats during a transition period?
-5. Should the client have `displayName`s for variable stable IDs (mainly useful for error messages?) 
+5. **Variable Stable ID constants structure**: Should we define variable stable IDs as simple string constants or as structured objects with display names?
+   - **Option A - Simple strings**:
+     ```typescript
+     export const VEUPATHDB_GENE_ID = 'VEUPATHDB_GENE_ID';
+     export const SEQUENCE_READ_COUNT = 'SEQUENCE_READ_COUNT';
+     export const NORMALIZED_EXPRESSION = 'NORMALIZED_EXPRESSION';
+     ```
+   - **Option B - Structured with display names**:
+     ```typescript
+     export const VEUPATHDB_GENE_ID = {
+       id: 'VEUPATHDB_GENE_ID',
+       displayName: 'Gene ID'
+     };
+     export const SEQUENCE_READ_COUNT = {
+       id: 'SEQUENCE_READ_COUNT',
+       displayName: 'Sequence Read Count'
+     };
+     export const NORMALIZED_EXPRESSION = {
+       id: 'NORMALIZED_EXPRESSION',
+       displayName: 'Normalized Expression'
+     };
+     ```
+   - **Trade-offs**: Option B provides human-readable labels useful for error messages, tooltips, logging, and debugging. However, it requires accessing `.id` everywhere (e.g., `identifierVar.id === VEUPATHDB_GENE_ID.id`). Option A is simpler but loses the self-documenting display names. Could be YAGNI, or could be valuable for UX and developer experience. 
 
 ---
 
-**Document Date**: 2026-01-09
+**Document Date**: 2026-01-14
 **Status**: Planning / Pre-implementation

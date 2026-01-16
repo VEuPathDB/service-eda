@@ -27,7 +27,7 @@ public class DifferentialExpressionVolcanoplotPlugin extends AbstractPlugin<Diff
 
   @Override
   public List<String> getProjects() {
-    return List.of(AppsMetadata.MICROBIOME_PROJECT);
+    return AppsMetadata.ALL_GENOMICS_PROJECTS;
   }
 
   @Override

@@ -4,7 +4,7 @@
 
 This document outlines the strategy for transitioning **gene expression data** from **wide format** (one column per gene) to **tall format** (separate columns for identifier and value). The primary drivers are front-end efficiency and simplified data management: computing metadata for 20,000+ variables is slow and displaying them in the UI is unwieldy.
 
-**Note**: This migration focuses exclusively on genomic-scale **genomics computations** (differential expression with DESeq2/limma). Microbiome data will remain in wide format for now, as the multiple taxon-level collections require additional design consideration (see [Microbiome: Out of Scope](#microbiome-out-of-scope)). WGCNA should stay (not especially) wide for other reasons (see [WGCNA: Also Out of Scope](#wgcna-also-out-of-scope).
+**Note**: This migration focuses exclusively on genomic-scale **genomics computations** (differential expression with DESeq2/limma). Microbiome data will remain in wide format for now, as the multiple taxon-level collections require additional design consideration (see [Microbiome: Out of Scope](#microbiome-out-of-scope)). WGCNA should stay (not especially) wide for other reasons (see [WGCNA: Also Out of Scope](#wgcna-also-out-of-scope)).
 
 **Key Architectural Changes**:
 

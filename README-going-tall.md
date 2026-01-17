@@ -4,7 +4,7 @@
 
 This document outlines the strategy for transitioning **gene expression data** from **wide format** (one column per gene) to **tall format** (separate columns for identifier and value). The primary drivers are front-end efficiency and simplified data management: computing metadata for 20,000+ variables is slow and displaying them in the UI is unwieldy.
 
-**Note**: This migration focuses exclusively on **genomics computations** (differential expression with DESeq2/limma, and WGCNA). Microbiome data will remain in wide format for now, as the multiple taxon-level collections require additional design consideration (see [Microbiome: Out of Scope](#microbiome-out-of-scope)).
+**Note**: This migration focuses exclusively on genomic-scale **genomics computations** (differential expression with DESeq2/limma). Microbiome data will remain in wide format for now, as the multiple taxon-level collections require additional design consideration (see [Microbiome: Out of Scope](#microbiome-out-of-scope)). WGCNA should stay (not especially) wide for other reasons (see [WGCNA: Also Out of Scope](#wgcna-also-out-of-scope).
 
 **Key Architectural Changes**:
 
@@ -63,6 +63,7 @@ This document outlines the strategy for transitioning **gene expression data** f
   - [Key Code Files](#key-code-files)
   - [Data Flow Summary](#data-flow-summary)
 - [Microbiome: Out of Scope](#microbiome-out-of-scope)
+- [WGCNA: Also Out of Scope](#wgcna-also-out-of-scope)
 - [Questions for Consideration](#questions-for-consideration)
 
 ---
@@ -564,7 +565,7 @@ R CountDataCollection (wide) → transpose → DESeq2/limma → results with poi
 
 ## Microbiome: Out of Scope
 
-The wide-to-tall migration is currently **scoped exclusively for gene expression computations** (differential expression with DESeq2/limma, and WGCNA). Microbiome data will remain in wide format for the time being.
+The wide-to-tall migration is currently **scoped exclusively for gene expression computations** (differential expression with DESeq2/limma; not WGCNA - see below). Microbiome data will remain in wide format for the time being.
 
 **Why microbiome is more complex:**
 
@@ -577,6 +578,41 @@ Going tall for microbiome would require:
 4. **Predicate functions** that can match taxonomic levels flexibly
 
 These design considerations need more thought before extending the tall format approach to microbiome computations. The current wide format works well for microbiome use cases, so this is not urgent.
+
+---
+
+## WGCNA: Also Out of Scope
+
+The wide-to-tall migration is **not appropriate for WGCNA eigengene data**. WGCNA should remain in wide format.
+
+**Why WGCNA is different from gene expression counts:**
+
+WGCNA produces a manageable number of module variables (~10-50 modules), not thousands of genes. The benefits that drive the tall migration for gene expression data simply don't apply:
+
+| Concern | Gene Expression (20,000+ variables) | WGCNA (~10-50 modules) |
+|---------|-------------------------------------|------------------------|
+| **Metadata computation performance** | Critical bottleneck | Non-issue |
+| **UI scrolling/selection** | Unwieldy | Manageable |
+| **Frontend display** | Must simplify | Works fine as-is |
+
+**WGCNA's correlation use case requires collections:**
+
+Unlike differential expression (which operates on a single variable pair: identifier + value), the correlation app performs **many-to-many correlation** between:
+- WGCNA module profiles × continuous metadata variables
+- WGCNA module profiles × other WGCNA module profiles
+
+The correlation app architecture (see `correlation.tsx:340-372`) is fundamentally built around **collections of variables**, using `VariableCollectionSingleSelect` to let users choose collections for correlation analysis. This is the correct model for WGCNA's use case.
+
+**Cost of going tall for WGCNA would require:**
+1. Complete refactor of correlation.tsx to use variable pairs instead of collections
+2. New predicates to distinguish "WGCNA tall data" from "gene expression tall data"
+3. Complex UI for selecting identifier+value pairs for many-to-many correlation
+4. Backend pivoting logic to convert tall WGCNA back to wide for correlation computation
+5. Much more complex than differential expression because correlation is many-to-many, not one-to-one
+
+**WGCNA is like microbiome:** Both have a reasonable number of variables organized into meaningful collections that need to remain as collections for their respective analyses to work properly.
+
+**Conclusion:** Keep WGCNA in wide format with modules as a variable collection. The tall migration is exclusively for gene expression count/normalized expression data used in differential expression analyses.
 
 ---
 

@@ -3,7 +3,6 @@ package org.veupathdb.service.eda.compute.plugins.differentialexpression;
 import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
-import org.veupathdb.service.eda.common.model.CollectionDef;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -14,7 +13,6 @@ import org.veupathdb.service.eda.compute.plugins.PluginContext;
 import org.veupathdb.service.eda.generated.model.LabeledRange;
 import org.veupathdb.service.eda.generated.model.DifferentialExpressionComputeConfig;
 import org.veupathdb.service.eda.generated.model.DifferentialExpressionPluginRequest;
-import org.veupathdb.service.eda.generated.model.CollectionSpec;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.io.InputStream;
@@ -35,9 +33,20 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
   @NotNull
   @Override
   public List<StreamSpec> getStreamSpecs() {
-    return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
-        .addVars(getUtil().getCollectionMembers(getConfig().getCollectionVariable()))
-        .addVar(getConfig().getComparator().getVariable())
+    VariableSpec identifierVar = getConfig().getIdentifierVariable();
+    VariableSpec valueVar = getConfig().getValueVariable();
+
+    // Validate that identifier and value variables are on the same entity
+    if (!identifierVar.getEntityId().equals(valueVar.getEntityId())) {
+      throw new IllegalArgumentException(
+        "Identifier variable and value variable must be on the same entity. " +
+        "Got: " + identifierVar.getEntityId() + " and " + valueVar.getEntityId());
+    }
+
+    return List.of(new StreamSpec(INPUT_DATA, identifierVar.getEntityId())
+        .addVar(identifierVar)                              // Gene ID column
+        .addVar(valueVar)                                   // Count/expression column
+        .addVar(getConfig().getComparator().getVariable())  // Comparator variable
       );
   }
 
@@ -48,10 +57,15 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
     PluginUtil util = getUtil();
     ReferenceMetadata meta = getContext().getReferenceMetadata();
 
-    CollectionSpec collectionSpec = computeConfig.getCollectionVariable();
-    CollectionDef collection = meta.getCollection(collectionSpec).orElseThrow();
-    String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
-    String entityId = collectionSpec.getEntityId();
+    VariableSpec identifierVarSpec = computeConfig.getIdentifierVariable();
+    VariableSpec valueVarSpec = computeConfig.getValueVariable();
+    String entityId = identifierVarSpec.getEntityId();
+    String collectionMemberType = "gene";  // Fixed for genomics data
+
+    // Column names for tall format data
+    String identifierColName = util.toColNameOrEmpty(identifierVarSpec);
+    String valueColName = util.toColNameOrEmpty(valueVarSpec);
+
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
     String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
@@ -75,12 +89,29 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting differential expression computation')");
 
-      // Read in the count data
+      // Read tall format data (3 columns + ancestors)
       List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      computeInputVars.addAll(util.getCollectionMembers(collectionSpec));
+      computeInputVars.add(identifierVarSpec);  // Gene ID column
+      computeInputVars.add(valueVarSpec);       // Count/expression column
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
-      connection.voidEval("countData <- " + INPUT_DATA); // Renaming here so we can go get the sampleMetadata later
+
+      // Build dcast formula: sampleID + ancestor1 + ... ~ geneIdColumn
+      StringBuilder lhsFormula = new StringBuilder();
+      lhsFormula.append("`").append(computeEntityIdColName).append("`");
+      for (VariableDef idCol : idColumns) {
+        lhsFormula.append(" + `").append(VariableDef.toDotNotation(idCol)).append("`");
+      }
+
+      // Pivot from tall to wide: gene ID values become column names
+      // Using data.table::dcast over tidyr::pivot_wider for performance reasons
+      // (not specifically benchmarked in this context, but dcast is generally faster for large datasets)
+      // Fill type depends on method: DESeq expects integers, limma expects reals
+      String fillValue = method.equals("DESeq") ? "NA_integer_" : "NA_real_";
+      connection.voidEval("countData <- data.table::dcast(" + INPUT_DATA +
+                          ", " + lhsFormula + " ~ `" + identifierColName + "`" +
+                          ", value.var = " + singleQuote(valueColName) +
+                          ", fill = " + fillValue + ")");
 
       // Read in the sample metadata
       List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
@@ -121,13 +152,6 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
                                 "groupA=" + rGroupA + "," +
                                 "groupB=" + rGroupB +
                               ")");
-
-      // TEMPORARY HACK FOR TESTING
-      // We dont have rnaseq data loaded yet (to my knowledge) so we are going to use mbio data and
-      // just convert it to counts. This is a hack and should be removed when we have real data
-      connection.voidEval("taxaColNames <- names(countData[, -c('" + computeEntityIdColName + "', as.character(" + dotNotatedIdColumnsString + "))])");
-      connection.voidEval("countData[, (taxaColNames) := lapply(.SD,function(x) {round(x*1000)}), .SDcols=taxaColNames]");
-      // END OF TEMP FOR TESTING
 
       connection.voidEval("countDataCollection <- veupathUtils::CountDataCollection(name=" + singleQuote(collectionMemberType) +
                                                                           ", data=countData" +

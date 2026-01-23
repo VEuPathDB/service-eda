@@ -64,25 +64,16 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       return false;
     }
 
-    if (data2 == null) {
-      LOG.info("Received CorrelationInputData for data2 is null. This is not allowed.");
-      return false;
-    }
-    String data2Type = data2.getDataType().toString().toLowerCase();
-    CollectionSpec data2Spec = data2.getCollectionSpec();
-    if (data2Type.equals("collection") && data2Spec == null) {
-      LOG.info("Received CorrelationInputData for data2 with a data type of 'collection' but no collection specification. This is not allowed.");
-      return false;
-    }
+    if (data2 != null) {
+      String data2Type = data2.getDataType().toString().toLowerCase();
+      CollectionSpec data2Spec = data2.getCollectionSpec();
+      if (data2Type.equals("collection") && data2Spec == null) {
+        LOG.info("Received CorrelationInputData for data2 with a data type of 'collection' but no collection specification. This is not allowed.");
+        return false;
+      }
 
-    if (data1Type.equals("metadata") && data2Type.equals("metadata")) {
-      LOG.info("Received CorrelationInputData for both data1 and data2 with a data type of 'metadata'. This is not allowed.");
-      return false;
-    }
-
-    if (data1Type.equals("collection") && data2Type.equals("collection")) {
-      if (isSameCollectionSpec(data1Spec, data2Spec)) {
-        LOG.info("Received CorrelationInputData for both data1 and data2 with the same collection specification. This is not allowed.");
+      if (data1Type.equals("metadata") && data2Type.equals("metadata")) {
+        LOG.info("Received CorrelationInputData for both data1 and data2 with a data type of 'metadata'. This is not allowed.");
         return false;
       }
     }
@@ -145,7 +136,8 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
       throw new IllegalArgumentException("Invalid data configuration. Any data type of `collection` must have a collection specification and data 1 and data 2 must not be the same.");
     }
 
-    boolean hasSecondCollection = computeConfig.getData1().getDataType().getValue().equals("collection") &&
+    boolean hasTwoCollections = computeConfig.getData1().getDataType().getValue().equals("collection") &&
+      computeConfig.getData2() != null &&
       computeConfig.getData2().getDataType().getValue().equals("collection");
 
     // bc of validation we know one or both is collection
@@ -157,29 +149,44 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     String entityId = collection.getEntityId();
     EntityDef entity = metadata.getEntity(entityId).orElseThrow();
 
-    if (hasSecondCollection) {
+    if (hasTwoCollections) {
       // The collection x collection case. Both data types are "collection".
       // we also know if both are collection, that we grabbed the first one already
 
       CollectionSpec collection2 = computeConfig.getData2().getCollectionSpec();
-      String entity2Id = collection2.getEntityId();
-      EntityDef entity2 = metadata.getEntity(entity2Id).orElseThrow();
 
-      // validate the collection variables are on the same entity or both are 1:1 with a shared parent entity
-      if (!entityId.equals(entity2Id) &&
-        !(metadata.getAncestors(entity).getFirst().getId().equals(metadata.getAncestors(entity2).getFirst().getId()) &&
-          !entity.isManyToOneWithParent() && !entity2.isManyToOneWithParent())
-      ) {
-        throw new IllegalArgumentException("Collection variables must be on the same entity or both be 1:1 with a shared parent entity.");
+      // If it's the same collection as collection1, we only need the one stream.
+      if (isSameCollectionSpec(collection, collection2)) {
+        LOG.info("Received identical CollectionSpecs for data1 and data2. Proceeding with self-correlation of data1.");
+        return List.of(
+          new StreamSpec(INPUT_DATA, entityId)
+            .addVars(getUtil().getCollectionMembers(collection))
+        );
+      } else {
+        String entity2Id = collection2.getEntityId();
+        EntityDef entity2 = metadata.getEntity(entity2Id).orElseThrow();
+
+        // validate the collection variables are on the same entity or both are 1:1 with a shared parent entity
+        if (!entityId.equals(entity2Id) &&
+          !(metadata.getAncestors(entity).getFirst().getId().equals(metadata.getAncestors(entity2).getFirst().getId()) &&
+            !entity.isManyToOneWithParent() && !entity2.isManyToOneWithParent())
+        ) {
+          throw new IllegalArgumentException("Collection variables must be on the same entity or both be 1:1 with a shared parent entity.");
+        }
+
+        return List.of(
+          new StreamSpec(INPUT_DATA, entityId)
+            .addVars(getUtil().getCollectionMembers(collection)),
+          new StreamSpec(INPUT_2_DATA, entity2Id)
+            .addVars(getUtil().getCollectionMembers(collection2))
+        );
       }
-
-      return List.of(
-        new StreamSpec(INPUT_DATA, entityId)
-          .addVars(getUtil().getCollectionMembers(collection)),
-        new StreamSpec(INPUT_2_DATA, entity2Id)
-          .addVars(getUtil().getCollectionMembers(collection2))
+    } else if (computeConfig.getData2() == null) {
+      LOG.info("Received no CorrelationInputData for data2. Proceeding with self-correlation of data1.");
+      return List.of(new StreamSpec(INPUT_DATA, entityId)
+        .addVars(getUtil().getCollectionMembers(collection))
       );
-    } else {
+    } else if (computeConfig.getData2().getDataType().getValue().equals("metadata")) {
       // The collection x metadata case. Either data1 is metadata or data2 is metadata.
       // either way, we find metadata based on the collection chosen
 
@@ -190,6 +197,8 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         .addVars(getUtil().getCollectionMembers(collection))
         .addVars(metadataVariables)
       );
+    } else {
+      throw new IllegalArgumentException("Invalid data configuration.");
     }
   }
 
@@ -216,8 +225,12 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         featureFilterThresholds.getStandardDeviation() != null ?
         ",stdDevThreshold=" + featureFilterThresholds.getStandardDeviation() : "";
 
-    boolean hasSecondCollection = computeConfig.getData1().getDataType().getValue().equals("collection") &&
+    boolean hasTwoCollections = computeConfig.getData1().getDataType().getValue().equals("collection") &&
+      computeConfig.getData2() != null &&
       computeConfig.getData2().getDataType().getValue().equals("collection");
+
+    boolean hasIdenticalCollections = hasTwoCollections &&
+      isSameCollectionSpec(computeConfig.getData1().getCollectionSpec(), computeConfig.getData2().getCollectionSpec());
 
     // Wrangle the (first) collection into helpful types
     // bc of validation we know one or both is collection
@@ -241,7 +254,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
 
-    if (hasSecondCollection) {
+    if (hasTwoCollections && !hasIdenticalCollections) {
       dataStream.put(INPUT_2_DATA, getWorkspace().openStream(INPUT_2_DATA));
     }
 
@@ -267,7 +280,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         dataClassRString = "veupathUtils::CollectionWithMetadata";
       }
 
-      if (hasSecondCollection) {
+      if (hasTwoCollections && !hasIdenticalCollections) {
         // The collection x collection case. Both data types are "collection".
 
         // Get the second collection
@@ -325,8 +338,27 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
           varianceThresholdRParam +
           stdDevThresholdRParam +
           ", verbose=TRUE)");
+          
+      } else if (computeConfig.getData2() == null || (hasIdenticalCollections && hasTwoCollections)) {
+        // This is the self-correlation case. We only have one collection.
+        connection.voidEval("print('Proceeding with self-correlation of data1.')");
 
-      } else {
+        connection.voidEval("collectionData <- " + INPUT_DATA);
+
+        connection.voidEval("abundanceData <- " + dataClassRString + "(name= " + singleQuote(collectionType) + ",data=collectionData" +
+          ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+          ", ancestorIdColumns=as.character(" + dotNotatedEntityIdColumnsString + ")" +
+          ", imputeZero=TRUE)");
+
+        // Run correlation!
+        connection.voidEval("computeResult <- veupathUtils::selfCorrelation(data=abundanceData  " +
+          ", method=" + singleQuote(method) +
+          proportionNonZeroThresholdRParam +
+          varianceThresholdRParam +
+          stdDevThresholdRParam +
+          ", verbose=TRUE)");
+
+      } else if (computeConfig.getData2().getDataType().getValue().equals("metadata")) {
         // This is the collection x Metadata case. The second data type is metadata.
 
         // Filter metadata variables into only those that are appropriate for correlation.
@@ -364,6 +396,8 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
           ", metadataIsFirst=" + metadataIsFirst +
           ", verbose=TRUE)");
 
+      } else {
+        throw new IllegalArgumentException("Invalid data configuration.");
       }
 
       // Write results

@@ -1097,7 +1097,9 @@ types:
     properties:
       correlationMethod: CorrelationMethod
       data1: CorrelationInputData
-      data2: CorrelationInputData
+      data2:
+        type: CorrelationInputData
+        required: false
   CorrelationInputData:
     type: object
     properties:

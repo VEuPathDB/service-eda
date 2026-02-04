@@ -140,7 +140,7 @@ public class Resources extends ContainerResources {
   public Resources(Options opts) {
     super(opts);
 
-    overrideDbConfig(opts);
+    //overrideDbConfig(opts);
 
     // initialize auth and required DBs
     DbManager.initUserDatabase(opts);

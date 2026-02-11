@@ -67,8 +67,6 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
     String valueColName = util.toColNameOrEmpty(valueVarSpec);
 
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
-    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
-    String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String method = computeConfig.getDifferentialExpressionMethod().getValue().equals("DESeq") ? "DESeq"
       : (computeConfig.getDifferentialExpressionMethod().getValue().equals("limma") ? "limma" : "unknown");
     VariableSpec comparisonVariableSpec = computeConfig.getComparator().getVariable();
@@ -77,11 +75,13 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
     List<LabeledRange> groupB =  computeConfig.getComparator().getGroupB();
     String pValueFloor = computeConfig.getPValueFloor() != null ? computeConfig.getPValueFloor() : "1e-200"; // Same default as set in the frontend and microbiomeComputations
 
-    // Get record id columns
+    // Get record id columns (ancestor entity IDs, ordered from immediate parent to root)
     List<VariableDef> idColumns = new ArrayList<>();
     for (EntityDef ancestor : meta.getAncestors(entity)) {
       idColumns.add(ancestor.getIdColumnDef());
     }
+    // The immediate parent entity (sample entity) is the record ID for the collection
+    String sampleEntityIdColName = VariableDef.toDotNotation(idColumns.get(0));
 
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
@@ -89,18 +89,26 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting differential expression computation')");
 
-      // Read tall format data (3 columns + ancestors)
-      List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
+      // Read tall format data: gene ID, count, and ancestor ID columns (no gene entity obs ID needed)
+      List<VariableSpec> computeInputVars = new ArrayList<>();
       computeInputVars.add(identifierVarSpec);  // Gene ID column
       computeInputVars.add(valueVarSpec);       // Count/expression column
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
 
-      // Build dcast formula: sampleID + ancestor1 + ... ~ geneIdColumn
+      // Build dcast formula: sampleID + higherAncestors... ~ geneIdColumn
+      // Only use ancestor ID columns (sample entity ID etc.) as row identifiers — NOT the gene
+      // entity observation ID (which is unique per row and would prevent the pivot collapsing
+      // rows to one per sample).
       StringBuilder lhsFormula = new StringBuilder();
-      lhsFormula.append("`").append(computeEntityIdColName).append("`");
+      boolean firstIdCol = true;
       for (VariableDef idCol : idColumns) {
-        lhsFormula.append(" + `").append(VariableDef.toDotNotation(idCol)).append("`");
+        if (firstIdCol) {
+          lhsFormula.append("`").append(VariableDef.toDotNotation(idCol)).append("`");
+          firstIdCol = false;
+        } else {
+          lhsFormula.append(" + `").append(VariableDef.toDotNotation(idCol)).append("`");
+        }
       }
 
       // Pivot from tall to wide: gene ID values become column names
@@ -113,12 +121,14 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
                           ", value.var = " + singleQuote(valueColName) +
                           ", fill = " + fillValue + ")");
 
-      // Read in the sample metadata
+      // Read in the sample metadata: comparator variable + sample entity ID
       List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
-      sampleMetadataVars.add(computeEntityIdVarSpec);
+      sampleMetadataVars.add(idColumns.get(0));
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
+      // Deduplicate: tall format has one row per gene per sample; we need one row per sample
+      connection.voidEval(INPUT_DATA + " <- unique(" + INPUT_DATA + ")");
       connection.voidEval("sampleMetadata <- veupathUtils::SampleMetadata(data = " + INPUT_DATA
-                                + ", recordIdColumn = " + singleQuote(computeEntityIdColName)
+                                + ", recordIdColumn = " + singleQuote(sampleEntityIdColName)
                                 + ")");
 
 
@@ -156,7 +166,7 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
       connection.voidEval("countDataCollection <- veupathUtils::CountDataCollection(name=" + singleQuote(collectionMemberType) +
                                                                           ", data=countData" +
                                                                           ", sampleMetadata=sampleMetadata" +
-                                                                          ", recordIdColumn=" + singleQuote(computeEntityIdColName) +
+                                                                          ", recordIdColumn=" + singleQuote(sampleEntityIdColName) +
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
                                                                           ", imputeZero=TRUE)");
 

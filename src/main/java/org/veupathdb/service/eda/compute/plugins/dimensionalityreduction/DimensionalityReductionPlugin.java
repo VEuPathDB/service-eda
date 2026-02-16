@@ -1,9 +1,7 @@
 package org.veupathdb.service.eda.compute.plugins.dimensionalityreduction;
 
-import org.gusdb.fgputil.ListBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
-import org.veupathdb.service.eda.common.model.CollectionDef;
 import org.veupathdb.service.eda.common.model.EntityDef;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
@@ -20,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuote;
+
 public class DimensionalityReductionPlugin extends AbstractPlugin<DimensionalityReductionPluginRequest, DimensionalityReductionComputeConfig> {
 
   private static final String INPUT_DATA = "dimensionality_reduction_input";
@@ -31,8 +31,11 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
   @NotNull
   @Override
   public List<StreamSpec> getStreamSpecs() {
-    return List.of(new StreamSpec(INPUT_DATA, getConfig().getCollectionVariable().getEntityId())
-      .addVars(getUtil().getCollectionMembers(getConfig().getCollectionVariable())));
+    VariableSpec identifierVar = getConfig().getIdentifierVariable();
+    VariableSpec valueVar = getConfig().getValueVariable();
+    return List.of(new StreamSpec(INPUT_DATA, identifierVar.getEntityId())
+      .addVar(identifierVar)
+      .addVar(valueVar));
   }
 
   @Override
@@ -41,48 +44,75 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
     DimensionalityReductionComputeConfig computeConfig = getConfig();
     PluginUtil util = getUtil();
     ReferenceMetadata meta = getContext().getReferenceMetadata();
-    CollectionDef collection = meta.getCollection(computeConfig.getCollectionVariable()).orElseThrow();
-    String collectionMemberType = collection.getMember() == null ? "unknown" : collection.getMember();
-    String entityId = computeConfig.getCollectionVariable().getEntityId();
+
+    VariableSpec identifierVarSpec = computeConfig.getIdentifierVariable();
+    VariableSpec valueVarSpec = computeConfig.getValueVariable();
+    String entityId = identifierVarSpec.getEntityId();
+    String collectionMemberType = "gene";
+
+    String identifierColName = util.toColNameOrEmpty(identifierVarSpec);
+    String valueColName = util.toColNameOrEmpty(valueVarSpec);
+
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
-    VariableDef computeEntityIdVarSpec = util.getEntityIdVarSpec(entityId);
-    String computeEntityIdColName = util.toColNameOrEmpty(computeEntityIdVarSpec);
     String nPCs = computeConfig.getNPCs() == null ? "2" : computeConfig.getNPCs().toString();
-    HashMap<String, InputStream> dataStream = new HashMap<>();
-    dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
+
     List<VariableDef> idColumns = new ArrayList<>();
     for (EntityDef ancestor : meta.getAncestors(entity)) {
       idColumns.add(ancestor.getIdColumnDef());
     }
+    String sampleEntityIdColName = VariableDef.toDotNotation(idColumns.get(0));
+
+    HashMap<String, InputStream> dataStream = new HashMap<>();
+    dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting dimensionality reduction computation')");
 
-      List<VariableSpec> computeInputVars = ListBuilder.asList(computeEntityIdVarSpec);
-      computeInputVars.addAll(util.getCollectionMembers(computeConfig.getCollectionVariable()));
+      List<VariableSpec> computeInputVars = new ArrayList<>();
+      computeInputVars.add(identifierVarSpec);
+      computeInputVars.add(valueVarSpec);
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+
+      StringBuilder lhsFormula = new StringBuilder();
+      boolean firstIdCol = true;
+      for (VariableDef idCol : idColumns) {
+        if (firstIdCol) {
+          lhsFormula.append("`").append(VariableDef.toDotNotation(idCol)).append("`");
+          firstIdCol = false;
+        } else {
+          lhsFormula.append(" + `").append(VariableDef.toDotNotation(idCol)).append("`");
+        }
+      }
+
+      connection.voidEval("abundanceData <- data.table::dcast(" + INPUT_DATA +
+        ", " + lhsFormula + " ~ `" + identifierColName + "`" +
+        ", value.var = " + singleQuote(valueColName) +
+        ", fill = NA_real_)");
+
       List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
       StringBuilder dotNotatedIdColumnsString = new StringBuilder("c(");
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {
         if (first) {
           first = false;
-          dotNotatedIdColumnsString.append(PluginUtil.singleQuote(idCol));
+          dotNotatedIdColumnsString.append(singleQuote(idCol));
         } else {
-          dotNotatedIdColumnsString.append(",").append(PluginUtil.singleQuote(idCol));
+          dotNotatedIdColumnsString.append(",").append(singleQuote(idCol));
         }
       }
       dotNotatedIdColumnsString.append(")");
 
-      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(name=" + PluginUtil.singleQuote(collectionMemberType) + ",data=" + INPUT_DATA +
-        ",recordIdColumn=" + PluginUtil.singleQuote(computeEntityIdColName) +
-        ",ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
-        ",imputeZero=TRUE)");
+      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(" +
+        "name=" + singleQuote(collectionMemberType) +
+        ", data=abundanceData" +
+        ", recordIdColumn=" + singleQuote(sampleEntityIdColName) +
+        ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
+        ", imputeZero=TRUE)");
 
       connection.voidEval("pcaOutput <- veupathUtils::pca(abundDT, " +
-        "nPCs=" + PluginUtil.singleQuote(nPCs) + ", " +
-        "verbose=TRUE)");
+        "nPCs=" + singleQuote(nPCs) + ", verbose=TRUE)");
+
       String dataCmd = "writeData(pcaOutput, NULL, TRUE)";
       String metaCmd = "writeMeta(pcaOutput, NULL, TRUE)";
 

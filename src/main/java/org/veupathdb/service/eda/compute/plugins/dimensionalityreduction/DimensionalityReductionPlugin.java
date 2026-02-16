@@ -90,7 +90,8 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
         ", value.var = " + singleQuote(valueColName) +
         ", fill = NA_real_)");
 
-      List<String> dotNotatedIdColumns = idColumns.stream().map(VariableDef::toDotNotation).toList();
+      // ancestorIdColumns excludes idColumns.get(0) since that is already recordIdColumn
+      List<String> dotNotatedIdColumns = idColumns.stream().skip(1).map(VariableDef::toDotNotation).toList();
       StringBuilder dotNotatedIdColumnsString = new StringBuilder("c(");
       boolean first = true;
       for (String idCol : dotNotatedIdColumns) {

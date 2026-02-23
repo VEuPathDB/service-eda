@@ -291,7 +291,7 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         // if were not on the same entity, we can remove the collection entity id from the id columns
         if (!isSameEntity) {
           entityIdColumns.remove(revisedComputeEntityIdVarSpec);
-          entity2IdColumns.remove(entity2IdVarSpec);
+          entity2IdColumns.remove(revisedComputeEntityIdVarSpec);
         }
 
         // read both sets of collection data into R

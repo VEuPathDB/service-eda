@@ -278,7 +278,6 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         // Wrangle into helpful types
         EntityDef entity2 = metadata.getEntity(entity2Id).orElseThrow();
         EntityDef parentEntity = metadata.getAncestors(entity).getFirst();
-        VariableDef entity2IdVarSpec = util.getEntityIdVarSpec(entity2Id);
         VariableDef parentEntityIdVarSpec = util.getEntityIdVarSpec(parentEntity.getId());
         VariableDef revisedComputeEntityIdVarSpec = isSameEntity ? computeEntityIdVarSpec : parentEntityIdVarSpec;
         String revisedComputeEntityIdColName = util.toColNameOrEmpty(revisedComputeEntityIdVarSpec);
@@ -288,13 +287,31 @@ public class CorrelationPlugin extends AbstractPlugin<CorrelationPluginRequest, 
         for (EntityDef ancestor : metadata.getAncestors(entity2)) {
           entity2IdColumns.add(ancestor.getIdColumnDef());
         }
-        // if were not on the same entity, we can remove the collection entity id from the id columns
+
+        // When entities differ, the recordIdColumn becomes the shared parent ID.
+        // Remove the parent from ancestor ID columns to avoid declaring it as both
+        // recordIdColumn and ancestorIdColumn. Also re-read inputData with the
+        // parent ID instead of entity1's own ID (which R can't use as a non-numeric column).
         if (!isSameEntity) {
           entityIdColumns.remove(revisedComputeEntityIdVarSpec);
           entity2IdColumns.remove(revisedComputeEntityIdVarSpec);
+
+          // Re-read inputData with corrected columns: parent ID + collection members + remaining ancestors
+          List<VariableSpec> revisedCollectionInputVars = new ArrayList<>();
+          revisedCollectionInputVars.add(revisedComputeEntityIdVarSpec);
+          revisedCollectionInputVars.addAll(util.getCollectionMembers(collection));
+          revisedCollectionInputVars.addAll(entityIdColumns);
+          connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, revisedCollectionInputVars));
         }
 
-        // read both sets of collection data into R
+        // Recompute ancestor ID column strings after removal
+        dotNotatedEntityIdColumns = entityIdColumns.stream().map(VariableDef::toDotNotation).toList();
+        dotNotatedEntityIdColumnsString = PluginUtil.listToRVector(dotNotatedEntityIdColumns);
+
+        LOG.info("Collection x collection correlation: entity1={}, entity2={}, isSameEntity={}, recordIdColumn={}",
+          entityId, entity2Id, isSameEntity, revisedComputeEntityIdColName);
+
+        // Read inputData into collectionData, read input2Data
         connection.voidEval("collectionData <- " + INPUT_DATA);
         List<VariableSpec> collection2InputVars = ListBuilder.asList(revisedComputeEntityIdVarSpec);
         collection2InputVars.addAll(util.getCollectionMembers(collection2));

@@ -112,11 +112,11 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
       
       connection.voidEval("variables <- veupathUtils::merge(variables, computedVariables)");
 
-      // Set axis variables
-      connection.voidEval("xIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getXAxisVariable().getVariableId() + "', variables)");
-      connection.voidEval("variables[[xIndex]]@plotReference <- veupathUtils::PlotReference(value = 'xAxis')");
-      connection.voidEval("yIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getYAxisVariable().getVariableId() + "', variables)");
-      connection.voidEval("variables[[yIndex]]@plotReference <- veupathUtils::PlotReference(value = 'yAxis')");
+      // NOTE: plotReference assignment previously happened here, overriding the
+      // "undefined" values from the R compute. This is no longer needed because
+      // veupathUtils/R/method-pca.R now sets plotReference to "xAxis"/"yAxis"
+      // at the source (it only generates two PCs). If we ever support more than
+      // two PCs with user-selectable axis assignment, this will need to be revisited.
 
 
       String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +

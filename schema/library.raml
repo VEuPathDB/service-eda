@@ -1538,7 +1538,8 @@ types:
   DifferentialExpressionComputeConfig:
     type: object
     properties:
-      collectionVariable: CollectionSpec
+      identifierVariable: VariableSpec
+      valueVariable: VariableSpec
       comparator: ComparatorSpec
       differentialExpressionMethod: DifferentialExpressionMethod
       pValueFloor:
@@ -1573,7 +1574,8 @@ types:
   DimensionalityReductionComputeConfig:
     type: object
     properties:
-      collectionVariable: CollectionSpec
+      identifierVariable: VariableSpec
+      valueVariable: VariableSpec
       nPCs: number
   DimensionalityReductionPluginRequest:
     type: ComputeRequestBase

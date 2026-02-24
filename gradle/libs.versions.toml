@@ -41,6 +41,7 @@ vpdb-fgputil-db = { module = "org.gusdb:fgputil-db", version.ref = "fgputil" }
 
 vpdb-edaSubsetting = { module = "org.veupathdb.lib:eda-subsetting", version = "7.0.1" }
 vpdb-coreLib = { module = "org.veupathdb.lib:jaxrs-container-core", version = "10.0.3" }
+
 vpdb-hashId = { module = "org.veupathdb.lib:hash-id", version = "1.1.0" }
 vpdb-asyncPlatform = { module = "org.veupathdb.lib:compute-platform", version = "1.8.6" }
 vpdb-s34k = { module = "org.veupathdb.lib.s3:s34k-minio", version = "0.7.2+s34k-0.11.0" }

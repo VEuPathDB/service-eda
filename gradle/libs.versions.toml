@@ -12,7 +12,7 @@ containerUtils = { id = "org.veupathdb.lib.gradle.container.container-utils", ve
 [libraries]
 rServe = { module = "org.rosuda.REngine:Rserve", version = "1.8.1" }
 
-jersey-server = { module = "org.glassfish.jersey.core:jersey-server", version = "3.1.10" }
+jersey-server = { module = "org.glassfish.jersey.core:jersey-server", version = "4.0.2" }
 
 config-cli-api = { module = "info.picocli:picocli", version = "4.7.7" }
 config-cli-generator = { module = "info.picocli:picocli-codegen", version = "4.7.7" }

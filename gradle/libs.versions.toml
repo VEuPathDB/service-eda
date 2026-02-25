@@ -49,9 +49,9 @@ vpdb-yaml = { module = "org.veupathdb.lib:jackson-singleton-yaml", version = "4.
 
 # Testing
 
-junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version = "5.12.0" }
-junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version = "5.12.0" }
-junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "1.12.0" }
+junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version = "6.0.3" }
+junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version = "6.0.3" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.3" }
 
 mockito-core = { module = "org.mockito:mockito-core", version = "5.15.2" }
 

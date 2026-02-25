@@ -14,8 +14,8 @@ rServe = { module = "org.rosuda.REngine:Rserve", version = "1.8.1" }
 
 jersey-server = { module = "org.glassfish.jersey.core:jersey-server", version = "3.1.10" }
 
-config-cli-api = { module = "info.picocli:picocli", version = "4.7.6" }
-config-cli-generator = { module = "info.picocli:picocli-codegen", version = "4.7.6" }
+config-cli-api = { module = "info.picocli:picocli", version = "4.7.7" }
+config-cli-generator = { module = "info.picocli:picocli-codegen", version = "4.7.7" }
 
 logging-slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.17" }
 logging-log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }

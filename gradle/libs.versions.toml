@@ -55,7 +55,7 @@ junit-launcher = { module = "org.junit.platform:junit-platform-launcher", versio
 
 mockito-core = { module = "org.mockito:mockito-core", version = "5.15.2" }
 
-test-await = { module = "org.awaitility:awaitility", version = "4.2.2" }
+test-await = { module = "org.awaitility:awaitility", version = "4.3.0" }
 
 vpdb-test-utils = { module = "org.veupathdb.lib.test:test-utils", version = "1.1.2" }
 

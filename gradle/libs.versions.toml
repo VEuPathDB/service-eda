@@ -27,7 +27,7 @@ metrics-prometheus-client = { module = "io.prometheus:simpleclient_common", vers
 
 sql-imports = { module = "io.vulpine.lib:sql-import", version = "0.2.1" }
 sql-extras = { module = "io.vulpine.lib:lib-query-util", version = "2.1.0" }
-sql-stubDb = { module = "org.hsqldb:hsqldb", version = "2.7.1" }
+sql-stubDb = { module = "org.hsqldb:hsqldb", version = "2.7.4" }
 
 util-checkedLambdas = { module = "io.vulpine.lib:Jackfish", version = "1.1.0" }
 util-idGenerator = { module = "com.devskiller.friendly-id:friendly-id", version = "1.1.0" }

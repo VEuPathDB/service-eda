@@ -90,6 +90,12 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
         ", value.var = " + singleQuote(valueColName) +
         ", fill = NA_real_)");
 
+      // data.table::dcast sorts rows case-sensitively (ASCII order), but the subset
+      // service uses a case-insensitive collation. Restore the original sample order
+      // from INPUT_DATA so the PCA output matches the order the merge service expects.
+      connection.voidEval("sampleOrder <- unique(" + INPUT_DATA + "[[" + singleQuote(sampleEntityIdColName) + "]])");
+      connection.voidEval("abundanceData <- abundanceData[match(sampleOrder, abundanceData[[" + singleQuote(sampleEntityIdColName) + "]])]");
+
       // ancestorIdColumns excludes idColumns.get(0) since that is already recordIdColumn
       List<String> dotNotatedIdColumns = idColumns.stream().skip(1).map(VariableDef::toDotNotation).toList();
       StringBuilder dotNotatedIdColumnsString = new StringBuilder("c(");

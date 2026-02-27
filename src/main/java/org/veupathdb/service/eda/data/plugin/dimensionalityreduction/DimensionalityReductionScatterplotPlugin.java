@@ -97,9 +97,12 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
     .filter(var -> var.getVariableSpec().getVariableId().equals(spec.getYAxisVariable().getVariableId()))
     .findFirst().orElseThrow().getVariableSpec();
 
+    String recordIdColumnName = getUtil().toColNameOrEmpty(getUtil().getEntityIdVarSpec(spec.getOutputEntityId()));
+    String returnPointIds = spec.getReturnPointIds() != null ? String.valueOf(spec.getReturnPointIds()).toUpperCase() : "FALSE";
 
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval(getUtil().getVoidEvalFreadCommand(DEFAULT_SINGLE_STREAM_NAME,
+          getUtil().getEntityIdVarSpec(spec.getOutputEntityId()),
           xComputedVarSpec,
           yComputedVarSpec,
           spec.getOverlayVariable()));
@@ -122,7 +125,9 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
       String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
         valueSpec +
         "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" +
-        deprecatedShowMissingness + "')";
+        deprecatedShowMissingness +
+        "', idColumn = '" + recordIdColumnName +
+        "', returnPointIds = " + returnPointIds + ")";
       RServeClient.streamResult(connection, command, out);
     });
   }

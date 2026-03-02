@@ -121,12 +121,19 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
                           ", value.var = " + singleQuote(valueColName) +
                           ", fill = " + fillValue + ")");
 
+      // data.table::dcast sorts rows case-sensitively (ASCII order), but the subset
+      // service uses a case-insensitive collation. Restore the original sample order
+      // from INPUT_DATA so countData matches the order the merge service expects.
+      connection.voidEval("sampleOrder <- unique(" + INPUT_DATA + "[[" + singleQuote(sampleEntityIdColName) + "]])");
+      connection.voidEval("countData <- countData[match(sampleOrder, countData[[" + singleQuote(sampleEntityIdColName) + "]])]");
+
       // Read in the sample metadata: comparator variable + sample entity ID
       List<VariableSpec> sampleMetadataVars = ListBuilder.asList(comparisonVariableSpec);
       sampleMetadataVars.add(idColumns.get(0));
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, sampleMetadataVars));
       // Deduplicate: tall format has one row per gene per sample; we need one row per sample
       connection.voidEval(INPUT_DATA + " <- unique(" + INPUT_DATA + ")");
+
       connection.voidEval("sampleMetadata <- veupathUtils::SampleMetadata(data = " + INPUT_DATA
                                 + ", recordIdColumn = " + singleQuote(sampleEntityIdColName)
                                 + ")");

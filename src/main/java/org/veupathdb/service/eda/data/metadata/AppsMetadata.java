@@ -53,7 +53,7 @@ public class AppsMetadata {
   public static final List<String> NON_VB_GENOMICS_PROJECTS = List.of(
     "AmoebaDB", "CryptoDB", "FungiDB", "GiardiaDB", "HostDB",
     "MicrosporidiaDB", "PiroplasmaDB", "PlasmoDB", "ToxoDB",
-    "TrichDB", "TriTrypDB", "EuPathDB");
+    "TrichDB", "TriTrypDB", "UniDB");
   public static final List<String> MBIO_PLUS_GENOMICS_PROJECTS = new ListBuilder<String>()
     .add(MICROBIOME_PROJECT)
     .add(VECTORBASE_PROJECT)

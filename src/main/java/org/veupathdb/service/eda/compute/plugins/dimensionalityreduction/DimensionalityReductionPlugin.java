@@ -117,8 +117,10 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
         ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
         ", imputeZero=TRUE)");
 
+      String normalize = computeConfig.getNormalize() != null && computeConfig.getNormalize() ? "TRUE" : "FALSE";
+
       connection.voidEval("pcaOutput <- veupathUtils::pca(abundDT, " +
-        "nPCs=" + singleQuote(nPCs) + ", verbose=TRUE)");
+        "nPCs=" + singleQuote(nPCs) + ", normalize=" + normalize + ", verbose=TRUE)");
 
       String dataCmd = "writeData(pcaOutput, NULL, TRUE)";
       String metaCmd = "writeMeta(pcaOutput, NULL, TRUE)";

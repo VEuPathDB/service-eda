@@ -170,16 +170,18 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
                                 "groupB=" + rGroupB +
                               ")");
 
-      connection.voidEval("countDataCollection <- veupathUtils::CountDataCollection(name=" + singleQuote(collectionMemberType) +
+      String collectionClass = method.equals("DESeq") ? "CountDataCollection" : "ArrayDataCollection";
+      String imputeZero = method.equals("DESeq") ? "TRUE" : "FALSE";
+      connection.voidEval("dataCollection <- veupathUtils::" + collectionClass + "(name=" + singleQuote(collectionMemberType) +
                                                                           ", data=countData" +
                                                                           ", sampleMetadata=sampleMetadata" +
                                                                           ", recordIdColumn=" + singleQuote(sampleEntityIdColName) +
                                                                           ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
-                                                                          ", imputeZero=TRUE)");
+                                                                          ", imputeZero=" + imputeZero + ")");
 
-      
+
       connection.voidEval("computeResult <- veupathUtils::differentialExpression(" +
-                                                          "collection=countDataCollection" +
+                                                          "collection=dataCollection" +
                                                           ", comparator=comparator" +
                                                           ", method=" + singleQuote(method) +
                                                           ", pValueFloor=as.numeric(" + singleQuote(pValueFloor) + ")" +

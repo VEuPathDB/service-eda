@@ -46,6 +46,7 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
       .pattern()
         .element("overlayVariable")
           .required(false)
+          .minValues(2)
           .maxValues(8)
           .description("Variable must be a number, or have 8 or fewer values, and be of the same or a parent entity as the X-axis variable.")
       .pattern()

@@ -12,10 +12,11 @@ types:
       identifierVariable: VariableSpec
       valueVariable: VariableSpec
       nPCs: number
-      normalize:
-        type: boolean
-        required: false
-      # DimensionalityReductionMethod: DimensionalityReductionMethod
+      dataFormat: DataFormat
+
+  DataFormat:
+    type: string
+    enum: ['rawCounts', 'normalizedValues']
 
 # For future use
   # DimensionalityReductionMethod:

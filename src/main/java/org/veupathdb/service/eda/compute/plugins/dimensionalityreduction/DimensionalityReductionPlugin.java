@@ -9,6 +9,7 @@ import org.veupathdb.service.eda.common.plugin.util.PluginUtil;
 import org.veupathdb.service.eda.compute.RServe;
 import org.veupathdb.service.eda.compute.plugins.AbstractPlugin;
 import org.veupathdb.service.eda.compute.plugins.PluginContext;
+import org.veupathdb.service.eda.generated.model.DataFormat;
 import org.veupathdb.service.eda.generated.model.DimensionalityReductionComputeConfig;
 import org.veupathdb.service.eda.generated.model.DimensionalityReductionPluginRequest;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
@@ -55,6 +56,7 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
 
     EntityDef entity = meta.getEntity(entityId).orElseThrow();
     String nPCs = computeConfig.getNPCs() == null ? "2" : computeConfig.getNPCs().toString();
+    boolean isRawCounts = computeConfig.getDataFormat() == DataFormat.RAWCOUNTS;
 
     List<VariableDef> idColumns = new ArrayList<>();
     for (EntityDef ancestor : meta.getAncestors(entity)) {
@@ -85,16 +87,18 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
         }
       }
 
-      connection.voidEval("abundanceData <- data.table::dcast(" + INPUT_DATA +
+      // Fill type depends on data format: raw counts are integers, normalized values are reals
+      String fillValue = isRawCounts ? "NA_integer_" : "NA_real_";
+      connection.voidEval("inputData <- data.table::dcast(" + INPUT_DATA +
         ", " + lhsFormula + " ~ `" + identifierColName + "`" +
         ", value.var = " + singleQuote(valueColName) +
-        ", fill = NA_real_)");
+        ", fill = " + fillValue + ")");
 
       // data.table::dcast sorts rows case-sensitively (ASCII order), but the subset
       // service uses a case-insensitive collation. Restore the original sample order
       // from INPUT_DATA so the PCA output matches the order the merge service expects.
       connection.voidEval("sampleOrder <- unique(" + INPUT_DATA + "[[" + singleQuote(sampleEntityIdColName) + "]])");
-      connection.voidEval("abundanceData <- abundanceData[match(sampleOrder, abundanceData[[" + singleQuote(sampleEntityIdColName) + "]])]");
+      connection.voidEval("inputData <- inputData[match(sampleOrder, inputData[[" + singleQuote(sampleEntityIdColName) + "]])]");
 
       // ancestorIdColumns excludes idColumns.get(0) since that is already recordIdColumn
       List<String> dotNotatedIdColumns = idColumns.stream().skip(1).map(VariableDef::toDotNotation).toList();
@@ -110,16 +114,21 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
       }
       dotNotatedIdColumnsString.append(")");
 
-      connection.voidEval("abundDT <- microbiomeComputations::AbundanceData(" +
+      // Use CountDataCollection for raw counts (validates integers, imputes zeros)
+      // Use ArrayDataCollection for normalized values (accepts continuous data, no imputation)
+      String collectionClass = isRawCounts ? "CountDataCollection" : "ArrayDataCollection";
+      String imputeZero = isRawCounts ? "TRUE" : "FALSE";
+      connection.voidEval("dataCollection <- veupathUtils::" + collectionClass + "(" +
         "name=" + singleQuote(collectionMemberType) +
-        ", data=abundanceData" +
+        ", data=inputData" +
         ", recordIdColumn=" + singleQuote(sampleEntityIdColName) +
         ", ancestorIdColumns=as.character(" + dotNotatedIdColumnsString + ")" +
-        ", imputeZero=TRUE)");
+        ", imputeZero=" + imputeZero + ")");
 
-      String normalize = computeConfig.getNormalize() != null && computeConfig.getNormalize() ? "TRUE" : "FALSE";
+      // Normalize raw counts with DESeq2 median-of-ratios; pre-normalized data skips this
+      String normalize = isRawCounts ? "TRUE" : "FALSE";
 
-      connection.voidEval("pcaOutput <- veupathUtils::pca(abundDT, " +
+      connection.voidEval("pcaOutput <- veupathUtils::pca(dataCollection, " +
         "nPCs=" + singleQuote(nPCs) + ", normalize=" + normalize + ", verbose=TRUE)");
 
       String dataCmd = "writeData(pcaOutput, NULL, TRUE)";

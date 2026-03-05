@@ -1216,6 +1216,11 @@ types:
     type: object
     properties:
       //: DataElementConstraint
+  DataFormat:
+    type: string
+    enum:
+      - rawCounts
+      - normalizedValues
   DataPluginRequestBase:
     type: object
     additionalProperties: false
@@ -1577,9 +1582,7 @@ types:
       identifierVariable: VariableSpec
       valueVariable: VariableSpec
       nPCs: number
-      normalize:
-        type: boolean
-        required: false
+      dataFormat: DataFormat
   DimensionalityReductionPluginRequest:
     type: ComputeRequestBase
     properties:

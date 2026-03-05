@@ -114,12 +114,16 @@ public class DifferentialExpressionPlugin extends AbstractPlugin<DifferentialExp
       // Pivot from tall to wide: gene ID values become column names
       // Using data.table::dcast over tidyr::pivot_wider for performance reasons
       // (not specifically benchmarked in this context, but dcast is generally faster for large datasets)
-      // Fill type depends on method: DESeq expects integers, limma expects reals
+      // Fill type depends on method: DESeq expects integers, limma expects reals.
+      // fun.aggregate handles genes shared across multiple arrays (e.g. control probes):
+      // for DESeq raw counts we round the mean back to integer; for limma plain mean.
       String fillValue = method.equals("DESeq") ? "NA_integer_" : "NA_real_";
+      String funAggregate = method.equals("DESeq") ? "function(x) as.integer(round(mean(x, na.rm=TRUE)))" : "function(x) mean(x, na.rm=TRUE)";
       connection.voidEval("countData <- data.table::dcast(" + INPUT_DATA +
                           ", " + lhsFormula + " ~ `" + identifierColName + "`" +
                           ", value.var = " + singleQuote(valueColName) +
-                          ", fill = " + fillValue + ")");
+                          ", fill = " + fillValue +
+                          ", fun.aggregate = " + funAggregate + ")");
 
       // data.table::dcast sorts rows case-sensitively (ASCII order), but the subset
       // service uses a case-insensitive collation. Restore the original sample order

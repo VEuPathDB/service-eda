@@ -87,12 +87,16 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
         }
       }
 
-      // Fill type depends on data format: raw counts are integers, normalized values are reals
+      // Fill type depends on data format: raw counts are integers, normalized values are reals.
+      // fun.aggregate handles genes shared across multiple arrays (e.g. control probes):
+      // for raw counts we round the mean back to integer; for normalized values plain mean.
       String fillValue = isRawCounts ? "NA_integer_" : "NA_real_";
+      String funAggregate = isRawCounts ? "function(x) as.integer(round(mean(x, na.rm=TRUE)))" : "function(x) mean(x, na.rm=TRUE)";
       connection.voidEval("inputData <- data.table::dcast(" + INPUT_DATA +
         ", " + lhsFormula + " ~ `" + identifierColName + "`" +
         ", value.var = " + singleQuote(valueColName) +
-        ", fill = " + fillValue + ")");
+        ", fill = " + fillValue +
+        ", fun.aggregate = " + funAggregate + ")");
 
       // data.table::dcast sorts rows case-sensitively (ASCII order), but the subset
       // service uses a case-insensitive collation. Restore the original sample order

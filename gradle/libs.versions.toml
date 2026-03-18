@@ -5,7 +5,7 @@ log4j = "2.25.3"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version = "2.3.20" }
-shadowJar = { id = "com.gradleup.shadow", version = "9.3.1" }
+shadowJar = { id = "com.gradleup.shadow", version = "9.4.0" }
 containerUtils = { id = "org.veupathdb.lib.gradle.container.container-utils", version = "5.0.5" }
 
 

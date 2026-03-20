@@ -107,8 +107,6 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
           xComputedVarSpec,
           yComputedVarSpec,
           spec.getOverlayVariable()));
-
-
       // Creates 'variables' R variable
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
       // Creates 'computedVariables' R variable

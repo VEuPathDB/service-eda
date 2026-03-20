@@ -24,6 +24,7 @@ import static org.veupathdb.service.eda.common.plugin.util.PluginUtil.singleQuot
 public class DimensionalityReductionPlugin extends AbstractPlugin<DimensionalityReductionPluginRequest, DimensionalityReductionComputeConfig> {
 
   private static final String INPUT_DATA = "dimensionality_reduction_input";
+  private static final String SAMPLE_DATA = "sample_entity_input";
 
   public DimensionalityReductionPlugin(@NotNull PluginContext<DimensionalityReductionPluginRequest, DimensionalityReductionComputeConfig> context) {
     super(context);
@@ -34,9 +35,18 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
   public List<StreamSpec> getStreamSpecs() {
     VariableSpec identifierVar = getConfig().getIdentifierVariable();
     VariableSpec valueVar = getConfig().getValueVariable();
-    return List.of(new StreamSpec(INPUT_DATA, identifierVar.getEntityId())
-      .addVar(identifierVar)
-      .addVar(valueVar));
+
+    // Determine sample entity (immediate parent of gene entity)
+    ReferenceMetadata meta = getContext().getReferenceMetadata();
+    EntityDef geneEntity = meta.getEntity(identifierVar.getEntityId()).orElseThrow();
+    String sampleEntityId = meta.getAncestors(geneEntity).get(0).getId();
+
+    return List.of(
+      new StreamSpec(INPUT_DATA, identifierVar.getEntityId())
+        .addVar(identifierVar)
+        .addVar(valueVar),
+      new StreamSpec(SAMPLE_DATA, sampleEntityId)  // just ID columns, no extra vars
+    );
   }
 
   @Override
@@ -66,6 +76,7 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
 
     HashMap<String, InputStream> dataStream = new HashMap<>();
     dataStream.put(INPUT_DATA, getWorkspace().openStream(INPUT_DATA));
+    dataStream.put(SAMPLE_DATA, getWorkspace().openStream(SAMPLE_DATA));
 
     RServe.useRConnectionWithRemoteFiles(dataStream, connection -> {
       connection.voidEval("print('starting dimensionality reduction computation')");
@@ -75,6 +86,9 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
       computeInputVars.add(valueVarSpec);
       computeInputVars.addAll(idColumns);
       connection.voidEval(util.getVoidEvalFreadCommand(INPUT_DATA, computeInputVars));
+
+      // Read sample entity stream (only ID columns)
+      connection.voidEval(util.getVoidEvalFreadCommand(SAMPLE_DATA, idColumns.toArray(new VariableSpec[0])));
 
       StringBuilder lhsFormula = new StringBuilder();
       boolean firstIdCol = true;
@@ -101,8 +115,10 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
       // data.table::dcast sorts rows case-sensitively (ASCII order), but the subset
       // service uses a case-insensitive collation. Restore the original sample order
       // from INPUT_DATA so the PCA output matches the order the merge service expects.
-      connection.voidEval("sampleOrder <- unique(" + INPUT_DATA + "[[" + singleQuote(sampleEntityIdColName) + "]])");
-      connection.voidEval("inputData <- inputData[match(sampleOrder, inputData[[" + singleQuote(sampleEntityIdColName) + "]])]");
+      // We use the sample entity stream order which includes ALL samples (even those
+      // with no gene data), not just the ones present in the gene entity stream.
+      connection.voidEval("inputData <- inputData[match(" + SAMPLE_DATA + "[[" +
+        singleQuote(sampleEntityIdColName) + "]], inputData[[" + singleQuote(sampleEntityIdColName) + "]])]");
 
       // ancestorIdColumns excludes idColumns.get(0) since that is already recordIdColumn
       List<String> dotNotatedIdColumns = idColumns.stream().skip(1).map(VariableDef::toDotNotation).toList();
@@ -134,6 +150,15 @@ public class DimensionalityReductionPlugin extends AbstractPlugin<Dimensionality
 
       connection.voidEval("pcaOutput <- veupathUtils::pca(dataCollection, " +
         "nPCs=" + singleQuote(nPCs) + ", normalize=" + normalize + ", verbose=TRUE)");
+
+      // Left-join PCA output onto full sample list so samples with no gene data get NA PC values.
+      // This ensures the compute output has a row for every sample, matching what the merge service expects.
+      connection.voidEval("pcaData <- pcaOutput@data");
+      connection.voidEval("pcaData <- merge(" + SAMPLE_DATA + ", pcaData, by=names(" + SAMPLE_DATA + "), all.x=TRUE, sort=FALSE)");
+      // merge may reorder rows; restore sample stream order
+      connection.voidEval("pcaData <- pcaData[match(" + SAMPLE_DATA + "[[" +
+        singleQuote(sampleEntityIdColName) + "]], pcaData[[" + singleQuote(sampleEntityIdColName) + "]])]");
+      connection.voidEval("pcaOutput@data <- pcaData");
 
       String dataCmd = "writeData(pcaOutput, NULL, TRUE)";
       String metaCmd = "writeMeta(pcaOutput, NULL, TRUE)";

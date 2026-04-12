@@ -125,8 +125,6 @@ public class StudiesService implements Studies {
         respond200WithApplicationJson(handleDistributionRequest(studyId, entityId, variableId, request));
   }
 
-
-
   public static VariableDistributionPostResponse handleDistributionRequest(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
     try {
@@ -171,25 +169,66 @@ public class StudiesService implements Studies {
   }
 
   @Override
+  public PostStudiesEntitiesTabularTemporaryResultByStudyIdAndEntityIdResponse postStudiesEntitiesTabularTemporaryResultByStudyIdAndEntityId(
+      String studyId,
+      String entityId,
+      EntityTabularPostRequest requestBody) {
+    String temporaryId = handleTemporaryTabularCreateRequest(_request, studyId, entityId, requestBody, true);
+    TabularResponses.Type responseType = TabularResponses.Type.fromAcceptHeader(_request);
+    GeneratedIdResponse entity = new GeneratedIdResponseImpl();
+    entity.setId(temporaryId);
+    return (responseType == TabularResponses.Type.JSON)
+        ? PostStudiesEntitiesTabularTemporaryResultByStudyIdAndEntityIdResponse.respond200WithApplicationJson(entity)
+        : PostStudiesEntitiesTabularTemporaryResultByStudyIdAndEntityIdResponse.respond200WithTextTabSeparatedValues(entity);
+  }
+
+  private static String handleTemporaryTabularCreateRequest(
+      ContainerRequest requestContext, String studyId, String entityId,
+      EntityTabularPostRequest requestBody, boolean checkUserPermissions) {
+    LOG.debug("Handling temporary tabular request for study {} and entity {}.", studyId, entityId);
+    Study study = Resources.getStudyResolver().getStudyById(studyId);
+    String dataSchema = resolveSchema(study);
+    RequestBundle request = RequestBundle.unpack(dataSchema, study, entityId, requestBody.getFilters(), requestBody.getOutputVariableIds(), requestBody.getReportConfig());
+
+    if (checkUserPermissions) {
+      // if requested, make sure user has permission to access this amount of tabular data (may differ based on report config)
+      checkPerms(requestContext, studyId, getTabularAccessPredicate(request.getReportConfig()));
+    }
+
+    // store response type so correct format can be returned when this temporary result is fetched
+    TabularResponses.Type responseType = TabularResponses.Type.fromAcceptHeader(requestContext);
+
+    return TemporaryTabularRequests.storeRequest(request, responseType);
+  }
+
+  @Override
   public PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse postStudiesEntitiesTabularByStudyIdAndEntityId(String studyId, String entityId) {
-    UrlEncodedForm form = new UrlEncodedForm(_request.getEntityStream());
-    String requestJson = form.getFirstParamValue("data")
-      .orElseThrow(() -> new BadRequestException("Form must contain parameter 'data' containing tabular request JSON."));
-    try {
-      EntityTabularPostRequest request = JsonUtil.Jackson.readValue(requestJson, EntityTabularPostRequest.class);
-      PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse typedResponse =
-        postStudiesEntitiesTabularByStudyIdAndEntityId(studyId, entityId, request);
-      // success so far; add header to response
-      String entityDisplay = Resources.getStudyResolver().getStudyById(studyId).getEntity(entityId).orElseThrow().getDisplayName();
-      String fileName = studyId + "_" + entityDisplay + "_subsettedData.txt";
-      String dispositionHeaderValue = "attachment; filename=\"" + fileName + "\"";
-      ServiceMetrics.reportSubsetDownload(studyId, UserProvider.lookupUser(_request)
+    EntityTabularPostRequest request = readTabularRequestEntityFromUrlEncodedBody(_request);
+    PostStudiesEntitiesTabularByStudyIdAndEntityIdResponse typedResponse =
+      postStudiesEntitiesTabularByStudyIdAndEntityId(studyId, entityId, request);
+    // success so far; add header to response
+    addFilenameHeaderToTabularRequest(studyId, entityId, _request);
+    return typedResponse;
+  }
+
+  private static void addFilenameHeaderToTabularRequest(String studyId, String entityId, ContainerRequest request) {
+    String entityDisplay = Resources.getStudyResolver().getStudyById(studyId).getEntity(entityId).orElseThrow().getDisplayName();
+    String fileName = studyId + "_" + entityDisplay + "_subsettedData.txt";
+    String dispositionHeaderValue = "attachment; filename=\"" + fileName + "\"";
+    ServiceMetrics.reportSubsetDownload(studyId, UserProvider.lookupUser(request)
         .map(UserInfo::getUserId)
         .map(id -> Long.toString(id))
         .orElse("None"), entityDisplay);
-      _request.setProperty(CustomResponseHeadersFilter.CUSTOM_HEADERS_KEY,
+    request.setProperty(CustomResponseHeadersFilter.CUSTOM_HEADERS_KEY,
         new MapBuilder<>(HttpHeaders.CONTENT_DISPOSITION, dispositionHeaderValue).toMap());
-      return typedResponse;
+  }
+
+  private static EntityTabularPostRequest readTabularRequestEntityFromUrlEncodedBody(ContainerRequest request) {
+    UrlEncodedForm form = new UrlEncodedForm(request.getEntityStream());
+    String requestJson = form.getFirstParamValue("data")
+        .orElseThrow(() -> new BadRequestException("Form must contain parameter 'data' containing tabular request JSON."));
+    try {
+      return JsonUtil.Jackson.readValue(requestJson, EntityTabularPostRequest.class);
     }
     catch (JsonProcessingException e) {
       throw new BadRequestException(e.getMessage());
@@ -279,6 +318,15 @@ public class StudiesService implements Studies {
       checkPerms(requestContext, studyId, getTabularAccessPredicate(request.getReportConfig()));
     }
 
+    TabularResponses.Type responseType = TabularResponses.Type.fromAcceptHeader(requestContext);
+
+    return generateTabularRequest(request, responseType, dataSchema, responseConverter);
+  }
+
+  static <T> T generateTabularRequest(RequestBundle request,
+                                      TabularResponses.Type responseType,
+                                      String dataSchema,
+                                      BiFunction<EntityTabularPostResponseStream, TabularResponses.Type, T> responseConverter) {
     // Oracle tables do not support >1000 columns; if an entity has a total of >1000 columns then the "wide table"
     //   of data is not generated for that entity ("tall table" still is).  This only affects paged/sorted tabular
     //   results, so add a check here for that kind of request on that kind of entity and throw 400 in that case.
@@ -289,19 +337,18 @@ public class StudiesService implements Studies {
       throw new BadRequestException("Tabular requests with paging/sorting are not supported on entities with >1000 total columns");
     }
 
-    TabularResponses.Type responseType = TabularResponses.Type.fromAcceptHeader(requestContext);
     final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();
     final BinaryValuesStreamer binaryValuesStreamer = new BinaryValuesStreamer(binaryFilesManager,
             Resources.getFileChannelThreadPool(), Resources.getDeserializerThreadPool());
     if (shouldRunFileBasedSubsetting(request, binaryFilesManager)) {
-      LOG.debug("Running file-based subsetting for study {}", studyId);
+      LOG.debug("Running file-based subsetting for study {}", request.getStudy().getStudyId());
       EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream(outStream ->
         FilteredResultFactory.produceTabularSubsetFromFile(request.getStudy(), entity,
           request.getRequestedVariables(), request.getFilters(), responseType.getBinaryFormatter(),
           request.getReportConfig(), outStream, binaryValuesStreamer));
       return responseConverter.apply(streamer, responseType);
     }
-    LOG.debug("Performing oracle-based subsetting for study {}", studyId);
+    LOG.debug("Performing oracle-based subsetting for study {}", request.getStudy().getStudyId());
     EntityTabularPostResponseStream streamer = new EntityTabularPostResponseStream(outStream ->
         FilteredResultFactory.produceTabularSubset(Resources.getApplicationDatabase(), dataSchema,
             request.getStudy(), entity, request.getRequestedVariables(), request.getFilters(),

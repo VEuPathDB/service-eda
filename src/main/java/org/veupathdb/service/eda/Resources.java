@@ -37,10 +37,7 @@ import org.veupathdb.service.eda.subset.model.reducer.BinaryValuesStreamer;
 import org.veupathdb.service.eda.subset.model.reducer.MetadataFileBinaryProvider;
 import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.subset.model.variable.binary.SimpleStudyFinder;
-import org.veupathdb.service.eda.subset.service.ClearMetadataCacheService;
-import org.veupathdb.service.eda.subset.service.InternalClientsService;
-import org.veupathdb.service.eda.subset.service.MetadataCache;
-import org.veupathdb.service.eda.subset.service.StudiesService;
+import org.veupathdb.service.eda.subset.service.*;
 import org.veupathdb.service.eda.subset.test.StubDb;
 import org.veupathdb.service.eda.user.service.ImportAnalysisService;
 import org.veupathdb.service.eda.user.service.MetricsService;
@@ -313,6 +310,7 @@ public class Resources extends ContainerResources {
       StudiesService.class,
       InternalClientsService.class,
       ClearMetadataCacheService.class,
+        TemporaryTabularRequests.class,
       // Visualization
       AppsService.class,
       FilterAwareMetadataService.class,

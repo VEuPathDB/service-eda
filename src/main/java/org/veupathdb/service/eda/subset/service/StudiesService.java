@@ -174,12 +174,8 @@ public class StudiesService implements Studies {
       String entityId,
       EntityTabularPostRequest requestBody) {
     String temporaryId = handleTemporaryTabularCreateRequest(_request, studyId, entityId, requestBody, true);
-    TabularResponses.Type responseType = TabularResponses.Type.fromAcceptHeader(_request);
     GeneratedIdResponse entity = new GeneratedIdResponseImpl();
     entity.setId(temporaryId);
-    if (responseType != TabularResponses.Type.JSON) {
-      LOG.info("Note: temporary tabular creation response will be JSON even though a different Accept header was provided ({}).", responseType.getMediaType());
-    }
     return PostStudiesEntitiesTabularTemporaryResultByStudyIdAndEntityIdResponse.respond200WithApplicationJson(entity);
   }
 
@@ -196,10 +192,7 @@ public class StudiesService implements Studies {
       checkPerms(requestContext, studyId, getTabularAccessPredicate(request.getReportConfig()));
     }
 
-    // store response type so correct format can be returned when this temporary result is fetched
-    TabularResponses.Type responseType = TabularResponses.Type.fromAcceptHeader(requestContext);
-
-    return TemporaryTabularRequests.storeRequest(request, responseType);
+    return TemporaryTabularRequests.storeRequest(request);
   }
 
   @Override

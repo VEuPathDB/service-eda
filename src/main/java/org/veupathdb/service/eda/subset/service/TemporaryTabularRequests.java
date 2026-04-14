@@ -13,15 +13,15 @@ import static org.veupathdb.service.eda.subset.service.StudiesService.resolveSch
 
 public class TemporaryTabularRequests implements TemporaryTabularResultTemporaryResultId {
 
-  private static final ManagedMap<String, Tuples.TwoTuple<RequestBundle,TabularResponses.Type>> REQUEST_MAP = new ManagedMap<>();
+  private static final ManagedMap<String, RequestBundle> REQUEST_MAP = new ManagedMap<>();
 
-  public static String storeRequest(RequestBundle request, TabularResponses.Type responseType) {
+  public static String storeRequest(RequestBundle request) {
     String cacheKey = UUID.randomUUID().toString();
-    REQUEST_MAP.put(cacheKey, new Tuples.TwoTuple<>(request, responseType));
+    REQUEST_MAP.put(cacheKey, request);
     return cacheKey;
   }
 
-  private Optional<Tuples.TwoTuple<RequestBundle,TabularResponses.Type>> retrieveRequest(String temporaryResultId) {
+  private Optional<RequestBundle> retrieveRequest(String temporaryResultId) {
     if (REQUEST_MAP.containsKey(temporaryResultId)) {
       var value = REQUEST_MAP.get(temporaryResultId);
       REQUEST_MAP.remove(temporaryResultId);
@@ -33,16 +33,12 @@ public class TemporaryTabularRequests implements TemporaryTabularResultTemporary
   @Override
   public GetTemporaryTabularResultByTemporaryResultIdResponse getTemporaryTabularResultByTemporaryResultId(String temporaryResultId) {
 
-    Tuples.TwoTuple<RequestBundle,TabularResponses.Type> requestData = retrieveRequest(temporaryResultId).orElseThrow(NotFoundException::new);
-    RequestBundle request = requestData.getFirst();
-    TabularResponses.Type responseType = requestData.getSecond();
+    RequestBundle request = retrieveRequest(temporaryResultId).orElseThrow(NotFoundException::new);
+    TabularResponses.Type responseType = TabularResponses.Type.TABULAR;
     String dataSchema = resolveSchema(request.getStudy());
 
     return StudiesService.generateTabularRequest(request, responseType, dataSchema, (responseStream, type) ->
-      // ignore Accept sent by client and use the one submitted by the original "save" request
-      type == TabularResponses.Type.JSON
-        ? GetTemporaryTabularResultByTemporaryResultIdResponse.respond200WithApplicationJson(responseStream)
-        : GetTemporaryTabularResultByTemporaryResultIdResponse.respond200WithTextTabSeparatedValues(responseStream));
+        GetTemporaryTabularResultByTemporaryResultIdResponse.respond200WithTextTabSeparatedValues(responseStream));
   }
 
 }

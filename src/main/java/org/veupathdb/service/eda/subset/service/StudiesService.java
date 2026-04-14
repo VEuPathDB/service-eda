@@ -177,9 +177,10 @@ public class StudiesService implements Studies {
     TabularResponses.Type responseType = TabularResponses.Type.fromAcceptHeader(_request);
     GeneratedIdResponse entity = new GeneratedIdResponseImpl();
     entity.setId(temporaryId);
-    return (responseType == TabularResponses.Type.JSON)
-        ? PostStudiesEntitiesTabularTemporaryResultByStudyIdAndEntityIdResponse.respond200WithApplicationJson(entity)
-        : PostStudiesEntitiesTabularTemporaryResultByStudyIdAndEntityIdResponse.respond200WithTextTabSeparatedValues(entity);
+    if (responseType != TabularResponses.Type.JSON) {
+      LOG.info("Note: temporary tabular creation response will be JSON even though a different Accept header was provided ({}).", responseType.getMediaType());
+    }
+    return PostStudiesEntitiesTabularTemporaryResultByStudyIdAndEntityIdResponse.respond200WithApplicationJson(entity);
   }
 
   private static String handleTemporaryTabularCreateRequest(

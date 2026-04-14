@@ -310,7 +310,7 @@ public class Resources extends ContainerResources {
       StudiesService.class,
       InternalClientsService.class,
       ClearMetadataCacheService.class,
-        TemporaryTabularRequests.class,
+      TemporaryTabularRequests.class,
       // Visualization
       AppsService.class,
       FilterAwareMetadataService.class,

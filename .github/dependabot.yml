@@ -1,0 +1,30 @@
+version: 2
+
+updates:
+- package-ecosystem: gradle
+  registries:
+  - github-packages
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 20
+  directory: "/"
+  groups:
+    test-dependencies:
+      patterns:
+      - org.junit.*
+      - org.mockito.*
+    log4j:
+      patterns:
+      - org.apache.logging.*
+
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: weekly
+
+registries:
+  github-packages:
+    type: maven-repository
+    url: https://maven.pkg.github.com/veupathdb/maven-packages
+    username: ${{ secrets.PACKAGES_USER }}
+    password: ${{ secrets.PACKAGES_KEY }}

@@ -9,9 +9,14 @@ types:
 
   DimensionalityReductionComputeConfig:
     properties:
-      collectionVariable: CollectionSpec
+      identifierVariable: VariableSpec
+      valueVariable: VariableSpec
       nPCs: number
-      # DimensionalityReductionMethod: DimensionalityReductionMethod
+      dataFormat: DataFormat
+
+  DataFormat:
+    type: string
+    enum: ['rawCounts', 'normalizedValues']
 
 # For future use
   # DimensionalityReductionMethod:

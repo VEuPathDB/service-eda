@@ -1216,6 +1216,11 @@ types:
     type: object
     properties:
       //: DataElementConstraint
+  DataFormat:
+    type: string
+    enum:
+      - rawCounts
+      - normalizedValues
   DataPluginRequestBase:
     type: object
     additionalProperties: false
@@ -1538,7 +1543,8 @@ types:
   DifferentialExpressionComputeConfig:
     type: object
     properties:
-      collectionVariable: CollectionSpec
+      identifierVariable: VariableSpec
+      valueVariable: VariableSpec
       comparator: ComparatorSpec
       differentialExpressionMethod: DifferentialExpressionMethod
       pValueFloor:
@@ -1548,6 +1554,7 @@ types:
     type: string
     enum:
       - DESeq
+      - limma
   DifferentialExpressionPluginRequest:
     type: ComputeRequestBase
     properties:
@@ -1572,8 +1579,10 @@ types:
   DimensionalityReductionComputeConfig:
     type: object
     properties:
-      collectionVariable: CollectionSpec
+      identifierVariable: VariableSpec
+      valueVariable: VariableSpec
       nPCs: number
+      dataFormat: DataFormat
   DimensionalityReductionPluginRequest:
     type: ComputeRequestBase
     properties:
@@ -1979,6 +1988,11 @@ types:
         type: integer
         required: false
         format: int64
+  GeneratedIdResponse:
+    type: object
+    additionalProperties: false
+    properties:
+      id: string
   GeolocationViewport:
     type: object
     additionalProperties: false

@@ -46,6 +46,7 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
       .pattern()
         .element("overlayVariable")
           .required(false)
+          .minValues(2)
           .maxValues(8)
           .description("Variable must be a number, or have 8 or fewer values, and be of the same or a parent entity as the X-axis variable.")
       .pattern()
@@ -97,14 +98,15 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
     .filter(var -> var.getVariableSpec().getVariableId().equals(spec.getYAxisVariable().getVariableId()))
     .findFirst().orElseThrow().getVariableSpec();
 
+    String recordIdColumnName = getUtil().toColNameOrEmpty(getUtil().getEntityIdVarSpec(spec.getOutputEntityId()));
+    String returnPointIds = spec.getReturnPointIds() != null ? String.valueOf(spec.getReturnPointIds()).toUpperCase() : "FALSE";
 
     useRConnectionWithRemoteFiles(Resources.RSERVE_URL, dataStreams, connection -> {
       connection.voidEval(getUtil().getVoidEvalFreadCommand(DEFAULT_SINGLE_STREAM_NAME,
+          getUtil().getEntityIdVarSpec(spec.getOutputEntityId()),
           xComputedVarSpec,
           yComputedVarSpec,
           spec.getOverlayVariable()));
-
-
       // Creates 'variables' R variable
       connection.voidEval(getVoidEvalVariableMetadataList(varMap));
       // Creates 'computedVariables' R variable
@@ -112,17 +114,19 @@ public class DimensionalityReductionScatterplotPlugin extends AbstractPlugin<Dim
       
       connection.voidEval("variables <- veupathUtils::merge(variables, computedVariables)");
 
-      // Set axis variables
-      connection.voidEval("xIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getXAxisVariable().getVariableId() + "', variables)");
-      connection.voidEval("variables[[xIndex]]@plotReference <- veupathUtils::PlotReference(value = 'xAxis')");
-      connection.voidEval("yIndex <- Position(function(x) x@variableSpec@variableId == '" + spec.getYAxisVariable().getVariableId() + "', variables)");
-      connection.voidEval("variables[[yIndex]]@plotReference <- veupathUtils::PlotReference(value = 'yAxis')");
+      // NOTE: plotReference assignment previously happened here, overriding the
+      // "undefined" values from the R compute. This is no longer needed because
+      // veupathUtils/R/method-pca.R now sets plotReference to "xAxis"/"yAxis"
+      // at the source (it only generates two PCs). If we ever support more than
+      // two PCs with user-selectable axis assignment, this will need to be revisited.
 
 
       String command = "plot.data::scattergl(" + DEFAULT_SINGLE_STREAM_NAME + ", variables, '" +
         valueSpec +
         "', overlayValues=NULL, correlationMethod = 'none', sampleSizes=TRUE, completeCases=TRUE, '" +
-        deprecatedShowMissingness + "')";
+        deprecatedShowMissingness +
+        "', idColumn = '" + recordIdColumnName +
+        "', returnPointIds = " + returnPointIds + ")";
       RServeClient.streamResult(connection, command, out);
     });
   }

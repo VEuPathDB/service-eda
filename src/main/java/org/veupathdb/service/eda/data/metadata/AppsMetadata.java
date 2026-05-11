@@ -53,9 +53,13 @@ public class AppsMetadata {
   public static final List<String> NON_VB_GENOMICS_PROJECTS = List.of(
     "AmoebaDB", "CryptoDB", "FungiDB", "GiardiaDB", "HostDB",
     "MicrosporidiaDB", "PiroplasmaDB", "PlasmoDB", "ToxoDB",
-    "TrichDB", "TriTrypDB", "EuPathDB");
+    "TrichDB", "TriTrypDB", "UniDB");
   public static final List<String> MBIO_PLUS_GENOMICS_PROJECTS = new ListBuilder<String>()
     .add(MICROBIOME_PROJECT)
+    .add(VECTORBASE_PROJECT)
+    .addAll(NON_VB_GENOMICS_PROJECTS)
+    .toList();
+  public static final List<String> ALL_GENOMICS_PROJECTS = new ListBuilder<String>()
     .add(VECTORBASE_PROJECT)
     .addAll(NON_VB_GENOMICS_PROJECTS)
     .toList();
@@ -131,8 +135,8 @@ public class AppsMetadata {
       viz("volcanoplot", new DifferentialAbundanceVolcanoplotPlugin())),
     app("differentialexpression", "Differential Expression", "differentialexpression",
       "Find genes that are differentially expressed between two groups.",
-      MBIO_PLUS_GENOMICS_PROJECTS,
-      viz("volcanoplot", new DifferentialAbundanceVolcanoplotPlugin())),
+      ALL_GENOMICS_PROJECTS,
+      viz("volcanoplot", new DifferentialExpressionVolcanoplotPlugin())),
     app("dimensionalityreduction", "Dimensionality Reduction", "dimensionalityreduction",
       "Investigate dataset features using dimensionality reduction techniques.",
       MBIO_PLUS_GENOMICS_PROJECTS,

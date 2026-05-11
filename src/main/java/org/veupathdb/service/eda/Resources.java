@@ -37,10 +37,7 @@ import org.veupathdb.service.eda.subset.model.reducer.BinaryValuesStreamer;
 import org.veupathdb.service.eda.subset.model.reducer.MetadataFileBinaryProvider;
 import org.veupathdb.service.eda.subset.model.variable.binary.BinaryFilesManager;
 import org.veupathdb.service.eda.subset.model.variable.binary.SimpleStudyFinder;
-import org.veupathdb.service.eda.subset.service.ClearMetadataCacheService;
-import org.veupathdb.service.eda.subset.service.InternalClientsService;
-import org.veupathdb.service.eda.subset.service.MetadataCache;
-import org.veupathdb.service.eda.subset.service.StudiesService;
+import org.veupathdb.service.eda.subset.service.*;
 import org.veupathdb.service.eda.subset.test.StubDb;
 import org.veupathdb.service.eda.user.service.ImportAnalysisService;
 import org.veupathdb.service.eda.user.service.MetricsService;
@@ -48,6 +45,10 @@ import org.veupathdb.service.eda.user.service.PublicDataService;
 import org.veupathdb.service.eda.user.service.UserService;
 
 import javax.sql.DataSource;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -107,9 +108,36 @@ public class Resources extends ContainerResources {
 
   public static final String RSERVE_URL = getRequiredVar("RSERVE_URL");
 
+  private void overrideDbValue(Options opts, String fieldName, String fieldValue)
+      throws NoSuchFieldException, IllegalAccessException {
+    Field field = Options.class.getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(opts, fieldValue);
+  }
+
+  private void overrideDbConfig(Options opts) {
+    try (BufferedReader pwFileIn = new BufferedReader(new FileReader("/binaryFiles/config.json~"))) {
+      String[] dbConfig = pwFileIn.readLine().split(":");
+      if (dbConfig.length != 4) {
+        throw new RuntimeException("DB configuration lookup file does not contain four tokens.");
+      }
+      overrideDbValue(opts, "appDbUser", dbConfig[0]);
+      overrideDbValue(opts, "appDbPass", dbConfig[1]);
+      overrideDbValue(opts, "appDbLookupCn", dbConfig[3]);
+      overrideDbValue(opts, "userDbUser", dbConfig[0]);
+      overrideDbValue(opts, "userDbPass", dbConfig[1]);
+      overrideDbValue(opts, "userDbLookupCn", dbConfig[2]);
+    }
+    catch (NoSuchFieldException | IllegalAccessException | IOException e) {
+      throw new RuntimeException("Error overriding DB configuration", e);
+    }
+  }
+
   @SuppressWarnings("resource")
   public Resources(Options opts) {
     super(opts);
+
+    //overrideDbConfig(opts);
 
     // initialize auth and required DBs
     DbManager.initUserDatabase(opts);
@@ -282,6 +310,7 @@ public class Resources extends ContainerResources {
       StudiesService.class,
       InternalClientsService.class,
       ClearMetadataCacheService.class,
+      TemporaryTabularRequests.class,
       // Visualization
       AppsService.class,
       FilterAwareMetadataService.class,

@@ -63,7 +63,7 @@ public class ReferenceMetadata {
         throw new RuntimeException("Not all computed vars specs are declared as the same entity");
       }
       for (EntityDef treeEntity : entities) {
-        entity.addVariable(new VariableDef(
+        treeEntity.addVariable(new VariableDef(
           entityId,
           computedVar.getVariableSpec().getVariableId(),
           computedVar.getDataType(),

@@ -5,7 +5,8 @@ import jakarta.ws.rs.NotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gusdb.fgputil.ArrayUtil;
-import org.gusdb.fgputil.db.runner.BasicArgumentBatch;
+import org.gusdb.fgputil.db.runner.ListArgumentBatch;
+import org.gusdb.fgputil.db.runner.ParamBuilder;
 import org.gusdb.fgputil.db.runner.SQLRunner;
 import org.gusdb.fgputil.functional.FunctionalInterfaces.SupplierWithException;
 import org.json.JSONObject;
@@ -326,7 +327,7 @@ public class UserDataFactory {
     LOG.debug("Bulk inserting {} derived variable rows", rows.size());
 
     mapException(() -> new SQLRunner(Resources.getUserDataSource(), addSchema(INSERT_DERIVED_VAR_SQL))
-      .executeStatementBatch(also(new BasicArgumentBatch(), bab -> {
+      .executeStatementBatch(also(new ListArgumentBatch(), bab -> {
         bab.setParameterTypes(INSERT_DERIVED_VAR_TYPES);
         rows.forEach(row -> bab.add(derivedVarToInsertRow(row)));
       })), EXCEPTION_HANDLER);
@@ -769,7 +770,10 @@ public class UserDataFactory {
         sql,
         "read-analysis-study"
       ).executeQuery(
-        new Object[]{ month, year, _projectId },
+          new ParamBuilder()
+              .addInteger(month)
+              .addInteger(year)
+              .addString(_projectId),
         rs -> {
           while (rs.next()) {
             try {
@@ -823,7 +827,10 @@ public class UserDataFactory {
         sql,
         "read-analysis-totals"
       ).executeQuery(
-        new Object[]{ month, year, _projectId },
+          new ParamBuilder()
+              .addInteger(month)
+              .addInteger(year)
+              .addString(_projectId),
         rs -> {
           while (rs.next()) {
             try {
@@ -875,7 +882,10 @@ public class UserDataFactory {
         sql,
         "read-download-report"
       ).executeQuery(
-        new Object[] { month, year, _projectId },
+          new ParamBuilder()
+              .addInteger(month)
+              .addInteger(year)
+              .addString(_projectId),
         rs -> {
           while (rs.next()) {
             try {
@@ -925,7 +935,10 @@ public class UserDataFactory {
         sql,
         "read-analysis-histogram"
       ).executeQuery(
-        new Object[]{ month, year, _projectId },
+          new ParamBuilder()
+              .addInteger(month)
+              .addInteger(year)
+              .addString(_projectId),
         rs -> {
           while (rs.next()) {
             try {

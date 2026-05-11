@@ -1,13 +1,11 @@
 [versions]
-fgputil = "3.1.0-jakarta"
-log4j = "2.25.3"
-
+fgputil = "3.2.5-jakarta"
+log4j = "2.25.4"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version = "2.3.20" }
 shadowJar = { id = "com.gradleup.shadow", version = "9.4.0" }
 containerUtils = { id = "org.veupathdb.lib.gradle.container.container-utils", version = "5.0.5" }
-
 
 [libraries]
 rServe = { module = "org.rosuda.REngine:Rserve", version = "1.8.1" }

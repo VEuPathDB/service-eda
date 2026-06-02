@@ -15,7 +15,7 @@ jersey-server = { module = "org.glassfish.jersey.core:jersey-server", version = 
 config-cli-api = { module = "info.picocli:picocli", version = "4.7.7" }
 config-cli-generator = { module = "info.picocli:picocli-codegen", version = "4.7.7" }
 
-logging-slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.17" }
+logging-slf4j-api = { module = "org.slf4j:slf4j-api", version = "2.0.18" }
 logging-log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 logging-log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
 logging-log4j-slf4j = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }

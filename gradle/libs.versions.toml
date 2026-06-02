@@ -1,5 +1,5 @@
 [versions]
-fgputil = "3.2.5-jakarta"
+fgputil = "3.2.7-jakarta"
 log4j = "2.25.4"
 
 [plugins]

@@ -1,18 +1,20 @@
-reset role;
+-- The SCHEMA may only be created by the DBA or a superuser.
+CREATE SCHEMA IF NOT EXISTS edauser AUTHORIZATION userdb_owner;
+GRANT USAGE ON SCHEMA edauser TO edauser_r;
 
-CREATE SCHEMA IF NOT EXISTS edauser AUTHORIZATION comm_wdk_w;
-
-GRANT USAGE ON SCHEMA edauser TO comm_wdk_w;
-
-set role COMM_WDK_W;
 
 -- USERS table
 CREATE TABLE edauser.users (
   user_id INTEGER NOT NULL,
   is_guest BOOLEAN NOT NULL,
-  preferences TEXT, 
+  preferences TEXT,
   PRIMARY KEY (user_id)
 );
+
+-- Make sure the table is owned by userdb_owner role, not the user running the script.
+ALTER TABLE edauser.users OWNER TO userdb_owner;
+GRANT SELECT on edauser.users TO edauser_r;
+GRANT INSERT, UPDATE, DELETE on edauser.users TO edauser_w;
 
 -- ANALYSIS table
 CREATE TABLE edauser.analysis (
@@ -36,8 +38,9 @@ CREATE TABLE edauser.analysis (
   FOREIGN KEY (user_id) REFERENCES edauser.users (user_id)
 );
 
+-- Make sure the table is owned by userdb_owner role, not the user running the script.
+ALTER TABLE edauser.analysis OWNER TO userdb_owner;
+GRANT SELECT on edauser.analysis TO edauser_r;
+GRANT INSERT, UPDATE, DELETE on edauser.analysis TO edauser_w;
+
 CREATE INDEX analysis_user_id_idx ON edauser.analysis (user_id);
-
-GRANT SELECT, INSERT, UPDATE, DELETE ON edauser.user TO comm_wdk_w;
-GRANT SELECT, INSERT, UPDATE, DELETE ON edauser.analysis TO comm_wdk_w;
-

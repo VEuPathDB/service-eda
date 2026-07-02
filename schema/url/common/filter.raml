@@ -14,7 +14,7 @@ types:
       type: API_FilterType
 
   API_FilterType:
-    enum: [ 'stringSet', 'numberSet', 'dateSet', 'numberRange', 'dateRange', 'longitudeRange', 'multiFilter' ]
+    enum: [ 'stringSet', 'stringPrefixSet', 'numberSet', 'dateSet', 'numberRange', 'dateRange', 'longitudeRange', 'multiFilter' ]
 
   API_BooleanOperationType:
     enum: [ 'intersect', 'union' ]
@@ -39,6 +39,17 @@ types:
     properties:
       variableId: string
       stringSet: string[]
+
+  # keeps entities whose value starts with ANY of the prefixes (i.e. the
+  # union of the prefix matches); designed for multi-scale geohash
+  # filtering of arbitrary geographic shapes, applied to the entity's
+  # finest-grained geohash variable
+  API_StringPrefixSetFilter:
+    type: API_Filter
+    discriminatorValue: 'stringPrefixSet'
+    properties:
+      variableId: string
+      prefixSet: string[]
 
   API_NumberSetFilter:
     type: API_Filter

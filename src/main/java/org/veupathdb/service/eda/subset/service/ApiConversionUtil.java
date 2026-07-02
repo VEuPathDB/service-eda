@@ -35,6 +35,7 @@ import org.veupathdb.service.eda.subset.model.filter.MultiFilter;
 import org.veupathdb.service.eda.subset.model.filter.MultiFilterSubFilter;
 import org.veupathdb.service.eda.subset.model.filter.NumberRangeFilter;
 import org.veupathdb.service.eda.subset.model.filter.NumberSetFilter;
+import org.veupathdb.service.eda.subset.model.filter.StringPrefixSetFilter;
 import org.veupathdb.service.eda.subset.model.filter.StringSetFilter;
 import org.veupathdb.service.eda.subset.model.tabular.TabularHeaderFormat;
 import org.veupathdb.service.eda.subset.model.varcollection.DateVarCollection;
@@ -375,6 +376,7 @@ public class ApiConversionUtil {
         case APINumberRangeFilter ignored -> unpackNumberRangeFilter(apiFilter, entity, appDbSchema);
         case APINumberSetFilter ignored -> unpackNumberSetFilter(apiFilter, entity, appDbSchema);
         case APILongitudeRangeFilter ignored -> unpackLongitudeRangeFilter(apiFilter, entity, appDbSchema);
+        case APIStringPrefixSetFilter ignored -> unpackStringPrefixSetFilter(apiFilter, entity, appDbSchema);
         case APIStringSetFilter ignored -> unpackStringSetFilter(apiFilter, entity, appDbSchema);
         case APIMultiFilter ignored -> unpackMultiFilter(apiFilter, entity, appDbSchema);
         default -> throw new InternalServerErrorException("Input filter not an expected subclass of Filter");
@@ -451,6 +453,16 @@ public class ApiConversionUtil {
     if (f.getRight() == null) throw new BadRequestException("Longitude range filter: right is a required property");
     LongitudeVariable var = LongitudeVariable.assertType(entity.getVariableOrThrow(f.getVariableId()));
     return new LongitudeRangeFilter(appDbSchema, entity, var, f.getLeft(), f.getRight());
+  }
+
+  private static StringPrefixSetFilter unpackStringPrefixSetFilter(APIFilter apiFilter, Entity entity, String appDbSchema) {
+    APIStringPrefixSetFilter f = (APIStringPrefixSetFilter)apiFilter;
+    if (f.getPrefixSet() == null || f.getPrefixSet().isEmpty())
+      throw new BadRequestException(("String prefix set filter: >0 prefixes must be specified"));
+    if (f.getPrefixSet().stream().anyMatch(String::isEmpty))
+      throw new BadRequestException(("String prefix set filter: prefixes must not be empty strings"));
+    StringVariable stringVar = StringVariable.assertType(entity.getVariableOrThrow(f.getVariableId()));
+    return new StringPrefixSetFilter(appDbSchema, entity, stringVar, f.getPrefixSet());
   }
 
   private static StringSetFilter unpackStringSetFilter(APIFilter apiFilter, Entity entity, String appDbSchema) {

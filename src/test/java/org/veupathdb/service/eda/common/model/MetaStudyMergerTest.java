@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.common.model;
 
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
+import org.veupathdb.service.eda.generated.model.BinUnits;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -55,5 +56,34 @@ public class MetaStudyMergerTest {
     long[] range = TestStudies.firstVarIntRange(merged); // {rangeMin, rangeMax}
     assertEquals(1L, range[0]);
     assertEquals(60L, range[1]);
+  }
+
+  @Test
+  void mergesNumberRangeAsMinOfMinsMaxOfMaxes() {
+    APIStudyDetail a = TestStudies.oneEntityNumberVarWithRange("studyA", "EUPA_1", "weight", 5.0, 40.0);
+    APIStudyDetail b = TestStudies.oneEntityNumberVarWithRange("studyB", "EUPA_1", "weight", 1.0, 60.0);
+    StudyId union = StudyId.parse("union(studyA,studyB)");
+
+    APIStudyDetail merged = MetaStudyMerger.merge(union, List.of(a, b));
+
+    double[] range = TestStudies.firstVarNumberRange(merged); // {rangeMin, rangeMax}
+    assertEquals(1.0, range[0]);
+    assertEquals(60.0, range[1]);
+  }
+
+  @Test
+  void mergesDateRangeAndCarriesBinUnits() {
+    APIStudyDetail a = TestStudies.oneEntityDateVarWithRange(
+        "studyA", "EUPA_1", "collectionDate", "2001-01-01", "2010-01-01", BinUnits.MONTH);
+    APIStudyDetail b = TestStudies.oneEntityDateVarWithRange(
+        "studyB", "EUPA_1", "collectionDate", "1999-01-01", "2015-01-01", BinUnits.MONTH);
+    StudyId union = StudyId.parse("union(studyA,studyB)");
+
+    APIStudyDetail merged = MetaStudyMerger.merge(union, List.of(a, b));
+
+    String[] range = TestStudies.firstVarDateRange(merged); // {rangeMin, rangeMax}
+    assertEquals("1999-01-01", range[0]);
+    assertEquals("2015-01-01", range[1]);
+    assertEquals(BinUnits.MONTH, TestStudies.firstVarDateBinUnits(merged));
   }
 }

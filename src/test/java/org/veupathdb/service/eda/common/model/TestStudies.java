@@ -51,6 +51,44 @@ public final class TestStudies {
     return v;
   }
 
+  /** NUMBER CONTINUOUS variable with a populated range (safe through buildEntityTree). */
+  public static APINumberVariable numberVar(String varId, double rangeMin, double rangeMax) {
+    APINumberVariableImpl v = new APINumberVariableImpl(); // type is final NUMBER
+    v.setId(varId);
+    v.setDisplayName(varId);
+    v.setUnits("kg");
+    v.setDataShape(APIVariableDataShape.CONTINUOUS);
+    v.setIsMultiValued(false);
+    v.setImputeZero(false);
+    v.setHasStudyDependentVocabulary(false);
+    APINumberDistributionDefaultsImpl dd = new APINumberDistributionDefaultsImpl();
+    dd.setRangeMin(rangeMin);
+    dd.setRangeMax(rangeMax);
+    dd.setDisplayRangeMin(rangeMin);
+    dd.setDisplayRangeMax(rangeMax);
+    v.setDistributionDefaults(dd);
+    return v;
+  }
+
+  /** DATE CONTINUOUS variable with a populated range and binUnits (safe through buildEntityTree). */
+  public static APIDateVariable dateVar(String varId, String rangeMin, String rangeMax, BinUnits binUnits) {
+    APIDateVariableImpl v = new APIDateVariableImpl(); // type is final DATE
+    v.setId(varId);
+    v.setDisplayName(varId);
+    v.setDataShape(APIVariableDataShape.CONTINUOUS);
+    v.setIsMultiValued(false);
+    v.setImputeZero(false);
+    v.setHasStudyDependentVocabulary(false);
+    APIDateDistributionDefaultsImpl dd = new APIDateDistributionDefaultsImpl();
+    dd.setRangeMin(rangeMin);
+    dd.setRangeMax(rangeMax);
+    dd.setDisplayRangeMin(rangeMin);
+    dd.setDisplayRangeMax(rangeMax);
+    dd.setBinUnits(binUnits);
+    v.setDistributionDefaults(dd);
+    return v;
+  }
+
   // ---- entity / study builders ----
 
   public static APIEntity entity(String id, String idColumnName, boolean manyToOne,
@@ -93,6 +131,16 @@ public final class TestStudies {
         List.<APIVariable>of(intVar(varId, min, max)), List.of()));
   }
 
+  public static APIStudyDetail oneEntityNumberVarWithRange(String studyId, String entityId, String varId, double min, double max) {
+    return study(studyId, entity(entityId, entityId + "_id", true,
+        List.<APIVariable>of(numberVar(varId, min, max)), List.of()));
+  }
+
+  public static APIStudyDetail oneEntityDateVarWithRange(String studyId, String entityId, String varId, String min, String max, BinUnits binUnits) {
+    return study(studyId, entity(entityId, entityId + "_id", true,
+        List.<APIVariable>of(dateVar(varId, min, max, binUnits)), List.of()));
+  }
+
   /** Root + one child; distinct entity ids so it is structurally different from the single-entity fixtures. */
   public static APIStudyDetail twoEntities(String studyId) {
     APIEntity child = entity(CHILD_ID, "child_id", true,
@@ -127,6 +175,24 @@ public final class TestStudies {
     APIIntegerDistributionDefaults dd =
         ((APIIntegerVariable) study.getRootEntity().getVariables().get(0)).getDistributionDefaults();
     return new long[]{ dd.getRangeMin(), dd.getRangeMax() };
+  }
+
+  public static double[] firstVarNumberRange(APIStudyDetail study) {
+    APINumberDistributionDefaults dd =
+        ((APINumberVariable) study.getRootEntity().getVariables().get(0)).getDistributionDefaults();
+    return new double[]{ dd.getRangeMin().doubleValue(), dd.getRangeMax().doubleValue() };
+  }
+
+  public static String[] firstVarDateRange(APIStudyDetail study) {
+    APIDateDistributionDefaults dd =
+        ((APIDateVariable) study.getRootEntity().getVariables().get(0)).getDistributionDefaults();
+    return new String[]{ dd.getRangeMin(), dd.getRangeMax() };
+  }
+
+  public static BinUnits firstVarDateBinUnits(APIStudyDetail study) {
+    APIDateDistributionDefaults dd =
+        ((APIDateVariable) study.getRootEntity().getVariables().get(0)).getDistributionDefaults();
+    return dd.getBinUnits();
   }
 
   // ---- misc ----

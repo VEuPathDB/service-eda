@@ -171,13 +171,16 @@ public final class MetaStudyMerger {
 
   private static void mergeDateRange(APIDateVariableImpl out, List<APIVariable> across) {
     String min = null, max = null, dMin = null, dMax = null;
-    Integer binWidth = null;
+    Integer binWidth = null, binWidthOverride = null;
+    BinUnits binUnits = null;
     for (APIVariable v : across) {
       APIDateDistributionDefaults dd = ((APIDateVariable) v).getDistributionDefaults();
       if (dd == null) continue;
       min = minStr(min, dd.getRangeMin()); max = maxStr(max, dd.getRangeMax());
       dMin = minStr(dMin, dd.getDisplayRangeMin()); dMax = maxStr(dMax, dd.getDisplayRangeMax());
       if (binWidth == null) binWidth = dd.getBinWidth();
+      if (binWidthOverride == null) binWidthOverride = dd.getBinWidthOverride();
+      if (binUnits == null) binUnits = dd.getBinUnits();
     }
     if (min == null && max == null && dMin == null && dMax == null) return;
     APIDateDistributionDefaultsImpl dd = new APIDateDistributionDefaultsImpl();
@@ -185,6 +188,8 @@ public final class MetaStudyMerger {
     dd.setDisplayRangeMin(dMin != null ? dMin : min);
     dd.setDisplayRangeMax(dMax != null ? dMax : max);
     dd.setBinWidth(binWidth);
+    dd.setBinWidthOverride(binWidthOverride);
+    dd.setBinUnits(binUnits);
     out.setDistributionDefaults(dd);
   }
 
@@ -197,17 +202,22 @@ public final class MetaStudyMerger {
 
   private static void mergeNumberRange(APINumberVariableImpl out, List<APIVariable> across) {
     Number min = null, max = null, dMin = null, dMax = null;
+    Number binWidth = null, binWidthOverride = null;
     for (APIVariable v : across) {
       APINumberDistributionDefaults dd = ((APINumberVariable) v).getDistributionDefaults();
       if (dd == null) continue;
       min = minN(min, dd.getRangeMin());     max = maxN(max, dd.getRangeMax());
       dMin = minN(dMin, dd.getDisplayRangeMin()); dMax = maxN(dMax, dd.getDisplayRangeMax());
+      if (binWidth == null) binWidth = dd.getBinWidth();
+      if (binWidthOverride == null) binWidthOverride = dd.getBinWidthOverride();
     }
     if (min == null && max == null && dMin == null && dMax == null) return;
     APINumberDistributionDefaultsImpl dd = new APINumberDistributionDefaultsImpl();
     dd.setRangeMin(min); dd.setRangeMax(max);
     dd.setDisplayRangeMin(dMin != null ? dMin : min);
     dd.setDisplayRangeMax(dMax != null ? dMax : max);
+    dd.setBinWidth(binWidth);
+    dd.setBinWidthOverride(binWidthOverride);
     out.setDistributionDefaults(dd);
   }
 

@@ -1252,8 +1252,8 @@ Cache the merged result so Tier-1 (and Tier-2, Task 8) run once per data-version
 - Consumes: `StudyId`, a `Function<String,Long>` returning a member's data-version (`study.getLastModified().getTime()`), and a builder `Supplier<APIStudyDetail>`.
 - Produces:
   - `MetaStudyCache.cacheKey(StudyId id, Function<String,Long> versionOf) : String` — `token + "@" + join(sortedByMemberOrder versions)`.
-  - `MetaStudyCache.getOrBuild(StudyId id, Function<String,Long> versionOf, Supplier<APIStudyDetail> builder) : APIStudyDetail` — returns cached value if key matches; else builds, caches, returns. Evicts stale keys for the same token.
-  - `MetaStudyCache.getOrBuildInvalid(...)`: also caches a **known-invalid** verdict (a `BadRequestException` message) keyed by data-version so a repeatedly-requested incompatible union returns the same `400` without re-scanning.
+  - `MetaStudyCache.getOrBuild(StudyId id, Function<String,Long> versionOf, Supplier<APIStudyDetail> builder) : APIStudyDetail` — `synchronized`, single-flight: returns the cached value if the version-suffixed key matches; else builds exactly once under the lock, caches, and returns. Concurrent callers for the same token share one build (no duplicate Tier-2 scan). Stale keys for the same token are replaced on data-version change.
+  - `getOrBuild` also caches a **known-invalid** verdict: if the builder throws `BadRequestException`, the message is stored (keyed by data-version) so a repeatedly-requested incompatible union re-throws the same `400` without re-scanning. Unexpected (non-`BadRequestException`) failures are not cached, allowing retry.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1264,8 +1264,13 @@ import jakarta.ws.rs.BadRequestException;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -1318,6 +1323,33 @@ public class MetaStudyCacheTest {
     }
     assertEquals(1, calls.get()); // builder invoked only once; second call served the cached 400
   }
+
+  @Test
+  void concurrentRequestsForSameTokenBuildOnce() throws Exception {
+    MetaStudyCache cache = new MetaStudyCache();
+    StudyId id = StudyId.parse("union(studyA,studyB)");
+    Function<String, Long> versions = Map.of("studyA", 10L, "studyB", 20L)::get;
+    APIStudyDetail built = TestStudies.oneEntityOneStringVar("union(studyA,studyB)", "EUPA_1", "sex", List.of("F"));
+    AtomicInteger calls = new AtomicInteger();
+
+    int threads = 8;
+    ExecutorService pool = Executors.newFixedThreadPool(threads);
+    CyclicBarrier startLine = new CyclicBarrier(threads); // release all callers simultaneously
+    List<Future<APIStudyDetail>> results = new ArrayList<>();
+    for (int i = 0; i < threads; i++) {
+      results.add(pool.submit(() -> {
+        startLine.await();
+        return cache.getOrBuild(id, versions, () -> {
+          calls.incrementAndGet();
+          try { Thread.sleep(50); } catch (InterruptedException ignored) {}
+          return built;
+        });
+      }));
+    }
+    for (Future<APIStudyDetail> f : results) assertSame(built, f.get());
+    pool.shutdown();
+    assertEquals(1, calls.get()); // the expensive build ran exactly once despite 8 concurrent callers
+  }
 }
 ```
 
@@ -1334,20 +1366,29 @@ package org.veupathdb.service.eda.common.model;
 import jakarta.ws.rs.BadRequestException;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-/** Caches merged union metadata (and known-invalid verdicts) keyed by token + member data-versions. */
+/**
+ * Caches merged union metadata (and known-invalid verdicts) keyed by the union token plus
+ * each member's data-version. Concurrency model mirrors MetadataCache: a single monitor guards
+ * the map AND the build runs under that lock, so the expensive Tier-1+Tier-2 build for a given
+ * token runs at most once even under concurrent requests — no duplicated "spinner cost".
+ *
+ * No deadlock with MetadataCache: the builder calls down into MetadataCache.getStudyById (a
+ * different monitor); MetadataCache never calls back into MetaStudyCache, so there is no cycle.
+ */
 public final class MetaStudyCache {
 
   private sealed interface Entry permits Valid, Invalid {}
   private record Valid(APIStudyDetail detail) implements Entry {}
   private record Invalid(String message) implements Entry {}
 
-  // one slot per union token; replaced when the version-suffixed key changes
-  private final Map<String, KeyedEntry> _byToken = new ConcurrentHashMap<>();
+  // one slot per union token; replaced when the version-suffixed key changes.
+  // guarded by this instance's monitor (all access is via synchronized methods).
+  private final Map<String, KeyedEntry> _byToken = new HashMap<>();
   private record KeyedEntry(String key, Entry entry) {}
 
   public String cacheKey(StudyId id, Function<String, Long> versionOf) {
@@ -1356,18 +1397,21 @@ public final class MetaStudyCache {
     return sb.toString();
   }
 
-  public APIStudyDetail getOrBuild(StudyId id, Function<String, Long> versionOf, Supplier<APIStudyDetail> builder) {
+  public synchronized APIStudyDetail getOrBuild(StudyId id, Function<String, Long> versionOf, Supplier<APIStudyDetail> builder) {
     String key = cacheKey(id, versionOf);
     KeyedEntry existing = _byToken.get(id.getRawToken());
     if (existing != null && existing.key().equals(key)) {
-      return unwrap(existing.entry());
+      return unwrap(existing.entry());   // fresh hit — valid result or cached 400
     }
+    // miss or stale data-version → build exactly once under the lock
     Entry entry;
     try {
       entry = new Valid(builder.get());
     } catch (BadRequestException e) {
-      entry = new Invalid(e.getMessage());
+      entry = new Invalid(e.getMessage());   // cache the 400 so a repeated bad union doesn't re-scan
     }
+    // NOTE: an unexpected (non-BadRequest) RuntimeException propagates and is NOT cached,
+    // so a transient failure (e.g. DB blip) is retried on the next request.
     _byToken.put(id.getRawToken(), new KeyedEntry(key, entry));
     return unwrap(entry);
   }
@@ -1378,6 +1422,8 @@ public final class MetaStudyCache {
   }
 }
 ```
+
+> CONCURRENCY TRADEOFF: this coarse monitor serializes all union builds — while one union's Tier-2 scan runs, a request for a *different* union waits. This matches MetadataCache's coarse-lock precedent and is fine because unions are rare and each token builds only once per data-version. Single-study requests are unaffected (they never touch this cache). **Upgrade path if union-build contention ever appears:** replace the single monitor with per-token single-flight — a `ConcurrentHashMap<String, CompletableFuture<Entry>>` keyed by the version-suffixed key, where the first caller installs a future and computes while others `join()` it; different tokens then build in parallel. Not needed for v1.
 
 - [ ] **Step 4: Wire the cache into `MetaStudyResolver`**
 
@@ -1721,6 +1767,7 @@ import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -1742,6 +1789,25 @@ public class KWayMergeIteratorTest {
     while (it.hasNext()) ids.add(it.next().get("id"));
     it.close();
     return ids;
+  }
+
+  /** Wraps a delegate iterator, flipping `closed` when close() is called. */
+  private static CloseableIterator<Map<String, String>> closeTracking(
+      CloseableIterator<Map<String, String>> delegate, AtomicBoolean closed) {
+    return new CloseableIterator<>() {
+      public boolean hasNext() { return delegate.hasNext(); }
+      public Map<String, String> next() { return delegate.next(); }
+      public void close() throws Exception { closed.set(true); delegate.close(); }
+    };
+  }
+
+  /** Simulates a member whose first-row pull fails (e.g. a cursor open that throws). */
+  private static CloseableIterator<Map<String, String>> throwsOnFirstPull() {
+    return new CloseableIterator<>() {
+      public boolean hasNext() { throw new RuntimeException("boom on first pull"); }
+      public Map<String, String> next() { throw new RuntimeException("boom"); }
+      public void close() {}
+    };
   }
 
   @Test
@@ -1771,6 +1837,20 @@ public class KWayMergeIteratorTest {
       s(r("B", "2"), r("B", "2"))  // duplicate within a member too
     ), CMP, KEY);
     assertEquals(List.of("A", "B"), drain(it));
+  }
+
+  @Test
+  void closesAllMembersWhenConstructionFails() {
+    AtomicBoolean m0Closed = new AtomicBoolean(false);
+    AtomicBoolean m2Closed = new AtomicBoolean(false);
+    var m0 = closeTracking(s(r("A", "1")), m0Closed); // primed before the failure
+    var m1 = throwsOnFirstPull();                     // fails while the ctor primes it
+    var m2 = closeTracking(s(r("C", "1")), m2Closed); // opened, never reached by the ctor loop
+
+    assertThrows(RuntimeException.class, () -> new KWayMergeIterator(List.of(m0, m1, m2), CMP, KEY));
+
+    assertTrue(m0Closed.get(), "member primed before the failure must be closed");
+    assertTrue(m2Closed.get(), "member opened but not yet primed must be closed");
   }
 }
 ```
@@ -1818,8 +1898,24 @@ public final class KWayMergeIterator implements CloseableIterator<Map<String, St
                            Function<Map<String, String>, String> dedupKey) {
     _cmp = keyComparator;
     _dedupKey = dedupKey;
-    for (int i = 0; i < members.size(); i++) _heads.add(new Head(i, members.get(i)));
-    _next = computeNext();
+    // Priming a Head pulls that member's first row, which for a real subsetting iterator
+    // opens a DB cursor / file stream and can THROW. This iterator owns the member iterators
+    // (its close() closes them), so if any prime fails, close EVERY member we were handed —
+    // the heads already built AND the members past the failure point that were opened but
+    // never reached — otherwise those cursors leak (this ctor's result is never returned).
+    try {
+      for (int i = 0; i < members.size(); i++) _heads.add(new Head(i, members.get(i)));
+      _next = computeNext();
+    } catch (RuntimeException e) {
+      closeAllQuietly(members);
+      throw e;
+    }
+  }
+
+  private static void closeAllQuietly(List<CloseableIterator<Map<String, String>>> its) {
+    for (CloseableIterator<?> it : its) {
+      try { it.close(); } catch (Exception ignored) {}
+    }
   }
 
   private Map<String, String> computeNext() {
@@ -2003,6 +2099,9 @@ public final class UnionTabularStreams {
       throw e;
     }
 
+    // Safe to construct outside the try above: KWayMergeIterator's constructor closes every
+    // member it was handed if priming a first row throws (see its ctor). Do NOT also wrap this
+    // in the try — that would double-close on failure.
     return new KWayMergeIterator(
       perMember,
       PkSortComparator.forKeyColumns(idKeys),

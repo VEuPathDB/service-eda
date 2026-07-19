@@ -8,7 +8,9 @@ import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.client.spec.EdaSubsettingSpecValidator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.client.spec.StreamSpecValidator;
+import org.veupathdb.service.eda.common.model.MetaStudyResolver;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
+import org.veupathdb.service.eda.common.model.StudyId;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.common.model.VariableSource;
 import org.veupathdb.service.eda.generated.model.*;
@@ -36,6 +38,18 @@ public class EdaSubsettingClient implements StreamingDataClient {
    */
   public static APIStudyDetail getStudy(String studyId) {
     return ApiConversionUtil.getApiStudyDetail(Resources.getStudyResolver().getStudyById(studyId));
+  }
+
+  /**
+   * Returns union-aware reference metadata for the passed study id token (plain or
+   * {@code union(...)}). Un-cached: every call performs a full fetch (+ merge, for unions).
+   *
+   * @param studyId a plain study id or a union meta-study token
+   * @return reference metadata for the found (or merged) study
+   */
+  public static ReferenceMetadata getReferenceMetadata(String studyId) {
+    return MetaStudyResolver.resolveReferenceMetadata(
+      StudyId.parse(studyId), EdaSubsettingClient::getStudy);
   }
 
   @Override

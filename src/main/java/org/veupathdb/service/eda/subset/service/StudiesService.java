@@ -22,6 +22,9 @@ import org.veupathdb.lib.container.jaxrs.server.middleware.CustomResponseHeaders
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
+import org.veupathdb.service.eda.common.client.EdaSubsettingClient;
+import org.veupathdb.service.eda.common.model.MetaStudyResolver;
+import org.veupathdb.service.eda.common.model.StudyId;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Studies;
 import org.veupathdb.service.eda.subset.model.Entity;
@@ -90,8 +93,10 @@ public class StudiesService implements Studies {
   @Override
   public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) {
     checkPerms(_request, studyId, StudyAccess::allowStudyMetadata);
-    Study study = Resources.getStudyResolver().getStudyById(studyId);
-    APIStudyDetail apiStudyDetail = ApiConversionUtil.getApiStudyDetail(study);
+    StudyId parsed = StudyId.parse(studyId);
+    APIStudyDetail apiStudyDetail = parsed.isUnion()
+      ? MetaStudyResolver.resolveStudyDetail(parsed, EdaSubsettingClient::getStudy)
+      : ApiConversionUtil.getApiStudyDetail(Resources.getStudyResolver().getStudyById(studyId));
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
     response.setStudy(apiStudyDetail);
     return GetStudiesByStudyIdResponse.respond200WithApplicationJson(response);

@@ -38,6 +38,10 @@ public class EntityDef {
   private final LinkedHashMap<EntityChildUniquenessKey, VariableDef> _categories;
   private final LinkedHashMap<EntityChildUniquenessKey, CollectionDef> _collections;
 
+  // Member studies that contribute rows to this entity. Empty = ordinary single study.
+  // A list (not a set) so the deferred extension(...) case (leaf from one member) fits.
+  private List<String> _memberStudyIds = java.util.List.of();
+
   public EntityDef(String id, String displayName, String idColumnName, Boolean isManyToOneWithParent) {
     _id = id;
     _displayName = displayName;
@@ -83,6 +87,14 @@ public class EntityDef {
     return _collections.values().stream()
       .filter(c -> c.getCollectionId().equals(colSpec.getCollectionId()))
       .findFirst();
+  }
+
+  public void setMemberStudyIds(List<String> memberStudyIds) {
+    _memberStudyIds = java.util.List.copyOf(memberStudyIds);
+  }
+
+  public List<String> getMemberStudyIds() {
+    return _memberStudyIds;
   }
 
   public TreeNode<VariableDef> getNativeVariableTreeNode(VariableSpec varSpec) {

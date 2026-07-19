@@ -39,6 +39,28 @@ public class ReferenceMetadata {
   }
 
   /**
+   * Builds metadata for a union meta-study: same as the single-study constructor, but
+   * stamps every entity in the tree with the list of member study ids that contributed
+   * to this (already Tier-1-merged) study detail. An empty/null list means "not a union"
+   * (equivalent to the single-arg constructor).
+   *
+   * NOTE: this constructor is plumbing added ahead of its own formal task so that the
+   * shared TestStudies fixture (used across several union-meta-study tasks) can compile;
+   * later work that formally introduces union-aware ReferenceMetadata construction should
+   * revisit/confirm these semantics (e.g. whether all entities vs. only root should carry
+   * the member list).
+   *
+   * @param study raw (already merged) study metadata
+   * @param memberStudyIds ids of the studies that were merged to produce this study detail
+   */
+  public ReferenceMetadata(APIStudyDetail study, List<String> memberStudyIds) {
+    this(study);
+    if (memberStudyIds != null && !memberStudyIds.isEmpty()) {
+      _entityTree.findAll(e -> true).forEach(node -> node.getContents().setMemberStudyIds(memberStudyIds));
+    }
+  }
+
+  /**
    * Incorporates raw computed variable metadata into this instance, converting the passed list of VariableMapping
    * objects into VariableDefs and assigning them to entities.
    *

@@ -42,11 +42,6 @@ public final class StudyId {
       throw new BadRequestException("studyId must not be blank");
     String token = raw.trim();
 
-    // Detect malformed union attempts: if it looks like union syntax but is malformed, reject it
-    if ((token.startsWith("union") || token.contains(")")) && !token.startsWith(UNION_PREFIX)) {
-      throw new BadRequestException("Malformed union token: " + raw);
-    }
-
     if (!token.startsWith(UNION_PREFIX)) {
       // plain id path: identity pass-through, no member validation (backwards compatible)
       return new StudyId(token, false, List.of(token));

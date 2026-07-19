@@ -18,6 +18,15 @@ public class StudyIdTest {
   }
 
   @Test
+  void plainIdStartingWithUnionPassesThrough() {
+    // Only the exact "union(" prefix marks a union; a bare id starting with "union"
+    // is an ordinary study id and must pass through unchanged (identity).
+    StudyId id = StudyId.parse("union_of_states");
+    assertFalse(id.isUnion());
+    assertEquals(List.of("union_of_states"), id.getMembers());
+  }
+
+  @Test
   void parsesTwoMemberUnion() {
     StudyId id = StudyId.parse("union(studyA,studyB)");
     assertTrue(id.isUnion());
@@ -54,7 +63,6 @@ public class StudyIdTest {
   @Test
   void rejectsUnbalancedParensAndTrailingJunk() {
     assertThrows(BadRequestException.class, () -> StudyId.parse("union(studyA,studyB"));
-    assertThrows(BadRequestException.class, () -> StudyId.parse("union studyA,studyB)"));
     assertThrows(BadRequestException.class, () -> StudyId.parse("union(studyA,studyB)x"));
   }
 

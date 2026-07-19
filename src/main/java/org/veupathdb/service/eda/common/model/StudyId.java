@@ -43,8 +43,9 @@ public final class StudyId {
     String token = raw.trim();
 
     if (!token.startsWith(UNION_PREFIX)) {
-      // plain id path: identity pass-through, no member validation (backwards compatible)
-      return new StudyId(token, false, List.of(token));
+      // plain id path: identity pass-through — preserve the ORIGINAL raw string byte-for-byte
+      // (not the trimmed value) so single-study resolution/permission is exactly as before.
+      return new StudyId(raw, false, List.of(raw));
     }
 
     if (!token.endsWith(UNION_SUFFIX))

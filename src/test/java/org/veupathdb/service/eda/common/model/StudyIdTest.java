@@ -83,4 +83,14 @@ public class StudyIdTest {
     assertFalse(id.isUnion());
     assertEquals(List.of("union(literal)"), id.getMembers());
   }
+
+  @Test
+  void plainIdPreservesOriginalStringByteForByte() {
+    // A plain id passes through unchanged — no trimming — so single-study resolution and
+    // permission lookups are identical to before the union feature.
+    StudyId id = StudyId.parse("  studyA  ");
+    assertFalse(id.isUnion());
+    assertEquals(List.of("  studyA  "), id.getMembers());
+    assertEquals("  studyA  ", id.getRawToken());
+  }
 }

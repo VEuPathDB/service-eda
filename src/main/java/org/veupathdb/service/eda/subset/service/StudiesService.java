@@ -95,7 +95,12 @@ public class StudiesService implements Studies {
     checkPerms(_request, studyId, StudyAccess::allowStudyMetadata);
     StudyId parsed = StudyId.parse(studyId);
     APIStudyDetail apiStudyDetail = parsed.isUnion()
-      ? MetaStudyResolver.resolveStudyDetail(parsed, EdaSubsettingClient::getStudy)
+      ? MetaStudyResolver.resolveStudyDetailCached(
+          parsed, EdaSubsettingClient::getStudy,
+          member -> {
+            java.util.Date lastModified = Resources.getStudyResolver().getStudyById(member).getLastModified();
+            return lastModified == null ? null : lastModified.getTime();
+          })
       : ApiConversionUtil.getApiStudyDetail(Resources.getStudyResolver().getStudyById(studyId));
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
     response.setStudy(apiStudyDetail);

@@ -42,14 +42,32 @@ public class EdaSubsettingClient implements StreamingDataClient {
 
   /**
    * Returns union-aware reference metadata for the passed study id token (plain or
-   * {@code union(...)}). Un-cached: every call performs a full fetch (+ merge, for unions).
+   * {@code union(...)}). Single-study lookups are a pure pass-through (unchanged behavior). For a
+   * union, the merged {@link APIStudyDetail} is served from {@link MetaStudyResolver}'s shared
+   * cache, keyed by the union token plus each member's data-version (its {@code lastModified}),
+   * so the Tier-1 merge is rebuilt only when the token is first seen or a member's data changes.
    *
    * @param studyId a plain study id or a union meta-study token
    * @return reference metadata for the found (or merged) study
    */
   public static ReferenceMetadata getReferenceMetadata(String studyId) {
-    return MetaStudyResolver.resolveReferenceMetadata(
-      StudyId.parse(studyId), EdaSubsettingClient::getStudy);
+    StudyId id = StudyId.parse(studyId);
+    if (!id.isUnion()) {
+      return new ReferenceMetadata(getStudy(id.getMembers().get(0)));
+    }
+    APIStudyDetail merged = MetaStudyResolver.resolveStudyDetailCached(
+      id, EdaSubsettingClient::getStudy, EdaSubsettingClient::getMemberDataVersion);
+    return new ReferenceMetadata(merged, id.getMembers());
+  }
+
+  /**
+   * @return the data-version (epoch millis) of a study member, used to key the union meta-study
+   * cache; {@code null} if the member's {@code lastModified} is not populated, in which case the
+   * cache is bypassed for that union (see {@link MetaStudyResolver#resolveStudyDetailCached}).
+   */
+  private static Long getMemberDataVersion(String member) {
+    java.util.Date lastModified = Resources.getStudyResolver().getStudyById(member).getLastModified();
+    return lastModified == null ? null : lastModified.getTime();
   }
 
   @Override

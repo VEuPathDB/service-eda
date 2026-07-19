@@ -67,8 +67,9 @@ public final class MetaStudyResolver {
     if (!id.isUnion()) return memberFetcher.apply(id.getMembers().get(0));
     boolean anyVersionUnknown = id.getMembers().stream().anyMatch(member -> versionOf.apply(member) == null);
     if (anyVersionUnknown) {
-      // can't form a safe cache key; rebuild fresh every time rather than caching under a "null" key
-      return MetaStudyMerger.merge(id, id.getMembers().stream().map(memberFetcher).toList());
+      // can't form a safe cache key; rebuild fresh every time rather than caching under a "null" key.
+      // Tier 2 still runs here (via buildAndVerify) -- only caching is skipped, not the value check.
+      return buildAndVerify(id, memberFetcher);
     }
     return CACHE.getOrBuild(id, versionOf, () -> buildAndVerify(id, memberFetcher));
   }

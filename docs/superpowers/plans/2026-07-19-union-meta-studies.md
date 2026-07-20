@@ -2,6 +2,25 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
+## Execution Progress
+
+- [x] Task 1 — StudyId value type + parser
+- [x] Task 2 — Union-aware access control
+- [x] Task 3 — EntityDef member-study list
+- [x] Task 4 — MetaStudyMerger (Tier 1)
+- [x] Task 5 — ReferenceMetadata member-list constructor
+- [x] Task 6 — Union-aware study resolution (endpoint + client)
+- [x] Task 7 — Union metadata cache
+- [x] Task 8 — Tier 2 deep value-consistency check
+- [x] Task 9 — PK sort comparator
+- [x] Task 10 — K-way merge iterator
+- [x] Task 11 — Wire union merge into tabular seam
+- [x] Task 12 — Union-aware subset count
+- [x] Task 13 — Union-aware distribution + root-vocab
+- [x] Task 14 — End-to-end integration test
+
+Findings tracked in `2026-07-19-union-meta-studies-ISSUES.md`.
+
 **Goal:** Let two or more EDA studies with identical entity/variable structure be combined at runtime into a single `union(...)` meta-study that behaves like an ordinary study for metadata, access control, subsetting, merging, and visualization — with nothing persisted.
 
 **Architecture:** A `union(studyA,studyB)` token is a scalar `studyId` string. A new `StudyId` value-type parses it at the resolve boundary. Access control resolves the token and requires permission on **every** member. Tier-1 metadata merge (structural compatibility + vocabulary-union + range-merge) runs **once** at the `APIStudyDetail` level, producing a merged `APIStudyDetail` whose `id` is the union token; that same merged detail feeds both the `GET /studies/{study-id}` endpoint and `ReferenceMetadata` construction. `ReferenceMetadata`/`EntityDef` gain a member-study list so the data path knows which studies to stream. The data path opens one ordinary per-member tabular iterator per member and **k-way merges** them on the PK sort key (case-insensitive collation) with **dedup by entity ID**, yielding the exact `CloseableIterator<Map<String,String>>` the merge layer already consumes — so the join/reduction/derived-variable layer stays untouched. Tier-2 deep value-consistency and the merged metadata are cached, keyed by the union token plus each member's `lastModified`.
@@ -124,8 +143,19 @@ public class StudyIdTest {
   @Test
   void rejectsUnbalancedParensAndTrailingJunk() {
     assertThrows(BadRequestException.class, () -> StudyId.parse("union(studyA,studyB"));
-    assertThrows(BadRequestException.class, () -> StudyId.parse("union studyA,studyB)"));
     assertThrows(BadRequestException.class, () -> StudyId.parse("union(studyA,studyB)x"));
+  }
+
+  @Test
+  void plainIdStartingWithUnionPassesThrough() {
+    // Only the exact "union(" prefix marks a union; a bare id that merely starts with
+    // "union" is an ordinary study id and must pass through unchanged (identity). Do NOT
+    // add a heuristic guard for near-miss tokens like "union studyA,studyB)" — any such
+    // guard risks rejecting a real study id, violating the identity-pass-through constraint.
+    // A malformed token that is not a valid union simply resolves to a not-found study later.
+    StudyId id = StudyId.parse("union_of_states");
+    assertFalse(id.isUnion());
+    assertEquals(List.of("union_of_states"), id.getMembers());
   }
 
   @Test
@@ -201,8 +231,9 @@ public final class StudyId {
     String token = raw.trim();
 
     if (!token.startsWith(UNION_PREFIX)) {
-      // plain id path: identity pass-through, no member validation (backwards compatible)
-      return new StudyId(token, false, List.of(token));
+      // plain id path: identity pass-through — preserve the ORIGINAL raw string byte-for-byte
+      // (not the trimmed value) so single-study resolution/permission is exactly as before.
+      return new StudyId(raw, false, List.of(raw));
     }
 
     if (!token.endsWith(UNION_SUFFIX))
@@ -304,7 +335,9 @@ public class StudyAccessUnionTest {
   // resolver so the test can stub per-member StudyAccess without a live DB.
   @Test
   void unionRequiresEveryMemberAuthorized() {
-    Predicate<StudyAccess> allowAll = sa -> true;
+    // Use a DISCRIMINATING predicate: grantAll() passes it, denyAll() fails it. A trivial
+    // `sa -> true` would pass for denyAll() too and never exercise deny-on-unauthorized.
+    Predicate<StudyAccess> pred = StudyAccess::allowResultsAll;
 
     // studyA authorized, studyB not
     StudyAccess.PerStudyAccessResolver resolver = (studyId, userId) ->
@@ -313,7 +346,7 @@ public class StudyAccessUnionTest {
         : java.util.Optional.of(StudyAccess.denyAll());
 
     assertThrows(ForbiddenException.class, () ->
-      StudyAccess.confirmPermission(1L, "union(studyA,studyB)", allowAll, resolver));
+      StudyAccess.confirmPermission(1L, "union(studyA,studyB)", pred, resolver));
   }
 
   @Test

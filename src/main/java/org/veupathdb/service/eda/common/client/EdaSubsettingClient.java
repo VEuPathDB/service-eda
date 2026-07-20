@@ -119,8 +119,36 @@ public class EdaSubsettingClient implements StreamingDataClient {
       .collect(Collectors.toList());
   }
 
+  /**
+   * Counts distinct entity instances for a union meta-study by opening the merged, deduped
+   * tabular stream (see {@link UnionTabularStreams#open}) and counting emitted rows. The merged
+   * stream already dedups by composite id key, so counting rows == counting distinct instances.
+   * The passed {@link UnionTabularStreams.TabularStreamOpener} is injected so this is testable
+   * without a live DB.
+   */
+  public static long countUnionEntity(
+    ReferenceMetadata metadata,
+    String entityId,
+    List<APIFilter> filters,
+    UnionTabularStreams.TabularStreamOpener opener
+  ) {
+    // no added variables; only id columns are needed to count distinct entity instances
+    StreamSpec spec = new StreamSpec("count-" + java.util.UUID.randomUUID(), entityId);
+    long n = 0;
+    try (CloseableIterator<Map<String, String>> it = UnionTabularStreams.open(metadata, filters, spec, opener)) {
+      while (it.hasNext()) { it.next(); n++; }
+    } catch (Exception e) {
+      throw new RuntimeException("Failed counting union entity " + entityId, e);
+    }
+    return n;
+  }
+
   public static long getSubsetCount(ReferenceMetadata metadata, String entityId, List<APIFilter> subsetFilters) {
-    return StudiesService.handleCountRequest(metadata.getStudyId(), entityId, subsetFilters).getCount();
+    if (metadata.getMemberStudyIds().isEmpty()) {
+      return StudiesService.handleCountRequest(metadata.getStudyId(), entityId, subsetFilters).getCount();
+    }
+    return countUnionEntity(metadata, entityId, subsetFilters,
+      (studyId, f, sp) -> getTabularDataIterator(studyId, f, sp));
   }
 
   public static VariableDistributionPostResponse getCategoricalDistribution(

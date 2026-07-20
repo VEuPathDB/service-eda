@@ -166,6 +166,12 @@ public class EdaSubsettingClient implements StreamingDataClient {
       throw new IllegalArgumentException("Cannot call subsetting distribution endpoint with a non-categorical var (for now): " + var);
     }
 
+    if (!metadata.getMemberStudyIds().isEmpty()) {
+      Map<String, Long> tally = UnionDistribution.tally(metadata, varSpec, subsetFilters,
+        (studyId, f, sp) -> getTabularDataIterator(studyId, f, sp));
+      return buildUnionDistributionResponse(tally, valueSpec);
+    }
+
     // build request object
     VariableDistributionPostRequest request = new VariableDistributionPostRequestImpl();
     request.setFilters(subsetFilters);
@@ -179,11 +185,61 @@ public class EdaSubsettingClient implements StreamingDataClient {
     );
   }
 
+  /**
+   * Assembles a {@link VariableDistributionPostResponse} for a union meta-study from the deduped
+   * category tally produced by {@link UnionDistribution#tally}, in the same shape as
+   * {@link StudiesService#handleDistributionRequest} returns for the single-study (categorical,
+   * i.e. {@code DiscreteDistribution}) case: one {@link HistogramBin} per distinct category
+   * (binStart == binEnd == binLabel == the category value; {@code value} is the count, or the
+   * proportion of the total tallied count when {@code valueSpec} is {@code PROPORTION}), plus
+   * {@link HistogramStats} populated from the tally (subsetSize, numVarValues,
+   * numDistinctEntityRecords all equal the summed tally count since the tally has no way to
+   * observe missing/null values that were filtered out upstream; numMissingCases is therefore
+   * reported as 0 and subsetMin/Max/Mean are left unset as they don't apply to a categorical var).
+   */
+  private static VariableDistributionPostResponse buildUnionDistributionResponse(
+    Map<String, Long> tally,
+    ValueSpec valueSpec
+  ) {
+    long total = tally.values().stream().mapToLong(Long::longValue).sum();
+
+    List<HistogramBin> bins = new java.util.ArrayList<>();
+    for (Map.Entry<String, Long> entry : tally.entrySet()) {
+      HistogramBin bin = new HistogramBinImpl();
+      bin.setBinStart(entry.getKey());
+      bin.setBinEnd(entry.getKey());
+      bin.setBinLabel(entry.getKey());
+      bin.setValue(valueSpec == ValueSpec.PROPORTION
+        ? (total == 0 ? 0.0 : (double) entry.getValue() / total)
+        : entry.getValue());
+      bins.add(bin);
+    }
+
+    HistogramStats stats = new HistogramStatsImpl();
+    stats.setSubsetSize(total);
+    stats.setNumVarValues(total);
+    stats.setNumDistinctValues((long) tally.size());
+    stats.setNumDistinctEntityRecords(total);
+    stats.setNumMissingCases(0L);
+
+    VariableDistributionPostResponse response = new VariableDistributionPostResponseImpl();
+    response.setHistogram(bins);
+    response.setStatistics(stats);
+    return response;
+  }
+
   public static InputStream getVocabByRootEntity(
     ReferenceMetadata metadata,
     VariableSpec varSpec,
     List<APIFilter> subsetFilters
   ) {
+    if (!metadata.getMemberStudyIds().isEmpty()) {
+      // Tier-1 already merged member vocabularies onto this variable; return that union directly
+      // rather than re-querying the DB per member.
+      VariableDef var = metadata.getVariable(varSpec).orElseThrow();
+      return buildUnionVocabStream(metadata.getStudyId(), var.getVocabulary());
+    }
+
     var study = Resources.getStudyResolver().getStudyById(metadata.getStudyId());
     var schema = switch(study.getStudySourceType()) {
       case USER_SUBMITTED -> Resources.getVdiDatasetsSchema() + ".";
@@ -197,6 +253,26 @@ public class EdaSubsettingClient implements StreamingDataClient {
       varSpec.getVariableId(),
       ApiConversionUtil.toInternalFilters(study, subsetFilters, schema)
     );
+  }
+
+  /**
+   * Mirrors the byte format produced by {@code ExtendedRootVocabHandler.queryStudyVocab} for the
+   * single-study path: one line per row, each line being {@code <pk>\t<value>}, rows separated by
+   * the platform line separator, no header/footer. For a union there is no single per-instance
+   * root pk backing each vocabulary value (the vocabulary here is the Tier-1 merged union across
+   * member studies, not a per-row query), so the union token itself (the merged study id) is used
+   * as the pk column for every row.
+   */
+  private static InputStream buildUnionVocabStream(String unionStudyId, List<String> vocabulary) {
+    if (vocabulary == null || vocabulary.isEmpty()) {
+      return new java.io.ByteArrayInputStream(new byte[0]);
+    }
+    StringBuilder sb = new StringBuilder();
+    String rowDelimiter = System.lineSeparator();
+    for (String value : vocabulary) {
+      sb.append(unionStudyId).append('\t').append(value).append(rowDelimiter);
+    }
+    return new java.io.ByteArrayInputStream(sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
   }
 
   @Nullable

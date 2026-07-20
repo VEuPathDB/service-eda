@@ -25,6 +25,7 @@ import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 import org.veupathdb.service.eda.common.client.EdaSubsettingClient;
 import org.veupathdb.service.eda.common.model.MetaStudyResolver;
 import org.veupathdb.service.eda.common.model.StudyId;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Studies;
 import org.veupathdb.service.eda.subset.model.Entity;
@@ -131,8 +132,18 @@ public class StudiesService implements Studies {
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
     checkPerms(_request, studyId, StudyAccess::allowSubsetting);
+    VariableDistributionPostResponse response = StudyId.parse(studyId).isUnion()
+        // Union: tally over the merged/deduped member streams (categorical native vars only, for
+        // now -- getCategoricalDistribution throws otherwise). A plain study id keeps the existing
+        // full-featured path below, byte-for-byte unchanged.
+        ? EdaSubsettingClient.getCategoricalDistribution(
+            EdaSubsettingClient.getReferenceMetadata(studyId),
+            VariableDef.newVariableSpec(entityId, variableId),
+            request.getFilters(),
+            request.getValueSpec() == null ? ValueSpec.COUNT : request.getValueSpec())
+        : handleDistributionRequest(studyId, entityId, variableId, request);
     return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
-        respond200WithApplicationJson(handleDistributionRequest(studyId, entityId, variableId, request));
+        respond200WithApplicationJson(response);
   }
 
   public static VariableDistributionPostResponse handleDistributionRequest(

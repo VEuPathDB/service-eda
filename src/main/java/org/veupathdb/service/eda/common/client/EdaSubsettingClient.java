@@ -167,7 +167,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
     }
 
     if (!metadata.getMemberStudyIds().isEmpty()) {
-      Map<String, Long> tally = UnionDistribution.tally(metadata, varSpec, subsetFilters,
+      UnionDistribution.Tally tally = UnionDistribution.tally(metadata, varSpec, subsetFilters,
         (studyId, f, sp) -> getTabularDataIterator(studyId, f, sp));
       return buildUnionDistributionResponse(tally, valueSpec);
     }
@@ -192,35 +192,38 @@ public class EdaSubsettingClient implements StreamingDataClient {
    * i.e. {@code DiscreteDistribution}) case: one {@link HistogramBin} per distinct category
    * (binStart == binEnd == binLabel == the category value; {@code value} is the count, or the
    * proportion of the total tallied count when {@code valueSpec} is {@code PROPORTION}), plus
-   * {@link HistogramStats} populated from the tally (subsetSize, numVarValues,
-   * numDistinctEntityRecords all equal the summed tally count since the tally has no way to
-   * observe missing/null values that were filtered out upstream; numMissingCases is therefore
-   * reported as 0 and subsetMin/Max/Mean are left unset as they don't apply to a categorical var).
+   * {@link HistogramStats} populated to match single-study semantics: subsetSize is the total
+   * deduped instance count (including those missing a value), numVarValues is the count of
+   * instances with a value (sum of category counts), numMissingCases is the count of instances
+   * with no value, numDistinctValues is the number of distinct categories, and
+   * numDistinctEntityRecords mirrors subsetSize (this categorical case has one record per
+   * instance). subsetMin/Max/Mean are left unset as they don't apply to a categorical var.
    */
   private static VariableDistributionPostResponse buildUnionDistributionResponse(
-    Map<String, Long> tally,
+    UnionDistribution.Tally tally,
     ValueSpec valueSpec
   ) {
-    long total = tally.values().stream().mapToLong(Long::longValue).sum();
+    Map<String, Long> counts = tally.counts();
+    long numVarValues = tally.totalSeen() - tally.missingSeen();
 
     List<HistogramBin> bins = new java.util.ArrayList<>();
-    for (Map.Entry<String, Long> entry : tally.entrySet()) {
+    for (Map.Entry<String, Long> entry : counts.entrySet()) {
       HistogramBin bin = new HistogramBinImpl();
       bin.setBinStart(entry.getKey());
       bin.setBinEnd(entry.getKey());
       bin.setBinLabel(entry.getKey());
       bin.setValue(valueSpec == ValueSpec.PROPORTION
-        ? (total == 0 ? 0.0 : (double) entry.getValue() / total)
+        ? (numVarValues == 0 ? 0.0 : (double) entry.getValue() / numVarValues)
         : entry.getValue());
       bins.add(bin);
     }
 
     HistogramStats stats = new HistogramStatsImpl();
-    stats.setSubsetSize(total);
-    stats.setNumVarValues(total);
-    stats.setNumDistinctValues((long) tally.size());
-    stats.setNumDistinctEntityRecords(total);
-    stats.setNumMissingCases(0L);
+    stats.setSubsetSize(tally.totalSeen());
+    stats.setNumVarValues(numVarValues);
+    stats.setNumDistinctValues((long) counts.size());
+    stats.setNumDistinctEntityRecords(tally.totalSeen());
+    stats.setNumMissingCases(tally.missingSeen());
 
     VariableDistributionPostResponse response = new VariableDistributionPostResponseImpl();
     response.setHistogram(bins);

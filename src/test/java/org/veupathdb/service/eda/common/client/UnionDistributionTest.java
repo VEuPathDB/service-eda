@@ -13,7 +13,11 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UnionDistributionTest {
 
   private static Map<String, String> row(String pk, String pkVal, String sexCol, String sex) {
-    var m = new LinkedHashMap<String, String>(); m.put(pk, pkVal); m.put(sexCol, sex); return m;
+    var m = new LinkedHashMap<String, String>(); m.put(pk, pkVal);
+    if (sex != null) {
+      m.put(sexCol, sex);
+    }
+    return m;
   }
 
   @Test
@@ -27,10 +31,13 @@ public class UnionDistributionTest {
     UnionTabularStreams.TabularStreamOpener opener = (studyId, f, sp) ->
       studyId.equals("studyA")
         ? CloseableIterator.of(List.of(row(pk, "P1", sexCol, "F"), row(pk, "P2", sexCol, "M")).iterator())
-        : CloseableIterator.of(List.of(row(pk, "P2", sexCol, "M"), row(pk, "P3", sexCol, "F")).iterator());
+        : CloseableIterator.of(List.of(row(pk, "P2", sexCol, "M"), row(pk, "P3", sexCol, "F"),
+            row(pk, "P4", sexCol, null)).iterator());
 
-    Map<String, Long> tally = UnionDistribution.tally(md, sexSpec, List.of(), opener);
-    assertEquals(2L, tally.get("F")); // P1, P3
-    assertEquals(1L, tally.get("M")); // P2 (deduped)
+    UnionDistribution.Tally result = UnionDistribution.tally(md, sexSpec, List.of(), opener);
+    assertEquals(2L, result.counts().get("F")); // P1, P3
+    assertEquals(1L, result.counts().get("M")); // P2 (deduped)
+    assertEquals(4L, result.totalSeen()); // P1, P2, P3, P4
+    assertEquals(1L, result.missingSeen()); // P4 has no value
   }
 }

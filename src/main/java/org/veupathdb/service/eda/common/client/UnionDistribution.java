@@ -23,14 +23,26 @@ public final class UnionDistribution {
   private UnionDistribution() {}
 
   /**
+   * Result of {@link #tally}: category counts plus enough bookkeeping to reproduce
+   * single-study {@code HistogramStats} semantics (subsetSize, numMissingCases, etc.).
+   *
+   * @param counts map of category value to deduped count (rows with a null/blank value for the
+   * variable are omitted, not counted as a category)
+   * @param totalSeen total number of deduped rows observed (all entity instances in the subset,
+   * whether or not they have a value for the variable)
+   * @param missingSeen number of deduped rows whose value for the variable was null or blank
+   */
+  public record Tally(Map<String, Long> counts, long totalSeen, long missingSeen) {}
+
+  /**
    * @param metadata union (or single-study) reference metadata
    * @param varSpec the categorical variable to tally
    * @param filters subset filters to apply
    * @param opener per-member tabular stream opener (injected for testability without a live DB)
-   * @return map of category value to deduped count across the merged stream; rows with a null
-   * value for the variable are omitted (not counted as a category)
+   * @return a {@link Tally} carrying the category counts along with the total and missing row
+   * counts, computed over the same deduped merged stream in a single pass
    */
-  public static Map<String, Long> tally(
+  public static Tally tally(
       ReferenceMetadata metadata,
       VariableSpec varSpec,
       List<APIFilter> filters,
@@ -44,16 +56,21 @@ public final class UnionDistribution {
     spec.addVar(varSpec);
 
     Map<String, Long> counts = new LinkedHashMap<>();
+    long totalSeen = 0;
+    long missingSeen = 0;
     try (CloseableIterator<Map<String, String>> it = UnionTabularStreams.open(metadata, filters, spec, opener)) {
       while (it.hasNext()) {
         String value = it.next().get(valueKey);
-        if (value != null) {
+        totalSeen++;
+        if (value == null || value.isBlank()) {
+          missingSeen++;
+        } else {
           counts.merge(value, 1L, Long::sum);
         }
       }
     } catch (Exception e) {
       throw new RuntimeException("Failed tallying union distribution for " + varSpec, e);
     }
-    return counts;
+    return new Tally(counts, totalSeen, missingSeen);
   }
 }

@@ -131,6 +131,25 @@ public final class TestStudies {
         List.<APIVariable>of(intVar(varId, min, max)), List.of()));
   }
 
+  /** INTEGER CONTINUOUS variable with distributionDefaults present but rangeMin/rangeMax unset (null). */
+  public static APIIntegerVariable intVarWithNullRange(String varId) {
+    APIIntegerVariableImpl v = new APIIntegerVariableImpl();
+    v.setId(varId);
+    v.setDisplayName(varId);
+    v.setUnits("years");
+    v.setDataShape(APIVariableDataShape.CONTINUOUS);
+    v.setIsMultiValued(false);
+    v.setImputeZero(false);
+    v.setHasStudyDependentVocabulary(false);
+    v.setDistributionDefaults(new APIIntegerDistributionDefaultsImpl());
+    return v;
+  }
+
+  public static APIStudyDetail oneEntityIntVarWithNullRange(String studyId, String entityId, String varId) {
+    return study(studyId, entity(entityId, entityId + "_id", true,
+        List.<APIVariable>of(intVarWithNullRange(varId)), List.of()));
+  }
+
   public static APIStudyDetail oneEntityNumberVarWithRange(String studyId, String entityId, String varId, double min, double max) {
     return study(studyId, entity(entityId, entityId + "_id", true,
         List.<APIVariable>of(numberVar(varId, min, max)), List.of()));

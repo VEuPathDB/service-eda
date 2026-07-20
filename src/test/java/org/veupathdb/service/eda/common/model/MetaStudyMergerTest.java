@@ -72,6 +72,21 @@ public class MetaStudyMergerTest {
   }
 
   @Test
+  void mergesIntegerRangeWhenBothMembersHaveNullRange() {
+    // Regression test: distributionDefaults present but rangeMin/rangeMax unset in both
+    // members previously threw NPE in MetaStudyMerger.minL/maxL (ternary auto-unboxing bug).
+    APIStudyDetail a = TestStudies.oneEntityIntVarWithNullRange("studyA", "EUPA_1", "age");
+    APIStudyDetail b = TestStudies.oneEntityIntVarWithNullRange("studyB", "EUPA_1", "age");
+    StudyId union = StudyId.parse("union(studyA,studyB)");
+
+    APIStudyDetail merged = MetaStudyMerger.merge(union, List.of(a, b));
+
+    var mergedVar = (org.veupathdb.service.eda.generated.model.APIIntegerVariable)
+        merged.getRootEntity().getVariables().get(0);
+    assertNull(mergedVar.getDistributionDefaults());
+  }
+
+  @Test
   void mergesDateRangeAndCarriesBinUnits() {
     APIStudyDetail a = TestStudies.oneEntityDateVarWithRange(
         "studyA", "EUPA_1", "collectionDate", "2001-01-01", "2010-01-01", BinUnits.MONTH);

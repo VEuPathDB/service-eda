@@ -222,8 +222,16 @@ public final class MetaStudyMerger {
   }
 
   // --- small helpers (null-safe min/max; shallow copies preserving all ref fields) ---
-  private static Long minL(Long a, Long b) { return a == null ? b : (b == null ? a : Math.min(a, b)); }
-  private static Long maxL(Long a, Long b) { return a == null ? b : (b == null ? a : Math.max(a, b)); }
+  private static Long minL(Long a, Long b) {
+    if (a == null) return b;
+    if (b == null) return a;
+    return Math.min(a, b);
+  }
+  private static Long maxL(Long a, Long b) {
+    if (a == null) return b;
+    if (b == null) return a;
+    return Math.max(a, b);
+  }
   private static String minStr(String a, String b) { return a == null ? b : (b == null ? a : (a.compareTo(b) <= 0 ? a : b)); }
   private static String maxStr(String a, String b) { return a == null ? b : (b == null ? a : (a.compareTo(b) >= 0 ? a : b)); }
   private static Number minN(Number a, Number b) { return a == null ? b : (b == null ? a : (a.doubleValue() <= b.doubleValue() ? a : b)); }

@@ -432,8 +432,15 @@ public class StudiesService implements Studies {
   public PostStudiesEntitiesCountByStudyIdAndEntityIdResponse postStudiesEntitiesCountByStudyIdAndEntityId(
       String studyId, String entityId, EntityCountPostRequest rawRequest) {
     checkPerms(_request, studyId, StudyAccess::allowSubsetting);
-    return PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(
-        handleCountRequest(studyId, entityId, rawRequest));
+    // Route through the union-aware client so a union(...) token is merged/deduped across members
+    // (EdaSubsettingClient.getSubsetCount -> countUnionEntity). A plain study id is an unchanged
+    // pass-through: getReferenceMetadata carries no members, so getSubsetCount delegates straight
+    // back to handleCountRequest, exactly as before.
+    long count = EdaSubsettingClient.getSubsetCount(
+        EdaSubsettingClient.getReferenceMetadata(studyId), entityId, rawRequest.getFilters());
+    EntityCountPostResponse response = new EntityCountPostResponseImpl();
+    response.setCount(count);
+    return PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
   }
 
   public static EntityCountPostResponse handleCountRequest(String studyId, String entityId, EntityCountPostRequest rawRequest) {

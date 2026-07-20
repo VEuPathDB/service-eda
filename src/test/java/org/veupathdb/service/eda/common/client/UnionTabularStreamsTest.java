@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.TestStudies;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 
 import java.util.*;
@@ -36,7 +37,8 @@ public class UnionTabularStreamsTest {
   @Test
   void unionMergesPerMemberStreamsWithDedup() throws Exception {
     ReferenceMetadata md = TestStudies.unionMetadata("union(studyA,studyB)", List.of("studyA", "studyB"));
-    String pk = md.getEntity(TestStudies.ROOT_ID).orElseThrow().getIdColumnDef().getVariableId();
+    // rows are keyed the way the tabular iterator keys them: qualified "entityId.column"
+    String pk = VariableDef.toDotNotation(md.getEntity(TestStudies.ROOT_ID).orElseThrow().getIdColumnDef());
     StreamSpec spec = new StreamSpec("s", TestStudies.ROOT_ID);
 
     var opener = (UnionTabularStreams.TabularStreamOpener) (studyId, f, sp) ->

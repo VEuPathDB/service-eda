@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.common.client;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
@@ -49,8 +50,10 @@ public final class UnionDistribution {
       UnionTabularStreams.TabularStreamOpener opener) {
 
     String entityId = varSpec.getEntityId();
-    // row-map key for the value column is the bare variableId
-    String valueKey = varSpec.getVariableId();
+    // row-map key for the value column is qualified "entityId.column", matching how the tabular
+    // stream keys its columns (see FilteredResultFactory.getTabularOutputColumns). A bare
+    // variableId never matches, so every row would read as null (i.e. missing).
+    String valueKey = VariableDef.toDotNotation(varSpec);
 
     StreamSpec spec = new StreamSpec("dist-" + UUID.randomUUID(), entityId);
     spec.addVar(varSpec);

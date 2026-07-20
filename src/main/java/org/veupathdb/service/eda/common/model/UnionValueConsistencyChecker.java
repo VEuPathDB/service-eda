@@ -17,7 +17,10 @@ public final class UnionValueConsistencyChecker {
 
   public static void check(ReferenceMetadata unionMetadata, EntityDef sharedEntity,
                            BiFunction<String, String, CloseableIterator<Map<String, String>>> streamSupplier) {
-    String pkKey = sharedEntity.getIdColumnDef().getVariableId();
+    // The tabular stream keys columns in qualified "entityId.column" form (see
+    // FilteredResultFactory.getTabularOutputColumns), so the PK must be looked up the same way --
+    // a bare variable id never matches, collapsing every row to a null id and faking conflicts.
+    String pkKey = VariableDef.toDotNotation(sharedEntity.getIdColumnDef());
     // first-seen values per entity id; a later member's differing value is a conflict
     Map<String, Map<String, String>> firstSeen = new HashMap<>();
 

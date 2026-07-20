@@ -4,6 +4,7 @@ import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.TestStudies;
+import org.veupathdb.service.eda.common.model.VariableDef;
 
 import java.util.*;
 
@@ -18,7 +19,8 @@ public class EdaSubsettingClientCountTest {
   @Test
   void unionCountDedupesSharedIds() throws Exception {
     ReferenceMetadata md = TestStudies.unionMetadata("union(studyA,studyB)", List.of("studyA", "studyB"));
-    String pk = md.getEntity(TestStudies.ROOT_ID).orElseThrow().getIdColumnDef().getVariableId();
+    // rows are keyed the way the tabular iterator keys them: qualified "entityId.column"
+    String pk = VariableDef.toDotNotation(md.getEntity(TestStudies.ROOT_ID).orElseThrow().getIdColumnDef());
 
     UnionTabularStreams.TabularStreamOpener opener = (studyId, f, sp) ->
       studyId.equals("studyA")

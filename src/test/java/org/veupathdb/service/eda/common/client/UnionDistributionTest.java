@@ -4,6 +4,7 @@ import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.TestStudies;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
 
 import java.util.*;
@@ -24,8 +25,9 @@ public class UnionDistributionTest {
   void tallyDedupesSharedInstancesThenCountsCategories() throws Exception {
     ReferenceMetadata md = TestStudies.unionMetadata("union(studyA,studyB)", List.of("studyA", "studyB"));
     var entity = md.getEntity(TestStudies.ROOT_ID).orElseThrow();
-    String pk = entity.getIdColumnDef().getVariableId();
-    String sexCol = "sex"; // row-map key for the sex variable == bare variableId
+    // rows are keyed the way the tabular iterator keys them: qualified "entityId.column"
+    String pk = VariableDef.toDotNotation(entity.getIdColumnDef());
+    String sexCol = TestStudies.ROOT_ID + ".sex"; // row-map key for the sex variable, qualified
     VariableSpec sexSpec = TestStudies.varSpec(TestStudies.ROOT_ID, "sex");
 
     UnionTabularStreams.TabularStreamOpener opener = (studyId, f, sp) ->

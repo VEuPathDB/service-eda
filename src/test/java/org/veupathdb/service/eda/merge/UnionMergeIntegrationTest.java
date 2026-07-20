@@ -16,8 +16,9 @@ public class UnionMergeIntegrationTest {
   void twoStudyUnionMergesChildEntityAndInheritsUnionedAncestor() throws Exception {
     // household (root) shared across members; participant (child) unioned underneath.
     ReferenceMetadata md = TestStudies.householdParticipantUnion("union(studyA,studyB)", List.of("studyA", "studyB"));
-    String householdPk = "household_id";
-    String participantPk = "participant_id";
+    // rows are keyed the way the tabular iterator keys them: qualified "entityId.column"
+    String householdPk = TestStudies.HOUSEHOLD_ID + ".household_id";
+    String participantPk = TestStudies.PARTICIPANT_ID + ".participant_id";
 
     // studyA: H1 -> {PA1}; studyB: H1 (shared, agrees) -> {PB1}; H2 -> {PB2}
     // Fixture rows are ordered per-member by the PK sort key that

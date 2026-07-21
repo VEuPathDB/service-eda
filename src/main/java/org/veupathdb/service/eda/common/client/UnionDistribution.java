@@ -3,6 +3,7 @@ package org.veupathdb.service.eda.common.client;
 import jakarta.ws.rs.BadRequestException;
 import org.gusdb.fgputil.Tuples.TwoTuple;
 import org.gusdb.fgputil.distribution.AbstractDistribution;
+import org.gusdb.fgputil.distribution.DateBinDistribution;
 import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.distribution.DistributionStreamProvider;
 import org.gusdb.fgputil.distribution.FloatingPointBinDistribution;
@@ -15,8 +16,10 @@ import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.subset.Utils;
 import org.veupathdb.service.eda.subset.model.distribution.BinSpecWithRange;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -116,6 +119,7 @@ public final class UnionDistribution {
     AbstractDistribution dist = switch (type) {
       case INTEGER -> new IntegerBinDistribution(provider, vs, new RequestNumberBinSpec(spec));
       case NUMBER -> new FloatingPointBinDistribution(provider, vs, new RequestNumberBinSpec(spec));
+      case DATE -> new DateBinDistribution(provider, vs, new RequestDateBinSpec(spec));
       default -> throw new BadRequestException(
           "Continuous distribution supports only integer, number, and date variables; got " + type);
     };
@@ -151,5 +155,35 @@ public final class UnionDistribution {
     @Override public Object getDisplayRangeMin() { return _spec.getDisplayRangeMin(); }
     @Override public Object getDisplayRangeMax() { return _spec.getDisplayRangeMax(); }
     @Override public Object getBinSize() { return _spec.getBinWidth(); }
+  }
+
+  /** FgpUtil date bin spec built purely from the request bin spec (no subsetting Variable). */
+  private static final class RequestDateBinSpec implements DateBinDistribution.DateBinSpec {
+    private final BinSpecWithRange _spec;
+    RequestDateBinSpec(BinSpecWithRange spec) {
+      if (spec.getBinUnits() == null) {
+        throw new BadRequestException("binUnits is required for date variable distributions.");
+      }
+      _spec = spec;
+    }
+    @Override public ChronoUnit getBinUnits() {
+      return switch (_spec.getBinUnits()) {
+        case DAY -> ChronoUnit.DAYS;
+        case WEEK -> ChronoUnit.WEEKS;
+        case MONTH -> ChronoUnit.MONTHS;
+        case YEAR -> ChronoUnit.YEARS;
+      };
+    }
+    @Override public int getBinSize() { return _spec.getBinWidth().intValue(); }
+    @Override public String getDisplayRangeMin() {
+      return Utils.standardizeLocalDateTime(castToString(_spec.getDisplayRangeMin()));
+    }
+    @Override public String getDisplayRangeMax() {
+      return Utils.standardizeLocalDateTime(castToString(_spec.getDisplayRangeMax()));
+    }
+    private static String castToString(Object v) {
+      if (v == null || v instanceof String) return (String) v;
+      throw new BadRequestException("Date range boundary must be a date-formatted string value.");
+    }
   }
 }

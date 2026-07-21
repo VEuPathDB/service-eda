@@ -155,17 +155,22 @@ public final class MetaStudyMerger {
   // Range merges: min(mins) / max(maxes) over each member's distributionDefaults.
   private static void mergeIntRange(APIIntegerVariableImpl out, List<APIVariable> across) {
     Long min = null, max = null, dMin = null, dMax = null;
+    Long binWidth = null, binWidthOverride = null;
     for (APIVariable v : across) {
       APIIntegerDistributionDefaults dd = ((APIIntegerVariable) v).getDistributionDefaults();
       if (dd == null) continue;
       min = minL(min, dd.getRangeMin());     max = maxL(max, dd.getRangeMax());
       dMin = minL(dMin, dd.getDisplayRangeMin()); dMax = maxL(dMax, dd.getDisplayRangeMax());
+      if (binWidth == null) binWidth = dd.getBinWidth();
+      if (binWidthOverride == null) binWidthOverride = dd.getBinWidthOverride();
     }
     if (min == null && max == null && dMin == null && dMax == null) return;
     APIIntegerDistributionDefaultsImpl dd = new APIIntegerDistributionDefaultsImpl();
     dd.setRangeMin(min); dd.setRangeMax(max);
     dd.setDisplayRangeMin(dMin != null ? dMin : min);
     dd.setDisplayRangeMax(dMax != null ? dMax : max);
+    dd.setBinWidth(binWidth);
+    dd.setBinWidthOverride(binWidthOverride);
     out.setDistributionDefaults(dd);
   }
 

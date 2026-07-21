@@ -1,16 +1,30 @@
 package org.veupathdb.service.eda.common.client;
 
+import jakarta.ws.rs.BadRequestException;
+import org.gusdb.fgputil.Tuples.TwoTuple;
+import org.gusdb.fgputil.distribution.AbstractDistribution;
+import org.gusdb.fgputil.distribution.DistributionResult;
+import org.gusdb.fgputil.distribution.DistributionStreamProvider;
+import org.gusdb.fgputil.distribution.FloatingPointBinDistribution;
+import org.gusdb.fgputil.distribution.IntegerBinDistribution;
+import org.gusdb.fgputil.distribution.NumberBinDistribution;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.veupathdb.service.eda.common.client.spec.StreamSpec;
 import org.veupathdb.service.eda.common.model.ReferenceMetadata;
 import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.APIFilter;
+import org.veupathdb.service.eda.generated.model.APIVariableType;
 import org.veupathdb.service.eda.generated.model.VariableSpec;
+import org.veupathdb.service.eda.subset.model.distribution.BinSpecWithRange;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 /**
  * Computes a categorical distribution tally (category value -> deduped count) for a union
@@ -75,5 +89,67 @@ public final class UnionDistribution {
       throw new RuntimeException("Failed tallying union distribution for " + varSpec, e);
     }
     return new Tally(counts, totalSeen, missingSeen);
+  }
+
+  /**
+   * Bins a continuous variable's deduped union tally into a histogram by reusing FgpUtil's
+   * bin-distribution machinery. The tally is exposed as a {@link DistributionStreamProvider}
+   * (sorted (value,count) tuples + record count) and handed to the type-appropriate FgpUtil
+   * distribution with a request-derived bin spec. Date support is added in a later task.
+   *
+   * @param binSpec the request bin spec; REQUIRED for continuous variables (empty -> 400)
+   */
+  public static DistributionResult binnedResult(
+      Tally tally, APIVariableType type, Optional<BinSpecWithRange> binSpec,
+      org.veupathdb.service.eda.generated.model.ValueSpec valueSpec) {
+
+    BinSpecWithRange spec = binSpec.orElseThrow(() -> new BadRequestException(
+        "A bin spec is required for a continuous variable distribution on a union study."));
+
+    AbstractDistribution.ValueSpec vs = switch (valueSpec) {
+      case COUNT -> AbstractDistribution.ValueSpec.COUNT;
+      case PROPORTION -> AbstractDistribution.ValueSpec.PROPORTION;
+    };
+
+    DistributionStreamProvider provider = tallyStreamProvider(tally, type);
+
+    AbstractDistribution dist = switch (type) {
+      case INTEGER -> new IntegerBinDistribution(provider, vs, new RequestNumberBinSpec(spec));
+      case NUMBER -> new FloatingPointBinDistribution(provider, vs, new RequestNumberBinSpec(spec));
+      default -> throw new BadRequestException(
+          "Continuous distribution supports only integer, number, and date variables; got " + type);
+    };
+    return dist.generateDistribution();
+  }
+
+  /**
+   * Adapts a deduped {@link Tally} to FgpUtil's {@link DistributionStreamProvider}: a stream of
+   * (value,count) tuples sorted ascending by typed value (FgpUtil's binner never revisits an
+   * earlier bin), plus a leading (null,count) tuple carrying the missing-value count, plus the
+   * deduped record count.
+   */
+  private static DistributionStreamProvider tallyStreamProvider(Tally tally, APIVariableType type) {
+    Comparator<String> byValue = switch (type) {
+      case INTEGER, NUMBER -> Comparator.comparingDouble(Double::parseDouble);
+      default -> Comparator.naturalOrder(); // DATE: ISO-8601 strings sort chronologically
+    };
+    List<TwoTuple<String, Long>> tuples = new ArrayList<>();
+    if (tally.missingSeen() > 0) tuples.add(new TwoTuple<>(null, tally.missingSeen()));
+    tally.counts().entrySet().stream()
+        .sorted(Map.Entry.comparingByKey(byValue))
+        .forEach(e -> tuples.add(new TwoTuple<>(e.getKey(), e.getValue())));
+    return new DistributionStreamProvider() {
+      @Override public Stream<TwoTuple<String, Long>> getDistributionStream() { return tuples.stream(); }
+      @Override public long getRecordCount() { return tally.totalSeen(); }
+    };
+  }
+
+  /** FgpUtil number bin spec built purely from the request bin spec (no subsetting Variable). */
+  private static final class RequestNumberBinSpec implements NumberBinDistribution.NumberBinSpec {
+    private final BinSpecWithRange _spec;
+    RequestNumberBinSpec(BinSpecWithRange spec) { _spec = spec; }
+    @Override public Object getDisplayRangeMin() { return _spec.getDisplayRangeMin(); }
+    @Override public Object getDisplayRangeMax() { return _spec.getDisplayRangeMax(); }
+    @Override public Object getBinSize() { return _spec.getBinWidth(); }
   }
 }

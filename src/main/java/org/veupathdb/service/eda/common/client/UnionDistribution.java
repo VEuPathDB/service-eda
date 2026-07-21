@@ -98,7 +98,8 @@ public final class UnionDistribution {
    * Bins a continuous variable's deduped union tally into a histogram by reusing FgpUtil's
    * bin-distribution machinery. The tally is exposed as a {@link DistributionStreamProvider}
    * (sorted (value,count) tuples + record count) and handed to the type-appropriate FgpUtil
-   * distribution with a request-derived bin spec. Date support is added in a later task.
+   * distribution with a request-derived bin spec. Integer, number, and date variables are all
+   * supported.
    *
    * @param binSpec the request bin spec; REQUIRED for continuous variables (empty -> 400)
    */
@@ -134,12 +135,24 @@ public final class UnionDistribution {
    */
   private static DistributionStreamProvider tallyStreamProvider(Tally tally, APIVariableType type) {
     Comparator<String> byValue = switch (type) {
-      case INTEGER, NUMBER -> Comparator.comparingDouble(Double::parseDouble);
+      case INTEGER -> Comparator.comparingLong(Long::parseLong);
+      case NUMBER -> Comparator.comparingDouble(Double::parseDouble);
       default -> Comparator.naturalOrder(); // DATE: ISO-8601 strings sort chronologically
     };
+    // For DATE, the tabular stream's raw value keys may carry a trailing 'Z' (e.g.
+    // "2002-06-01T00:00:00Z"), which FgpUtil's FormatUtil.parseDateTime cannot parse. The
+    // request bin spec boundaries are already standardized (see RequestDateBinSpec), so the
+    // data values must be too, or binning throws only for dates. Standardizing can map two
+    // distinct raw keys to the same value, so counts are merged (summed) by standardized key.
+    Map<String, Long> counts = tally.counts();
+    if (type == APIVariableType.DATE) {
+      Map<String, Long> standardized = new LinkedHashMap<>();
+      counts.forEach((k, v) -> standardized.merge(Utils.standardizeLocalDateTime(k), v, Long::sum));
+      counts = standardized;
+    }
     List<TwoTuple<String, Long>> tuples = new ArrayList<>();
     if (tally.missingSeen() > 0) tuples.add(new TwoTuple<>(null, tally.missingSeen()));
-    tally.counts().entrySet().stream()
+    counts.entrySet().stream()
         .sorted(Map.Entry.comparingByKey(byValue))
         .forEach(e -> tuples.add(new TwoTuple<>(e.getKey(), e.getValue())));
     return new DistributionStreamProvider() {

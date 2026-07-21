@@ -126,6 +126,33 @@ public class UnionDistributionTest {
   }
 
   @Test
+  void binsDateTallyStandardizesZSuffixedValues() {
+    // tabular stream can emit Z-suffixed date values; these must be standardized before being
+    // handed to DateBinDistribution, or FormatUtil.parseDateTime throws (only for dates, since
+    // the request bin spec boundaries are already standardized but the data values were not).
+    var counts = new java.util.LinkedHashMap<String, Long>();
+    counts.put("2002-06-01T00:00:00Z", 1L);
+    counts.put("2000-06-01T00:00:00Z", 2L);
+    counts.put("2001-06-01T00:00:00Z", 1L);
+    var tally = new UnionDistribution.Tally(counts, 4, 0);
+
+    BinSpecWithRange spec = new BinSpecWithRange()
+        .setDisplayRangeMin("2000-01-01T00:00:00")
+        .setDisplayRangeMax("2003-01-01T00:00:00")
+        .setBinWidth(1)
+        .setBinUnits(org.veupathdb.service.eda.subset.model.distribution.BinUnits.YEAR);
+
+    DistributionResult result = UnionDistribution.binnedResult(
+        tally, APIVariableType.DATE, java.util.Optional.of(spec),
+        org.veupathdb.service.eda.generated.model.ValueSpec.COUNT);
+
+    long binnedTotal = result.getHistogramData().stream()
+        .mapToLong(b -> b.getValue().longValue()).sum();
+    assertEquals(4L, binnedTotal);
+    assertEquals(4L, result.getStatistics().getNumVarValues());
+  }
+
+  @Test
   void dateBinningRequiresBinUnits() {
     var counts = new java.util.LinkedHashMap<String, Long>();
     counts.put("2000-06-01T00:00:00", 1L);

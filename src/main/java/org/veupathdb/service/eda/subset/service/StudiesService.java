@@ -325,7 +325,7 @@ public class StudiesService implements Studies {
     //   of data is not generated for that entity ("tall table" still is).  This only affects paged/sorted tabular
     //   results, so add a check here for that kind of request on that kind of entity and throw 400 in that case.
     Entity entity = request.getTargetEntity();
-    if (request.getReportConfig().requiresSorting() &&
+    if (request.getReportConfig().requiresWideTables() &&
         // total columns equals IDs for the entity and ancestors + each variable (not sure if category/collection vars should count, but this is safe)
         1 + entity.getAncestorPkColNames().size() + entity.getVariables().size() > 1000) {
       throw new BadRequestException("Tabular requests with paging/sorting are not supported on entities with >1000 total columns");
@@ -371,8 +371,8 @@ public class StudiesService implements Studies {
     final var studyId = requestBundle.getStudy().getStudyId();
     LOG.debug("Determining whether to use file-based subsetting in request for study '{}', entity '{}'.", studyId, requestBundle.getTargetEntity());
 
-    if (requestBundle.getReportConfig().requiresSorting()) {
-      LOG.debug("Won't use files for study {} because incoming request requires sorting.", studyId);
+    if (requestBundle.getReportConfig().requiresWideTables()) {
+      LOG.debug("Won't use files for study {} because incoming request requires sorting (wide tables only).", studyId);
       return false;
     }
 

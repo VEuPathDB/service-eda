@@ -160,12 +160,17 @@ public final class TestStudies {
         List.<APIVariable>of(dateVar(varId, min, max, binUnits)), List.of()));
   }
 
-  /** Root + one child; distinct entity ids so it is structurally different from the single-entity fixtures. */
+  /**
+   * Root + one child; distinct entity ids so it is structurally different from the single-entity
+   * fixtures. Root carries both the categorical {@code rvar} (existing) and a continuous integer
+   * {@code age} var (added for continuous union-distribution tests), so existing tests that only
+   * reference {@code rvar} are unaffected.
+   */
   public static APIStudyDetail twoEntities(String studyId) {
     APIEntity child = entity(CHILD_ID, "child_id", true,
         List.<APIVariable>of(stringVar("cvar", List.of("x", "y"))), List.of());
     APIEntity root = entity(ROOT_ID, "root_id", false,
-        List.<APIVariable>of(stringVar("rvar", List.of("a", "b"))), List.of(child));
+        List.<APIVariable>of(stringVar("rvar", List.of("a", "b")), intVar("age", 0L, 100L)), List.of(child));
     return study(studyId, root);
   }
 

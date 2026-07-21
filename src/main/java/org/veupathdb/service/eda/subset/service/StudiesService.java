@@ -133,13 +133,14 @@ public class StudiesService implements Studies {
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
     checkPerms(_request, studyId, StudyAccess::allowSubsetting);
     VariableDistributionPostResponse response = StudyId.parse(studyId).isUnion()
-        // Union: tally over the merged/deduped member streams (categorical native vars only, for
-        // now -- getCategoricalDistribution throws otherwise). A plain study id keeps the existing
-        // full-featured path below, byte-for-byte unchanged.
-        ? EdaSubsettingClient.getCategoricalDistribution(
+        // Union: tally over the merged/deduped member streams (native vars only, categorical or
+        // continuous). A plain study id keeps the existing full-featured path below, byte-for-byte
+        // unchanged.
+        ? EdaSubsettingClient.getSubsetDistribution(
             EdaSubsettingClient.getReferenceMetadata(studyId),
             VariableDef.newVariableSpec(entityId, variableId),
             request.getFilters(),
+            request.getBinSpec(),
             request.getValueSpec() == null ? ValueSpec.COUNT : request.getValueSpec())
         : handleDistributionRequest(studyId, entityId, variableId, request);
     return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.

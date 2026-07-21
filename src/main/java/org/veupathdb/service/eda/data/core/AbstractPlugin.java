@@ -370,7 +370,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected Map<String, Long> getCategoricalCountDistribution(VariableSpec varSpec, List<APIFilter> subsetFilters) {
-    VariableDistributionPostResponse response = EdaSubsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.COUNT);
+    VariableDistributionPostResponse response = EdaSubsettingClient.getSubsetDistribution(_referenceMetadata, varSpec, subsetFilters, null, ValueSpec.COUNT);
     return response.getHistogram().stream().collect(Collectors.toMap(HistogramBin::getBinLabel, bin -> Long.valueOf(bin.getValue().toString())));
   }
 
@@ -379,7 +379,7 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   protected Map<String, Double> getCategoricalProportionDistribution(VariableSpec varSpec, List<APIFilter> subsetFilters) {
-    VariableDistributionPostResponse response = EdaSubsettingClient.getCategoricalDistribution(_referenceMetadata, varSpec, subsetFilters, ValueSpec.PROPORTION);
+    VariableDistributionPostResponse response = EdaSubsettingClient.getSubsetDistribution(_referenceMetadata, varSpec, subsetFilters, null, ValueSpec.PROPORTION);
     return response.getHistogram().stream().collect(Collectors.toMap(HistogramBin::getBinLabel, bin -> Double.valueOf(bin.getValue().toString())));
   }
 

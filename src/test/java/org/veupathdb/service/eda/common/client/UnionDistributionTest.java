@@ -139,4 +139,36 @@ public class UnionDistributionTest {
             java.util.Optional.of(spec),
             org.veupathdb.service.eda.generated.model.ValueSpec.COUNT));
   }
+
+  @Test
+  void getSubsetDistributionBinsContinuousUnionDeduped() {
+    ReferenceMetadata md = TestStudies.unionMetadata("union(studyA,studyB)", List.of("studyA", "studyB"));
+    var entity = md.getEntity(TestStudies.ROOT_ID).orElseThrow();
+    String pk = org.veupathdb.service.eda.common.model.VariableDef.toDotNotation(entity.getIdColumnDef());
+    String ageCol = TestStudies.ROOT_ID + ".age";
+    org.veupathdb.service.eda.generated.model.VariableSpec ageSpec = TestStudies.varSpec(TestStudies.ROOT_ID, "age");
+
+    UnionTabularStreams.TabularStreamOpener opener = (studyId, f, sp) -> {
+      var rows = studyId.equals("studyA")
+          ? List.of(java.util.Map.of(pk, "P1", ageCol, "5"),
+                    java.util.Map.of(pk, "P2", ageCol, "15"))
+          : List.of(java.util.Map.of(pk, "P2", ageCol, "15"),   // shared, deduped
+                    java.util.Map.of(pk, "P3", ageCol, "25"));
+      return CloseableIterator.of(rows.iterator());
+    };
+
+    org.veupathdb.service.eda.generated.model.BinSpecWithRange apiBinSpec =
+        new org.veupathdb.service.eda.generated.model.BinSpecWithRangeImpl();
+    apiBinSpec.setDisplayRangeMin(0);
+    apiBinSpec.setDisplayRangeMax(30);
+    apiBinSpec.setBinWidth(10);
+
+    var response = EdaSubsettingClient.getSubsetDistributionForTest(
+        md, ageSpec, List.of(), apiBinSpec,
+        org.veupathdb.service.eda.generated.model.ValueSpec.COUNT, opener);
+
+    long total = response.getHistogram().stream().mapToLong(b -> b.getValue().longValue()).sum();
+    assertEquals(3L, total);            // P1, P2 (deduped), P3
+    assertEquals(3L, response.getStatistics().getNumVarValues());
+  }
 }

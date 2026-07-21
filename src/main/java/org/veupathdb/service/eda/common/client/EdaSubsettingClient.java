@@ -2,6 +2,7 @@ package org.veupathdb.service.eda.common.client;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.distribution.DistributionResult;
 import org.gusdb.fgputil.iterator.CloseableIterator;
 import org.jetbrains.annotations.Nullable;
 import org.veupathdb.service.eda.Resources;
@@ -151,38 +152,48 @@ public class EdaSubsettingClient implements StreamingDataClient {
       (studyId, f, sp) -> getTabularDataIterator(studyId, f, sp));
   }
 
-  public static VariableDistributionPostResponse getCategoricalDistribution(
-    ReferenceMetadata metadata,
-    VariableSpec varSpec,
-    List<APIFilter> subsetFilters,
-    ValueSpec valueSpec
-  ) {
-    // check variable compatibility with this functionality
+  public static VariableDistributionPostResponse getSubsetDistribution(
+      ReferenceMetadata metadata, VariableSpec varSpec, List<APIFilter> filters,
+      org.veupathdb.service.eda.generated.model.BinSpecWithRange apiBinSpec, ValueSpec valueSpec) {
+    return getSubsetDistributionForTest(metadata, varSpec, filters, apiBinSpec, valueSpec,
+        (studyId, f, sp) -> getTabularDataIterator(studyId, f, sp));
+  }
+
+  // Package-visible seam: the tabular-stream opener is injected so this is unit-testable
+  // without a live DB (mirrors UnionDistribution.tally / countUnionEntity).
+  static VariableDistributionPostResponse getSubsetDistributionForTest(
+      ReferenceMetadata metadata, VariableSpec varSpec, List<APIFilter> filters,
+      org.veupathdb.service.eda.generated.model.BinSpecWithRange apiBinSpec, ValueSpec valueSpec,
+      UnionTabularStreams.TabularStreamOpener opener) {
+
     VariableDef var = metadata.getVariable(varSpec).orElseThrow();
     if (var.getSource() != VariableSource.NATIVE) {
       throw new IllegalArgumentException("Cannot call subsetting distribution endpoint with a non-native var: " + var);
     }
-    if (var.getDataShape() != APIVariableDataShape.CATEGORICAL) {
-      throw new IllegalArgumentException("Cannot call subsetting distribution endpoint with a non-categorical var (for now): " + var);
+
+    if (metadata.getMemberStudyIds().isEmpty()) {
+      // non-union: unchanged single-study path (handles all shapes)
+      VariableDistributionPostRequest request = new VariableDistributionPostRequestImpl();
+      request.setFilters(filters);
+      request.setValueSpec(valueSpec);
+      request.setBinSpec(apiBinSpec);
+      return StudiesService.handleDistributionRequest(
+          metadata.getStudyId(), varSpec.getEntityId(), varSpec.getVariableId(), request);
     }
 
-    if (!metadata.getMemberStudyIds().isEmpty()) {
-      UnionDistribution.Tally tally = UnionDistribution.tally(metadata, varSpec, subsetFilters,
-        (studyId, f, sp) -> getTabularDataIterator(studyId, f, sp));
-      return buildUnionDistributionResponse(tally, valueSpec);
+    UnionDistribution.Tally tally = UnionDistribution.tally(metadata, varSpec, filters, opener);
+
+    if (var.getDataShape() == APIVariableDataShape.CONTINUOUS) {
+      DistributionResult result = UnionDistribution.binnedResult(
+          tally, var.getType(),
+          ApiConversionUtil.toInternalBinSpecWithRange(apiBinSpec), valueSpec);
+      VariableDistributionPostResponse response = new VariableDistributionPostResponseImpl();
+      response.setHistogram(ApiConversionUtil.toApiHistogramBins(result.getHistogramData()));
+      response.setStatistics(ApiConversionUtil.toApiHistogramStats(result.getStatistics()));
+      return response;
     }
-
-    // build request object
-    VariableDistributionPostRequest request = new VariableDistributionPostRequestImpl();
-    request.setFilters(subsetFilters);
-    request.setValueSpec(valueSpec);
-
-    return StudiesService.handleDistributionRequest(
-      metadata.getStudyId(),
-      varSpec.getEntityId(),
-      varSpec.getVariableId(),
-      request
-    );
+    // categorical / ordinal / binary: existing discrete tally response
+    return buildUnionDistributionResponse(tally, valueSpec);
   }
 
   /**

@@ -13,6 +13,8 @@ import org.veupathdb.service.eda.generated.model.APIFilter;
 import org.veupathdb.service.eda.generated.model.APIFilterImpl;
 import org.veupathdb.service.eda.generated.model.APINumberRangeFilter;
 import org.veupathdb.service.eda.generated.model.APINumberRangeFilterImpl;
+import org.veupathdb.service.eda.generated.model.APIStringPrefixSetFilter;
+import org.veupathdb.service.eda.generated.model.APIStringPrefixSetFilterImpl;
 import org.veupathdb.service.eda.generated.model.APIStringSetFilter;
 import org.veupathdb.service.eda.generated.model.APIStringSetFilterImpl;
 import org.veupathdb.service.eda.generated.model.APIStudyDetail;
@@ -82,8 +84,40 @@ public class StudiesTest {
     afs.add(numberFilter);
     
     ApiConversionUtil.toInternalFilters(_model.study, afs, StubDb.APP_DB_SCHEMA);
-    
+
     assertEquals(2, afs.size());
+  }
+
+  @Test
+  @DisplayName("Test valid construction of string prefix set filter")
+  void testConstructStringPrefixSetFilter() {
+
+    List<APIFilter> afs = new ArrayList<>();
+
+    APIStringPrefixSetFilter prefixFilter = new APIStringPrefixSetFilterImpl();
+    prefixFilter.setEntityId(_model.participant.getId());
+    prefixFilter.setVariableId(_model.earsize.getId());
+    prefixFilter.setPrefixSet(List.of("sm", "med"));
+    afs.add(prefixFilter);
+
+    assertEquals(1, ApiConversionUtil.toInternalFilters(_model.study, afs, StubDb.APP_DB_SCHEMA).size());
+  }
+
+  @Test
+  @DisplayName("Test rejection of empty prefix in string prefix set filter")
+  void testRejectEmptyPrefixInStringPrefixSetFilter() {
+
+    assertThrows(BadRequestException.class, () -> {
+      List<APIFilter> afs = new ArrayList<>();
+
+      APIStringPrefixSetFilter prefixFilter = new APIStringPrefixSetFilterImpl();
+      prefixFilter.setEntityId(_model.participant.getId());
+      prefixFilter.setVariableId(_model.earsize.getId());
+      prefixFilter.setPrefixSet(List.of("sm", ""));
+      afs.add(prefixFilter);
+
+      ApiConversionUtil.toInternalFilters(_model.study, afs, StubDb.APP_DB_SCHEMA);
+    });
   }
 
   @Test

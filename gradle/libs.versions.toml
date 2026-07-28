@@ -1,6 +1,6 @@
 [versions]
-fgputil = "3.2.5-jakarta"
-log4j = "2.25.4"
+fgputil = "3.2.8-jakarta"
+log4j = "2.26.1"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version = "2.3.21" }

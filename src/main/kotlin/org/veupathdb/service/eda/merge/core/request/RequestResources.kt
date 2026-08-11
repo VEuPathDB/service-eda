@@ -27,7 +27,7 @@ constructor (
 ) {
   private val logger = logger()
 
-  val metadata = ReferenceMetadata(EdaSubsettingClient.getStudy(studyId))
+  val metadata = EdaSubsettingClient.getReferenceMetadata(studyId)
 
   val derivedVariableSpecs = variableSpecs
 

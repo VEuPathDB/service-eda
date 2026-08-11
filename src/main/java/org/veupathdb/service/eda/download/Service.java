@@ -93,22 +93,36 @@ public class Service implements Download {
 
   private StudyDatasetInfo checkPermsAndFetchDatasetInfo(String studyId, Function<StudyAccess, Boolean> accessGranter) {
     try {
-      var user  = UserProvider.lookupUser(_request).orElseThrow();
-      var study = DatasetAccessClient.getStudyDatasetInfoMapForUser(user.getUserId())
-        .get(studyId);
+      var parsed = org.veupathdb.service.eda.common.model.StudyId.parse(studyId);
+      var user   = UserProvider.lookupUser(_request).orElseThrow();
 
-      if (study == null) {
-        throw new NotFoundException("Study '" + studyId + "' cannot be found [dataset access service].");
+      if (parsed.isUnion()) {
+        // Raw file-bundle download of a union meta-study is not a v1 deliverable.
+        // Never authorize the literal union token as a single study: enforce the
+        // access check on every member first, then reject the download itself.
+        parsed.getMembers().forEach(member -> checkPermsAndFetchDatasetInfoSingle(member, user.getUserId(), accessGranter));
+        throw new jakarta.ws.rs.BadRequestException("union download not supported");
       }
 
-      if (!accessGranter.apply(study.getStudyAccess())) {
-        throw new ForbiddenException("Permission Denied");
-      }
-
-      return study;
+      return checkPermsAndFetchDatasetInfoSingle(studyId, user.getUserId(), accessGranter);
     } catch (Exception e) {
       LOG.error("Unable to check study permissions and convert studyId to dataset hash", e);
       throw e;
     }
+  }
+
+  private StudyDatasetInfo checkPermsAndFetchDatasetInfoSingle(String studyId, long userId, Function<StudyAccess, Boolean> accessGranter) {
+    var study = DatasetAccessClient.getStudyDatasetInfoMapForUser(userId)
+      .get(studyId);
+
+    if (study == null) {
+      throw new NotFoundException("Study '" + studyId + "' cannot be found [dataset access service].");
+    }
+
+    if (!accessGranter.apply(study.getStudyAccess())) {
+      throw new ForbiddenException("Permission Denied");
+    }
+
+    return study;
   }
 }

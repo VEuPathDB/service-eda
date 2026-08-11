@@ -22,6 +22,10 @@ import org.veupathdb.lib.container.jaxrs.server.middleware.CustomResponseHeaders
 import org.veupathdb.service.eda.Resources;
 import org.veupathdb.service.eda.common.auth.StudyAccess;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
+import org.veupathdb.service.eda.common.client.EdaSubsettingClient;
+import org.veupathdb.service.eda.common.model.MetaStudyResolver;
+import org.veupathdb.service.eda.common.model.StudyId;
+import org.veupathdb.service.eda.common.model.VariableDef;
 import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.resources.Studies;
 import org.veupathdb.service.eda.subset.model.Entity;
@@ -90,8 +94,15 @@ public class StudiesService implements Studies {
   @Override
   public GetStudiesByStudyIdResponse getStudiesByStudyId(String studyId) {
     checkPerms(_request, studyId, StudyAccess::allowStudyMetadata);
-    Study study = Resources.getStudyResolver().getStudyById(studyId);
-    APIStudyDetail apiStudyDetail = ApiConversionUtil.getApiStudyDetail(study);
+    StudyId parsed = StudyId.parse(studyId);
+    APIStudyDetail apiStudyDetail = parsed.isUnion()
+      ? MetaStudyResolver.resolveStudyDetailCached(
+          parsed, EdaSubsettingClient::getStudy,
+          member -> {
+            java.util.Date lastModified = Resources.getStudyResolver().getStudyById(member).getLastModified();
+            return lastModified == null ? null : lastModified.getTime();
+          })
+      : ApiConversionUtil.getApiStudyDetail(Resources.getStudyResolver().getStudyById(studyId));
     StudyIdGetResponse response = new StudyIdGetResponseImpl();
     response.setStudy(apiStudyDetail);
     return GetStudiesByStudyIdResponse.respond200WithApplicationJson(response);
@@ -121,8 +132,19 @@ public class StudiesService implements Studies {
   postStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableId(
       String studyId, String entityId, String variableId, VariableDistributionPostRequest request) {
     checkPerms(_request, studyId, StudyAccess::allowSubsetting);
+    VariableDistributionPostResponse response = StudyId.parse(studyId).isUnion()
+        // Union: tally over the merged/deduped member streams (native vars only, categorical or
+        // continuous). A plain study id keeps the existing full-featured path below, byte-for-byte
+        // unchanged.
+        ? EdaSubsettingClient.getSubsetDistribution(
+            EdaSubsettingClient.getReferenceMetadata(studyId),
+            VariableDef.newVariableSpec(entityId, variableId),
+            request.getFilters(),
+            request.getBinSpec(),
+            request.getValueSpec() == null ? ValueSpec.COUNT : request.getValueSpec())
+        : handleDistributionRequest(studyId, entityId, variableId, request);
     return PostStudiesEntitiesVariablesDistributionByStudyIdAndEntityIdAndVariableIdResponse.
-        respond200WithApplicationJson(handleDistributionRequest(studyId, entityId, variableId, request));
+        respond200WithApplicationJson(response);
   }
 
   public static VariableDistributionPostResponse handleDistributionRequest(
@@ -422,8 +444,15 @@ public class StudiesService implements Studies {
   public PostStudiesEntitiesCountByStudyIdAndEntityIdResponse postStudiesEntitiesCountByStudyIdAndEntityId(
       String studyId, String entityId, EntityCountPostRequest rawRequest) {
     checkPerms(_request, studyId, StudyAccess::allowSubsetting);
-    return PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(
-        handleCountRequest(studyId, entityId, rawRequest));
+    // Route through the union-aware client so a union(...) token is merged/deduped across members
+    // (EdaSubsettingClient.getSubsetCount -> countUnionEntity). A plain study id is an unchanged
+    // pass-through: getReferenceMetadata carries no members, so getSubsetCount delegates straight
+    // back to handleCountRequest, exactly as before.
+    long count = EdaSubsettingClient.getSubsetCount(
+        EdaSubsettingClient.getReferenceMetadata(studyId), entityId, rawRequest.getFilters());
+    EntityCountPostResponse response = new EntityCountPostResponseImpl();
+    response.setCount(count);
+    return PostStudiesEntitiesCountByStudyIdAndEntityIdResponse.respond200WithApplicationJson(response);
   }
 
   public static EntityCountPostResponse handleCountRequest(String studyId, String entityId, EntityCountPostRequest rawRequest) {

@@ -5,6 +5,7 @@ import org.gusdb.fgputil.iterator.CloseableIterator
 import org.gusdb.fgputil.validation.ValidationException
 import org.veupathdb.service.eda.common.client.EdaComputeClient
 import org.veupathdb.service.eda.common.client.EdaSubsettingClient
+import org.veupathdb.service.eda.common.client.UnionTabularStreams
 import org.veupathdb.service.eda.common.client.spec.EdaMergingSpecValidator
 import org.veupathdb.service.eda.common.client.spec.StreamSpec
 import org.veupathdb.service.eda.compute.EDACompute
@@ -63,13 +64,17 @@ constructor(
     // rows which are a subset of the rows produced by the "global" filters.
     // Easiest way to do that is to simply combine the filters, resulting in an
     // intersection of the global subset and the overridden subset.
+    val opener = UnionTabularStreams.TabularStreamOpener { studyId, filters, s ->
+      EdaSubsettingClient.getTabularDataIterator(studyId, filters, s)
+    }
     return if (spec.filtersOverride.isPresent && subsetFilters.isNotEmpty()) {
-      StreamSpec(spec.streamName, spec.entityId).apply {
+      val combined = StreamSpec(spec.streamName, spec.entityId).apply {
         addAll(spec)
         setFiltersOverride(subsetFilters + spec.filtersOverride.get())
-      }.let { EdaSubsettingClient.getTabularDataIterator(metadata.studyId, subsetFilters, it) }
+      }
+      UnionTabularStreams.open(metadata, subsetFilters, combined, opener)
     } else {
-      EdaSubsettingClient.getTabularDataIterator(metadata.studyId, subsetFilters, spec)
+      UnionTabularStreams.open(metadata, subsetFilters, spec, opener)
     }
   }
 

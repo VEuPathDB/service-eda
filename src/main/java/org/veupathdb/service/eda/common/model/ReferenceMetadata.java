@@ -28,14 +28,40 @@ public class ReferenceMetadata {
 
   private final String _studyId;
   private final TreeNode<EntityDef> _entityTree;
+  private final List<String> _memberStudyIds;
 
   public ReferenceMetadata(APIStudyDetail study) {
+    this(study, List.of());
+  }
 
-    // set the study ID for this instance
+  /**
+   * Builds metadata for a study, optionally tagging every entity in the tree with the list
+   * of member study ids that contributed to this (already Tier-1-merged) study detail. When
+   * the study is a genuine union meta-study, every {@link EntityDef} in the resulting tree
+   * carries the full member-study list (a pure union has no per-entity distinction, so all
+   * entities are tagged identically). An empty list means "not a union", which is equivalent
+   * to constructing via the single-arg constructor: the study id is set and the tree is built,
+   * but no entity is tagged with member study ids.
+   *
+   * @param study raw (already merged, for unions) study metadata
+   * @param memberStudyIds ids of the studies that were merged to produce this study detail;
+   *                       empty for a single (non-union) study
+   */
+  public ReferenceMetadata(APIStudyDetail study, List<String> memberStudyIds) {
     _studyId = study.getId();
-
-    // build an entity tree from the raw study metadata
+    _memberStudyIds = List.copyOf(memberStudyIds);
     _entityTree = buildEntityTree(study.getRootEntity(), new ArrayList<>());
+    if (!_memberStudyIds.isEmpty()) {
+      _entityTree.findAll(e -> true).forEach(node -> node.getContents().setMemberStudyIds(_memberStudyIds));
+    }
+  }
+
+  /**
+   * @return the ids of the studies that were merged to produce this study detail (empty for a
+   * single, non-union study)
+   */
+  public List<String> getMemberStudyIds() {
+    return _memberStudyIds;
   }
 
   /**

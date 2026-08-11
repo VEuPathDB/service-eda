@@ -4,6 +4,7 @@ import jakarta.ws.rs.ForbiddenException;
 import org.json.JSONObject;
 import org.veupathdb.service.eda.common.client.DatasetAccessClient;
 
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -54,10 +55,48 @@ public class StudyAccess {
    * permission.
    */
   public static void confirmPermission(long userId, String studyId, Predicate<StudyAccess> accessPredicate) {
-    // check with dataset access service to see if attached auth header has permission to access
-    DatasetAccessClient.getStudyAccessByStudyId(studyId, userId)
-      .filter(accessPredicate)
-      .orElseThrow(ForbiddenException::new);
+    confirmPermission(userId, studyId, accessPredicate, DEFAULT_RESOLVER);
+  }
+
+  /** Test/composition seam: resolves a single member studyId to its StudyAccess. */
+  @FunctionalInterface
+  public interface PerStudyAccessResolver {
+    Optional<StudyAccess> resolve(String studyId, long userId);
+  }
+
+  // The production resolver: existing single-study lookup.
+  private static final PerStudyAccessResolver DEFAULT_RESOLVER =
+    DatasetAccessClient::getStudyAccessByStudyId;
+
+  /**
+   * Package-visible for testing. Resolves the given studyId token (plain id or
+   * union(...) token) via {@link org.veupathdb.service.eda.common.model.StudyId#parse}
+   * and requires that EVERY member study satisfy the given predicate. A plain id
+   * always resolves to exactly one member (itself), so its behavior is unchanged.
+   * The literal union token is never itself authorized as a single study.
+   *
+   * @throws ForbiddenException if any member fails to resolve or fails the predicate.
+   */
+  static void confirmPermission(long userId, String studyId,
+                                Predicate<StudyAccess> accessPredicate,
+                                PerStudyAccessResolver resolver) {
+    org.veupathdb.service.eda.common.model.StudyId parsed =
+      org.veupathdb.service.eda.common.model.StudyId.parse(studyId);
+    for (String member : parsed.getMembers()) {
+      resolver.resolve(member, userId)
+        .filter(accessPredicate)
+        .orElseThrow(ForbiddenException::new);
+    }
+  }
+
+  /** Test-only factory: an all-true StudyAccess (full access granted). */
+  static StudyAccess grantAll() {
+    return new StudyAccess(true, true, true, true, true);
+  }
+
+  /** Test-only factory: an all-false StudyAccess (no access granted). */
+  static StudyAccess denyAll() {
+    return new StudyAccess(false, false, false, false, false);
   }
 
   public JSONObject toJson() {

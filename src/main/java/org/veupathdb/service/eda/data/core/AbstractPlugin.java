@@ -6,6 +6,7 @@ import jakarta.ws.rs.BadRequestException;
 import kotlin.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -30,9 +31,13 @@ import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.model.BinSpec.RangeType;
 import org.veupathdb.service.eda.merge.ServiceExternal;
 import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
+import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 import org.veupathdb.service.eda.util.Exceptions;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -99,6 +104,11 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   private Timer _timer;
   private boolean _requestProcessed = false;
   private String _studyId;
+  // resolved once per request; loading a user study borrows app-db connections
+  private Study _study;
+  // per-study vocabulary streams opened while writing results; each holds a
+  // DB connection until closed, so processRequest closes them all at the end
+  private final List<InputStream> _vocabStreams = new ArrayList<>();
   private List<APIFilter> _subsetFilters;
   private List<DerivedVariableSpec> _derivedVariableSpecs;
 
@@ -135,7 +145,8 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     _derivedVariableSpecs = Optional.ofNullable(request.getDerivedVariables()).orElse(Collections.emptyList());
 
     // get study
-    APIStudyDetail study = EdaSubsettingClient.getStudy(request.getStudyId());
+    _study = Resources.getStudyResolver().getStudyById(request.getStudyId());
+    APIStudyDetail study = ApiConversionUtil.getApiStudyDetail(_study);
     _studyId = study.getId();
 
     // if plugin requires a compute, check if compute results are available
@@ -204,6 +215,10 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
         LOG.info("Building and processing {} required data streams.", _requiredStreams.size());
         StreamingDataClient.processDataStreams(_requiredStreams, dataStreams, streamProcessor);
         logRequestTime("Data streams processed; response written; request complete");
+      }
+      finally {
+        _vocabStreams.forEach(IoUtil::closeQuietly);
+        _vocabStreams.clear();
       }
     };
   }
@@ -383,24 +398,55 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     return response.getHistogram().stream().collect(Collectors.toMap(HistogramBin::getBinLabel, bin -> Double.valueOf(bin.getValue().toString())));
   }
 
-  protected Map<String, InputStream> getVocabByRootEntity(DynamicDataSpec dataSpec, List<APIFilter> subsetFilters) {
-    return new HashMap<>(1) {{ put(
-      getUtil().toColNameOrEmpty(dataSpec),
-      EdaSubsettingClient.getVocabByRootEntity(_referenceMetadata, dataSpec, subsetFilters)
-    ); }};
-  }
-
-  protected Map<String, InputStream> getVocabByRootEntity(DynamicDataSpec dataSpec) {
-    return getVocabByRootEntity(dataSpec, _subsetFilters);
-  }
-
+  /**
+   * Opens a stream of the per-study vocabulary for each passed data spec, keyed
+   * by column name.  Each stream holds a database connection; all are closed
+   * when the request completes (see processRequest), whether or not they were
+   * read, so callers need not close them.  The study resolved at the start of
+   * the request is reused, so no app-db connections are borrowed here.
+   */
   protected Map<String, InputStream> getVocabByRootEntity(List<DynamicDataSpec> dataSpecs) {
-    return dataSpecs.parallelStream()
-      .map(this::getVocabByRootEntity)
-      .map(Map::entrySet)
-      .map(Collection::iterator)
-      .map(Iterator::next)
-      .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    PluginUtil util = getUtil();
+    Map<String, InputStream> vocabs = new LinkedHashMap<>();
+    // Deliberately sequential; this used to be a parallelStream().  Most of
+    // what the parallelism overlapped was a fresh study load per variable,
+    // which borrowed app-db connections while the request already held its
+    // data streams and could exhaust the pool.  With the study reused, only
+    // the vocabulary queries remain, and they are typically few.  Going one at
+    // a time also means each stream is registered for cleanup before the next
+    // query starts, so a failure part-way through cannot strand open streams
+    // (and their connections) on other threads.  Running them in parallel
+    // would not reduce the connections held either: every stream stays open
+    // until RServe reads it.
+    for (DynamicDataSpec dataSpec : dataSpecs) {
+      InputStream vocab = EdaSubsettingClient.getVocabByRootEntity(_study, dataSpec, _subsetFilters);
+      if (vocab == null) continue; // collection vocabularies are not supported yet
+      InputStream closeOnce = new CloseOnceInputStream(vocab);
+      _vocabStreams.add(closeOnce);
+      vocabs.put(util.toColNameOrEmpty(dataSpec), closeOnce);
+    }
+    return vocabs;
+  }
+
+  /**
+   * Vocabulary streams are closed by the RServe file transfer and again by the
+   * cleanup in processRequest; closing a pooled connection twice makes the
+   * connection wrapper throw, so only pass the first close through.
+   */
+  private static final class CloseOnceInputStream extends FilterInputStream {
+    private boolean _closed = false;
+
+    CloseOnceInputStream(InputStream in) {
+      super(in);
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (!_closed) {
+        _closed = true;
+        super.close();
+      }
+    }
   }
 
   /*****************************************************************

@@ -25,9 +25,19 @@ public interface StreamingDataClient {
     Collection<StreamSpec> requiredStreams,
     Function<StreamSpec, CloseableIterator<Map<String, String>>> streamGenerator
   ) {
-    return new AutoCloseableList<>(requiredStreams.stream()
-      .map(streamGenerator)
-      .toList());
+    var streams = new AutoCloseableList<CloseableIterator<Map<String, String>>>();
+    try {
+      for (StreamSpec spec : requiredStreams) {
+        streams.add(streamGenerator.apply(spec));
+      }
+      return streams;
+    }
+    catch (RuntimeException | Error e) {
+      // database-backed iterators hold a connection from the moment they are
+      // created; release those already opened if a later one fails
+      streams.close();
+      throw e;
+    }
   }
 
   static void buildAndProcessIteratorStreams(

@@ -100,13 +100,20 @@ public class MergeRequestProcessor {
   public InputStream createMergeDataStream() throws ValidationException {
     var bundle = prepareStreams();
 
-    return new MergeDataInputStream(
-      bundle.targetStream,
-      StreamingDataClient.iteratorStreamsToMap(
-        bundle.requiredStreamSpecs,
-        bundle.closeableDataStreams
-      )
-    );
+    try {
+      return new MergeDataInputStream(
+        bundle.targetStream,
+        StreamingDataClient.iteratorStreamsToMap(
+          bundle.requiredStreamSpecs,
+          bundle.closeableDataStreams
+        )
+      );
+    }
+    catch (RuntimeException | Error e) {
+      // the stream takes ownership of the iterators only once constructed
+      bundle.closeableDataStreams.close();
+      throw e;
+    }
   }
 
   @NotNull

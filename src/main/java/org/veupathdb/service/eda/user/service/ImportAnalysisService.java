@@ -13,8 +13,6 @@ import org.veupathdb.service.eda.generated.resources.ImportAnalysisProjectId;
 import org.veupathdb.service.eda.user.Utils;
 import org.veupathdb.service.eda.user.model.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,76 +88,7 @@ public class ImportAnalysisService implements ImportAnalysisProjectId {
     AnalysisDetailWithUser newAnalysis = new AnalysisDetailWithUser(
       IdGenerator.getNextAnalysisId(dataFactory), newOwner.getUserId(), oldAnalysis, provenanceOwner);
 
-    // If the owner ID has changed (meaning we are copying to a new user) AND we
-    // have some derived variables attached to the analysis, copy the derived
-    // variables from the old owner to the new owner.
-    if (newOwner.getUserId() != userId && !isNullOrEmpty(newAnalysis.getDescriptor().getDerivedVariables())) {
-      newAnalysis.getDescriptor().setDerivedVariables(copyDerivedVariables(
-        dataFactory,
-        newOwner,
-        newAnalysis.getDescriptor().getDerivedVariables()
-      ));
-    }
-
     dataFactory.insertAnalysis(newAnalysis);
     return newAnalysis.getIdObject();
-  }
-
-  private static List<String> copyDerivedVariables(
-    UserDataFactory dataFactory,
-    UserInfo newOwner,
-    List<String> originalDerivedVarsIds
-  ) {
-    // Look up the original derived variables from the database.
-    var originalVars = dataFactory.getDerivedVariables(originalDerivedVarsIds);
-
-    // Fetch all the derived variables owned by the target user.
-    var newOwnerVars = dataFactory.getDerivedVariablesForUser(newOwner.getUserId());
-
-    // Build an index of the derived variables that the new owner already has
-    // or has a copy of.
-    var newOwnerVarMap  = new HashMap<String, String>(newOwnerVars.size() * 2);
-    newOwnerVars.forEach(it -> {
-      newOwnerVarMap.put(it.getVariableID(), it.getVariableID());
-      callIfPresent(it.getProvenance(), prov -> newOwnerVarMap.put(prov.getCopiedFrom(), it.getVariableID()));
-    });
-
-    // Make a list to hold the derived variable IDs that we will actually use
-    // to attach to the new analysis copy. This list may contain a combination
-    // of either existing derived variables already owned by newOwner, or new
-    // copies of derived variables that were not previously owned by newOwner.
-    var newDerivedVarIdList = new ArrayList<String>(originalDerivedVarsIds.size());
-
-    // For each of the source analysis' derived variables
-    for (var oldDerivedVar : originalVars) {
-      // Check if newOwner already has a derived variable that was copied from
-      // the source analysis' derived variable.
-      var hit = newOwnerVarMap.get(oldDerivedVar.getVariableID());
-
-      if (hit != null) {
-        newDerivedVarIdList.add(hit);
-        continue;
-      }
-
-      // Check if newOwner already has a derived variable that was the origin
-      // of the source analysis' derived variable
-      if (oldDerivedVar.getProvenance() != null) {
-        hit = newOwnerVarMap.get(oldDerivedVar.getProvenance().getCopiedFrom());
-
-        if (hit != null) {
-          newDerivedVarIdList.add(hit);
-          continue;
-        }
-      }
-
-      // If we've made it this far, then the current source analysis derived
-      // variable is new to newOwner.  Create a copy of it for newOwner and add
-      // it to the list for return vars.
-      var newDerivedVarId = issueUUID();
-      dataFactory.addDerivedVariable(new DerivedVariableRow(newDerivedVarId, newOwner.getUserId(), oldDerivedVar));
-      newDerivedVarIdList.add(newDerivedVarId);
-    }
-
-    return newDerivedVarIdList;
   }
 }

@@ -1433,6 +1433,7 @@ types:
       sum: SingleNumericVarReductionConfig
       concatenation: ConcatenationConfig
       subsetMembership: SubsetMembershipConfig
+      filterDefinedGroups: FilterDefinedGroupsConfig
       advancedSubset: AdvancedSubsetConfig
       unitConversion: UnitConversionConfig
       bodyMassIndex: BodyMassIndexConfig
@@ -1807,6 +1808,16 @@ types:
     type: object
     properties:
       //: any
+  FilterDefinedGroup:
+    type: object
+    properties:
+      label: string
+      filters: API_Filter[]
+  FilterDefinedGroupsConfig:
+    type: object
+    properties:
+      groups: FilterDefinedGroup[]
+      unmappedValue?: string
   FloatingBarplot:
     type: object
     additionalProperties: false

@@ -46,6 +46,16 @@ types:
     properties:
       subsetFilters: API_Filter[]
 
+  FilterDefinedGroup:
+    properties:
+      label: string
+      filters: API_Filter[]
+
+  FilterDefinedGroupsConfig:
+    properties:
+      groups: FilterDefinedGroup[]
+      unmappedValue?: string
+
   UnitConversionConfig:
     properties:
       inputVariable: VariableSpec

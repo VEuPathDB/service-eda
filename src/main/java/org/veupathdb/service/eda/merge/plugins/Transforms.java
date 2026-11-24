@@ -19,7 +19,8 @@ public class Transforms {
       AdvancedSubset.class,
       EcmaScriptExpressionEval.class,
       RelativeObservationMinTimeInterval.class,
-      UnitConversion.class
+      UnitConversion.class,
+      FilterDefinedGroups.class
     );
   }
 }

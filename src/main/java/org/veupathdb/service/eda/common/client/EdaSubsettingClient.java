@@ -44,6 +44,13 @@ public class EdaSubsettingClient implements StreamingDataClient {
   }
 
   /**
+   * Chooses the filters to apply: the stream's override if present, else the passed filters.
+   */
+  public static List<APIFilter> resolveFilters(List<APIFilter> variableFilters, StreamSpec streamSpec) {
+    return streamSpec.getFiltersOverride().orElse(variableFilters);
+  }
+
+  /**
    * Make a subsetting request without a network hop.
    * <p>
    * This directly uses subsetting's FilteredResultFactory to produce a stream
@@ -63,7 +70,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
 
     // convert study/streamspec to internal subsetting objects to check files vs DB and convert to internal classes
     final var variableNames = streamSpec.stream().map(VariableSpec::getVariableId).collect(Collectors.toList());
-    final RequestBundle request = RequestBundle.unpack(schemaName, study, streamSpec.getEntityId(), variableFilters, variableNames, new APITabularReportConfigImpl());
+    final RequestBundle request = RequestBundle.unpack(schemaName, study, streamSpec.getEntityId(), resolveFilters(variableFilters, streamSpec), variableNames, new APITabularReportConfigImpl());
     final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();
     final boolean useFileBasedSubsetting = StudiesService.shouldRunFileBasedSubsetting(request, binaryFilesManager);
 

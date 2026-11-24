@@ -41,8 +41,8 @@ object ExtendedRootVocabHandler : RootVocabHandler() {
 
           return ByteArray(pk.size + value.size + 1).apply {
             pk.copyInto(this)
-            set(pk.size, 9)
-            pk.copyInto(value, pk.size + 1)
+            this[pk.size] = '\t'.code.toByte()
+            value.copyInto(this, pk.size + 1)
           }
         }
 

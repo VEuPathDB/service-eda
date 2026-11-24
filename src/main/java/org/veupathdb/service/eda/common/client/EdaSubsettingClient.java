@@ -119,12 +119,20 @@ public class EdaSubsettingClient implements StreamingDataClient {
     );
   }
 
+  /**
+   * Opens a stream of the per-study vocabulary of a variable.  The returned
+   * stream holds a database connection until it is closed, so callers must
+   * close it.
+   *
+   * @param study already-resolved study; passed in so that callers looking up
+   *              several vocabularies don't load the study (and borrow
+   *              app-db connections) once per variable
+   */
   public static InputStream getVocabByRootEntity(
-    ReferenceMetadata metadata,
+    Study study,
     VariableSpec varSpec,
     List<APIFilter> subsetFilters
   ) {
-    var study = Resources.getStudyResolver().getStudyById(metadata.getStudyId());
     var schema = switch(study.getStudySourceType()) {
       case USER_SUBMITTED -> Resources.getVdiDatasetsSchema() + ".";
       case CURATED -> Resources.getAppDbSchema();
@@ -141,7 +149,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
 
   @Nullable
   public static InputStream getVocabByRootEntity(
-    ReferenceMetadata metadata,
+    Study study,
     DynamicDataSpec dataSpec,
     List<APIFilter> subsetFilters
   ) {
@@ -149,7 +157,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
       // TODO
       return null;
     } else if (dataSpec.isVariableSpec()) {
-      return getVocabByRootEntity(metadata, dataSpec.getVariableSpec(), subsetFilters);
+      return getVocabByRootEntity(study, dataSpec.getVariableSpec(), subsetFilters);
     } else {
       return null;
     }

@@ -816,7 +816,8 @@ types:
   CategoricalRecodingRule:
     type: object
     properties:
-      inputValues: string[]
+      inputValues?: string[]
+      inputPrefixes?: string[]
       outputValue: string
   CollectionFloatingBarplotPostRequest:
     type: DataPluginRequestBase

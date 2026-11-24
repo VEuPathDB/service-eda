@@ -8,6 +8,7 @@ import org.gusdb.fgputil.json.JsonUtil;
 import org.gusdb.fgputil.validation.ValidationException;
 import org.junit.jupiter.api.Test;
 import org.veupathdb.service.eda.common.model.VariableDef;
+import org.veupathdb.service.eda.generated.model.APIVariableDataShape;
 import org.veupathdb.service.eda.generated.model.ConcatenationConfig;
 import org.veupathdb.service.eda.generated.model.ConcatenationConfigImpl;
 import org.veupathdb.service.eda.generated.model.DerivedVariableSpec;
@@ -51,5 +52,11 @@ public class DerivedVarConfigTest {
     // just trying to get the factory to build in this test; may mock a ReferenceMetadata later
     DerivedVariableFactory factory = new DerivedVariableFactory(null, SPECS);
     assertEquals(1, factory.getAllDerivedVars().size());
+  }
+
+  @Test
+  public void concatenationIsCategorical() throws ValidationException {
+    DerivedVariableFactory factory = new DerivedVariableFactory(null, SPECS);
+    assertEquals(APIVariableDataShape.CATEGORICAL, factory.getAllDerivedVars().get(0).getDataShape());
   }
 }

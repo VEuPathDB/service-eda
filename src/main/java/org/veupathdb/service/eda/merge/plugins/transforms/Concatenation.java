@@ -53,6 +53,6 @@ public class Concatenation extends Transform<ConcatenationConfig> {
 
   @Override
   public APIVariableDataShape getDataShape() {
-    return APIVariableDataShape.CONTINUOUS;
+    return APIVariableDataShape.CATEGORICAL;
   }
 }

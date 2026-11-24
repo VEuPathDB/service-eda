@@ -1030,6 +1030,18 @@ types:
     discriminatorValue: continuous
     properties:
       aggregator: Aggregator
+  ContinuousDateRecodingConfig:
+    type: object
+    properties:
+      inputVariable: VariableSpec
+      rules: ContinuousDateRule[]
+      unmappedValue?: string
+  ContinuousDateRule:
+    type: object
+    properties:
+      minInclusive?: string
+      maxInclusive?: string
+      outputValue: string
   ContinuousNumericRecodingConfig:
     type: object
     properties:
@@ -1040,7 +1052,7 @@ types:
     type: object
     properties:
       minInclusive?: number
-      maxExclusive?: number
+      maxInclusive?: number
       outputValue: string
   ContinuousVariableMetadataPostRequest:
     type: DataPluginRequestBase
@@ -1440,6 +1452,7 @@ types:
       bodyMassIndex: BodyMassIndexConfig
       categoricalRecoding: CategoricalRecodingConfig
       continuousToOrdinal: ContinuousNumericRecodingConfig
+      continuousDateToOrdinal: ContinuousDateRecodingConfig
       ecmaScriptExpressionEval: EcmaScriptExpressionEvalConfig
       relativeObservationMinTimeInterval: RelatedObservationMinTimeIntervalConfig
   DerivedVariableGetResponse:

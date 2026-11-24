@@ -29,13 +29,25 @@ types:
   ContinuousNumericRule:
     properties:
       minInclusive?: number
-      maxExclusive?: number
+      maxInclusive?: number
       outputValue: string
 
   ContinuousNumericRecodingConfig:
     properties:
       inputVariable: VariableSpec
       rules: ContinuousNumericRule[]
+      unmappedValue?: string
+
+  ContinuousDateRule:
+    properties:
+      minInclusive?: string
+      maxInclusive?: string
+      outputValue: string
+
+  ContinuousDateRecodingConfig:
+    properties:
+      inputVariable: VariableSpec
+      rules: ContinuousDateRule[]
       unmappedValue?: string
 
   BodyMassIndexConfig:

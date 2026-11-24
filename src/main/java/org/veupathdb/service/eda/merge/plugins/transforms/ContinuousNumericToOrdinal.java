@@ -14,17 +14,17 @@ public class ContinuousNumericToOrdinal extends Transform<ContinuousNumericRecod
   private static class RuleApplier {
 
     private final double _minInclusive;
-    private final double _maxExclusive;
+    private final double _maxInclusive;
     private final String _outputValue;
 
     public RuleApplier(ContinuousNumericRule rule) {
-      _minInclusive = rule.getMinInclusive() == null ? Double.MIN_VALUE : Double.parseDouble(rule.getMinInclusive().toString());
-      _maxExclusive= rule.getMaxExclusive() == null ? Double.MAX_VALUE : Double.parseDouble(rule.getMaxExclusive().toString());
+      _minInclusive = rule.getMinInclusive() == null ? Double.NEGATIVE_INFINITY : Double.parseDouble(rule.getMinInclusive().toString());
+      _maxInclusive = rule.getMaxInclusive() == null ? Double.POSITIVE_INFINITY : Double.parseDouble(rule.getMaxInclusive().toString());
       _outputValue = rule.getOutputValue();
     }
 
     public boolean matches(double d) {
-      return d >= _minInclusive && d < _maxExclusive;
+      return d >= _minInclusive && d <= _maxInclusive;
     }
 
     public String getOutputValue() {
@@ -80,7 +80,7 @@ public class ContinuousNumericToOrdinal extends Transform<ContinuousNumericRecod
 
   @Override
   public List<String> getVocabulary() {
-    return _codingRules.stream().map(RuleApplier::getOutputValue).toList();
+    return RecodingVocabulary.of(_codingRules.stream().map(RuleApplier::getOutputValue).toList(), _unmappedValue);
   }
 
   @Override
@@ -89,7 +89,7 @@ public class ContinuousNumericToOrdinal extends Transform<ContinuousNumericRecod
     String value = row.get(_inputColumn);
     double d = 0;
     if (value.isEmpty()) {
-      if (!_imputeZero) return EMPTY_VALUE;
+      if (!_imputeZero) return _unmappedValue;
     }
     else {
       d = Double.parseDouble(value);

@@ -291,7 +291,7 @@ public class StudiesService implements Studies {
   ) {
     return ExtendedRootVocabHandler.queryStudyVocab(
       dataSchema,
-      Resources.getAccountsDataSource(),
+      Resources.getApplicationDatabase().getDataSource(),
       study.getEntityTree().getContents(),
       getVariableForRootVocab(study, entityId, variableId),
       filters

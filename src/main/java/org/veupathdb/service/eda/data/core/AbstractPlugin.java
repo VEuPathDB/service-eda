@@ -6,7 +6,6 @@ import jakarta.ws.rs.BadRequestException;
 import kotlin.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.gusdb.fgputil.IoUtil;
 import org.gusdb.fgputil.Timer;
 import org.gusdb.fgputil.Tuples.ThreeTuple;
 import org.gusdb.fgputil.Tuples.TwoTuple;
@@ -36,11 +35,12 @@ import org.veupathdb.service.eda.subset.model.Study;
 import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 import org.veupathdb.service.eda.util.Exceptions;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -106,9 +106,6 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   private String _studyId;
   // resolved once per request; loading a user study borrows app-db connections
   private Study _study;
-  // per-study vocabulary streams opened while writing results; each holds a
-  // DB connection until closed, so processRequest closes them all at the end
-  private final List<InputStream> _vocabStreams = new ArrayList<>();
   private List<APIFilter> _subsetFilters;
   private List<DerivedVariableSpec> _derivedVariableSpecs;
 
@@ -215,10 +212,6 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
         LOG.info("Building and processing {} required data streams.", _requiredStreams.size());
         StreamingDataClient.processDataStreams(_requiredStreams, dataStreams, streamProcessor);
         logRequestTime("Data streams processed; response written; request complete");
-      }
-      finally {
-        _vocabStreams.forEach(IoUtil::closeQuietly);
-        _vocabStreams.clear();
       }
     };
   }
@@ -399,54 +392,36 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   }
 
   /**
-   * Opens a stream of the per-study vocabulary for each passed data spec, keyed
-   * by column name.  Each stream holds a database connection; all are closed
-   * when the request completes (see processRequest), whether or not they were
-   * read, so callers need not close them.  The study resolved at the start of
-   * the request is reused, so no app-db connections are borrowed here.
+   * Returns the per-study vocabulary for each passed data spec, keyed by column
+   * name, as in-memory streams that hold no database resources.
+   * <p>
+   * Each vocabulary is read in full and its connection returned to the pool
+   * before the next query runs.  This is called while the request already
+   * holds app-db connections for its data streams; leaving every vocabulary
+   * stream open until RServe read it added one more connection per variable
+   * and ran small pools dry.  Vocabularies are small (one row per study and
+   * value), so buffering them is cheap.
+   * <p>
+   * The queries are deliberately sequential (this used to be a
+   * parallelStream()), so a request holds at most one extra connection at a
+   * time.  The study resolved at the start of the request is reused rather
+   * than reloaded per variable, which used to borrow more connections still.
    */
   protected Map<String, InputStream> getVocabByRootEntity(List<DynamicDataSpec> dataSpecs) {
     PluginUtil util = getUtil();
     Map<String, InputStream> vocabs = new LinkedHashMap<>();
-    // Deliberately sequential; this used to be a parallelStream().  Most of
-    // what the parallelism overlapped was a fresh study load per variable,
-    // which borrowed app-db connections while the request already held its
-    // data streams and could exhaust the pool.  With the study reused, only
-    // the vocabulary queries remain, and they are typically few.  Going one at
-    // a time also means each stream is registered for cleanup before the next
-    // query starts, so a failure part-way through cannot strand open streams
-    // (and their connections) on other threads.  Running them in parallel
-    // would not reduce the connections held either: every stream stays open
-    // until RServe reads it.
     for (DynamicDataSpec dataSpec : dataSpecs) {
-      InputStream vocab = EdaSubsettingClient.getVocabByRootEntity(_study, dataSpec, _subsetFilters);
-      if (vocab == null) continue; // collection vocabularies are not supported yet
-      InputStream closeOnce = new CloseOnceInputStream(vocab);
-      _vocabStreams.add(closeOnce);
-      vocabs.put(util.toColNameOrEmpty(dataSpec), closeOnce);
+      byte[] vocab;
+      try (InputStream vocabStream = EdaSubsettingClient.getVocabByRootEntity(_study, dataSpec, _subsetFilters)) {
+        if (vocabStream == null) continue; // collection vocabularies are not supported yet
+        vocab = vocabStream.readAllBytes();
+      }
+      catch (IOException e) {
+        throw new UncheckedIOException("Unable to read study vocabulary for " + getDynamicDataSpecId(dataSpec), e);
+      }
+      vocabs.put(util.toColNameOrEmpty(dataSpec), new ByteArrayInputStream(vocab));
     }
     return vocabs;
-  }
-
-  /**
-   * Vocabulary streams are closed by the RServe file transfer and again by the
-   * cleanup in processRequest; closing a pooled connection twice makes the
-   * connection wrapper throw, so only pass the first close through.
-   */
-  private static final class CloseOnceInputStream extends FilterInputStream {
-    private boolean _closed = false;
-
-    CloseOnceInputStream(InputStream in) {
-      super(in);
-    }
-
-    @Override
-    public void close() throws IOException {
-      if (!_closed) {
-        _closed = true;
-        super.close();
-      }
-    }
   }
 
   /*****************************************************************

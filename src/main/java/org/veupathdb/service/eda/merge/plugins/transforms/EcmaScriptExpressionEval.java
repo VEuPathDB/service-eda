@@ -59,9 +59,10 @@ public class EcmaScriptExpressionEval extends Transform<EcmaScriptExpressionEval
       // need to wait and set up the script engine here since we need to know the types of the input vars
       _engine = GraalJSScriptEngine.create(null,
         Context.newBuilder("js")
-          .allowHostAccess(HostAccess.ALL)
-          .allowHostClassLookup(s -> true)
-          .allowAllAccess(true));
+          //.allowHostAccess(HostAccess.ALL)
+          //.allowHostClassLookup(s -> true)
+          //.allowAllAccess(true)
+      );
       String parameterList = _variableRefs.stream().map(VariableReference::getName).collect(Collectors.joining(", "));
       _engine.eval("function " + JS_FUNCTION_NAME + "(" + parameterList + ") { return " + _scriptExpression + "; }");
       _scriptParams = _variableRefs.stream()

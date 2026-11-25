@@ -51,6 +51,7 @@ vpdb-yaml = { module = "org.veupathdb.lib:jackson-singleton-yaml", version = "4.
 
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version = "6.0.3" }
 junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version = "6.0.3" }
+junit-params = { module = "org.junit.jupiter:junit-jupiter-params", version = "6.0.3" }
 junit-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "6.0.3" }
 
 mockito-core = { module = "org.mockito:mockito-core", version = "5.23.0" }
@@ -72,5 +73,5 @@ serialization = [ "vpdb-json", "vpdb-yaml" ]
 logging = [ "logging-slf4j-api", "logging-log4j-api", "logging-log4j-core", "logging-log4j-slf4j" ]
 metrics = [ "metrics-prometheus-api", "metrics-prometheus-client" ]
 
-test-implementation = [ "junit-api", "mockito-core", "test-await", "vpdb-test-utils" ]
+test-implementation = [ "junit-api", "junit-params", "mockito-core", "test-await", "vpdb-test-utils" ]
 test-runtime = [ "junit-engine", "junit-launcher" ]

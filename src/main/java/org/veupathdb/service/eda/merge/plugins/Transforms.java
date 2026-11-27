@@ -16,10 +16,12 @@ public class Transforms {
       BodyMassIndex.class,
       CategoricalRecoding.class,
       ContinuousNumericToOrdinal.class,
+      ContinuousDateToOrdinal.class,
       AdvancedSubset.class,
       EcmaScriptExpressionEval.class,
       RelativeObservationMinTimeInterval.class,
-      UnitConversion.class
+      UnitConversion.class,
+      FilterDefinedGroups.class
     );
   }
 }

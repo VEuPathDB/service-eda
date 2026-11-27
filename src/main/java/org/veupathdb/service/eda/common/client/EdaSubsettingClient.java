@@ -44,6 +44,13 @@ public class EdaSubsettingClient implements StreamingDataClient {
   }
 
   /**
+   * Chooses the filters to apply: the stream's override if present, else the passed filters.
+   */
+  public static List<APIFilter> resolveFilters(List<APIFilter> variableFilters, StreamSpec streamSpec) {
+    return streamSpec.getFiltersOverride().orElse(variableFilters);
+  }
+
+  /**
    * Make a subsetting request without a network hop.
    * <p>
    * This directly uses subsetting's FilteredResultFactory to produce a stream
@@ -63,7 +70,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
 
     // convert study/streamspec to internal subsetting objects to check files vs DB and convert to internal classes
     final var variableNames = streamSpec.stream().map(VariableSpec::getVariableId).collect(Collectors.toList());
-    final RequestBundle request = RequestBundle.unpack(schemaName, study, streamSpec.getEntityId(), variableFilters, variableNames, new APITabularReportConfigImpl());
+    final RequestBundle request = RequestBundle.unpack(schemaName, study, streamSpec.getEntityId(), resolveFilters(variableFilters, streamSpec), variableNames, new APITabularReportConfigImpl());
     final BinaryFilesManager binaryFilesManager = Resources.getBinaryFilesManager();
     final boolean useFileBasedSubsetting = StudiesService.shouldRunFileBasedSubsetting(request, binaryFilesManager);
 
@@ -119,12 +126,20 @@ public class EdaSubsettingClient implements StreamingDataClient {
     );
   }
 
+  /**
+   * Opens a stream of the per-study vocabulary of a variable.  The returned
+   * stream holds a database connection until it is closed, so callers must
+   * close it.
+   *
+   * @param study already-resolved study; passed in so that callers looking up
+   *              several vocabularies don't load the study (and borrow
+   *              app-db connections) once per variable
+   */
   public static InputStream getVocabByRootEntity(
-    ReferenceMetadata metadata,
+    Study study,
     VariableSpec varSpec,
     List<APIFilter> subsetFilters
   ) {
-    var study = Resources.getStudyResolver().getStudyById(metadata.getStudyId());
     var schema = switch(study.getStudySourceType()) {
       case USER_SUBMITTED -> Resources.getVdiDatasetsSchema() + ".";
       case CURATED -> Resources.getAppDbSchema();
@@ -141,7 +156,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
 
   @Nullable
   public static InputStream getVocabByRootEntity(
-    ReferenceMetadata metadata,
+    Study study,
     DynamicDataSpec dataSpec,
     List<APIFilter> subsetFilters
   ) {
@@ -149,7 +164,7 @@ public class EdaSubsettingClient implements StreamingDataClient {
       // TODO
       return null;
     } else if (dataSpec.isVariableSpec()) {
-      return getVocabByRootEntity(metadata, dataSpec.getVariableSpec(), subsetFilters);
+      return getVocabByRootEntity(study, dataSpec.getVariableSpec(), subsetFilters);
     } else {
       return null;
     }

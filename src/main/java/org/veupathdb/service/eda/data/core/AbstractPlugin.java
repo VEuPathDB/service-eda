@@ -30,12 +30,17 @@ import org.veupathdb.service.eda.generated.model.*;
 import org.veupathdb.service.eda.generated.model.BinSpec.RangeType;
 import org.veupathdb.service.eda.merge.ServiceExternal;
 import org.veupathdb.service.eda.merge.core.request.ComputeInfo;
+import org.veupathdb.service.eda.Resources;
+import org.veupathdb.service.eda.subset.model.Study;
+import org.veupathdb.service.eda.subset.service.ApiConversionUtil;
 import org.veupathdb.service.eda.util.Exceptions;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -99,6 +104,8 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
   private Timer _timer;
   private boolean _requestProcessed = false;
   private String _studyId;
+  // resolved once per request; loading a user study borrows app-db connections
+  private Study _study;
   private List<APIFilter> _subsetFilters;
   private List<DerivedVariableSpec> _derivedVariableSpecs;
 
@@ -135,7 +142,8 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     _derivedVariableSpecs = Optional.ofNullable(request.getDerivedVariables()).orElse(Collections.emptyList());
 
     // get study
-    APIStudyDetail study = EdaSubsettingClient.getStudy(request.getStudyId());
+    _study = Resources.getStudyResolver().getStudyById(request.getStudyId());
+    APIStudyDetail study = ApiConversionUtil.getApiStudyDetail(_study);
     _studyId = study.getId();
 
     // if plugin requires a compute, check if compute results are available
@@ -383,24 +391,37 @@ public abstract class AbstractPlugin<T extends DataPluginRequestBase, S, R> {
     return response.getHistogram().stream().collect(Collectors.toMap(HistogramBin::getBinLabel, bin -> Double.valueOf(bin.getValue().toString())));
   }
 
-  protected Map<String, InputStream> getVocabByRootEntity(DynamicDataSpec dataSpec, List<APIFilter> subsetFilters) {
-    return new HashMap<>(1) {{ put(
-      getUtil().toColNameOrEmpty(dataSpec),
-      EdaSubsettingClient.getVocabByRootEntity(_referenceMetadata, dataSpec, subsetFilters)
-    ); }};
-  }
-
-  protected Map<String, InputStream> getVocabByRootEntity(DynamicDataSpec dataSpec) {
-    return getVocabByRootEntity(dataSpec, _subsetFilters);
-  }
-
+  /**
+   * Returns the per-study vocabulary for each passed data spec, keyed by column
+   * name, as in-memory streams that hold no database resources.
+   * <p>
+   * Each vocabulary is read in full and its connection returned to the pool
+   * before the next query runs.  This is called while the request already
+   * holds app-db connections for its data streams; leaving every vocabulary
+   * stream open until RServe read it added one more connection per variable
+   * and ran small pools dry.  Vocabularies are small (one row per study and
+   * value), so buffering them is cheap.
+   * <p>
+   * The queries are deliberately sequential (this used to be a
+   * parallelStream()), so a request holds at most one extra connection at a
+   * time.  The study resolved at the start of the request is reused rather
+   * than reloaded per variable, which used to borrow more connections still.
+   */
   protected Map<String, InputStream> getVocabByRootEntity(List<DynamicDataSpec> dataSpecs) {
-    return dataSpecs.parallelStream()
-      .map(this::getVocabByRootEntity)
-      .map(Map::entrySet)
-      .map(Collection::iterator)
-      .map(Iterator::next)
-      .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    PluginUtil util = getUtil();
+    Map<String, InputStream> vocabs = new LinkedHashMap<>();
+    for (DynamicDataSpec dataSpec : dataSpecs) {
+      byte[] vocab;
+      try (InputStream vocabStream = EdaSubsettingClient.getVocabByRootEntity(_study, dataSpec, _subsetFilters)) {
+        if (vocabStream == null) continue; // collection vocabularies are not supported yet
+        vocab = vocabStream.readAllBytes();
+      }
+      catch (IOException e) {
+        throw new UncheckedIOException("Unable to read study vocabulary for " + getDynamicDataSpecId(dataSpec), e);
+      }
+      vocabs.put(util.toColNameOrEmpty(dataSpec), new ByteArrayInputStream(vocab));
+    }
+    return vocabs;
   }
 
   /*****************************************************************
